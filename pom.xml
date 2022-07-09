@@ -19,13 +19,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.datasonnet</groupId>
-    <artifactId>datasonnet-mapper</artifactId>
-    <version>2.1.5-SNAPSHOT</version>
-    <name>DataSonnet Mapper</name>
-    <description>A transformation domain specific language</description>
-    <url>https://github.com/datasonnet/datasonnet-mapper</url>
-    <inceptionYear>2019</inceptionYear>
+    <groupId>com.github.jam01</groupId>
+    <artifactId>trobador</artifactId>
+    <version>0.3.0-SNAPSHOT</version>
+    <name>Trobador</name>
+    <description>A template-based, data transformation engine</description>
+    <url>https://github.com/jam01/trobador</url>
+    <inceptionYear>2022</inceptionYear>
     <licenses>
         <license>
             <name>Apache License, Version 2.0</name>
@@ -36,27 +36,15 @@
 
     <developers>
         <developer>
-            <name>Russell Duhon</name>
-            <email>fugu13@gmail.com</email>
-            <organization>ModusBox</organization>
-            <organizationUrl>https://modusbox.com</organizationUrl>
-        </developer>
-        <developer>
-            <name>Eugene Berman</name>
-            <email>eugene.berman@modusbox.com</email>
-            <organization>ModusBox</organization>
-            <organizationUrl>https://modusbox.com</organizationUrl>
-        </developer>
-        <developer>
             <name>Jose Montoya</name>
-            <email>jam01@protonmail.com</email>
+            <email>jam01@pm.me</email>
         </developer>
     </developers>
 
     <scm>
-        <connection>scm:git:https://github.com/datasonnet/datasonnet-mapper.git</connection>
-        <developerConnection>scm:git:https://github.com/datasonnet/datasonnet-mapper.git</developerConnection>
-        <url>https://github.com/datasonnet/datasonnet-mapper</url>
+        <connection>scm:git:https://github.com/jam01/trobador.git</connection>
+        <developerConnection>scm:git:https://github.com/jam01/trobador.git</developerConnection>
+        <url>https://github.com/jam01/trobador</url>
     </scm>
     <distributionManagement>
         <repository>
