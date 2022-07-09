@@ -1,6 +1,4 @@
-package com.datasonnet;
-
-/*-
+package com.datasonnet;/*-
  * Copyright 2019-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,285 +15,152 @@ package com.datasonnet;
  */
 
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-
+import static com.datasonnet.util.TestUtils.transform;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ArraysTest {
-
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
-    private final String lib = "ds" + ".";
-    private final String pack = "arrays";
-
     @Test
     void testArrays_countBy() {
-        Mapper mapper = new Mapper(lib + pack + ".countBy([1,2,3,4,5], function(it) it > 2)\n", new ArrayList<>(), new HashMap<>(), true);
-        String value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("3", value);
+        assertEquals("3", transform("ds.arrays.countBy([1,2,3,4,5], function(it) it > 2)"));
     }
 
     @Test
     void testArrays_divideBy() {
-        Mapper mapper = new Mapper(lib + pack + ".divideBy([1,2,3,4,5], 2)\n", new ArrayList<>(), new HashMap<>(), true);
-        String value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("[[1,2],[3,4],[5]]", value);
-
-        mapper = new Mapper(lib + pack + ".divideBy([1,2,3,4,5], 3)\n", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("[[1,2,3],[4,5]]", value);
+        assertEquals("[[1,2],[3,4],[5]]", transform("ds.arrays.divideBy([1,2,3,4,5], 2)"));
+        assertEquals("[[1,2,3],[4,5]]", transform("ds.arrays.divideBy([1,2,3,4,5], 3)"));
     }
 
     @Test
     void testArrays_drop() {
-        Mapper mapper = new Mapper(lib + pack + ".drop([1,2,3,4,5], 2)\n", new ArrayList<>(), new HashMap<>(), true);
-        String value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("[3,4,5]", value);
-
-        mapper = new Mapper(lib + pack + ".drop([1,2,3,4,5], 1)\n", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("[2,3,4,5]", value);
-
-        mapper = new Mapper(lib + pack + ".drop([1,2,3,4,5], 10)\n", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("[]", value);
+        assertEquals("[3,4,5]", transform("ds.arrays.drop([1,2,3,4,5], 2)"));
+        assertEquals("[2,3,4,5]", transform("ds.arrays.drop([1,2,3,4,5], 1)"));
+        assertEquals("[]", transform("ds.arrays.drop([1,2,3,4,5], 10)"));
     }
 
     @Test
     void testArrays_dropWhile() {
-        Mapper mapper = new Mapper(lib + pack + ".dropWhile([1,2,3,4,5], function(item) item < 3)\n", new ArrayList<>(), new HashMap<>(), true);
-        String value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("[3,4,5]", value);
+        assertEquals("[3,4,5]", transform("ds.arrays.dropWhile([1,2,3,4,5], function(item) item < 3)"));
     }
 
     @Test
     void testArrays_duplicates() {
-        Mapper mapper = new Mapper(lib + pack + ".duplicates([1,2,3,4,5,3,2,1])\n", new ArrayList<>(), new HashMap<>(), true);
-        String value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("[1,2,3]", value);
+        assertEquals("[1,2,3]", transform("ds.arrays.duplicates([1,2,3,4,5,3,2,1])"));
     }
 
     @Test
     void testArrays_every() {
-        Mapper mapper = new Mapper(lib + pack + ".every([1,1,1], function(item) item == 1)\n", new ArrayList<>(), new HashMap<>(), true);
-        String value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("true", value);
-
-        mapper = new Mapper(lib + pack + ".every(null, function(item) item == 1)\n", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("true", value);
-
-        mapper = new Mapper(lib + pack + ".every([1,2,1], function(item) item == 1)\n", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("false", value);
+        assertEquals("true", transform("ds.arrays.every([1,1,1], function(item) item == 1)"));
+        assertEquals("true", transform("ds.arrays.every(null, function(item) item == 1)"));
+        assertEquals("false", transform("ds.arrays.every([1,2,1], function(item) item == 1)"));
     }
 
     @Test
     void testArrays_firstWith() {
-        Mapper mapper = new Mapper(lib + pack + ".firstWith([1,2,3], function(item) (item % 2) == 0)\n", new ArrayList<>(), new HashMap<>(), true);
-        String value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("2", value);
-
-        mapper = new Mapper(lib + pack + ".firstWith([1,2,3], function(item) (item % 10) == 0)\n", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("null", value);
+        assertEquals("2", transform("ds.arrays.firstWith([1,2,3], function(item) (item % 2) == 0)"));
+        assertEquals("null", transform("ds.arrays.firstWith([1,2,3], function(item) (item % 10) == 0)"));
     }
 
     @Test
     void testArrays_deepFlatten() {
-        Mapper mapper = new Mapper(lib + pack + ".deepFlatten([[1,2,3,[1,2]], [null,\"a\"]])\n", new ArrayList<>(), new HashMap<>(), true);
-        String value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("[1,2,3,1,2,null,a]", value);
+        assertEquals("[1,2,3,1,2,null,a]", transform("ds.arrays.deepFlatten([[1,2,3,[1,2]], [null,'a']])"));
     }
 
     @Test
     void testArrays_indexOf() {
-        Mapper mapper = new Mapper(lib + pack + ".indexOf([1,2,3,4,5,3], 3)\n", new ArrayList<>(), new HashMap<>(), true);
-        String value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("2", value);
-
-        mapper = new Mapper(lib + pack + ".indexOf([\"Mariano\", \"Leandro\", \"Julian\", \"Julian\"], \"Julian\")\n", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("2", value);
-
-        mapper = new Mapper(lib + pack + ".indexOf(null, 10)\n", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("-1", value);
-
-        mapper = new Mapper(lib + pack + ".indexOf([1,2,3], 2)\n", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("1", value);
-
-        mapper = new Mapper(lib + pack + ".indexOf([1,2,3], 5)\n", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("-1", value);
-
-        mapper = new Mapper(lib + pack + ".indexOf([1,2,3,2], 2)\n", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("1", value);
-
-        mapper = new Mapper(lib + pack + ".indexOf(\"Hello\", \"l\")\n", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("2", value);
-
-        mapper = new Mapper(lib + pack + ".indexOf(\"Hello\", \"x\")\n", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("-1", value);
+        assertEquals("2", transform("ds.arrays.indexOf([1,2,3,4,5,3], 3)"));
+        assertEquals("2", transform("ds.arrays.indexOf(['Mariano', 'Leandro', 'Julian', 'Julian'], 'Julian')"));
+        assertEquals("-1", transform("ds.arrays.indexOf(null, 10)"));
+        assertEquals("1", transform("ds.arrays.indexOf([1,2,3], 2)"));
+        assertEquals("-1", transform("ds.arrays.indexOf([1,2,3], 5)"));
+        assertEquals("1", transform("ds.arrays.indexOf([1,2,3,2], 2)"));
+        assertEquals("2", transform("ds.arrays.indexOf('Hello', 'l')"));
+        assertEquals("-1", transform("ds.arrays.indexOf('Hello', 'x')"));
     }
 
     @Test
     void testArrays_indexWhere() {
-        Mapper mapper = new Mapper(lib + pack + ".indexWhere([1,2,3,4,5,3], function(item) item == 3)\n", new ArrayList<>(), new HashMap<>(), true);
-        String value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("2", value);
-
-        mapper = new Mapper(lib + pack + ".indexWhere([\"Mariano\", \"Leandro\", \"Julian\", \"Julian\"], function(item) item == \"Julian\")\n", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("2", value);
+        assertEquals("2", transform("ds.arrays.indexWhere([1,2,3,4,5,3], function(item) item == 3)"));
+        assertEquals("2", transform("ds.arrays.indexWhere(['Mariano', 'Leandro', 'Julian', 'Julian'], function(item) item == 'Julian')"));
     }
 
     @Test
     void testArrays_join() {
-        Mapper mapper = new Mapper(lib + pack + ".join([{\"id\":1,\"v\":\"a\"},{\"id\":1,\"v\":\"b\"}],[{\"id\":1,\"v\":\"c\"}], function(item) item.id,function(item) item.id)\n", new ArrayList<>(), new HashMap<>(), true);
-        String value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("[{r:{id:1,v:c},l:{id:1,v:a}},{r:{id:1,v:c},l:{id:1,v:b}}]", value);
-
+        assertEquals("[{l:{id:1,v:a},r:{id:1,v:c}},{l:{id:1,v:b},r:{id:1,v:c}}]",
+                transform("ds.arrays.join([{'id':1,'v':'a'},{'id':1,'v':'b'}],[{'id':1,'v':'c'}], function(item) item.id, function(item) item.id)"));
     }
 
     @Test
     void testArrays_lastIndexOf() {
-        Mapper mapper = new Mapper(lib + pack + ".lastIndexOf(null, 10)\n", new ArrayList<>(), new HashMap<>(), true);
-        String value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("-1", value);
-
-        mapper = new Mapper(lib + pack + ".lastIndexOf([1,2,3], 2)\n", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("1", value);
-
-        mapper = new Mapper(lib + pack + ".lastIndexOf([1,2,3], 5)\n", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("-1", value);
-
-        mapper = new Mapper(lib + pack + ".lastIndexOf([1,2,3,2], 2)\n", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("3", value);
-
-        mapper = new Mapper(lib + pack + ".lastIndexOf(\"Hello\", \"l\")\n", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("3", value);
-
-        mapper = new Mapper(lib + pack + ".lastIndexOf(\"Hello\", \"x\")\n", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("-1", value);
+        assertEquals("-1", transform("ds.arrays.lastIndexOf(null, 10)"));
+        assertEquals("1", transform("ds.arrays.lastIndexOf([1,2,3], 2)"));
+        assertEquals("-1", transform("ds.arrays.lastIndexOf([1,2,3], 5)"));
+        assertEquals("3", transform("ds.arrays.lastIndexOf([1,2,3,2], 2)"));
+        assertEquals("3", transform("ds.arrays.lastIndexOf('Hello', 'l')"));
+        assertEquals("-1", transform("ds.arrays.lastIndexOf('Hello', 'x')"));
     }
 
     @Test
     void testArrays_leftJoin() {
-        Mapper mapper = new Mapper(lib + pack + ".leftJoin([{\"id\":1,\"v\":\"a\"},{\"id\":1,\"v\":\"b\"},{\"id\":2,\"v\":\"d\"}],[{\"id\":1,\"v\":\"c\"},{\"id\":3,\"v\":\"e\"}], function(item) item.id,function(item) item.id)\n", new ArrayList<>(), new HashMap<>(), true);
-        String value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("[{r:{id:1,v:c},l:{id:1,v:a}},{r:{id:1,v:c},l:{id:1,v:b}},{l:{id:2,v:d}}]", value);
-
+        assertEquals("[{l:{id:1,v:a},r:{id:1,v:c}},{l:{id:1,v:b},r:{id:1,v:c}},{l:{id:2,v:d}}]",
+                transform("ds.arrays.leftJoin([{'id':1,'v':'a'},{'id':1,'v':'b'},{'id':2,'v':'d'}],[{'id':1,'v':'c'},{'id':3,'v':'e'}], function(item) item.id,function(item) item.id)"));
     }
 
     @Test
     void testArrays_occurrences() {
-        Mapper mapper = new Mapper(lib + pack + ".occurrences([1,2,3,4,3,2,1,6], function(item) item)\n", new ArrayList<>(), new HashMap<>(), true);
-        String value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("{1:2,2:2,3:2,4:1,6:1}", value);
-
+        assertEquals("{1:2,2:2,3:2,4:1,6:1}", transform("ds.arrays.occurrences([1,2,3,4,3,2,1,6], function(item) item)"));
     }
 
     @Test
     void testArrays_outerJoin() {
-        Mapper mapper = new Mapper(lib + pack + ".outerJoin([{\"id\":1,\"v\":\"a\"},{\"id\":1,\"v\":\"b\"},{\"id\":2,\"v\":\"d\"}],[{\"id\":1,\"v\":\"c\"},{\"id\":3,\"v\":\"e\"}], function(item) item.id,function(item) item.id)\n", new ArrayList<>(), new HashMap<>(), true);
-        String value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("[{r:{id:1,v:c},l:{id:1,v:a}},{r:{id:1,v:c},l:{id:1,v:b}},{l:{id:2,v:d}},{r:{id:3,v:e}}]", value);
-
+        assertEquals("[{l:{id:1,v:a},r:{id:1,v:c}},{l:{id:1,v:b},r:{id:1,v:c}},{l:{id:2,v:d}},{r:{id:3,v:e}}]",
+                transform("ds.arrays.outerJoin([{'id':1,'v':'a'},{'id':1,'v':'b'},{'id':2,'v':'d'}],[{'id':1,'v':'c'},{'id':3,'v':'e'}], function(item) item.id,function(item) item.id)"));
     }
-
 
     @Test
     void testArrays_partition() {
-        Mapper mapper = new Mapper(lib + pack + ".partition([0,1,2,3,4,5], function(item) ((item % 2) ==0) )\n", new ArrayList<>(), new HashMap<>(), true);
-        String value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("{success:[0,2,4],failure:[1,3,5]}", value);
+        assertEquals("{success:[0,2,4],failure:[1,3,5]}", transform("ds.arrays.partition([0,1,2,3,4,5], function(item) ((item % 2) ==0) )"));
     }
 
     @Test
     void testArrays_slice() {
         long start = System.currentTimeMillis();
-        Mapper mapper = new Mapper(lib + pack + ".slice([0,1,2,3,4,5], 1, 5)\n", new ArrayList<>(), new HashMap<>(), true);
-        String value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("[1,2,3,4]", value);
-
-        mapper = new Mapper(lib + pack + ".slice([0,1,2,3,3,3], 1, 5)\n", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("[1,2,3,3]", value);
+        assertEquals("[1,2,3,4]", transform("ds.arrays.slice([0,1,2,3,4,5], 1, 5)"));
+        assertEquals("[1,2,3,3]", transform("ds.arrays.slice([0,1,2,3,3,3], 1, 5)"));
     }
 
     @Test
     void testArrays_some() {
-        Mapper mapper = new Mapper(lib + pack + ".some([1,2,3], function(item) (item % 2) == 0)\n", new ArrayList<>(), new HashMap<>(), true);
-        String value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("true", value);
-
-        mapper = new Mapper(lib + pack + ".some([1,2,3], function(item) (item % 2) == 1)\n", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("true", value);
-
-        mapper = new Mapper(lib + pack + ".some([1,2,3], function(item) item == 3)\n", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("true", value);
-
-        mapper = new Mapper(lib + pack + ".some([1,2,3], function(item) item == 4)\n", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("false", value);
+        assertEquals("true", transform("ds.arrays.some([1,2,3], function(item) (item % 2) == 0)"));
+        assertEquals("true", transform("ds.arrays.some([1,2,3], function(item) (item % 2) == 1)"));
+        assertEquals("true", transform("ds.arrays.some([1,2,3], function(item) item == 3)"));
+        assertEquals("false", transform("ds.arrays.some([1,2,3], function(item) item == 4)"));
     }
 
     @Test
     void testArrays_splitAt() {
-        Mapper mapper = new Mapper(lib + pack + ".splitAt([\"A\",\"B\",\"C\"], 2)\n", new ArrayList<>(), new HashMap<>(), true);
-        String value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("{r:[C],l:[A,B]}", value);
-
-        mapper = new Mapper(lib + pack + ".splitAt([\"A\",\"B\",\"C\"], 1)\n", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("{r:[B,C],l:[A]}", value);
+        assertEquals("{l:[A,B],r:[C]}", transform("ds.arrays.splitAt(['A','B','C'], 2)"));
+        assertEquals("{l:[A],r:[B,C]}", transform("ds.arrays.splitAt(['A','B','C'], 1)"));
     }
 
     @Test
     void testArrays_splitWhere() {
-        Mapper mapper = new Mapper(lib + pack + ".splitWhere([\"A\",\"B\",\"C\",\"D\"], function(item) item==\"B\")\n", new ArrayList<>(), new HashMap<>(), true);
-        String value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("{r:[B,C,D],l:[A]}", value);
-
-        mapper = new Mapper(lib + pack + ".splitWhere([\"A\",\"B\",\"C\",\"D\"], function(item) item==\"C\")\n", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("{r:[C,D],l:[A,B]}", value);
+        assertEquals("{l:[A],r:[B,C,D]}", transform("ds.arrays.splitWhere(['A','B','C','D'], function(item) item=='B')"));
+        assertEquals("{l:[A,B],r:[C,D]}", transform("ds.arrays.splitWhere(['A','B','C','D'], function(item) item=='C')"));
     }
 
     @Test
     void testArrays_sumBy() {
-        Mapper mapper = new Mapper(lib + pack + ".sumBy([{a:1},{a:2},{a:3}], function(item) item.a)\n", new ArrayList<>(), new HashMap<>(), true);
-        String value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("6", value);
+        assertEquals("6", transform("ds.arrays.sumBy([{a:1},{a:2},{a:3}], function(item) item.a)"));
     }
 
     @Test
     void testArrays_take() {
-        Mapper mapper = new Mapper(lib + pack + ".take([\"A\",\"B\",\"C\"], 2)\n", new ArrayList<>(), new HashMap<>(), true);
-        String value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("[A,B]", value);
+        assertEquals("[A,B]", transform("ds.arrays.take(['A','B','C'], 2)"));
     }
 
     @Test
     void testArrays_takeWhile() {
-        Mapper mapper = new Mapper(lib + pack + ".takeWhile([0,1,2,1], function(item) item <= 1)\n", new ArrayList<>(), new HashMap<>(), true);
-        String value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("[0,1]", value);
+        assertEquals("[0,1]", transform("ds.arrays.takeWhile([0,1,2,1], function(item) item <= 1)"));
     }
-
 }

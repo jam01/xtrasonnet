@@ -1,112 +1,60 @@
 package com.datasonnet
 
 /*-
- * Copyright 2019-2020 the original author or authors.
+ * Copyright 2022 Jose Montoya.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Licensed under the Elastic License 2.0; you may not use this file except in
+ * compliance with the Elastic License 2.0.
  */
-
-import java.io.{PrintWriter, StringWriter}
-import java.util.Collections
-
+import com.datasonnet.Mapper.{ERROR_LINE_REGEX, handleException, main}
 import com.datasonnet.document.{DefaultDocument, Document, MediaType, MediaTypes}
 import com.datasonnet.header.Header
+import com.datasonnet.spi.Library.{dummyPosition, memberOf}
 import com.datasonnet.spi.{DataFormatService, Library}
-import com.datasonnet.wrap.{DataSonnetPath, NoFileEvaluator}
-import fastparse.Parsed
 import sjsonnet.Expr.Params
-import sjsonnet.Val.{Func, Lazy, Obj}
-import sjsonnet._
+import sjsonnet.ScopedExprTransform.{Scope, ScopedVal, emptyScope}
+import sjsonnet.{CachedResolver, DefaultParseCache, Error, EvalScope, Evaluator, Expr, FileScope, Importer, Materializer, ParseError, Path, Position, Settings, StaticOptimizer, Val, ValScope}
 
-import scala.collection.mutable
+import java.util.Collections
+import scala.collection.{Seq, immutable, mutable}
+import scala.io.Source
 import scala.jdk.CollectionConverters.{IterableHasAsScala, MapHasAsScala}
-import scala.util.{Failure, Success, Try}
+import scala.util.Using
+import scala.util.control.NonFatal
 
 object Mapper {
+  private val main = "(main)"
+
+  // We wrap the script as function based on advise from Jsonnet
+  // see the 'Top-level arguments' section in https://jsonnet.org/learning/tutorial.html#parameterize-entire-config
   private def asFunction(script: String, argumentNames: Iterable[String]) =
-    (Seq("payload") ++ argumentNames).mkString("function(", ",", ")\n") + script
+    (Seq("payload") ++ argumentNames).mkString("function(", ", ", ")\n") + script
 
-  private val ERROR_LINE_REGEX = raw"\.\(([a-zA-Z-_\.]*):(\d+):(\d+)\)|([a-zA-Z-]+):(\d+):(\d+)".r
+  private val ERROR_LINE_REGEX = raw":(\d+):(\d+)".r
 
-  private def expandErrorLineNumber(error: String, lineOffset: Int) = ERROR_LINE_REGEX.replaceAllIn(error, _ match {
-    case ERROR_LINE_REGEX(filename, frow, fcolumn, token, trow, tcolumn) => {
-      if (token != null) {
-        s"$token at line ${trow.toInt - lineOffset} column $tcolumn"
-      } else if (filename.length > 0) {
-        s"$filename line $frow column $fcolumn"
-      } else {
-        s"line ${frow.toInt - lineOffset} column $fcolumn of the transformation"
-      }
+  private def handleException[T](f: => T): Either[Error, T] = {
+    try Right(f) catch {
+      case e: Error => Left(e)
+      case NonFatal(e) =>
+        Left(new Error("Internal error: " + e.toString, Nil, Some(e)))
     }
-  })
-
-  def evaluate(script: String, evaluator: Evaluator, cache: collection.mutable.Map[String, fastparse.Parsed[(Expr, Map[String, Int])]], libraries: Map[String, Val], lineOffset: Int): Try[Val] = {
-    for {
-      fullParse <- cache.getOrElseUpdate(script, fastparse.parse(script, Parser.document(_))) match {
-        case f@Parsed.Failure(l, i, e) => Failure(new IllegalArgumentException("Problem parsing: " + expandErrorLineNumber(f.trace().msg, lineOffset)))
-        case Parsed.Success(r, index) => Success(r)
-      }
-
-      (parsed, indices) = fullParse
-
-      evaluated <-
-        try Success(evaluator.visitExpr(parsed)(
-          Mapper.scope(indices, libraries),
-          new FileScope(DataSonnetPath("."), indices)
-        ))
-        catch {
-          case e: Throwable =>
-            val s = new StringWriter()
-            val p = new PrintWriter(s)
-            e.printStackTrace(p)
-            p.close()
-            Failure(new IllegalArgumentException("Please contact the developers with this error! Problem compiling: " + s.toString.replace("\t", "    ")))
-        }
-    } yield evaluated
   }
-
-  private def scope(indices: Map[String, Int], roots: Map[String, Val]) = Std.scope(indices.size + 1).extend(
-    roots flatMap {
-      case (key, value) =>
-        if (indices.contains(key))
-          Seq((indices(key), (_: Option[Obj], _: Option[Obj]) => Lazy(value)))
-        else
-          Seq()
-    }
-  )
 }
 
+// Significantly based on {@link sjsonnet.Interpreter Interpreter.class}
 class Mapper(var script: String,
              inputNames: java.lang.Iterable[String] = Collections.emptySet(),
              imports: java.util.Map[String, String] = Collections.emptyMap(),
              asFunction: Boolean = true,
-             additionalLibs: java.util.Collection[Library] = Collections.emptyList(),
+             additionalLibs: java.util.List[Library] = Collections.emptyList(),
              dataFormats: DataFormatService = DataFormatService.DEFAULT,
              defaultOutput: MediaType = MediaTypes.APPLICATION_JSON) {
-
-  private val header = Header.parseHeader(script)
-
-  if (asFunction) {
-    script = Mapper.asFunction(script, inputNames.asScala)
-  }
-
-  private val lineOffset = if (asFunction) 1 else 0
 
   def this(script: String,
            inputNames: java.lang.Iterable[String],
            imports: java.util.Map[String, String],
            asFunction: Boolean,
-           additionalLibs: java.util.Collection[Library]) = {
+           additionalLibs: java.util.List[Library]) = {
     this(script, inputNames, imports, asFunction, additionalLibs, DataFormatService.DEFAULT)
   }
 
@@ -132,52 +80,76 @@ class Mapper(var script: String,
     this(script, Collections.emptySet())
   }
 
-  private def importer(parent: Path, path: String): Option[(Path, String)] = for {
-    resolved <- parent match {
-      case DataSonnetPath("") => Some(path)
-      case DataSonnetPath(p) => Some(p + "/" + path)
+  val header: Header = Header.parseHeader(script)
+  if (asFunction) script = Mapper.asFunction(script, inputNames.asScala)
+  private val parseCache = new DefaultParseCache
+  private val settings = new Settings(preserveOrder = header.isPreserveOrder)
+  private val allLibs: IndexedSeq[Library] = IndexedSeq(DS).appendedAll(additionalLibs.asScala)
+
+  // an importer that will resolve scripts from the classpath
+  private val classpathImporter: Importer = new Importer {
+    override def resolve(docBase: Path, importName: String): Option[Path] = docBase match {
+      case DataSonnetPath("") => Some(DataSonnetPath(importName))
+      case DataSonnetPath(_) => Some(docBase / importName)
       case _ => None
     }
-    contents <- imports.get(resolved) match {
-      case null => None
-      case v => Some(v)
+
+    override def read(path: Path): Option[String] = {
+      val p = "/" + path.asInstanceOf[DataSonnetPath].path
+      getClass.getResource(p) match {
+        case null => Option(imports.get(path.asInstanceOf[DataSonnetPath].path))
+        case _ => Using.resource(getClass.getResourceAsStream(p)) { stream =>
+          Some(Source.fromInputStream(stream).mkString)
+        }
+      }
     }
-
-    combined = (DataSonnetPath(resolved) -> contents)
-  } yield combined
-
-  private val parseCache = collection.mutable.Map[String, fastparse.Parsed[(Expr, Map[String, Int])]]()
-  private val evaluator = new NoFileEvaluator(script, DataSonnetPath("."), parseCache, importer, header.isPreserveOrder)
-
-  // using uppercase DS is deprecated, but will remain supported
-  private val defaultLibraries: Map[String, Obj] = DSLowercase.makeLib(dataFormats, header, evaluator, parseCache) concat DSUppercase.makeLib(dataFormats, header, evaluator, parseCache)
-  private val libraries = additionalLibs.asScala.foldLeft(defaultLibraries) {
-    (acc, lib) => acc concat lib.makeLib(dataFormats, header, evaluator, parseCache)
   }
 
-  imports.forEach((name, lib) => {
-    if (name.endsWith(".libsonnet") || name.endsWith(".ds")) {
-      val evaluated = Mapper.evaluate(lib, evaluator, parseCache, libraries, 0)
-      evaluated match {
-        case Success(value) =>
-        case Failure(f) => throw new IllegalArgumentException("Unable to parse library: " + name, f)
-      }
-    }
-  })
+  private val resolver: CachedResolver = new CachedResolver(classpathImporter, parseCache) {
+    override def process(expr: Expr, fs: FileScope): Either[Error, (Expr, FileScope)] =
+      handleException((optimizer.optimize(expr), fs))
+  }
+  private val evaluator = new Evaluator(resolver, Map.empty, DataSonnetPath(""), settings, null)
+  // reserving indices for DS and additional libraries, the reservations must be exactly the same in ValScope
+  private val optimizer = new StaticOptimizer(evaluator)
+  optimizer.scope = new Scope(immutable.HashMap.from(allLibs
+    .map(lib => (lib.namespace(), ScopedVal(Library.emptyObj, emptyScope, -1)))
+    .toMap), additionalLibs.size + 1)
 
-  private val function = (for {
-    evaluated <- Mapper.evaluate(script, evaluator, parseCache, libraries, lineOffset)
-    verified <- evaluated match {
-      case f: Func => {
-        val topLevelF = f.asInstanceOf[Func]
-        if (topLevelF.params.args.size < 1)
-          Failure(new IllegalArgumentException("Top Level Function must have at least one argument."))
-        else
-          Success(f)
-      }
-      case _ => Failure(new IllegalArgumentException("Not a valid map. Maps must have a Top Level Function."))
+  // reserving indices for DS and additional libraries
+  private val libsScope = ValScope.empty.extendBy(additionalLibs.size + 1)
+  private val libMappingsMap: Map[String, ScopedVal] = allLibs
+    .map(composeLib)
+    .map { case (k, obj) => (k, ScopedVal(obj, emptyScope, -1)) }
+    .toMap
+
+  // rely on StaticOptimizer to provide the libraries directly without VisitValidId, by populating its scope
+  // see StaticOptimizer#transform{case e @ Id(pos, name)}
+  optimizer.scope = new Scope(immutable.HashMap.from(optimizer.scope.mappings).concat(libMappingsMap), optimizer.scope.size)
+
+  private val scriptFn: Val.Func = evaluate(script, DataSonnetPath(main)) match {
+    case Right(value) => value match {
+      case func: Val.Func => if (func.params.names.length < 1)
+        throw new IllegalArgumentException("Top Level Function must have at least one argument.")
+      else func
+      case _ => throw new IllegalArgumentException("Not a valid script. Transformation scripts must have a Top Level Function.")
     }
-  } yield verified).get
+    case Left(error) => error match {
+      case pErr: ParseError => throw new IllegalArgumentException("Could not parse transformation script...", processError(pErr))
+      case err: Error if err.getMessage.contains("Internal Error") => throw new IllegalArgumentException("Unexpected internal error while evaluating the transformation script, " +
+        "contact the DataSonnet developers", processError(err))
+      case err: Error => throw new IllegalArgumentException("Could not evaluate transformation script... ", err)
+    }
+  }
+
+  def evaluate(txt: String, path: Path): Either[Error, Val] = {
+    resolver.cache(path) = txt
+    for {
+      res <- resolver.parse(path, txt)(evaluator)
+      (parsed, _) = res
+      res0 <- handleException(evaluator.visitExpr(parsed)(libsScope))
+    } yield res0
+  }
 
   // If the requested type is ANY then look in the header, default to JSON
   private def effectiveOutput(output: MediaType): MediaType = {
@@ -192,7 +164,7 @@ class Mapper(var script: String,
 
   // If the input type is UNKNOWN then look in the header, default to JAVA
   private def effectiveInput[T](name: String, input: Document[T]): Document[T] = {
-    if (input.getMediaType.equalsTypeAndSubtype(MediaTypes.UNKNOWN)){
+    if (input.getMediaType.equalsTypeAndSubtype(MediaTypes.UNKNOWN)) {
       val fromHeader = header.getDefaultNamedInput(name)
       if (fromHeader.isPresent) header.combineInputParams(name, input.withMediaType(fromHeader.get))
       else header.combineInputParams(name, input.withMediaType(MediaTypes.APPLICATION_JAVA))
@@ -224,6 +196,60 @@ class Mapper(var script: String,
     ujson.Obj(builder.result)
   }
 
+  private def composeLib(lib: Library): (String, Val.Obj) =
+    (lib.namespace(), Val.Obj.mk(dummyPosition,
+      lib.functions(dataFormats, header, classpathImporter).asScala.toSeq.map {
+        case (key, value) => (key, memberOf(value))
+      }
+        ++ lib.modules(dataFormats, header, classpathImporter).asScala.toSeq.map {
+        case (key, value) => (key, memberOf(value))
+      }
+        ++ lib.libsonnets().asScala.toSeq.map {
+        key => (key, memberOf(evalLibsonnet(key)))
+      }: _*)
+    )
+
+  private def evalLibsonnet(name: String): Val = {
+    val fName = s"$name.libsonnet"
+    val path = DataSonnetPath(fName)
+    classpathImporter.read(path) match {
+      case None => throw new IllegalArgumentException("libsonnet not found: " + fName)
+      case Some(txt) => evaluate(txt, path) match {
+        case Left(err) => throw new IllegalArgumentException("Error parsing libsonnet", processError(err))
+        case Right(value) => value
+      }
+    }
+  }
+
+  private def processError(err: Error): Error = {
+    if (!asFunction) return err
+
+    val trace = err.getStackTrace
+    val msg2 = if (!trace(0).getFileName.contains(main)) err.getMessage
+    else {
+      ERROR_LINE_REGEX.replaceAllIn(err.getMessage, _ match {
+        case ERROR_LINE_REGEX(fline, fcolumn) =>
+          ":" + (Integer.parseInt(fline) - 1) + ":" + fcolumn
+      })
+    }
+
+    val err2 = new Error(msg2, underlying = Option(err.getCause))
+    val trace2 = trace.map(el => {
+      if (!el.getFileName.contains(main)) el
+      else {
+        val lineIdx = el.getFileName.lastIndexOf(":")
+        new StackTraceElement(el.getClassName,
+          el.getMethodName,
+          el.getFileName.substring(0, lineIdx + 1)
+            + (Integer.parseInt(el.getFileName.substring(lineIdx + 1)) - 1),
+          el.getLineNumber)
+      }
+    })
+
+    err2.setStackTrace(trace2)
+    err2
+  }
+
   def transform(payload: String): String = {
     transform(new DefaultDocument[String](payload)).getContent
   }
@@ -242,29 +268,32 @@ class Mapper(var script: String,
                    inputs: java.util.Map[String, Document[_]],
                    output: MediaType,
                    target: Class[T]): Document[T] = {
-    val payloadExpr: Expr = Materializer.toExpr(dataFormats.mandatoryRead(effectiveInput("payload", payload)))
-    val inputExprs: Map[String, Expr] = inputs.asScala.view.toMap[String, Document[_]].map {
-      case (name, input) => (name, Materializer.toExpr(resolveInput(name, input)))
+    val payloadExpr = Materializer.toExpr(dataFormats.mandatoryRead(effectiveInput("payload", payload)))(evaluator)
+    val inputExprs = inputs.asScala.map { case (name, input) => Materializer.toExpr(resolveInput(name, input))(evaluator) }.toArray
+
+    val fnDefaultArgs = scriptFn.params.defaultExprs.clone()
+
+    fnDefaultArgs(0) = payloadExpr
+
+    var i = 0
+    while (i < inputExprs.length) {
+      fnDefaultArgs(i + 1) = inputExprs(i)
+      i += 1
     }
 
-    val payloadArg +: inputArgs = function.params.args
+    val scriptFn2 = new Val.Func(scriptFn.pos, scriptFn.defSiteValScope, Params(scriptFn.params.names, fnDefaultArgs)) {
+      override def evalRhs(vs: ValScope, es: EvalScope, fs: FileScope, pos: Position): Val = scriptFn.evalRhs(vs, es, fs, pos)
 
-    val materialPayload = payloadArg.copy(_2 = Some(payloadExpr))
-    val materialInputs = inputArgs.map { case (name, default, i) =>
-      val argument: Option[Expr] = inputExprs.get(name).orElse(default)
-      (name, argument, i)
-    }.toVector
+      override def evalDefault(expr: Expr, vs: ValScope, es: EvalScope): Val = scriptFn.evalDefault(expr, vs, es)
+    }
 
-    val materialized = try Materializer.apply(function.copy(params = Params(materialPayload +: materialInputs)))(evaluator)
-    catch {
-      // if there's a parse error it must be in an import, so the offset is 0
-      case Error(msg, stack, underlying) if msg.contains("had Parse error") => throw new IllegalArgumentException("Problem executing script: " + Mapper.expandErrorLineNumber(msg, 0))
-      case e: Throwable =>
-        val s = new StringWriter()
-        val p = new PrintWriter(s)
-        e.printStackTrace(p)
-        p.close()
-        throw new IllegalArgumentException("Problem executing script: " + Mapper.expandErrorLineNumber(s.toString, lineOffset).replace("\t", "    "))
+    val materialized = handleException(Materializer.apply(scriptFn2)(evaluator)) match {
+      case Right(value) => value
+      case Left(err) => err match {
+        case pErr: ParseError => throw new IllegalArgumentException("Could not parse transformation script...", processError(pErr))
+        case err: Error =>
+          throw new IllegalArgumentException("Error evaluating DataSonnet transformation...", processError(err))
+      }
     }
 
     val effectiveOut = effectiveOutput(output)

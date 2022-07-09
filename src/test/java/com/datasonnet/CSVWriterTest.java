@@ -19,7 +19,7 @@ package com.datasonnet;
 import com.datasonnet.document.DefaultDocument;
 import com.datasonnet.document.Document;
 import com.datasonnet.document.MediaTypes;
-import com.datasonnet.util.TestResourceReader;
+import com.datasonnet.util.TestUtils;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -34,7 +34,7 @@ public class CSVWriterTest {
     void testCSVWriter() throws URISyntaxException, IOException {
 
         Document<String> data = new DefaultDocument<>(
-                TestResourceReader.readFileAsString("writeCSVTest.json"),
+                TestUtils.resourceAsString("writeCSVTest.json"),
                 MediaTypes.APPLICATION_JSON
         );
 
@@ -44,23 +44,23 @@ public class CSVWriterTest {
         Document<String> mapped = mapper.transform(data, Collections.emptyMap(), MediaTypes.APPLICATION_CSV);
         assertEquals(MediaTypes.APPLICATION_CSV, mapped.getMediaType());
 
-        String expected = TestResourceReader.readFileAsString("writeCSVTest.csv");
+        String expected = TestUtils.resourceAsString("writeCSVTest.csv");
         assertEquals(expected.trim(), mapped.getContent().trim());
     }
 
     @Test
     void testCSVWriterExt() throws IOException, URISyntaxException {
         Document<String> data = new DefaultDocument<>(
-                TestResourceReader.readFileAsString("writeCSVExtTest.json"),
+                TestUtils.resourceAsString("writeCSVExtTest.json"),
                 MediaTypes.APPLICATION_JSON
         );
-        String datasonnet = TestResourceReader.readFileAsString("writeCSVExtTest.ds");
+        String datasonnet = TestUtils.resourceAsString("writeCSVExtTest.ds");
 
         Mapper mapper = new Mapper(datasonnet);
 
 
         String mapped = mapper.transform(data, Collections.emptyMap(), MediaTypes.APPLICATION_CSV).getContent();
-        String expected = TestResourceReader.readFileAsString("writeCSVExtTest.csv");
+        String expected = TestUtils.resourceAsString("writeCSVExtTest.csv");
         assertEquals(expected.trim(), mapped.trim());
     }
 
@@ -68,7 +68,7 @@ public class CSVWriterTest {
     void testCSVWriteFunction() throws URISyntaxException, IOException {
 
         Document data = new DefaultDocument<String>(
-                TestResourceReader.readFileAsString("writeCSVTest.json"),
+                TestUtils.resourceAsString("writeCSVTest.json"),
                 MediaTypes.APPLICATION_JSON
         );
 
@@ -83,10 +83,10 @@ public class CSVWriterTest {
     @Test
     void testCSVWriteFunctionExt() throws IOException, URISyntaxException {
         Document data = new DefaultDocument<String>(
-                TestResourceReader.readFileAsString("writeCSVExtTest.json"),
+                TestUtils.resourceAsString("writeCSVExtTest.json"),
                 MediaTypes.APPLICATION_JSON
         );
-        String datasonnet = TestResourceReader.readFileAsString("writeCSVFunctionExtTest.ds");
+        String datasonnet = TestUtils.resourceAsString("writeCSVFunctionExtTest.ds");
 
         Mapper mapper = new Mapper(datasonnet);
 

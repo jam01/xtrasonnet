@@ -24,7 +24,7 @@ import com.datasonnet.javatest.Gizmo;
 import com.datasonnet.javatest.Manufacturer;
 import com.datasonnet.javatest.TestField;
 import com.datasonnet.javatest.WsdlGeneratedObj;
-import com.datasonnet.util.TestResourceReader;
+import com.datasonnet.util.TestUtils;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 
@@ -56,12 +56,12 @@ public class JavaReaderTest {
 
         Document<Gizmo> data = new DefaultDocument<>(theGizmo, MediaTypes.APPLICATION_JAVA);
 
-        String mapping = TestResourceReader.readFileAsString("readJavaTest.ds");
+        String mapping = TestUtils.resourceAsString("readJavaTest.ds");
 
         Mapper mapper = new Mapper(mapping);
         String mapped = mapper.transform(data, new HashMap<>(), MediaTypes.APPLICATION_JSON).getContent();
 
-        String expectedJson = TestResourceReader.readFileAsString("javaTest.json");
+        String expectedJson = TestUtils.resourceAsString("javaTest.json");
         JSONAssert.assertEquals(expectedJson, mapped, true);
     }
 

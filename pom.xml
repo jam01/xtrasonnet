@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 
+    Copyright 2022 Jose Montoya.
+
+    Licensed under the Elastic License 2.0; you may not use this file except in
+    compliance with the Elastic License 2.0.
+
+-->
+<!-- datasonnet-mapper copyright retention, per Apache 2.0-4.c -->
+<!--
+
     Copyright 2019-2021 the original author or authors.
 
     Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,8 +37,8 @@
     <inceptionYear>2022</inceptionYear>
     <licenses>
         <license>
-            <name>Apache License, Version 2.0</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <name>Elastic License 2.0</name>
+            <url>https://www.elastic.co/licensing/elastic-license</url>
             <distribution>repo</distribution>
         </license>
     </licenses>
@@ -71,9 +80,9 @@
             <version>2.13.3</version>
         </dependency>
         <dependency>
-            <groupId>com.lihaoyi</groupId>
+            <groupId>com.databricks</groupId>
             <artifactId>sjsonnet_2.13</artifactId>
-            <version>0.2.6</version>
+            <version>0.4.2</version>
         </dependency>
         <dependency>
             <groupId>org.jetbrains</groupId>

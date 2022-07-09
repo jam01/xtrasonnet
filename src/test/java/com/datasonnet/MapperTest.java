@@ -19,7 +19,7 @@ package com.datasonnet;
 import com.datasonnet.document.DefaultDocument;
 import com.datasonnet.document.Document;
 import com.datasonnet.document.MediaTypes;
-import com.datasonnet.util.TestResourceReader;
+import com.datasonnet.util.TestUtils;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
 
+import static com.datasonnet.util.TestUtils.stacktraceFrom;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class MapperTest {
@@ -71,7 +72,9 @@ public class MapperTest {
             Mapper mapper = new Mapper("function(payload) DS.time.now() a", Collections.emptyList(), Collections.emptyMap(), false);
             fail("Must fail to parse");
         } catch(IllegalArgumentException e) {
-            assertTrue(e.getMessage().contains("Expected end-of-input at line 1 column 33"), "Found message: " + e.getMessage());
+            String stacktrace = stacktraceFrom(e);
+            assertTrue(e.getMessage().contains("Could not parse transformation script"), "Found message: " + e.getMessage());
+            assertTrue(stacktrace.contains("Expected end-of-input:1:33"), "Stacktrace does not indicate the issue");
         }
     }
 
@@ -81,7 +84,7 @@ public class MapperTest {
             Mapper mapper = new Mapper("DS.time.now() a", Collections.emptyList());
             fail("Must fail to parse");
         } catch(IllegalArgumentException e) {
-            assertTrue(e.getMessage().contains("Expected end-of-input at line 1 column 15"), "Found message: " + e.getMessage());
+            assertTrue(e.getCause().getMessage().contains("Expected end-of-input:1:15"), "Found message: " + e.getCause().getMessage());
         }
     }
 
@@ -100,9 +103,12 @@ public class MapperTest {
         try {
             Mapper mapper = new Mapper("function(payload) payload.foo", Collections.emptyList(), Collections.emptyMap(), false);
             mapper.transform("{}");
-            fail("Must fail to execute");
+            fail("Muspayload.foot fail to execute");
         } catch(IllegalArgumentException e) {
-            assertTrue(e.getMessage().contains("at line 1 column 26"), "Found message: " + e.getMessage());
+            String stacktrace = stacktraceFrom(e);
+            assertTrue(e.getMessage().contains("Error evaluating DataSonnet transformation"), "Found message: " + e.getMessage());
+            assertTrue(e.getCause().getMessage().contains("attempted to index a string with string foo"), "Found message: " + e.getCause().getMessage());
+            assertTrue(stacktrace.contains("(main):1:26"), "Stacktrace does not indicate the issue");
         }
     }
 
@@ -112,8 +118,9 @@ public class MapperTest {
             Mapper mapper = new Mapper("payload.foo", Collections.emptyList());
             mapper.transform("{}");
             fail("Must fail to execute");
-        } catch(IllegalArgumentException e) {
-            assertTrue(e.getMessage().contains("at line 1 column 8"), "Found message: " + e.getMessage());
+        } catch (IllegalArgumentException e) {
+            assertTrue(e.getCause().getMessage().contains("attempted to index a string with string foo"), "Found message: " + e.getCause().getMessage());
+            assertTrue(stacktraceFrom(e).contains("(main):1:8"), "Stacktrace does not indicate the issue");
         }
     }
 
@@ -157,8 +164,8 @@ public class MapperTest {
 
     @Test
     void testFieldsOrder() throws Exception {
-        String jsonData = TestResourceReader.readFileAsString("fieldOrder.json");
-        String datasonnet = TestResourceReader.readFileAsString("fieldOrder.ds");
+        String jsonData = TestUtils.resourceAsString("fieldOrder.json");
+        String datasonnet = TestUtils.resourceAsString("fieldOrder.ds");
 
         Map<String, Document<?>> variables = new HashMap<>();
         variables.put("v2", new DefaultDocument<>("v2value", MediaTypes.TEXT_PLAIN));

@@ -1,5 +1,4 @@
 package com.datasonnet;
-
 /*-
  * Copyright 2019-2020 the original author or authors.
  *
@@ -17,29 +16,76 @@ package com.datasonnet;
  */
 
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import static com.datasonnet.util.TestUtils.transform;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class MathTest {
-
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
-
-    private final String lib = "ds" + ".";
-    private final String pack = "math";
-
     @Test
     void testMath_mantissa() {
-        Mapper mapper = new Mapper(lib + pack + ".mantissa(2)");
-        String value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("0.5", value);
+        assertEquals("0.5", transform("ds.math.mantissa(2)"));
     }
 
     @Test
     void testMath_exponent() {
-        Mapper mapper = new Mapper(lib + pack + ".exponent(5)");
-        String value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("3", value);
+        assertEquals("3", transform("ds.math.exponent(5)"));
+    }
+
+    @Test
+    void test_abs() {
+        assertEquals("1", transform("ds.math.abs(-1)"));
+    }
+
+    @Test
+    void test_avg() {
+        assertEquals("3", transform("ds.math.avg([1,2,3,4,5])"));
+    }
+
+    @Test
+    void test_ceil() {
+        assertEquals("2", transform("ds.math.ceil(1.5)"));
+    }
+
+    @Test
+    void test_sqrt() {
+        assertEquals("2", transform("ds.math.sqrt(4)"));
+    }
+
+    @Test
+    void test_mod() {
+        assertEquals("1", transform("ds.math.mod(3,2)"));
+    }
+
+    @Test
+    void test_pow() {
+        assertEquals("8", transform("ds.math.pow(2,3)"));
+    }
+
+    @Test
+    void test_sum() {
+        assertEquals("15", transform("ds.math.sum([1,2,3,4,5])"));
+    }
+
+    @Test
+    void test_randomInt() {
+        double dblVal = Double.parseDouble(transform("ds.math.randomInt(10)"));
+        assertTrue(dblVal >= 0 && dblVal <= 10);
+    }
+
+    @Test
+    void test_random() {
+        double dblVal = Double.parseDouble(transform("ds.math.random()"));
+        assertTrue(dblVal >= 0 && dblVal <= 1);
+    }
+
+    @Test
+    void test_floor() {
+        assertEquals("1", transform("ds.math.floor(1.9)"));
+    }
+
+    @Test
+    void test_round() {
+        assertEquals("2", transform("ds.math.round(1.5)"));
     }
 }

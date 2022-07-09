@@ -16,12 +16,13 @@ package com.datasonnet;
  * limitations under the License.
  */
 
-import com.datasonnet.util.TestResourceReader;
+import com.datasonnet.util.TestUtils;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 import java.util.HashMap;
 
+import static com.datasonnet.util.TestUtils.stacktraceFrom;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -42,7 +43,10 @@ public class ImportTest {
             String result = mapper.transform("{}");
             fail("Import should fail");
         } catch (IllegalArgumentException e) {
-            assertTrue(e.getMessage().contains("end-of-input at line 1 column 3"), "Found message: " + e.getMessage());
+            String stacktrace = stacktraceFrom(e);
+            assertTrue(stacktrace.contains("Could not parse transformation script"), "Stacktrace does not indicate the issue");
+            assertTrue(e.getCause().getMessage().contains("Expected end-of-input:1:3, found \"b\""), "Found message: " + e.getMessage());
+            assertTrue(stacktrace.contains("(output.json:1:3)"), "Stacktrace does not indicate the issue");
         }
     }
 
@@ -54,16 +58,18 @@ public class ImportTest {
             String result = mapper.transform("{}");
             fail("Import should fail");
         } catch (IllegalArgumentException e) {
-            assertTrue(e.getMessage().contains("output.json line 1 column 1"), "Found message: " + e.getMessage());
-            assertTrue(e.getMessage().contains("line 1 column 1 of the transformation"), "Found message: " + e.getMessage());
+            String stacktrace = stacktraceFrom(e);
+            assertTrue(e.getCause().getMessage().contains("Unknown variable: a"), "Found message: " + e.getCause().getMessage());
+            assertTrue(stacktrace.contains("output.json:1:1"), "Stacktrace does not indicate the issue");
+            assertTrue(stacktrace.contains("(main):1:1"), "Stacktrace does not indicate the issue");
         }
     }
 
     @Test
     void importLibsonnet() throws Exception {
         try {
-            final String lib = TestResourceReader.readFileAsString("importTest.libsonnet");
-            final String json = TestResourceReader.readFileAsString("importLibsonnetTest.json");
+            final String lib = TestUtils.resourceAsString("importTest.libsonnet");
+            final String json = TestUtils.resourceAsString("importLibsonnetTest.json");
             Mapper mapper = new Mapper("local testlib = import 'importTest.libsonnet'; local teststr = import 'importLibsonnetTest.json'; { greeting: testlib.sayHello('World') }", Collections.emptyList(), new HashMap<String, String>() {{
                 put("importTest.libsonnet", lib);
                 put("importLibsonnetTest.json", json);
@@ -76,12 +82,16 @@ public class ImportTest {
     @Test
     void importLibsonnetFail() throws Exception {
         try {
-            final String libErr = TestResourceReader.readFileAsString("importTestFail.libsonnet");
+            final String libErr = TestUtils.resourceAsString("importTestFail.libsonnet");
             Mapper mapper = new Mapper("local testlib = import 'importTestFail.libsonnet'; { greeting: testlib.sayHello('World') }",
                     Collections.emptyList(), Collections.singletonMap("importTestFail.libsonnet", libErr));
+            mapper.transform("{}");
             fail("This test should fail");
         } catch (IllegalArgumentException e) {
-            assertTrue(e.getMessage().contains("Unable to parse library: importTestFail.libsonnet"), "Found message: " + e.getMessage());
+            String stacktrace = stacktraceFrom(e);
+            assertTrue(stacktrace.contains("Could not parse transformation script"), "Stacktrace does not indicate the issue");
+            assertTrue(e.getCause().getMessage().contains("Expected \"}\":2:39, found \"XXXXX\\n}\\n\""), "Found message: " + e.getMessage());
+            assertTrue(stacktrace.contains("(importTestFail.libsonnet:2:39)"), "Stacktrace does not indicate the issue");
         }
     }
 }

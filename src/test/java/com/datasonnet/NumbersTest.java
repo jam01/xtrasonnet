@@ -1,5 +1,4 @@
 package com.datasonnet;
-
 /*-
  * Copyright 2019-2020 the original author or authors.
  *
@@ -17,158 +16,61 @@ package com.datasonnet;
  */
 
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import static com.datasonnet.util.TestUtils.transform;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class NumbersTest {
-
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
-
-    private final String lib = "ds" + ".";
-    private final String pack = "numbers";
-
     @Test
     void testNumbers_fromBinary() {
-        Mapper mapper = new Mapper(lib + pack + ".fromBinary(\"-10\")");
-        String value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("-2", value);
-
-        mapper = new Mapper(lib + pack + ".fromBinary(\"1111111111111111111111111111111\")");
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("2147483647", value);
-
-        mapper = new Mapper(lib + pack + ".fromBinary(11)");
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("3", value);
-
-        mapper = new Mapper(lib + pack + ".fromBinary(null)");
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("null", value);
-
-        mapper = new Mapper(lib + pack + ".fromBinary(\"100\")");
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("4", value);
-
-        mapper = new Mapper(lib + pack + ".fromBinary(\"1111111111111111111111111111111111111111111111111111111111111\")");
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("2305843009213693952", value);
-
-
+        assertEquals("-2", transform("ds.numbers.fromBinary(\"-10\")"));
+        assertEquals("2147483647", transform("ds.numbers.fromBinary(\"1111111111111111111111111111111\")"));
+        assertEquals("3", transform("ds.numbers.fromBinary(11)"));
+        assertEquals("null", transform("ds.numbers.fromBinary(null)"));
+        assertEquals("4", transform("ds.numbers.fromBinary(\"100\")"));
+        assertEquals("2305843009213693952", transform("ds.numbers.fromBinary(\"1111111111111111111111111111111111111111111111111111111111111\")"));
     }
 
     @Test
     void testNumbers_fromHex() {
-        Mapper mapper = new Mapper(lib + pack + ".fromHex(\"-1\")");
-        String value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("-1", value);
-
-        mapper = new Mapper(lib + pack + ".fromHex(\"3e3aeb\")");
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("4078315", value);
-
-        mapper = new Mapper(lib + pack + ".fromHex(0)");
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("0", value);
-
-        mapper = new Mapper(lib + pack + ".fromHex(null)");
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("null", value);
-
-        mapper = new Mapper(lib + pack + ".fromHex(\"f\")");
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("15", value);
-
-
-        mapper = new Mapper(lib + pack + ".fromHex(\"FFFFFFFFF\")");
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("68719476735", value);
-
+        assertEquals("-1", transform("ds.numbers.fromHex(\"-1\")"));
+        assertEquals("4078315", transform("ds.numbers.fromHex(\"3e3aeb\")"));
+        assertEquals("0", transform("ds.numbers.fromHex(0)"));
+        assertEquals("null", transform("ds.numbers.fromHex(null)"));
+        assertEquals("15", transform("ds.numbers.fromHex(\"f\")"));
+        assertEquals("68719476735", transform("ds.numbers.fromHex(\"FFFFFFFFF\")"));
     }
 
     @Test
     void testNumbers_fromRadixNumber() {
-        Mapper mapper = new Mapper(lib + pack + ".fromRadixNumber(10, 2)");
-        String value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("2", value);
-
-        mapper = new Mapper(lib + pack + ".fromRadixNumber(\"ff\", 16)");
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("255", value);
-
-
-        mapper = new Mapper(lib + pack + ".fromRadixNumber(\"FFFFFFFFF\", 16)");
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("68719476735", value);
+        assertEquals("2", transform("ds.numbers.fromRadixNumber(10, 2)"));
+        assertEquals("255", transform("ds.numbers.fromRadixNumber(\"ff\", 16)"));
+        assertEquals("68719476735", transform("ds.numbers.fromRadixNumber(\"FFFFFFFFF\", 16)"));
     }
 
     @Test
     void testNumbers_toBinary() {
-        Mapper mapper = new Mapper(lib + pack + ".toBinary(-2)");
-        String value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("-10", value);
-
-        mapper = new Mapper(lib + pack + ".toBinary(0)");
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("0", value);
-
-        mapper = new Mapper(lib + pack + ".toBinary(null)");
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("null", value);
-
-        mapper = new Mapper(lib + pack + ".toBinary(2)");
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("10", value);
-
-
-        mapper = new Mapper(lib + pack + ".toBinary(5294967295)");
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("100111011100110101100100111111111", value);
-
+        assertEquals("-10", transform("ds.numbers.toBinary(-2)"));
+        assertEquals("0", transform("ds.numbers.toBinary(0)"));
+        assertEquals("null", transform("ds.numbers.toBinary(null)"));
+        assertEquals("10", transform("ds.numbers.toBinary(2)"));
+        assertEquals("100111011100110101100100111111111", transform("ds.numbers.toBinary(5294967295)"));
     }
 
     @Test
     void testNumbers_toHex() {
-        Mapper mapper = new Mapper(lib + pack + ".toHex(-1)");
-        String value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("-1", value);
-
-        mapper = new Mapper(lib + pack + ".toHex(0)");
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("0", value);
-
-        mapper = new Mapper(lib + pack + ".toHex(null)");
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("null", value);
-
-        mapper = new Mapper(lib + pack + ".toHex(15)");
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("f", value);
-
-
-        mapper = new Mapper(lib + pack + ".toHex(68719476735)");
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("FFFFFFFFF".toLowerCase(), value);
-
+        assertEquals("-1", transform("ds.numbers.toHex(-1)"));
+        assertEquals("0", transform("ds.numbers.toHex(0)"));
+        assertEquals("null", transform("ds.numbers.toHex(null)"));
+        assertEquals("f", transform("ds.numbers.toHex(15)"));
+        assertEquals("FFFFFFFFF".toLowerCase(), transform("ds.numbers.toHex(68719476735)"));
     }
 
     @Test
     void testNumbers_toRadixNumber() {
-        Mapper mapper = new Mapper(lib + pack + ".toRadixNumber(2, 2)");
-        String value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("10", value);
-
-        mapper = new Mapper(lib + pack + ".toRadixNumber(255, 16)");
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("ff", value);
-
-
-        mapper = new Mapper(lib + pack + ".toRadixNumber(68719476735, 16)");
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("fffffffff", value);
-
+        assertEquals("10", transform("ds.numbers.toRadixNumber(2, 2)"));
+        assertEquals("ff", transform("ds.numbers.toRadixNumber(255, 16)"));
+        assertEquals("fffffffff", transform("ds.numbers.toRadixNumber(68719476735, 16)"));
     }
-
 
 }

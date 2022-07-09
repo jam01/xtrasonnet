@@ -16,28 +16,16 @@ package com.datasonnet;
  * limitations under the License.
  */
 
-import com.datasonnet.document.DefaultDocument;
-import com.datasonnet.document.MediaTypes;
-import com.datasonnet.util.TestResourceReader;
 import org.junit.jupiter.api.Test;
 
-import java.util.Collections;
-
+import static com.datasonnet.util.TestUtils.resourceAsString;
+import static com.datasonnet.util.TestUtils.transform;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class UtilLibraryTest {
 
     @Test
     void testMapToObject() throws Exception {
-        testDS("utilLibMapToObjectTest.ds", "{}");
-    }
-
-    private void testDS(String dsFileName, String input) throws Exception {
-        String ds = TestResourceReader.readFileAsString(dsFileName);
-
-        Mapper mapper = new Mapper(ds);
-        String mappedJson = mapper.transform(new DefaultDocument<String>(input, MediaTypes.APPLICATION_JSON), Collections.emptyMap(), MediaTypes.APPLICATION_JSON).getContent();
-
-        assertEquals(mappedJson, "true");
+        assertEquals("true", transform(resourceAsString("utilLibMapToObjectTest.ds")));
     }
 }

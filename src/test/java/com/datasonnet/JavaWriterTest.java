@@ -21,7 +21,7 @@ import com.datasonnet.document.MediaTypes;
 import com.datasonnet.javatest.Gizmo;
 import com.datasonnet.javatest.MixInTestClass;
 import com.datasonnet.javatest.WsdlGeneratedObj;
-import com.datasonnet.util.TestResourceReader;
+import com.datasonnet.util.TestUtils;
 import org.junit.jupiter.api.Test;
 
 import javax.xml.bind.JAXBContext;
@@ -34,7 +34,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TimeZone;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static com.datasonnet.util.TestUtils.stacktraceFrom;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -45,8 +45,8 @@ public class JavaWriterTest {
     @Test
     void testJavaWriter() throws Exception {
         //Test with output as Gizmo class
-        String json = TestResourceReader.readFileAsString("javaTest.json");
-        String mapping = TestResourceReader.readFileAsString("writeJavaTest.ds");
+        String json = TestUtils.resourceAsString("javaTest.json");
+        String mapping = TestUtils.resourceAsString("writeJavaTest.ds");
 
         Document<String> data = new DefaultDocument<>(json, MediaTypes.APPLICATION_JSON);
 
@@ -92,11 +92,11 @@ public class JavaWriterTest {
 
     @Test
     void testJavaWriteFunction() throws Exception {
-        String json = TestResourceReader.readFileAsString("javaTest.json");
+        String json = TestUtils.resourceAsString("javaTest.json");
         Document<String> data = new DefaultDocument<>(json, MediaTypes.APPLICATION_JSON);
 
         //Test calling write() function
-        String mapping = TestResourceReader.readFileAsString("writeJavaFunctionTest.ds");
+        String mapping = TestUtils.resourceAsString("writeJavaFunctionTest.ds");
         Mapper mapper = new Mapper(mapping);
 
         try {
@@ -104,7 +104,8 @@ public class JavaWriterTest {
             fail("Should not succeed");
         } catch (Exception e) {
             // this error is now thrown by jackson as it _will_ try to write a String...
-            assertTrue(e.getMessage().contains("Unable to convert to target type"), "Failed with wrong message: " + e.getMessage());
+            String stackTrace = stacktraceFrom(e);
+            assertTrue(stackTrace.contains("Unable to convert to target type"), "Stacktrace does not indicate the issue");
         }
     }
 
@@ -126,7 +127,7 @@ public class JavaWriterTest {
     @Test
     void testJAXBElementMapping() throws Exception {
         Document<String> data = new DefaultDocument<>("{}", MediaTypes.APPLICATION_JSON);
-        String mapping = TestResourceReader.readFileAsString("writeJAXBElement.ds");
+        String mapping = TestUtils.resourceAsString("writeJAXBElement.ds");
         Mapper mapper = new Mapper(mapping);
 
         Document<WsdlGeneratedObj> mapped = mapper.transform(data, new HashMap<>(), MediaTypes.APPLICATION_JAVA, WsdlGeneratedObj.class);
@@ -158,7 +159,7 @@ public class JavaWriterTest {
     @Test
     void testMixIns() throws Exception {
         Document<String> data = new DefaultDocument<>("{}", MediaTypes.APPLICATION_JSON);
-        String mapping = TestResourceReader.readFileAsString("mixInsTest.ds");
+        String mapping = TestUtils.resourceAsString("mixInsTest.ds");
         Mapper mapper = new Mapper(mapping);
 
         // First try without any headers, it should fail
@@ -170,7 +171,7 @@ public class JavaWriterTest {
             assertTrue(e.getMessage().contains("Unable to convert to target type"), "Failed with wrong message: " + e.getMessage());
         }
         //Now let's add mixins header
-        mapping = TestResourceReader.readFileAsString("mixInsTestWithHeader.ds");
+        mapping = TestUtils.resourceAsString("mixInsTestWithHeader.ds");
         mapper = new Mapper(mapping);
         Document<MixInTestClass> objectMapped = mapper.transform(data, new HashMap<>(), MediaTypes.APPLICATION_JAVA, MixInTestClass.class);
         Object objectResult = objectMapped.getContent();
@@ -182,7 +183,7 @@ public class JavaWriterTest {
     @Test
     void testPolymorphicTypes() throws Exception {
         Document<String> data = new DefaultDocument<>("{}", MediaTypes.APPLICATION_JSON);
-        String mapping = TestResourceReader.readFileAsString("mixInsTest.ds");
+        String mapping = TestUtils.resourceAsString("mixInsTest.ds");
         Mapper mapper = new Mapper(mapping);
 
         // First try without any headers, it should fail
@@ -194,7 +195,7 @@ public class JavaWriterTest {
             assertTrue(e.getMessage().contains("Unable to convert to target type"), "Failed with wrong message: " + e.getMessage());
         }
         //Now let's add polymorphic types header
-        mapping = TestResourceReader.readFileAsString("polymorphicTypesTest.ds");
+        mapping = TestUtils.resourceAsString("polymorphicTypesTest.ds");
 
         mapper = new Mapper(mapping);
         Document<MixInTestClass> objectMapped = mapper.transform(data, new HashMap<>(), MediaTypes.APPLICATION_JAVA, MixInTestClass.class);
@@ -204,7 +205,7 @@ public class JavaWriterTest {
         assertTrue(result.getAnimal() instanceof com.datasonnet.javatest.Cat);
 
         //Override polymorphic type property
-        mapping = TestResourceReader.readFileAsString("polymorphicTypePropertyTest.ds");
+        mapping = TestUtils.resourceAsString("polymorphicTypePropertyTest.ds");
 
         mapper = new Mapper(mapping);
         Document<MixInTestClass> objectMapped1 = mapper.transform(data, new HashMap<>(), MediaTypes.APPLICATION_JAVA, MixInTestClass.class);

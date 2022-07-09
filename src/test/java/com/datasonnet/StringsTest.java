@@ -1,5 +1,4 @@
 package com.datasonnet;
-
 /*-
  * Copyright 2019-2020 the original author or authors.
  *
@@ -17,671 +16,264 @@ package com.datasonnet;
  */
 
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-
+import static com.datasonnet.util.TestUtils.transform;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class StringsTest {
-
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
-
-    private final String lib = "ds" + ".";
-    private final String pack = "strings";
-
     @Test
     void testStrings_appendIfMissing() {
-        Mapper mapper = new Mapper(lib + pack + ".appendIfMissing(\"abc\", \"xyz\")", new ArrayList<>(), new HashMap<>(), true);
-        String value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("abcxyz", value);
-
-        mapper = new Mapper(lib + pack + ".appendIfMissing(\"abcxyz\", \"xyz\")", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("abcxyz", value);
-
-        mapper = new Mapper(lib + pack + ".appendIfMissing(null, \"\")", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("null", value);
-
-        mapper = new Mapper(lib + pack + ".appendIfMissing(\"xyza\", \"xyz\")", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("xyzaxyz", value);
-
-        mapper = new Mapper(lib + pack + ".appendIfMissing(\"\", \"xyz\")", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("xyz", value);
+        assertEquals("abcxyz", transform("ds.strings.appendIfMissing('abc', 'xyz')"));
+        assertEquals("abcxyz", transform("ds.strings.appendIfMissing('abcxyz', 'xyz')"));
+        assertEquals("null", transform("ds.strings.appendIfMissing(null, '')"));
+        assertEquals("xyzaxyz", transform("ds.strings.appendIfMissing('xyza', 'xyz')"));
+        assertEquals("xyz", transform("ds.strings.appendIfMissing('', 'xyz')"));
     }
 
     @Test
     void testStrings_camelize() {
-        Mapper mapper = new Mapper(lib + pack + ".camelize(\"customer_first_name\")", new ArrayList<>(), new HashMap<>(), true);
-        String value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("customerFirstName", value);
-
-        mapper = new Mapper(lib + pack + ".camelize(\"_customer_first_name\")", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("customerFirstName", value);
-
-        mapper = new Mapper(lib + pack + ".camelize(\"_______customer_first_name\")", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("customerFirstName", value);
-
-        mapper = new Mapper(lib + pack + ".camelize(null)", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("null", value);
+        assertEquals("customerFirstName", transform("ds.strings.camelize('customer_first_name')"));
+        assertEquals("customerFirstName", transform("ds.strings.camelize('_customer_first_name')"));
+        assertEquals("customerFirstName", transform("ds.strings.camelize('_______customer_first_name')"));
+        assertEquals("null", transform("ds.strings.camelize(null)"));
     }
 
     @Test
     void testStrings_capitalize() {
-        Mapper mapper = new Mapper(lib + pack + ".capitalize(\"customer\")", new ArrayList<>(), new HashMap<>(), true);
-        String value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("Customer", value);
-
-        mapper = new Mapper(lib + pack + ".capitalize(\"customer_first_name\")", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("Customer First Name", value);
-
-        mapper = new Mapper(lib + pack + ".capitalize(\"customer NAME\")", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("Customer Name", value);
-
-        mapper = new Mapper(lib + pack + ".capitalize(\"customerName\")", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("Customer Name", value);
-
-        mapper = new Mapper(lib + pack + ".capitalize(null)", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("null", value);
+        assertEquals("Customer", transform("ds.strings.capitalize('customer')"));
+        assertEquals("Customer First Name", transform("ds.strings.capitalize('customer_first_name')"));
+        assertEquals("Customer Name", transform("ds.strings.capitalize('customer NAME')"));
+        assertEquals("Customer Name", transform("ds.strings.capitalize('customerName')"));
+        assertEquals("null", transform("ds.strings.capitalize(null)"));
     }
 
     @Test
     void testStrings_charCode() {
-        Mapper mapper = new Mapper(lib + pack + ".charCode(\"Master\")", new ArrayList<>(), new HashMap<>(), true);
-        String value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("77", value);
-
-        mapper = new Mapper(lib + pack + ".charCode(\"M\")", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("77", value);
+        assertEquals("77", transform("ds.strings.charCode('Master')"));
+        assertEquals("77", transform("ds.strings.charCode('M')"));
     }
 
     @Test
     void testStrings_charCodeAt() {
-        Mapper mapper = new Mapper(lib + pack + ".charCodeAt(\"charCodeAt\", 4)", new ArrayList<>(), new HashMap<>(), true);
-        String value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("67", value);
-
-        mapper = new Mapper(lib + pack + ".charCodeAt(\"charCodeAt\", 8)", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("65", value);
+        assertEquals("67", transform("ds.strings.charCodeAt('charCodeAt', 4)"));
+        assertEquals("65", transform("ds.strings.charCodeAt('charCodeAt', 8)"));
     }
 
     @Test
     void testStrings_dasherize() {
-        Mapper mapper = new Mapper(lib + pack + ".dasherize(\"customer\")", new ArrayList<>(), new HashMap<>(), true);
-        String value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("customer", value);
-
-        mapper = new Mapper(lib + pack + ".dasherize(\"customer_first_name\")", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("customer-first-name", value);
-
-        mapper = new Mapper(lib + pack + ".dasherize(\"customer NAME\")", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("customer-name", value);
-
-        mapper = new Mapper(lib + pack + ".dasherize(\"customerName\")", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("customer-name", value);
-
-        mapper = new Mapper(lib + pack + ".dasherize(null)", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("null", value);
+        assertEquals("customer", transform("ds.strings.dasherize('customer')"));
+        assertEquals("customer-first-name", transform("ds.strings.dasherize('customer_first_name')"));
+        assertEquals("customer-name", transform("ds.strings.dasherize('customer NAME')"));
+        assertEquals("customer-name", transform("ds.strings.dasherize('customerName')"));
+        assertEquals("null", transform("ds.strings.dasherize(null)"));
     }
 
     @Test
     void testStrings_fromCharCode() {
-        Mapper mapper = new Mapper(lib + pack + ".fromCharCode(67)", new ArrayList<>(), new HashMap<>(), true);
-        String value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("C", value);
-
-        mapper = new Mapper(lib + pack + ".fromCharCode(65)", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("A", value);
+        assertEquals("C", transform("ds.strings.fromCharCode(67)"));
+        assertEquals("A", transform("ds.strings.fromCharCode(65)"));
     }
 
     @Test
     void testStrings_isAlpha() {
-        Mapper mapper = new Mapper(lib + pack + ".isAlpha(\"sdfvxer\")", new ArrayList<>(), new HashMap<>(), true);
-        String value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("true", value);
-
-        mapper = new Mapper(lib + pack + ".isAlpha(\"ecvt4\")", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("false", value);
-
-        mapper = new Mapper(lib + pack + ".isAlpha(true)", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("true", value);
-
-        mapper = new Mapper(lib + pack + ".isAlpha(45)", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("false", value);
+        assertEquals("true", transform("ds.strings.isAlpha('sdfvxer')"));
+        assertEquals("false", transform("ds.strings.isAlpha('ecvt4')"));
+        assertEquals("true", transform("ds.strings.isAlpha(true)"));
+        assertEquals("false", transform("ds.strings.isAlpha(45)"));
     }
 
     @Test
     void testStrings_isAlphanumeric() {
-        Mapper mapper = new Mapper(lib + pack + ".isAlphanumeric(\"sdfvxer\")", new ArrayList<>(), new HashMap<>(), true);
-        String value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("true", value);
-
-        mapper = new Mapper(lib + pack + ".isAlphanumeric(\"ecvt4\")", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("true", value);
-
-        mapper = new Mapper(lib + pack + ".isAlphanumeric(true)", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("true", value);
-
-        mapper = new Mapper(lib + pack + ".isAlphanumeric(45)", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("true", value);
+        assertEquals("true", transform("ds.strings.isAlphanumeric('sdfvxer')"));
+        assertEquals("true", transform("ds.strings.isAlphanumeric('ecvt4')"));
+        assertEquals("true", transform("ds.strings.isAlphanumeric(true)"));
+        assertEquals("true", transform("ds.strings.isAlphanumeric(45)"));
     }
 
     @Test
     void testStrings_isLowerCase() {
-        Mapper mapper = new Mapper(lib + pack + ".isLowerCase(\"sdfvxer\")", new ArrayList<>(), new HashMap<>(), true);
-        String value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("true", value);
-
-        mapper = new Mapper(lib + pack + ".isLowerCase(\"ecvt4\")", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("false", value);
-
-        mapper = new Mapper(lib + pack + ".isLowerCase(\"eCvt\")", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("false", value);
-
-        mapper = new Mapper(lib + pack + ".isLowerCase(true)", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("true", value);
-
-        mapper = new Mapper(lib + pack + ".isLowerCase(45)", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("false", value);
+        assertEquals("true", transform("ds.strings.isLowerCase('sdfvxer')"));
+        assertEquals("false", transform("ds.strings.isLowerCase('ecvt4')"));
+        assertEquals("false", transform("ds.strings.isLowerCase('eCvt')"));
+        assertEquals("true", transform("ds.strings.isLowerCase(true)"));
+        assertEquals("false", transform("ds.strings.isLowerCase(45)"));
     }
 
     @Test
     void testStrings_isNumeric() {
-        Mapper mapper = new Mapper(lib + pack + ".isNumeric(\"sdfvxer\")", new ArrayList<>(), new HashMap<>(), true);
-        String value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("false", value);
-
-        mapper = new Mapper(lib + pack + ".isNumeric(\"5334\")", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("true", value);
-
-        mapper = new Mapper(lib + pack + ".isNumeric(100)", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("true", value);
+        assertEquals("false", transform("ds.strings.isNumeric('sdfvxer')"));
+        assertEquals("true", transform("ds.strings.isNumeric('5334')"));
+        assertEquals("true", transform("ds.strings.isNumeric(100)"));
     }
 
     @Test
     void testStrings_isUpperCase() {
-        Mapper mapper = new Mapper(lib + pack + ".isUpperCase(\"SDFVXER\")", new ArrayList<>(), new HashMap<>(), true);
-        String value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("true", value);
-
-        mapper = new Mapper(lib + pack + ".isUpperCase(\"ECVT4\")", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("false", value);
-
-        mapper = new Mapper(lib + pack + ".isUpperCase(\"EcVT\")", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("false", value);
-
-        mapper = new Mapper(lib + pack + ".isUpperCase(true)", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("false", value);
-
-        mapper = new Mapper(lib + pack + ".isUpperCase(45)", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("false", value);
+        assertEquals("true", transform("ds.strings.isUpperCase('SDFVXER')"));
+        assertEquals("false", transform("ds.strings.isUpperCase('ECVT4')"));
+        assertEquals("false", transform("ds.strings.isUpperCase('EcVT')"));
+        assertEquals("false", transform("ds.strings.isUpperCase(true)"));
+        assertEquals("false", transform("ds.strings.isUpperCase(45)"));
     }
 
     @Test
     void testStrings_isWhitespace() {
-        Mapper mapper = new Mapper(lib + pack + ".isWhitespace(null)", new ArrayList<>(), new HashMap<>(), true);
-        String value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("false", value);
-
-        mapper = new Mapper(lib + pack + ".isWhitespace(\"\")", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("true", value);
-
-        mapper = new Mapper(lib + pack + ".isWhitespace(\"       \")", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("true", value);
-
-        mapper = new Mapper(lib + pack + ".isWhitespace(\"   abc    \")", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("false", value);
-
-        mapper = new Mapper(lib + pack + ".isWhitespace(true)", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("false", value);
-
-        mapper = new Mapper(lib + pack + ".isWhitespace(45)", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("false", value);
+        assertEquals("false", transform("ds.strings.isWhitespace(null)"));
+        assertEquals("true", transform("ds.strings.isWhitespace('')"));
+        assertEquals("true", transform("ds.strings.isWhitespace('       ')"));
+        assertEquals("false", transform("ds.strings.isWhitespace('   abc    ')"));
+        assertEquals("false", transform("ds.strings.isWhitespace(true)"));
+        assertEquals("false", transform("ds.strings.isWhitespace(45)"));
     }
 
     @Test
     void testStrings_leftPad() {
-        Mapper mapper = new Mapper(lib + pack + ".leftPad(null,3)", new ArrayList<>(), new HashMap<>(), true);
-        String value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("null", value);
-
-        mapper = new Mapper(lib + pack + ".leftPad(\"\",3)", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("   ", value);
-
-        mapper = new Mapper(lib + pack + ".leftPad(\"bat\",5)", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("  bat", value);
-
-        mapper = new Mapper(lib + pack + ".leftPad(\"bat\",3)", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("bat", value);
-
-        mapper = new Mapper(lib + pack + ".leftPad(\"bat\",-1)", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("bat", value);
-
-        mapper = new Mapper(lib + pack + ".leftPad(45,3)", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals(" 45", value);
-
-        mapper = new Mapper(lib + pack + ".leftPad(true,10)", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("      true", value);
+        assertEquals("null", transform("ds.strings.leftPad(null,3)"));
+        assertEquals("   ", transform("ds.strings.leftPad('',3)"));
+        assertEquals("  bat", transform("ds.strings.leftPad('bat',5)"));
+        assertEquals("bat", transform("ds.strings.leftPad('bat',3)"));
+        assertEquals("bat", transform("ds.strings.leftPad('bat',-1)"));
+        assertEquals(" 45", transform("ds.strings.leftPad(45,3)"));
+        assertEquals("      true", transform("ds.strings.leftPad(true,10)"));
     }
 
     @Test
     void testStrings_ordinalize() {
-        Mapper mapper = new Mapper(lib + pack + ".ordinalize(1)", new ArrayList<>(), new HashMap<>(), true);
-        String value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("1st", value);
-
-        mapper = new Mapper(lib + pack + ".ordinalize(2)", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("2nd", value);
-
-        mapper = new Mapper(lib + pack + ".ordinalize(3)", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("3rd", value);
-
-        mapper = new Mapper(lib + pack + ".ordinalize(111)", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("111th", value);
-
-        mapper = new Mapper(lib + pack + ".ordinalize(22)", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("22nd", value);
-
-        mapper = new Mapper(lib + pack + ".ordinalize(null)", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("null", value);
+        assertEquals("1st", transform("ds.strings.ordinalize(1)"));
+        assertEquals("2nd", transform("ds.strings.ordinalize(2)"));
+        assertEquals("3rd", transform("ds.strings.ordinalize(3)"));
+        assertEquals("111th", transform("ds.strings.ordinalize(111)"));
+        assertEquals("22nd", transform("ds.strings.ordinalize(22)"));
+        assertEquals("null", transform("ds.strings.ordinalize(null)"));
     }
 
     @Test
     void testStrings_pluralize() {
-        Mapper mapper = new Mapper(lib + pack + ".pluralize(null)", new ArrayList<>(), new HashMap<>(), true);
-        String value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("null", value);
-
-        mapper = new Mapper(lib + pack + ".pluralize(\"help\")", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("helps", value);
-
-        mapper = new Mapper(lib + pack + ".pluralize(\"box\")", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("boxes", value);
-
-        mapper = new Mapper(lib + pack + ".pluralize(\"monday\")", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("mondays", value);
-
-        mapper = new Mapper(lib + pack + ".pluralize(\"mondy\")", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("mondies", value);
+        assertEquals("null", transform("ds.strings.pluralize(null)"));
+        assertEquals("helps", transform("ds.strings.pluralize('help')"));
+        assertEquals("boxes", transform("ds.strings.pluralize('box')"));
+        assertEquals("mondays", transform("ds.strings.pluralize('monday')"));
+        assertEquals("mondies", transform("ds.strings.pluralize('mondy')"));
     }
-
 
     @Test
     void testStrings_prependIfMissing() {
-        Mapper mapper = new Mapper(lib + pack + ".prependIfMissing(\"abc\", \"xyz\")", new ArrayList<>(), new HashMap<>(), true);
-        String value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("xyzabc", value);
-
-        mapper = new Mapper(lib + pack + ".prependIfMissing(\"xyzabc\", \"xyz\")", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("xyzabc", value);
-
-        mapper = new Mapper(lib + pack + ".prependIfMissing(null, \"\")", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("null", value);
-
-        mapper = new Mapper(lib + pack + ".prependIfMissing(\"axyz\", \"xyz\")", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("xyzaxyz", value);
-
-        mapper = new Mapper(lib + pack + ".prependIfMissing(\"\", \"xyz\")", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("xyz", value);
+        assertEquals("xyzabc", transform("ds.strings.prependIfMissing('abc', 'xyz')"));
+        assertEquals("xyzabc", transform("ds.strings.prependIfMissing('xyzabc', 'xyz')"));
+        assertEquals("null", transform("ds.strings.prependIfMissing(null, '')"));
+        assertEquals("xyzaxyz", transform("ds.strings.prependIfMissing('axyz', 'xyz')"));
+        assertEquals("xyz", transform("ds.strings.prependIfMissing('', 'xyz')"));
     }
 
     @Test
     void testStrings_repeat() {
-        Mapper mapper = new Mapper(lib + pack + ".repeat(\"e\", 0)", new ArrayList<>(), new HashMap<>(), true);
-        String value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("", value);
-
-        mapper = new Mapper(lib + pack + ".repeat(\"e\", 3)", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("eee", value);
-
-        mapper = new Mapper(lib + pack + ".repeat(\"e\", -2)", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("", value);
+        assertEquals("", transform("ds.strings.repeat('e', 0)"));
+        assertEquals("eee", transform("ds.strings.repeat('e', 3)"));
+        assertEquals("", transform("ds.strings.repeat('e', -2)"));
     }
-
 
     @Test
     void testStrings_rightPad() {
-        Mapper mapper = new Mapper(lib + pack + ".rightPad(null,3)", new ArrayList<>(), new HashMap<>(), true);
-        String value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("null", value);
-
-        mapper = new Mapper(lib + pack + ".rightPad(\"\",3)", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("   ", value);
-
-        mapper = new Mapper(lib + pack + ".rightPad(\"bat\",5)", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("bat  ", value);
-
-        mapper = new Mapper(lib + pack + ".rightPad(\"bat\",3)", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("bat", value);
-
-        mapper = new Mapper(lib + pack + ".rightPad(\"bat\",-1)", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("bat", value);
-
-        mapper = new Mapper(lib + pack + ".rightPad(45,3)", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("45 ", value);
-
-        mapper = new Mapper(lib + pack + ".rightPad(true,10)", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("true      ", value);
+        assertEquals("null", transform("ds.strings.rightPad(null,3)"));
+        assertEquals("   ", transform("ds.strings.rightPad('',3)"));
+        assertEquals("bat  ", transform("ds.strings.rightPad('bat',5)"));
+        assertEquals("bat", transform("ds.strings.rightPad('bat',3)"));
+        assertEquals("bat", transform("ds.strings.rightPad('bat',-1)"));
+        assertEquals("45 ", transform("ds.strings.rightPad(45,3)"));
+        assertEquals("true      ", transform("ds.strings.rightPad(true,10)"));
     }
-
 
     @Test
     void testStrings_singularize() {
-        Mapper mapper = new Mapper(lib + pack + ".singularize(null)", new ArrayList<>(), new HashMap<>(), true);
-        String value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("null", value);
-
-        mapper = new Mapper(lib + pack + ".singularize(\"helps\")", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("help", value);
-
-        mapper = new Mapper(lib + pack + ".singularize(\"boxes\")", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("box", value);
-
-        mapper = new Mapper(lib + pack + ".singularize(\"mondays\")", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("monday", value);
-
-        mapper = new Mapper(lib + pack + ".singularize(\"mondies\")", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("mondy", value);
+        assertEquals("null", transform("ds.strings.singularize(null)"));
+        assertEquals("help", transform("ds.strings.singularize('helps')"));
+        assertEquals("box", transform("ds.strings.singularize('boxes')"));
+        assertEquals("monday", transform("ds.strings.singularize('mondays')"));
+        assertEquals("mondy", transform("ds.strings.singularize('mondies')"));
     }
 
     @Test
     void testStrings_substringAfter() {
-        Mapper mapper = new Mapper(lib + pack + ".substringAfter(null, \"'\")", new ArrayList<>(), new HashMap<>(), true);
-        String value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("null", value);
-
-        mapper = new Mapper(lib + pack + ".substringAfter(\"\", \"-\")", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("", value);
-
-        mapper = new Mapper(lib + pack + ".substringAfter(\"abc\", \"a\")", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("bc", value);
-
-        mapper = new Mapper(lib + pack + ".substringAfter(\"abc\", \"b\")", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("c", value);
-
-        mapper = new Mapper(lib + pack + ".substringAfter(\"abcba\", \"b\")", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("cba", value);
-
-        mapper = new Mapper(lib + pack + ".substringAfter(\"abc\", \"d\")", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("", value);
-
-        mapper = new Mapper(lib + pack + ".substringAfter(\"abc\", \"\")", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("abc", value);
-
+        assertEquals("null", transform("ds.strings.substringAfter(null, \"'\")"));
+        assertEquals("", transform("ds.strings.substringAfter('', '-')"));
+        assertEquals("bc", transform("ds.strings.substringAfter('abc', 'a')"));
+        assertEquals("c", transform("ds.strings.substringAfter('abc', 'b')"));
+        assertEquals("cba", transform("ds.strings.substringAfter('abcba', 'b')"));
+        assertEquals("", transform("ds.strings.substringAfter('abc', 'd')"));
+        assertEquals("abc", transform("ds.strings.substringAfter('abc', '')"));
     }
 
     @Test
     void testStrings_substringAfterLast() {
-        Mapper mapper = new Mapper(lib + pack + ".substringAfterLast(null, \"'\")", new ArrayList<>(), new HashMap<>(), true);
-        String value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("null", value);
-
-        mapper = new Mapper(lib + pack + ".substringAfterLast(\"\", \"-\")", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("", value);
-
-        mapper = new Mapper(lib + pack + ".substringAfterLast(\"abcaxy\", \"a\")", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("xy", value);
-
-        mapper = new Mapper(lib + pack + ".substringAfterLast(\"abc\", \"b\")", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("c", value);
-
-        mapper = new Mapper(lib + pack + ".substringAfterLast(\"abcba\", \"b\")", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("a", value);
-
-        mapper = new Mapper(lib + pack + ".substringAfterLast(\"abc\", \"d\")", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("", value);
-
-        mapper = new Mapper(lib + pack + ".substringAfterLast(\"abc\", \"\")", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("", value);
-
+        assertEquals("null", transform("ds.strings.substringAfterLast(null, \"'\")"));
+        assertEquals("", transform("ds.strings.substringAfterLast('', '-')"));
+        assertEquals("xy", transform("ds.strings.substringAfterLast('abcaxy', 'a')"));
+        assertEquals("c", transform("ds.strings.substringAfterLast('abc', 'b')"));
+        assertEquals("a", transform("ds.strings.substringAfterLast('abcba', 'b')"));
+        assertEquals("", transform("ds.strings.substringAfterLast('abc', 'd')"));
+        assertEquals("", transform("ds.strings.substringAfterLast('abc', '')"));
     }
 
     @Test
     void testStrings_substringBefore() {
-        Mapper mapper = new Mapper(lib + pack + ".substringBefore(null, \"'\")", new ArrayList<>(), new HashMap<>(), true);
-        String value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("null", value);
-
-        mapper = new Mapper(lib + pack + ".substringBefore(\"\", \"-\")", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("", value);
-
-        mapper = new Mapper(lib + pack + ".substringBefore(\"abc\", \"a\")", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("", value);
-
-        mapper = new Mapper(lib + pack + ".substringBefore(\"abc\", \"b\")", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("a", value);
-
-        mapper = new Mapper(lib + pack + ".substringBefore(\"abcba\", \"b\")", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("a", value);
-
-        mapper = new Mapper(lib + pack + ".substringBefore(\"abc\", \"d\")", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("", value);
-
-        mapper = new Mapper(lib + pack + ".substringBefore(\"abc\", \"\")", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("", value);
+        assertEquals("null", transform("ds.strings.substringBefore(null, \"'\")"));
+        assertEquals("", transform("ds.strings.substringBefore('', '-')"));
+        assertEquals("", transform("ds.strings.substringBefore('abc', 'a')"));
+        assertEquals("a", transform("ds.strings.substringBefore('abc', 'b')"));
+        assertEquals("a", transform("ds.strings.substringBefore('abcba', 'b')"));
+        assertEquals("", transform("ds.strings.substringBefore('abc', 'd')"));
+        assertEquals("", transform("ds.strings.substringBefore('abc', '')"));
     }
 
     @Test
     void testStrings_substringBeforeLast() {
-        Mapper mapper = new Mapper(lib + pack + ".substringBeforeLast(null, \"'\")", new ArrayList<>(), new HashMap<>(), true);
-        String value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("null", value);
-
-        mapper = new Mapper(lib + pack + ".substringBeforeLast(\"\", \"-\")", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("", value);
-
-        mapper = new Mapper(lib + pack + ".substringBeforeLast(\"abc\", \"a\")", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("", value);
-
-        mapper = new Mapper(lib + pack + ".substringBeforeLast(\"abc\", \"b\")", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("a", value);
-
-        mapper = new Mapper(lib + pack + ".substringBeforeLast(\"abcba\", \"b\")", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("abc", value);
-
-        mapper = new Mapper(lib + pack + ".substringBeforeLast(\"abc\", \"d\")", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("", value);
-
-        mapper = new Mapper(lib + pack + ".substringBeforeLast(\"abc\", \"\")", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("abc", value);
+        assertEquals("null", transform("ds.strings.substringBeforeLast(null, \"'\")"));
+        assertEquals("", transform("ds.strings.substringBeforeLast('', '-')"));
+        assertEquals("", transform("ds.strings.substringBeforeLast('abc', 'a')"));
+        assertEquals("a", transform("ds.strings.substringBeforeLast('abc', 'b')"));
+        assertEquals("abc", transform("ds.strings.substringBeforeLast('abcba', 'b')"));
+        assertEquals("", transform("ds.strings.substringBeforeLast('abc', 'd')"));
+        assertEquals("abc", transform("ds.strings.substringBeforeLast('abc', '')"));
     }
 
     @Test
     void testStrings_underscore() {
-        Mapper mapper = new Mapper(lib + pack + ".underscore(\"customer\")", new ArrayList<>(), new HashMap<>(), true);
-        String value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("customer", value);
-
-        mapper = new Mapper(lib + pack + ".underscore(\"customer-first-name\")", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("customer_first_name", value);
-
-        mapper = new Mapper(lib + pack + ".underscore(\"customer NAME\")", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("customer_name", value);
-
-        mapper = new Mapper(lib + pack + ".underscore(\"customerName\")", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("customer_name", value);
-
-        mapper = new Mapper(lib + pack + ".underscore(null)", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("null", value);
+        assertEquals("customer", transform("ds.strings.underscore('customer')"));
+        assertEquals("customer_first_name", transform("ds.strings.underscore('customer-first-name')"));
+        assertEquals("customer_name", transform("ds.strings.underscore('customer NAME')"));
+        assertEquals("customer_name", transform("ds.strings.underscore('customerName')"));
+        assertEquals("null", transform("ds.strings.underscore(null)"));
     }
 
     @Test
     void testStrings_unwrap() {
-        Mapper mapper = new Mapper(lib + pack + ".unwrap(null, \"\")", new ArrayList<>(), new HashMap<>(), true);
-        String value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("null", value);
-
-        mapper = new Mapper(lib + pack + ".unwrap(\"'abc'\", \"'\")", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("abc", value);
-
-        mapper = new Mapper(lib + pack + ".unwrap(\"AABabcBAA\", \"A\")", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("ABabcBA", value);
-
-        mapper = new Mapper(lib + pack + ".unwrap(\"A\", \"#\")", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("A", value);
-
-        mapper = new Mapper(lib + pack + ".unwrap(\"A#\", \"#\")", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("#A", value);
+        assertEquals("null", transform("ds.strings.unwrap(null, '')"));
+        assertEquals("abc", transform("ds.strings.unwrap('abc', \"'\")"));
+        assertEquals("ABabcBA", transform("ds.strings.unwrap('AABabcBAA', 'A')"));
+        assertEquals("A", transform("ds.strings.unwrap('A', '#')"));
+        assertEquals("#A", transform("ds.strings.unwrap('A#', '#')"));
     }
 
     @Test
     void testStrings_withMaxSize() {
-        Mapper mapper = new Mapper(lib + pack + ".withMaxSize(null, 10)", new ArrayList<>(), new HashMap<>(), true);
-        String value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("null", value);
-
-        mapper = new Mapper(lib + pack + ".withMaxSize(\"123\", 10)", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("123", value);
-
-        mapper = new Mapper(lib + pack + ".withMaxSize(\"123\", 3)", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("123", value);
-
-        mapper = new Mapper(lib + pack + ".withMaxSize(\"123\", 2)", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("12", value);
-
-        mapper = new Mapper(lib + pack + ".withMaxSize(\"\", 0)", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("", value);
+        assertEquals("null", transform("ds.strings.withMaxSize(null, 10)"));
+        assertEquals("123", transform("ds.strings.withMaxSize('123', 10)"));
+        assertEquals("123", transform("ds.strings.withMaxSize('123', 3)"));
+        assertEquals("12", transform("ds.strings.withMaxSize('123', 2)"));
+        assertEquals("", transform("ds.strings.withMaxSize('', 0)"));
     }
 
     @Test
     void testStrings_wrapIfMissing() {
-        Mapper mapper = new Mapper(lib + pack + ".wrapIfMissing(null, \"'\")", new ArrayList<>(), new HashMap<>(), true);
-        String value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("null", value);
-
-        mapper = new Mapper(lib + pack + ".wrapIfMissing(\"abc\", \"'\")", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("'abc'", value);
-
-        mapper = new Mapper(lib + pack + ".wrapIfMissing(\"'abc'\", \"'\")", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("'abc'", value);
-
-        mapper = new Mapper(lib + pack + ".wrapIfMissing(\"'abc\", \"'\")", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("'abc'", value);
+        assertEquals("null", transform("ds.strings.wrapIfMissing(null, \"'\")"));
+        assertEquals("'abc'", transform("ds.strings.wrapIfMissing('abc', \"'\")"));
+        assertEquals("'abc'", transform("ds.strings.wrapIfMissing(\"'abc'\", \"'\")"));
+        assertEquals("'abc'", transform("ds.strings.wrapIfMissing('abc', \"'\")"));
     }
 
     @Test
     void testStrings_wrapWith() {
-        Mapper mapper = new Mapper(lib + pack + ".wrapWith(null, \"'\")", new ArrayList<>(), new HashMap<>(), true);
-        String value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("null", value);
-
-        mapper = new Mapper(lib + pack + ".wrapWith(\"abc\", \"'\")", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("'abc'", value);
-
-        mapper = new Mapper(lib + pack + ".wrapWith(\"'abc\", \"'\")", new ArrayList<>(), new HashMap<>(), true);
-        value = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("''abc'", value);
+        assertEquals("null", transform("ds.strings.wrapWith(null, \"'\")"));
+        assertEquals("'abc'", transform("ds.strings.wrapWith('abc', \"'\")"));
+        assertEquals("''abc'", transform("ds.strings.wrapWith(\"'abc\", \"'\")"));
     }
-
 }

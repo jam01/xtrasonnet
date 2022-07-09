@@ -1,4 +1,12 @@
 #
+# Copyright 2022 Jose Montoya.
+#
+# Licensed under the Elastic License 2.0; you may not use this file except in
+# compliance with the Elastic License 2.0.
+#
+
+# datasonnet-mapper copyright retention, per Apache 2.0-4.c
+#
 # Copyright 2019-2020 the original author or authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");

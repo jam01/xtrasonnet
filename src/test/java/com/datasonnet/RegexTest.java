@@ -16,7 +16,7 @@ package com.datasonnet;
  * limitations under the License.
  */
 
-import com.datasonnet.util.TestResourceReader;
+import com.datasonnet.util.TestUtils;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -72,7 +72,7 @@ public class RegexTest {
 
     @Test
     void testRegexGlobalReplaceWithFunction() throws Exception {
-        String jsonnet = TestResourceReader.readFileAsString("regexGlobalReplaceWithFunction.ds");
+        String jsonnet = TestUtils.resourceAsString("regexGlobalReplaceWithFunction.ds");
         Mapper mapper = new Mapper(jsonnet);
         String result = mapper.transform("{}");
         assertEquals("\"xxx4yyy16zzz36aaa\"", result);

@@ -1,5 +1,4 @@
 package com.datasonnet;
-
 /*-
  * Copyright 2019-2021 the original author or authors.
  *
@@ -20,16 +19,14 @@ import org.junit.jupiter.api.Test;
 
 import java.time.ZonedDateTime;
 
+import static com.datasonnet.util.TestUtils.transform;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ZonedDateTimeTest {
-
     @Test
     void testOffset() {
-        Mapper mapper = new Mapper("ds.datetime.plus(\"2019-07-22T21:00:00Z\", \"P1Y1D\")");
-        String offsetDate = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals(offsetDate, "2020-07-23T21:00:00Z");
+        assertEquals("2020-07-23T21:00:00Z", transform("ds.datetime.plus('2019-07-22T21:00:00Z', 'P1Y1D')"));
     }
 
     @Test
@@ -37,141 +34,91 @@ public class ZonedDateTimeTest {
         ZonedDateTime before = ZonedDateTime.now();
         Thread.sleep(100);
 
-        Mapper mapper = new Mapper("ds.datetime.now()");
-        // getting rid of quotes so the Instant parser works
-        ZonedDateTime mapped = ZonedDateTime.parse(mapper.transform("{}").replaceAll("\"", ""));
-
+        ZonedDateTime mapped = ZonedDateTime.parse(transform("ds.datetime.now()"));
         Thread.sleep(100);
-        ZonedDateTime after = ZonedDateTime.now();
 
+        ZonedDateTime after = ZonedDateTime.now();
         assertTrue(before.compareTo(mapped) <= 0);
         assertTrue(after.compareTo(mapped) >= 0);
     }
 
     @Test
     void testFormat() {
-        Mapper mapper = new Mapper("ds.datetime.format(\"2019-07-04T21:00:00Z\", \"d MMM uuuu\")");
-        String formattedDate = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals(formattedDate, "4 Jul 2019");
+        assertEquals("4 Jul 2019", transform("ds.datetime.format('2019-07-04T21:00:00Z', 'd MMM uuuu')"));
     }
 
     @Test
     void testCompare() {
-        Mapper mapper = new Mapper("ds.datetime.compare(\"2019-07-04T21:00:00Z\", \"2019-07-04T21:00:00Z\")");
-        String compareResult = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals(compareResult, "0");
+        assertEquals("0", transform("ds.datetime.compare('2019-07-04T21:00:00Z', '2019-07-04T21:00:00Z')"));
     }
 
     @Test
     void testTimezone() {
-        Mapper mapper = new Mapper("ds.datetime.changeTimeZone(\"2019-07-04T21:00:00-05:00\", \"America/Los_Angeles\")");
-        String newTimezone = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals(newTimezone, "2019-07-04T19:00:00-07:00");
+        assertEquals("2019-07-04T19:00:00-07:00", transform("ds.datetime.changeTimeZone('2019-07-04T21:00:00-05:00', 'America/Los_Angeles')"));
     }
 
     @Test
     void testLocalDT() {
-        Mapper mapper = new Mapper("ds.datetime.toLocalDate(\"2019-07-04T21:00:00-05:00\")");
-        String newDate = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals(newDate, "2019-07-04");
-
-        mapper = new Mapper("ds.datetime.toLocalTime(\"2019-07-04T21:00:00-05:00\")");
-        String newTime = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals(newTime, "21:00:00");
-
+        assertEquals("2019-07-04", transform("ds.datetime.toLocalDate('2019-07-04T21:00:00-05:00')"));
+        assertEquals("21:00:00", transform("ds.datetime.toLocalTime('2019-07-04T21:00:00-05:00')"));
     }
 
     @Test
-    void testDateTime_atBeginningOfDay(){
-        Mapper mapper = new Mapper("ds.datetime.atBeginningOfDay(\"2020-10-21T16:08:07.131Z\")");
-        String newDate = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("2020-10-21T00:00:00Z", newDate );
+    void testDateTime_atBeginningOfDay() {
+        assertEquals("2020-10-21T00:00:00Z", transform("ds.datetime.atBeginningOfDay('2020-10-21T16:08:07.131Z')"));
     }
 
     @Test
-    void testDateTime_atBeginningOfHour(){
-        Mapper mapper = new Mapper("ds.datetime.atBeginningOfHour(\"2020-10-21T16:08:07.131Z\")");
-        String newDate = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("2020-10-21T16:00:00Z", newDate );
+    void testDateTime_atBeginningOfHour() {
+        assertEquals("2020-10-21T16:00:00Z", transform("ds.datetime.atBeginningOfHour('2020-10-21T16:08:07.131Z')"));
     }
 
     @Test
-    void testDateTime_atBeginningOfMonth(){
-        Mapper mapper = new Mapper("ds.datetime.atBeginningOfMonth(\"2020-10-21T16:08:07.131Z\")");
-        String newDate = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("2020-10-01T00:00:00Z", newDate );
-
-        mapper = new Mapper("ds.datetime.atBeginningOfMonth(\"2020-10-01T16:08:07.131Z\")");
-        newDate = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("2020-10-01T00:00:00Z", newDate );
+    void testDateTime_atBeginningOfMonth() {
+        assertEquals("2020-10-01T00:00:00Z", transform("ds.datetime.atBeginningOfMonth('2020-10-21T16:08:07.131Z')"));
+        assertEquals("2020-10-01T00:00:00Z", transform("ds.datetime.atBeginningOfMonth('2020-10-01T16:08:07.131Z')"));
     }
 
     @Test
-    void testDateTime_atBeginningOfWeek(){
-        Mapper mapper = new Mapper("ds.datetime.atBeginningOfWeek(\"2020-10-21T16:08:07.131Z\")");
-        String newDate = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("2020-10-18T00:00:00Z", newDate );
-
-        mapper = new Mapper("ds.datetime.atBeginningOfWeek(\"2020-10-18T16:08:07.131Z\")");
-        newDate = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("2020-10-18T00:00:00Z", newDate );
+    void testDateTime_atBeginningOfWeek() {
+        assertEquals("2020-10-18T00:00:00Z", transform("ds.datetime.atBeginningOfWeek('2020-10-21T16:08:07.131Z')"));
+        assertEquals("2020-10-18T00:00:00Z", transform("ds.datetime.atBeginningOfWeek('2020-10-18T16:08:07.131Z')"));
     }
 
     @Test
-    void testDateTime_atBeginningOfYear(){
-        Mapper mapper = new Mapper("ds.datetime.atBeginningOfYear(\"2020-10-21T16:08:07.131Z\")");
-        String newDate = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("2020-01-01T00:00:00Z", newDate );
+    void testDateTime_atBeginningOfYear() {
+        assertEquals("2020-01-01T00:00:00Z", transform("ds.datetime.atBeginningOfYear('2020-10-21T16:08:07.131Z')"));
     }
 
     @Test
-    void testDateTime_date(){
-        Mapper mapper = new Mapper("ds.datetime.date({\"year\":2020})");
-        String newDate = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("2020-01-01T00:00:00Z", newDate );
-
-        mapper = new Mapper("ds.datetime.date({\"month\":12})");
-        newDate = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("0000-12-01T00:00:00Z", newDate );
-
-        mapper = new Mapper("ds.datetime.date({\"day\":20})");
-        newDate = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("0000-01-20T00:00:00Z", newDate );
-
-        mapper = new Mapper("ds.datetime.date({\"hour\":23})");
-        newDate = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("0000-01-01T23:00:00Z", newDate );
-
-        mapper = new Mapper("ds.datetime.date({\"minute\":23})");
-        newDate = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("0000-01-01T00:23:00Z", newDate );
-
-        mapper = new Mapper("ds.datetime.date({\"second\":23})");
-        newDate = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("0000-01-01T00:00:23Z", newDate );
-
+    void testDateTime_date() {
+        assertEquals("2020-01-01T00:00:00Z", transform("ds.datetime.date({'year':2020})"));
+        assertEquals("0000-12-01T00:00:00Z", transform("ds.datetime.date({'month':12})"));
+        assertEquals("0000-01-20T00:00:00Z", transform("ds.datetime.date({'day':20})"));
+        assertEquals("0000-01-01T23:00:00Z", transform("ds.datetime.date({'hour':23})"));
+        assertEquals("0000-01-01T00:23:00Z", transform("ds.datetime.date({'minute':23})"));
+        assertEquals("0000-01-01T00:00:23Z", transform("ds.datetime.date({'second':23})"));
         /*
-        mapper = new Mapper("ds.datetime.date({\"nanosecond\":1, \"second\": 1})");
-        newDate = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("0000-01-01T00:00:00.555Z", newDate );*/
-
-        mapper = new Mapper("ds.datetime.date({\"timezone\":\"UTC\"})");
-        newDate = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("0000-01-01T00:00:00Z", newDate );
+		assertEquals("0000-01-01T00:00:00.555Z", transform("ds.datetime.date({'nanosecond':1, 'second': 1})"));
+		*/
+        assertEquals("0000-01-01T00:00:00Z", transform("ds.datetime.date({'timezone':'UTC'})"));
     }
 
     @Test
     void testDateTime_parse() {
-        Mapper mapper = new Mapper("ds.datetime.parse(\"1577836800\", \"timestamp\")");
-        String newDate = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("2020-01-01T00:00:00Z", newDate);
+        assertEquals("2020-01-01T00:00:00Z", transform("ds.datetime.parse('1577836800', 'timestamp')"));
+        assertEquals("2020-01-01T00:00:00Z", transform("ds.datetime.parse('1577836800', 'epoch')"));
+        assertEquals("1990-12-31T10:10:10Z", transform("ds.datetime.parse('12/31/1990 10:10:10', 'MM/dd/yyyy HH:mm:ss')"));
+    }
 
-        mapper = new Mapper("ds.datetime.parse(\"1577836800\", \"epoch\")");
-        newDate = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("2020-01-01T00:00:00Z", newDate);
+    @Test
+    void test_daysBetween() {
+        assertEquals("3", transform("ds.datetime.daysBetween('2020-07-04T00:00:00.000Z','2020-07-01T00:00:00.000Z')"));
+        assertEquals("0", transform("ds.datetime.daysBetween('2020-07-04T23:59:59.000Z','2020-07-04T00:00:00.000Z')"));
+    }
 
-        mapper = new Mapper("ds.datetime.parse(\"12/31/1990 10:10:10\", \"MM/dd/yyyy HH:mm:ss\")");
-        newDate = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("1990-12-31T10:10:10Z", newDate);
+    @Test
+    void test_isLeapYear() {
+        assertEquals("true", transform("ds.datetime.isLeapYear('2020-07-04T21:00:00.000Z')"));
     }
 }

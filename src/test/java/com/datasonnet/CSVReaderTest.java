@@ -19,7 +19,7 @@ package com.datasonnet;
 import com.datasonnet.document.DefaultDocument;
 import com.datasonnet.document.Document;
 import com.datasonnet.document.MediaTypes;
-import com.datasonnet.util.TestResourceReader;
+import com.datasonnet.util.TestUtils;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -33,7 +33,7 @@ public class CSVReaderTest {
     @Test
     void testCSVReader() throws URISyntaxException, IOException {
         Document<String> data = new DefaultDocument<String>(
-                TestResourceReader.readFileAsString("readCSVTest.csv"),
+                TestUtils.resourceAsString("readCSVTest.csv"),
                 MediaTypes.APPLICATION_CSV
         );
 
@@ -48,10 +48,10 @@ public class CSVReaderTest {
     @Test
     void testCSVReaderExt() throws IOException, URISyntaxException {
         Document<String> data = new DefaultDocument<>(
-                TestResourceReader.readFileAsString("readCSVExtTest.csv"),
+                TestUtils.resourceAsString("readCSVExtTest.csv"),
                 MediaTypes.APPLICATION_CSV
         );
-        String jsonnet = TestResourceReader.readFileAsString("readCSVExtTest.ds");
+        String jsonnet = TestUtils.resourceAsString("readCSVExtTest.ds");
 
         Mapper mapper = new Mapper(jsonnet);
 

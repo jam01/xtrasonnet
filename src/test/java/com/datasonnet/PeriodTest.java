@@ -1,5 +1,4 @@
 package com.datasonnet;
-
 /*-
  * Copyright 2019-2020 the original author or authors.
  *
@@ -17,106 +16,60 @@ package com.datasonnet;
  */
 
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import static com.datasonnet.util.TestUtils.transform;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class PeriodTest {
-
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
-
-    private final String lib = "ds";
-    private final String pack = ".period";
-
     @Test
-    void testPeriod_between(){
-        Mapper mapper = new Mapper(lib + pack + ".between(\"2020-10-21T16:08:07.131Z\", \"2020-10-22T10:20:07.131Z\")");
-        String newDate = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("P1D", newDate );
+    void testPeriod_between() {
+        assertEquals("P1D", transform("ds.period.between('2020-10-21T16:08:07.131Z', '2020-10-22T10:20:07.131Z')"));
     }
 
     @Test
-    void testPeriod_days(){
-        Mapper mapper = new Mapper(lib + pack + ".days(1)");
-        String newDate = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("P1D", newDate );
+    void testPeriod_days() {
+        assertEquals("P1D", transform("ds.period.days(1)"));
     }
 
     @Test
-    void testPeriod_duration(){
-        Mapper mapper = new Mapper(lib + pack + ".duration({\"days\":2})");
-        String newDate = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("PT48H", newDate );
-
-        mapper = new Mapper(lib + pack + ".duration({\"hours\":2})");
-        newDate = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("PT2H", newDate );
-
-        mapper = new Mapper(lib + pack + ".duration({\"minutes\":2})");
-        newDate = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("PT2M", newDate );
-
-        mapper = new Mapper(lib + pack + ".duration({\"seconds\":2})");
-        newDate = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("PT2S", newDate );
-
-        mapper = new Mapper(lib + pack + ".duration({\"days\":1,\"hours\":2,\"minutes\":3,\"seconds\":4})");
-        newDate = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("PT26H3M4S", newDate );
+    void testPeriod_duration() {
+        assertEquals("PT48H", transform("ds.period.duration({'days':2})"));
+        assertEquals("PT2H", transform("ds.period.duration({'hours':2})"));
+        assertEquals("PT2M", transform("ds.period.duration({'minutes':2})"));
+        assertEquals("PT2S", transform("ds.period.duration({'seconds':2})"));
+        assertEquals("PT26H3M4S", transform("ds.period.duration({'days':1,'hours':2,'minutes':3,'seconds':4})"));
     }
 
     @Test
-    void testPeriod_hours(){
-        Mapper mapper = new Mapper(lib + pack + ".hours(1)");
-        String newDate = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("PT1H", newDate );
+    void testPeriod_hours() {
+        assertEquals("PT1H", transform("ds.period.hours(1)"));
     }
 
     @Test
-    void testPeriod_minutes(){
-        Mapper mapper = new Mapper(lib + pack + ".minutes(1)");
-        String newDate = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("PT1M", newDate );
+    void testPeriod_minutes() {
+        assertEquals("PT1M", transform("ds.period.minutes(1)"));
     }
 
     @Test
-    void testPeriod_months(){
-        Mapper mapper = new Mapper(lib + pack + ".months(1)");
-        String newDate = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("P1M", newDate );
+    void testPeriod_months() {
+        assertEquals("P1M", transform("ds.period.months(1)"));
     }
 
     @Test
-    void testPeriod_period(){
-        Mapper mapper = new Mapper(lib + pack + ".period({\"years\":1})");
-        String newDate = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("P1Y", newDate );
-
-        mapper = new Mapper(lib + pack + ".period({\"months\":1})");
-        newDate = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("P1M", newDate );
-
-        mapper = new Mapper(lib + pack + ".period({\"days\":1})");
-        newDate = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("P1D", newDate );
-
-        mapper = new Mapper(lib + pack + ".period({\"years\":1,\"months\":2,\"days\":3})");
-        newDate = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("P1Y2M3D", newDate );
+    void testPeriod_period() {
+        assertEquals("P1Y", transform("ds.period.period({'years':1})"));
+        assertEquals("P1M", transform("ds.period.period({'months':1})"));
+        assertEquals("P1D", transform("ds.period.period({'days':1})"));
+        assertEquals("P1Y2M3D", transform("ds.period.period({'years':1,'months':2,'days':3})"));
     }
 
     @Test
-    void testPeriod_seconds(){
-        Mapper mapper = new Mapper(lib + pack + ".seconds(1)");
-        String newDate = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("PT1S", newDate );
+    void testPeriod_seconds() {
+        assertEquals("PT1S", transform("ds.period.seconds(1)"));
     }
 
     @Test
-    void testPeriod_years(){
-        Mapper mapper = new Mapper(lib + pack + ".years(1)");
-        String newDate = mapper.transform("{}").replaceAll("\"", "");
-        assertEquals("P1Y", newDate );
+    void testPeriod_years() {
+        assertEquals("P1Y", transform("ds.period.years(1)"));
     }
 }

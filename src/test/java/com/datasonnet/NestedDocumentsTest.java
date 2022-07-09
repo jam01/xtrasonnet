@@ -43,6 +43,6 @@ public class NestedDocumentsTest {
                 .build()
                 .transform(DefaultDocument.NULL_INSTANCE, inputs, MediaTypes.APPLICATION_JSON)
                 .getContent();
-        Assert.assertEquals("{\"json\":{\"hello\":\"world!\"},\"xml\":{\"root\":{\"$\":\"\",\"~\":1}}}", result);
+        Assert.assertEquals("{\"json\":{\"hello\":\"world!\"},\"xml\":{\"root\":{\"~\":1}}}", result);
     }
 }
