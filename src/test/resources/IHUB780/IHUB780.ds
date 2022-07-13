@@ -1,10 +1,6 @@
 /** DataSonnet
-version=1.0
-output.application/csv.UseHeader=false
-output.application/csv.Quote="
-output.application/csv.DisableQuotes=false
-output.application/csv.Separator=,
-output.application/csv.NewLine=\n
+version=2.0
+output application/csv; UseHeader=false; Quote="\""; DisableQuotes=false; Separator=","; NewLine=LF
 */
 
 //local asnNum = previousProperties.ReceiverId;

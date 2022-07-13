@@ -28,14 +28,8 @@ import com.datasonnet.document.Document;
 import com.datasonnet.document.InvalidMediaTypeException;
 import com.datasonnet.document.MediaType;
 import com.datasonnet.document.MediaTypes;
-import com.fasterxml.jackson.dataformat.javaprop.JavaPropsMapper;
-import com.fasterxml.jackson.dataformat.javaprop.JavaPropsSchema;
-import com.fasterxml.jackson.dataformat.javaprop.util.JPropNode;
-import com.fasterxml.jackson.dataformat.javaprop.util.JPropPathSplitter;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -43,7 +37,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -51,14 +44,12 @@ public class Header {
     public static final String DATASONNET_HEADER = "/** DataSonnet";
     public static final String COMMENT_PREFIX = "//";
     public static final Pattern VERSION_LINE = Pattern.compile("^version *= *(?<version>[a-zA-Z0-9.+-]+) *(\\r?\\n|$)");
-    public static final String DATASONNET_DEFAULT_PREFIX = "default ";
     public static final String DATASONNET_INPUT = "input";
     public static final Pattern INPUT_LINE = Pattern.compile("^(?:input (?<name>\\w+)|input (?<all>\\*)) (?<mediatype>\\S.*)$");
     public static final String DATASONNET_OUTPUT = "output";
     public static final Pattern OUTPUT_LINE = Pattern.compile("^output (?<mediatype>\\S.*)$");
     public static final String DATASONNET_PRESERVE_ORDER = "preserveOrder";
     public static final String DATAFORMAT_PREFIX = "dataformat";
-    public static final String DATAFORMAT_ALL = "*";
     public static final String LATEST_RELEASE_VERSION = "2.0"; //update this as required
     private final String versionMajor;
     private final String versionMinor;
@@ -141,11 +132,6 @@ public class Header {
         String[] splitVersion = version.split("\\.",2); //[0] = major [1] = minor + remainder if exists
 
         switch (splitVersion[0]) {
-            case "1":
-                if ("0".equals(splitVersion[1])) {
-                    return parseHeader10(headerWithoutVersion);
-                }
-                throw new HeaderParseException("Version must be 1.0 but is " + version);
             case "2":
                 if ("0".equals(splitVersion[1])) {
                     return parseHeader20(headerWithoutVersion);
@@ -156,7 +142,7 @@ public class Header {
                     return parseHeader20(headerWithoutVersion, version);
                 }
             default:
-                throw new HeaderParseException("Major version must be one of [1,2] but is " + splitVersion[0]);
+                throw new HeaderParseException("Major version must be one of [2] but is " + splitVersion[0]);
         }
     }
 
@@ -167,97 +153,10 @@ public class Header {
             throw new HeaderParseException("Unterminated header. Headers must end with */");
         }
 
-        String headerSection = script
+        return script
                 .substring(0, terminus)
                 .replace(DATASONNET_HEADER, "")
                 .trim();
-        return headerSection;
-    }
-
-    @NotNull
-    private static Header parseHeader10(String headerSection) throws HeaderParseException {
-        JavaPropsMapper mapper = new JavaPropsMapper();
-        JavaPropsSchema schema = new JavaPropsSchema() {
-            class HeaderSplitter extends JPropPathSplitter
-            {
-                protected final char _pathSeparatorChar = '.';
-
-                public HeaderSplitter()
-                {
-                    super(true);
-                }
-
-                @Override
-                public JPropNode splitAndAdd(JPropNode parent,
-                                             String key, String value)
-                {
-                    JPropNode curr = parent;
-                    // split on the path separator character not preceded by a backslash
-                    String[] segments = key.split("(?<!\\\\)" + Pattern.quote("" + _pathSeparatorChar));
-                    for (String segment : segments) {
-                        curr = _addSegment(curr, segment.replaceAll("\\\\", ""));
-                    }
-                    return curr.setValue(value);
-                }
-            }
-            @Override
-            public JPropPathSplitter pathSplitter() {
-                return new HeaderSplitter();
-            };
-        };
-        try {
-            Properties props = new Properties();
-            props.load(new StringReader(headerSection));
-            Map propsMap = mapper.readPropertiesAs(props, schema, Map.class);
-
-            Map<String, Map<String, Map<String, String>>> originalInputs = getOrEmpty(propsMap, "input");
-            Map<String, Collection<MediaType>> inputs = new HashMap<>();
-            for(Map.Entry<String, Map<String, Map<String, String>>> entry : originalInputs.entrySet()) {
-                if(!entry.getKey().equals("*")) {
-                    List<MediaType> mediaTypes = extractMediaTypes(entry.getValue());
-                    inputs.put(entry.getKey(), mediaTypes);
-                }
-            }
-            List<MediaType> allInputs = extractMediaTypes(getOrEmpty(originalInputs, "*"));
-            List<MediaType> output = extractMediaTypes(getOrEmpty(propsMap, "output"));
-            List<MediaType> dataFormat = extractMediaTypes(getOrEmpty(propsMap, "dataformat"));
-
-
-            return new Header("1.0",
-                    getBoolean(propsMap,DATASONNET_PRESERVE_ORDER, true),
-                    inputs,
-                    output,
-                    allInputs,
-                    dataFormat);
-        } catch (IOException|IllegalArgumentException exc) {
-            throw new HeaderParseException("Error parsing DataSonnet Header: " + exc.getMessage(), exc);
-        } catch (ClassCastException exc) {
-            throw new HeaderParseException("Error parsing DataSonnet Header, make sure type parameters are nested properly");
-        }
-    }
-
-    private static MediaType extractMediaType(String type, Map<String, String> params) {
-        return new MediaType(MediaType.valueOf(type), params);
-    }
-
-    private static List<MediaType> extractMediaTypes(Map<String, Map<String, String>> originals) {
-        List<MediaType> types = new ArrayList<>();
-        for(Map.Entry<String, Map<String, String>> entry : originals.entrySet()) {
-            types.add(extractMediaType(entry.getKey(), entry.getValue()));
-        }
-        return types;
-    }
-
-    private static <T> Map<String, T> getOrEmpty(Map<String, Map<String, T>> map, String key) {
-        return map.getOrDefault(key, Collections.emptyMap());
-    }
-
-    private static boolean getBoolean(Map<String, ?> propsMap, String key, boolean defaultTo) {
-        if (propsMap.containsKey(key)) {
-            return Boolean.parseBoolean(propsMap.get(key).toString());
-        } else {
-            return defaultTo;
-        }
     }
 
     @NotNull
