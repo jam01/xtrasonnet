@@ -36,7 +36,6 @@ public class CryptoTest {
             transform("ds.crypto.hash('HelloWorld', 'DUMMY')");
             fail("This should fail with NoSuchAlgorithmException");
         } catch (Exception e) {
-            e.printStackTrace();
             String stacktrace = stacktraceFrom(e);
             assertTrue(stacktrace.contains("Caused by: java.security.NoSuchAlgorithmException: DUMMY MessageDigest not available"),
                     "Stacktrace does not indicate the issue");
