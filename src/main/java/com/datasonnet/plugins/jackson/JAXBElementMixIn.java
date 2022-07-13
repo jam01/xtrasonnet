@@ -27,8 +27,8 @@ package com.datasonnet.plugins.jackson;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.xml.bind.JAXBElement;
 
-import javax.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
 
 @JsonIgnoreProperties(value = {"globalScope", "typeSubstituted", "nil", "scope"})

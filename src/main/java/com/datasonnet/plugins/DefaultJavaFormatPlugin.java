@@ -40,16 +40,14 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import jakarta.xml.bind.JAXBElement;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import ujson.Value;
 
-import javax.xml.bind.JAXBElement;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
-
-
 
 public class DefaultJavaFormatPlugin extends BaseJacksonDataFormatPlugin {
     private static final ObjectMapper DEFAULT_OBJECT_MAPPER = new ObjectMapper();

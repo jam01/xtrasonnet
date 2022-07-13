@@ -25,10 +25,10 @@ import com.datasonnet.javatest.Manufacturer;
 import com.datasonnet.javatest.TestField;
 import com.datasonnet.javatest.WsdlGeneratedObj;
 import com.datasonnet.util.TestUtils;
+import jakarta.xml.bind.JAXBElement;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 
-import javax.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
