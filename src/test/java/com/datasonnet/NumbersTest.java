@@ -26,7 +26,6 @@ public class NumbersTest {
         assertEquals("-2", transform("ds.numbers.fromBinary(\"-10\")"));
         assertEquals("2147483647", transform("ds.numbers.fromBinary(\"1111111111111111111111111111111\")"));
         assertEquals("3", transform("ds.numbers.fromBinary(11)"));
-        assertEquals("null", transform("ds.numbers.fromBinary(null)"));
         assertEquals("4", transform("ds.numbers.fromBinary(\"100\")"));
         assertEquals("2305843009213693952", transform("ds.numbers.fromBinary(\"1111111111111111111111111111111111111111111111111111111111111\")"));
     }
@@ -36,7 +35,6 @@ public class NumbersTest {
         assertEquals("-1", transform("ds.numbers.fromHex(\"-1\")"));
         assertEquals("4078315", transform("ds.numbers.fromHex(\"3e3aeb\")"));
         assertEquals("0", transform("ds.numbers.fromHex(0)"));
-        assertEquals("null", transform("ds.numbers.fromHex(null)"));
         assertEquals("15", transform("ds.numbers.fromHex(\"f\")"));
         assertEquals("68719476735", transform("ds.numbers.fromHex(\"FFFFFFFFF\")"));
     }
@@ -52,7 +50,6 @@ public class NumbersTest {
     void testNumbers_toBinary() {
         assertEquals("-10", transform("ds.numbers.toBinary(-2)"));
         assertEquals("0", transform("ds.numbers.toBinary(0)"));
-        assertEquals("null", transform("ds.numbers.toBinary(null)"));
         assertEquals("10", transform("ds.numbers.toBinary(2)"));
         assertEquals("100111011100110101100100111111111", transform("ds.numbers.toBinary(5294967295)"));
     }
@@ -61,7 +58,6 @@ public class NumbersTest {
     void testNumbers_toHex() {
         assertEquals("-1", transform("ds.numbers.toHex(-1)"));
         assertEquals("0", transform("ds.numbers.toHex(0)"));
-        assertEquals("null", transform("ds.numbers.toHex(null)"));
         assertEquals("f", transform("ds.numbers.toHex(15)"));
         assertEquals("FFFFFFFFF".toLowerCase(), transform("ds.numbers.toHex(68719476735)"));
     }

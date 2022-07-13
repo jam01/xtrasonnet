@@ -27,14 +27,13 @@ package com.datasonnet
 
 import com.datasonnet.document.{DefaultDocument, MediaType}
 import com.datasonnet.header.Header
-import com.datasonnet.modules.{Crypto, JsonPath, Regex}
+import com.datasonnet.modules.{Crypto, JsonPath}
 import com.datasonnet.spi.Library.{emptyObj, memberOf}
 import com.datasonnet.spi.{DataFormatService, Library, ujsonUtils}
-import sjsonnet.ReadWriter.ArrRead
+import sjsonnet.ReadWriter.{ArrRead, ObjRead, ValRead}
 import sjsonnet.Std.{builtin, builtinWithDefaults}
 import sjsonnet.Val.Builtin
 import sjsonnet.{Error, EvalScope, Expr, Importer, Lazy, Materializer, Position, ReadWriter, Val}
-import ujson.Value
 
 import java.math.{BigDecimal, RoundingMode}
 import java.net.URL
@@ -49,9 +48,8 @@ import javax.crypto.Cipher
 import javax.crypto.spec.{IvParameterSpec, SecretKeySpec}
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
-import scala.io.Source
 import scala.jdk.CollectionConverters._
-import scala.util.{Random, Using}
+import scala.util.Random
 
 // re: performance of while-loops vs foreach see:
 // https://www.theguardian.com/info/2021/oct/19/pondering-some-scala-performance-questions
@@ -99,24 +97,15 @@ object DS extends Library {
     },
 
     builtin("filter", "array", "func") {
-      (pos, ev, value: Val, func: Val.Func) =>
-        value match {
-          case array: Val.Arr => filter(array.asLazyArray, func, ev)
-          case Val.Null(_) => value
-          case x => Error.fail("Expected Array, got: " + x.prettyName)
-        }
+      (pos, ev, arr: Val.Arr, func: Val.Func) => filter(arr.asLazyArray, func, ev)
     },
 
-    builtin("filterObject", "obj", "func") {
-      (_, ev, value: Val, func: Val.Func) =>
-        value match {
-          case obj: Val.Obj => filterObject(obj, func, ev)
-          case Val.Null(_) => value
-          case x => Error.fail("Expected Object, got: " + x.prettyName)
-        }
+
+    builtin("filterObject", "array", "func") {
+      (pos, ev, obj: Val.Obj, func: Val.Func) => filterObject(obj, func, ev).asInstanceOf[Val]
     },
 
-    builtin("find", "container", "value") {
+    builtin("indicesOf", "container", "value") {
       (pos, ev, container: Val, value: Val) =>
         container match {
           case str: Val.Str =>
@@ -138,33 +127,18 @@ object DS extends Library {
     },
 
     builtin("flatMap", "array", "func") {
-      (pos, ev, value: Val, func: Val.Func) =>
-        value match {
-          case array: Val.Arr => flatMap(array.asLazyArray, func, ev)
-          case Val.Null(_) => value
-          case x => Error.fail("Expected Array, got: " + x.prettyName)
-        }
+      (pos, ev, value: Val.Arr, func: Val.Func) => flatMap(value.asLazyArray, func, ev)
     },
 
     builtin("flatten", "array") {
-      (pos, _, value: Val) =>
-        value match {
-          case array: Val.Arr =>
-            val out = new ArrayBuffer[Lazy]
-
-            var i = 0
-            while (i < array.length) {
-              array.asLazyArray(i).force match {
-                case n: Val.Null => out.append(n)
-                case v: Val.Arr => out.appendAll(v.asLazyArray)
-                case x => Error.fail("Expected Array, got: " + x.prettyName)
-              }
-              i = i + 1
-            }
-            new Val.Arr(pos, out.toArray)
-          case Val.Null(_) => value
-          case x => Error.fail("Expected Array, got: " + x.prettyName)
+      (pos, _, value: Val.Arr) =>
+        val out = new ArrayBuffer[Lazy]
+        var i = 0
+        while (i < value.length) {
+          out.appendAll(value.asLazyArray(i).force.asArr.asLazyArray)
+          i = i + 1
         }
+        new Val.Arr(pos, out.toArray)
     },
 
     builtin("distinctBy", "container", "func") {
@@ -186,7 +160,6 @@ object DS extends Library {
         container match {
           case array: Val.Arr => groupBy(array.asLazyArray, func, ev)
           case obj: Val.Obj => groupBy(obj, func, ev)
-          case Val.Null(_) => container
           case x => Error.fail("Expected Array or Object, got: " + x.prettyName)
         }
     },
@@ -194,7 +167,7 @@ object DS extends Library {
     builtin("isBlank", "value") {
       (pos, ev, value: Val) =>
         value match {
-          case s: Val.Str => s.value.trim().isEmpty
+          case s: Val.Str => !Utils.hasText(s.asString)
           case Val.Null(_) => true
           case x => Error.fail("Expected String, got: " + x.prettyName)
         }
@@ -231,7 +204,7 @@ object DS extends Library {
         (num % 2) != 0
     },
 
-    builtin("joinBy", "array", "sep") {
+    builtin("join", "array", "sep") {
       (pos, ev, array: Val.Arr, sep: String) =>
         array.asLazyArray.map({
           _.force match {
@@ -254,45 +227,16 @@ object DS extends Library {
         str.toLowerCase();
     },
 
-    builtin("map", "array", "func") {
-      (pos, ev, array: Val, func: Val.Func) =>
-        array match {
-          case seq: Val.Arr => map(seq.asLazyArray, func, ev)
-          case Val.Null(_) => array
-          case x => Error.fail("Expected Array, got: " + x.prettyName)
-        }
-    },
-
-    builtin("mapEntries", "value", "func") {
-      (_, ev, value: Val, func: Val.Func) =>
-        value match {
-          case obj: Val.Obj => mapEntries(obj, func, ev)
-          case Val.Null(_) => value
-          case x => Error.fail("Expected Object, got: " + x.prettyName)
-        }
+    builtin("map", "value", "func") {
+      (pos, ev, arr: Val.Arr, func: Val.Func) => map(arr.asLazyArray, func, ev)
     },
 
     builtin("mapObject", "value", "func") {
-      (_, ev, value: Val, func: Val.Func) =>
-        value match {
-          case obj: Val.Obj => mapObject(obj, func, ev)
-          case Val.Null(_) => value
-          case x => Error.fail("Expected Object, got: " + x.prettyName)
-        }
+      (pos, ev, obj: Val.Obj, func: Val.Func) => mapObject(obj, func, ev)
     },
 
-    builtin("match", "string", "regex") {
-      (pos, _, string: String, regex: String) =>
-        val out = new ArrayBuffer[Lazy]
-        regex.r.findAllMatchIn(string).foreach(
-          word => (0 to word.groupCount).foreach(index => out += Val.Str(pos, word.group(index)))
-        )
-        new Val.Arr(pos, out.toArray)
-    },
-
-    builtin("matches", "string", "regex") {
-      (pos, ev, string: String, regex: String) =>
-        regex.r.matches(string);
+    builtin("mapEntries", "value", "func") {
+      (pos, ev, obj: Val.Obj, func: Val.Func) => mapEntries(obj, func, ev)
     },
 
     // TODO: optimize with while-loop
@@ -373,7 +317,6 @@ object DS extends Library {
         value match {
           case array: Val.Arr => orderBy(array.asLazyArray, func, ev)
           case obj: Val.Obj => orderBy(obj, func, ev)
-          case Val.Null(_) => value
           case x => Error.fail("Expected Array or Object, got: " + x.prettyName)
         }
     },
@@ -403,7 +346,7 @@ object DS extends Library {
       read(dataFormats, data, mimeType, params, ev)
     },
 
-    //    //TODO add read mediatype
+    //TODO add read mediatype
     builtin("readUrl", "url") {
       (pos, ev, url: String) =>
         url match {
@@ -417,14 +360,6 @@ object DS extends Library {
         }
     },
 
-    builtin("scan", "str", "regex") {
-      (pos, ev, str: String, regex: String) =>
-        new Val.Arr(pos, regex.r.findAllMatchIn(str).map(item => {
-          new Val.Arr(pos, (0 to item.groupCount).map(i => Val.Str(pos, item.group(i))).toArray)
-        }).toArray
-        )
-    },
-
     builtin("sizeOf", "value") {
       (pos, ev, value: Val) =>
         value match {
@@ -432,29 +367,25 @@ object DS extends Library {
           case s: Val.Obj => s.visibleKeyNames.length
           case array: Val.Arr => array.asLazyArray.length
           case s: Val.Func => s.params.names.length
-          case Val.Null(_) => 0
           case x => Error.fail("Expected Array, String, or Object, got: " + x.prettyName)
         }
     },
 
-    builtin("splitBy", "str", "regex") {
+    builtin("split", "str", "regex") {
       (pos, _, str: String, regex: String) =>
         new Val.Arr(pos, regex.r.split(str).toIndexedSeq.map(item => Val.Str(pos, item)).toArray)
     },
 
     builtin("startsWith", "str1", "str2") {
-      (pos, ev, str1: String, str2: String) =>
-        str1.toUpperCase().startsWith(str2.toUpperCase());
+      (pos, ev, str1: String, str2: String) => str1.toUpperCase().startsWith(str2.toUpperCase());
     },
 
-    builtin("toString", "value") {
-      (pos, ev, value: Val) =>
-        convertToString(value)
+    builtin("stringOf", "value") {
+      (pos, ev, value: Val) => Materializer.stringify(value)(ev)
     },
 
     builtin("trim", "str") {
-      (pos, ev, str: String) =>
-        str.trim()
+      (pos, ev, str: String) => str.trim()
     },
 
     builtin("typeOf", "value") {
@@ -504,7 +435,7 @@ object DS extends Library {
 
     builtin0("uuid") {
       (pos, _) =>
-        Val.Str(pos, UUID.randomUUID().toString).asInstanceOf[Val]
+        UUID.randomUUID().toString
     },
 
     builtin("valuesOf", "obj") {
@@ -569,24 +500,26 @@ object DS extends Library {
     },
 
     // moved array to first position
-    builtin("foldLeft", "arr", "init", "func") { (pos, ev, arr: Val.Arr, init: Val, func: Val.Func) =>
-      var current = init
-      for (item <- arr.asLazyArray) {
-        val c = current
-        current = func.apply2(c, item, pos.noOffset)(ev)
-      }
-      current
+    builtin("foldLeft", "arr", "init", "func") {
+      (pos, ev, arr: Val.Arr, init: Val, func: Val.Func) =>
+        var current = init
+        for (item <- arr.asLazyArray) {
+          val c = current
+          current = func.apply2(c, item, pos.noOffset)(ev)
+        }
+        current
     },
 
     // TODO: add test
     // TODO: can we do this without reverse? has to traverse the collection twice
-    builtin("foldRight", "arr", "init", "func") { (pos, ev, arr: Val.Arr, init: Val, func: Val.Func) =>
-      var current = init
-      for (item <- arr.asLazyArray.reverse) {
-        val c = current
-        current = func.apply2(item, c, pos.noOffset)(ev)
-      }
-      current
+    builtin("foldRight", "arr", "init", "func") {
+      (pos, ev, arr: Val.Arr, init: Val, func: Val.Func) =>
+        var current = init
+        for (item <- arr.asLazyArray.reverse) {
+          val c = current
+          current = func.apply2(item, c, pos.noOffset)(ev)
+        }
+        current
     },
 
     builtin("parseInt", "str") { (pos, ev, str: String) =>
@@ -605,85 +538,37 @@ object DS extends Library {
       str.toDouble
     },
 
-    builtin("combine", "first", "second") {
-      (pos, ev, first: Val, second: Val) =>
-        first match {
-          case str: Val.Str =>
-            second match {
-              case Val.Str(_, str2) => Val.Str(pos, str.value.concat(str2)).asInstanceOf[Val]
-              case Val.Num(_, num) =>
-                Val.Str(pos, str.value.concat(
-                  if (Math.ceil(num) == Math.floor(num)) {
-                    num.toInt.toString
-                  } else {
-                    num.toString
-                  }
-                ))
-              case x => Error.fail("Expected String or Number, got: " + x.prettyName)
-            }
-          case Val.Num(_, num) =>
-            val stringNum = if (Math.ceil(num) == Math.floor(num)) {
-              num.toInt.toString
-            } else {
-              num.toString
-            }
-            second match {
-              case str: Val.Str => Val.Str(pos, stringNum.concat(str.value))
-              case Val.Num(_, num2) =>
-                Val.Str(pos, stringNum.concat(
-                  if (Math.ceil(num2) == Math.floor(num2)) {
-                    num2.toInt.toString
-                  } else {
-                    num2.toString
-                  }
-                ))
-              case x => Error.fail("Expected String or Number, got: " + x.prettyName)
-            }
-          case arr: Val.Arr =>
-            second match {
-              case arr2: Val.Arr => new Val.Arr(pos, arr.asLazyArray.concat(arr2.asLazyArray))
-              case x => Error.fail("Expected Array, got: " + x.prettyName)
-            }
-          case obj: Val.Obj =>
-            val out = new util.LinkedHashMap[String, Val.Obj.Member]()
-            second match {
-              case obj2: Val.Obj =>
-                obj.visibleKeyNames.map(sKey => out.put(sKey, memberOf(obj.value(sKey, pos)(ev))))
-                obj2.visibleKeyNames.map(sKey => out.put(sKey, memberOf(obj2.value(sKey, pos)(ev))))
-                new Val.Obj(pos, out, false, null, null)
-              case x => Error.fail("Expected Object, got: " + x.prettyName)
-            }
-          case x => Error.fail("Expected Array, Object, Number, or String, got: " + x.prettyName)
-        }
+    builtin("rm", "collection", "value") {
+      (pos, ev, obj: Val.Obj, value: Val) =>
+        Val.Obj.mk(pos,
+          (value match {
+            case str: Val.Str =>
+              obj.visibleKeyNames.toSeq.collect({
+                case key if !key.equals(str.value) => key -> memberOf(obj.value(key, pos)(ev))
+              })
+            case x => Error.fail("Expected String, got: " + x.prettyName)
+          }): _*).asInstanceOf[Val]
     },
 
-    builtin("remove", "collection", "value") {
-      (pos, ev, collection: Val, value: Val) =>
-        collection match {
-          case arr: Val.Arr =>
-            new Val.Arr(pos, arr.asLazyArray.collect({
-              case x if !ev.equal(x.force, value) => x
-            }))
-          case obj: Val.Obj =>
-            Val.Obj.mk(pos,
-              (value match {
-                case str: Val.Str =>
-                  obj.visibleKeyNames.toSeq.collect({
-                    case key if !key.equals(str.value) =>
-                      key -> memberOf(obj.value(key, pos)(ev))
-                  })
-                case arr: Val.Arr =>
-                  obj.visibleKeyNames.toSeq.collect({
-                    case key if !arr.asLazyArray.exists(item => item.force.asString.equals(key)) =>
-                      key -> memberOf(obj.value(key, pos)(ev))
-                  })
-                case x => Error.fail("Expected String or Array, got: " + x.prettyName)
-              }): _*).asInstanceOf[Val]
-          case x => Error.fail("Expected Array or Object, got: " + x.prettyName)
-        }
+    builtin("rmAll", "first", "second") {
+      (pos, ev, obj: Val.Obj, second: Val) =>
+        Val.Obj.mk(pos,
+          (second match {
+            case arr: Val.Arr =>
+              obj.visibleKeyNames.toSeq.collect({
+                case key if !arr.asLazyArray.exists(item => item.force.asString.equals(key)) =>
+                  key -> memberOf(obj.value(key, pos)(ev))
+              })
+            case x => Error.fail("Expected Array, got: " + x.prettyName)
+          }): _*).asInstanceOf[Val]
     },
 
-    builtin("removeMatch", "first", "second") {
+    builtin("rmWhereEq", "collection", "value") {
+      (pos, ev, arr: Val.Arr, value: Val) =>
+        new Val.Arr(pos, arr.asLazyArray.filter(x => !ev.equal(x.force, value)))
+    },
+
+    builtin("rmWhereIn", "first", "second") {
       (pos, ev, first: Val, second: Val) =>
         first match {
           case arr: Val.Arr =>
@@ -695,14 +580,14 @@ object DS extends Library {
               case x => Error.fail("Expected Array, got: " + x.prettyName)
             }
           case obj: Val.Obj =>
-            second match {
-              case obj2: Val.Obj =>
-                Val.Obj.mk(pos, obj.visibleKeyNames.toSeq.collect({
-                  case key if !(obj2.containsKey(key) && ev.equal(obj.value(key, pos)(ev), obj2.value(key, pos)(ev))) =>
-                    key -> memberOf(obj.value(key, pos)(ev))
-                }): _*)
-              case x => Error.fail("Expected Object, got: " + x.prettyName)
-            }
+            Val.Obj.mk(pos, (second match {
+                case arr: Val.Arr =>
+                  obj.visibleKeyNames.toSeq.collect({
+                    case key if !arr.asLazyArray.exists(item => item.force.asString.equals(key)) =>
+                      key -> memberOf(obj.value(key, pos)(ev))
+                  })
+                case x => Error.fail("Expected Array, got: " + x.prettyName)
+              }): _*).asInstanceOf[Val]
           case x => Error.fail("Expected Array or Object, got: " + x.prettyName)
         }
     },
@@ -722,14 +607,14 @@ object DS extends Library {
     builtin("reverse", "collection") {
       (pos, ev, collection: Val) =>
         collection match {
-          case str: Val.Str => Val.Str(pos, str.value.reverse)
+          case str: Val.Str => Val.Str(pos, str.value.reverse).asInstanceOf[Val]
           case arr: Val.Arr => new Val.Arr(pos, arr.asLazyArray.reverse).asInstanceOf[Val]
           case obj: Val.Obj =>
             var result: Seq[(String, Val.Obj.Member)] = Seq()
             obj.visibleKeyNames.foreach(key => result = result.prepended(
               key -> memberOf(obj.value(key, pos)(ev))
             ))
-            Val.Obj.mk(pos, result: _*)
+            Val.Obj.mk(pos, result: _*).asInstanceOf[Val]
           case x => Error.fail("Expected Array or Object, got: " + x.prettyName)
         }
     }
@@ -1067,7 +952,7 @@ object DS extends Library {
           // special case for ECB because of java.security.InvalidAlgorithmParameterException: ECB mode cannot use IV
           if (transformTokens.length >= 2 && "ECB".equals(transformTokens(1))) {
             cipher.init(Cipher.ENCRYPT_MODE, new SecretKeySpec(secret.getBytes, transformTokens(0).toUpperCase))
-            Val.Str(pos, Base64.getEncoder.encodeToString(cipher.doFinal(value.getBytes)))
+            Base64.getEncoder.encodeToString(cipher.doFinal(value.getBytes))
           } else {
             // https://stackoverflow.com/a/52571774/4814697
             val rand: SecureRandom = new SecureRandom()
@@ -1089,7 +974,7 @@ object DS extends Library {
             System.arraycopy(iv, 0, combinedPayload, 0, iv.length)
             System.arraycopy(encryptedBytes, 0, combinedPayload, iv.length, encryptedBytes.length)
 
-            Val.Str(pos, Base64.getEncoder.encodeToString(combinedPayload)).asInstanceOf[Val]
+            Base64.getEncoder.encodeToString(combinedPayload)
           }
       },
 
@@ -1118,7 +1003,7 @@ object DS extends Library {
           // special case for ECB because of java.security.InvalidAlgorithmParameterException: ECB mode cannot use IV
           if (transformTokens.length >= 2 && "ECB".equals(transformTokens(1))) {
             cipher.init(Cipher.DECRYPT_MODE, new SecretKeySpec(secret.getBytes, transformTokens(0).toUpperCase))
-            Val.Str(pos, new String(cipher.doFinal(Base64.getDecoder.decode(value))))
+            new String(cipher.doFinal(Base64.getDecoder.decode(value)))
           } else {
             // https://stackoverflow.com/a/52571774/4814697
             // separate prefix with IV from the rest of encrypted data//separate prefix with IV from the rest of encrypted data
@@ -1138,7 +1023,7 @@ object DS extends Library {
               new IvParameterSpec(iv),
               rand)
 
-            Val.Str(pos, new String(cipher.doFinal(encryptedBytes))).asInstanceOf[Val]
+            new String(cipher.doFinal(encryptedBytes))
           }
       }
     ),
@@ -1147,57 +1032,6 @@ object DS extends Library {
       builtin("select", "json", "path") {
         (pos, ev, json: Val, path: String) =>
           Materializer.reverse(pos, ujson.read(JsonPath.select(ujson.write(Materializer.apply(json)(ev)), path)))
-      }
-    ),
-
-    "regex" -> moduleFrom(
-      builtin("regexFullMatch", "expr", "str") {
-        (pos, ev, expr: String, str: String) =>
-          Materializer.reverse(pos, Regex.regexFullMatch(expr, str))
-      },
-
-      builtin("regexPartialMatch", "expr", "str") {
-        (pos, ev, expr: String, str: String) =>
-          Materializer.reverse(pos, Regex.regexPartialMatch(expr, str))
-      },
-
-      builtin("regexScan", "expr", "str") {
-        (pos, ev, expr: String, str: String) =>
-          Materializer.reverse(pos, Regex.regexScan(expr, str))
-      },
-
-      builtin("regexQuoteMeta", "str") {
-        (pos, ev, str: String) =>
-          Regex.regexQuoteMeta(str)
-      },
-
-      builtin("regexReplace", "str", "pattern", "replace") {
-        (pos, ev, str: String, pattern: String, replace: String) =>
-          Regex.regexReplace(str, pattern, replace)
-      },
-
-      builtinWithDefaults("regexGlobalReplace", "str" -> Val.Null(dummyPosition),
-        "pattern" -> Val.Null(dummyPosition),
-        "replace" -> Val.Null(dummyPosition)) { (args, pos, ev) =>
-        val str = args(0).asInstanceOf[Val.Str].value
-        val pattern = args(1).asInstanceOf[Val.Str].value
-        val replace = args(2)
-
-        replace match {
-          case replaceStr: Val.Str => Regex.regexGlobalReplace(str, pattern, replaceStr.value)
-          case replaceF: Val.Func =>
-            val func = new util.function.Function[Value, String] {
-              override def apply(t: Value): String = {
-                val v = Materializer.reverse(pos, t)
-                replaceF.apply1(v, pos.noOffset)(ev) match {
-                  case resultStr: Val.Str => resultStr.value
-                  case _ => Error.fail("The result of the replacement function must be a String")
-                }
-              }
-            }
-            Regex.regexGlobalReplace(str, pattern, func)
-          case _ => Error.fail("'replace' parameter must be either String or function")
-        }
       }
     ),
 
@@ -1361,7 +1195,7 @@ object DS extends Library {
           total
       },
 
-      builtin("divideBy", "array", "size") {
+      builtin("splitEvery", "array", "size") {
         (pos, ev, array: Val.Arr, size: Int) =>
           new Val.Arr(pos, array.asLazyArray.sliding(size, size).map(item => new Val.Arr(pos, item)).toArray)
       },
@@ -1386,16 +1220,11 @@ object DS extends Library {
           new Val.Arr(pos, out.toArray)
       },
 
-      builtin("every", "value", "func") {
-        (pos, ev, value: Val, func: Val.Func) =>
-          value match {
-            case arr: Val.Arr => Val.bool(pos, arr.forall(func.apply1(_, pos.noOffset)(ev).isInstanceOf[Val.True]))
-            case Val.Null(_) => Val.True(pos).asInstanceOf[Val]
-            case x => Error.fail("Expected Array, got: " + x.prettyName)
-          }
+      builtin("all", "value", "func") {
+        (pos, ev, arr: Val.Arr, func: Val.Func) => arr.forall(func.apply1(_, pos.noOffset)(ev).isInstanceOf[Val.True])
       },
 
-      builtin("firstWith", "arr", "func") {
+      builtin("find", "arr", "func") {
         (pos, ev, arr: Val.Arr, func: Val.Func) =>
           val pos = func.pos
           val args = func.params.names.length
@@ -1404,7 +1233,7 @@ object DS extends Library {
             arr.asLazyArray.zipWithIndex
               .find(item => func.apply2(item._1, Val.Num(pos, item._2), pos.noOffset)(ev).isInstanceOf[Val.True])
               .map(_._1)
-              .getOrElse(Val.Null)
+              .getOrElse(Val.Null(pos))
               .asInstanceOf[Val]
           else if (args == 1)
             arr.asLazyArray.find(func.apply1(_, pos.noOffset)(ev).isInstanceOf[Val.True])
@@ -1423,9 +1252,8 @@ object DS extends Library {
       builtin("indexOf", "container", "value") {
         (pos, ev, container: Val, value: Val) =>
           container match {
-            case str: Val.Str => Val.Num(pos, str.value.indexOf(value.cast[Val.Str].value)).asInstanceOf[Val]
-            case array: Val.Arr => Val.Num(pos, array.asLazyArray.indexWhere(lzy => ev.equal(lzy.force, value)))
-            case Val.Null(_) => Val.Num(pos, -1)
+            case str: Val.Str => str.value.indexOf(value.cast[Val.Str].value)
+            case array: Val.Arr => array.asLazyArray.indexWhere(lzy => ev.equal(lzy.force, value))
             case x => Error.fail("Expected String or Array, got: " + x.prettyName)
           }
       },
@@ -1435,7 +1263,7 @@ object DS extends Library {
           array.asLazyArray.indexWhere(func.apply1(_, pos.noOffset)(ev).isInstanceOf[Val.True])
       },
 
-      builtin4("join", "arrL", "arryR", "funcL", "funcR") {
+      builtin4("innerJoin", "arrL", "arryR", "funcL", "funcR") {
         (pos, ev, arrL: Val.Arr, arrR: Val.Arr, funcL: Val.Func, funcR: Val.Func) =>
           val out = new ArrayBuffer[Lazy]
 
@@ -1457,9 +1285,8 @@ object DS extends Library {
       builtin("lastIndexOf", "container", "value") {
         (pos, ev, container: Val, value: Val) =>
           container match {
-            case str: Val.Str => Val.Num(pos, str.value.lastIndexOf(value.cast[Val.Str].value)).asInstanceOf[Val]
-            case array: Val.Arr => Val.Num(pos, array.asLazyArray.lastIndexWhere(lzy => ev.equal(lzy.force, value)))
-            case Val.Null(_) => Val.Num(pos, -1)
+            case str: Val.Str => str.value.lastIndexOf(value.cast[Val.Str].value)
+            case array: Val.Arr => array.asLazyArray.lastIndexWhere(lzy => ev.equal(lzy.force, value))
             case x => Error.fail("Expected String or Array, got: " + x.prettyName)
           }
       },
@@ -1498,14 +1325,14 @@ object DS extends Library {
           // no idea why, but this sorts the result in the correct order
           val ordered = mutable.Map.from(
             array.asLazyArray
-              .groupBy(item => convertToString(func.apply1(item, pos.noOffset)(ev)))
+              .groupBy(item => stringValueOf(func.apply1(item, pos.noOffset)(ev)))
               .map(item => item._1 -> memberOf(Val.Num(pos, item._2.length)))
           )
 
           Val.Obj.mk(pos, ordered.toSeq: _*)
       },
 
-      builtin4("outerJoin", "arrL", "arrR", "funcL", "funcR") {
+      builtin4("rightJoin", "arrL", "arrR", "funcL", "funcR") {
         (pos, ev, arrL: Val.Arr, arrR: Val.Arr, funcL: Val.Func, funcR: Val.Func) =>
           //make backup array for leftovers
           var lzArrL = arrL.asLazyArray
@@ -1551,22 +1378,14 @@ object DS extends Library {
 
       builtin("slice", "arr", "start", "end") {
         (pos, ev, array: Val.Arr, start: Int, end: Int) =>
-          //version commented below is slightly slower
-          //new Val.Arr(pos, array.asLazyArray.splitAt(start)._2.splitAt(end-1)._1)
           new Val.Arr(pos, array.asLazyArray.zipWithIndex.filter({
             case (_, index) => (index >= start) && (index < end)
           }).map(_._1)
           )
       },
 
-      builtin("some", "value", "func") {
-        (pos, ev, value: Val, func: Val.Func) =>
-          value match {
-            case array: Val.Arr =>
-              Val.bool(pos, array.asLazyArray.exists(item => func.apply1(item, pos.noOffset)(ev).isInstanceOf[Val.True]))
-            case Val.Null(_) => value
-            case x => Error.fail("Expected Array, got: " + x.prettyName)
-          }
+      builtin("any", "value", "func") {
+        (pos, ev, array: Val.Arr, func: Val.Func) => array.asLazyArray.exists(item => func.apply1(item, pos.noOffset)(ev).isInstanceOf[Val.True])
       },
 
       builtin("splitAt", "array", "index") {
@@ -1609,18 +1428,18 @@ object DS extends Library {
       builtin("fromBase64", "value") {
         (pos, ev, value: Val) =>
           value match {
-            case x: Val.Num => Val.Str(pos, new String(Base64.getDecoder.decode(x.value.toString)))
-            case x: Val.Str => Val.Str(pos, new String(Base64.getDecoder.decode(x.value))).asInstanceOf[Val]
+            case x: Val.Num => new String(Base64.getDecoder.decode(x.value.toString))
+            case x: Val.Str => new String(Base64.getDecoder.decode(x.value))
             case x => Error.fail("Expected String, got: " + x.prettyName)
           }
       },
 
       builtin("fromHex", "value") {
-        (pos, ev, value: Val) =>
-          value match {
-            case x: Val.Str => Val.Str(pos, x.value.toSeq.sliding(2, 2).map(byte => Integer.parseInt(byte.unwrap, 16).toChar).mkString).asInstanceOf[Val]
-            case x => Error.fail("Expected String, got: " + x.prettyName)
-          }
+        (pos, ev, str: String) =>
+          str.toSeq
+            .sliding(2, 2)
+            .map(byte => Integer.parseInt(byte.unwrap, 16).toChar)
+            .mkString
       },
 
       builtin("readLinesWith", "value", "encoding") {
@@ -1635,9 +1454,9 @@ object DS extends Library {
         (pos, ev, value: Val) =>
           value match {
             case x: Val.Num =>
-              if (x.value % 1 == 0) Val.Str(pos, new String(Base64.getEncoder.encode(x.value.toInt.toString.getBytes())))
-              else Val.Str(pos, new String(Base64.getEncoder.encode(x.value.toString.getBytes())))
-            case x: Val.Str => Val.Str(pos, new String(Base64.getEncoder.encode(x.value.getBytes()))).asInstanceOf[Val]
+              if (x.value % 1 == 0) new String(Base64.getEncoder.encode(x.value.toInt.toString.getBytes()))
+              else new String(Base64.getEncoder.encode(x.value.toString.getBytes()))
+            case x: Val.Str => new String(Base64.getEncoder.encode(x.value.getBytes()))
             case x => Error.fail("Expected String, got: " + x.prettyName)
           }
       },
@@ -1645,8 +1464,8 @@ object DS extends Library {
       builtin("toHex", "value") {
         (pos, ev, value: Val) =>
           value match {
-            case x: Val.Num => Val.Str(pos, Integer.toString(x.value.toInt, 16).toUpperCase())
-            case x: Val.Str => Val.Str(pos, x.value.getBytes().map(_.toHexString).mkString.toUpperCase()).asInstanceOf[Val]
+            case x: Val.Num => Integer.toString(x.value.toInt, 16).toUpperCase()
+            case x: Val.Str => x.value.getBytes().map(_.toHexString).mkString.toUpperCase()
             case x => Error.fail("Expected String, got: " + x.prettyName)
           }
       },
@@ -1654,7 +1473,7 @@ object DS extends Library {
       builtin("writeLinesWith", "value", "encoding") {
         (pos, ev, value: Val.Arr, enc: String) =>
           val str = value.asLazyArray.map(item => item.force.asInstanceOf[Val.Str].value).mkString("\n") + "\n"
-          Val.Str(pos, new String(str.getBytes, enc)).asInstanceOf[Val]
+          new String(str.getBytes, enc)
       }
     ),
 
@@ -1672,61 +1491,24 @@ object DS extends Library {
           new Val.Arr(pos, out.toArray)
       },
 
-      builtin("everyEntry", "value", "func") {
-        (pos, ev, value: Val, func: Val.Func) =>
+      builtin("allEntries", "value", "func") {
+        (pos, ev, obj: Val.Obj, func: Val.Func) =>
           val pos = func.pos
           val args = func.params.names.length
-
-          value match {
-            case obj: Val.Obj =>
-              if (args == 2)
-                Val.bool(pos, obj.visibleKeyNames.toSeq.forall(key => func.apply2(obj.value(key, pos)(ev), Val.Str(pos, key), pos.noOffset)(ev).isInstanceOf[Val.True]))
-              else if (args == 1)
-                Val.bool(pos, obj.visibleKeyNames.toSeq.forall(key => func.apply1(obj.value(key, pos)(ev), pos.noOffset)(ev).isInstanceOf[Val.True]))
-              else {
-                Error.fail("Expected embedded function to have 1 or 2 parameters, received: " + args)
-              }
-            case Val.Null(_) => Val.True(pos).asInstanceOf[Val]
-            case x => Error.fail("Expected Array, got: " + x.prettyName)
+          if (args == 2)
+            obj.visibleKeyNames.toSeq.forall(key => func.apply2(obj.value(key, pos)(ev), Val.Str(pos, key), pos.noOffset)(ev).isInstanceOf[Val.True])
+          else if (args == 1)
+            obj.visibleKeyNames.toSeq.forall(key => func.apply1(obj.value(key, pos)(ev), pos.noOffset)(ev).isInstanceOf[Val.True])
+          else {
+            Error.fail("Expected embedded function to have 1 or 2 parameters, received: " + args)
           }
       },
 
-      builtin("mergeWith", "valueOne", "valueTwo") {
-        (pos, ev, valueOne: Val, valueTwo: Val) =>
-          val out = new util.LinkedHashMap[String, Val.Obj.Member]()
-          valueOne match {
-            case obj: Val.Obj =>
-              valueTwo match {
-                case obj2: Val.Obj =>
-                  obj.visibleKeyNames.foreach(
-                    key => out.put(key, memberOf(obj.value(key, pos)(ev)))
-                  )
-                  obj2.visibleKeyNames.foreach(
-                    key => out.put(key, memberOf(obj2.value(key, pos)(ev)))
-                  )
-                  new Val.Obj(pos, out, false, null, null)
-                case Val.Null(_) => valueOne
-                case x => Error.fail("Expected Object, got: " + x.prettyName)
-              }
-            case Val.Null(_) =>
-              valueTwo match {
-                case _: Val.Obj => valueTwo
-                case x => Error.fail("Expected Object, got: " + x.prettyName)
-              }
-            case x => Error.fail("Expected Object, got: " + x.prettyName)
-          }
-      },
-
-      builtin("someEntry", "value", "func") {
-        (pos, ev, value: Val, func: Val.Func) =>
-          value match {
-            case obj: Val.Obj =>
-              Val.bool(pos, obj.visibleKeyNames.exists(
-                item => func.apply2(obj.value(item, pos)(ev), Val.Str(pos, item), pos.noOffset)(ev).isInstanceOf[Val.True]
-              ))
-            case Val.Null(_) => Val.False(pos).asInstanceOf[Val]
-            case x => Error.fail("Expected Object, got: " + x.prettyName)
-          }
+      builtin("anyEntry", "value", "func") {
+        (pos, ev, obj: Val.Obj, func: Val.Func) =>
+          obj.visibleKeyNames.exists(
+            item => func.apply2(obj.value(item, pos)(ev), Val.Str(pos, item), pos.noOffset)(ev).isInstanceOf[Val.True]
+          )
       },
 
       builtin("takeWhile", "obj", "func") {
@@ -1748,9 +1530,8 @@ object DS extends Library {
               if ("[^2-9]".r.matches(x.toString)) {
                 Error.fail("Expected Binary, got: Number")
               }
-              else Val.Num(pos, BigInt.apply(x.value.toLong.toString, 2).bigInteger.longValue())
-            case x: Val.Str => Val.Num(pos, BigInt.apply(x.value, 2).bigInteger.longValue())
-            case Val.Null(_) => value
+              else BigInt.apply(x.value.toLong.toString, 2).bigInteger.doubleValue
+            case x: Val.Str => BigInt.apply(x.value, 2).bigInteger.doubleValue
             case x => Error.fail("Expected Binary, got: " + x.prettyName)
           }
       },
@@ -1760,11 +1541,10 @@ object DS extends Library {
           value match {
             case x: Val.Num =>
               if ("[^0-9a-f]".r.matches(x.value.toString.toLowerCase())) {
-                Error.fail("Expected Binary, got: Number")
+                Error.fail("Expected Hexadecimal, got: Number")
               }
-              else Val.Num(pos, BigInt.apply(x.value.toLong.toString, 16).bigInteger.longValue());
-            case x: Val.Str => Val.Num(pos, BigInt.apply(x.asString, 16).bigInteger.longValue());
-            case Val.Null(_) => value
+              else BigInt.apply(x.value.toLong.toString, 16).bigInteger.doubleValue
+            case x: Val.Str => BigInt.apply(x.asString, 16).bigInteger.doubleValue
             case x => Error.fail("Expected Binary, got: " + x.prettyName)
           }
       },
@@ -1772,10 +1552,9 @@ object DS extends Library {
       builtin("fromRadixNumber", "value", "num") {
         (pos, ev, value: Val, num: Int) =>
           value match {
-            case x: Val.Num => Val.Num(pos, BigInt.apply(x.value.toLong.toString, num).bigInteger.longValue())
-            case x: Val.Str => Val.Num(pos, BigInt.apply(x.value, num).bigInteger.longValue()).asInstanceOf[Val]
-            case x => Error.fail("Expected Binary, got: " + x.prettyName)
-            //null not supported in DW function
+            case x: Val.Num => BigInt.apply(x.value.toLong.toString, num).bigInteger.doubleValue
+            case x: Val.Str => BigInt.apply(x.value, num).bigInteger.doubleValue
+            case x => Error.fail("Expected Base(num), got: " + x.prettyName)
           }
       },
 
@@ -1783,13 +1562,12 @@ object DS extends Library {
         (pos, ev, value: Val) =>
           value match {
             case x: Val.Num =>
-              if (x.value < 0) Val.Str(pos, "-" + x.value.toLong.abs.toBinaryString)
-              else Val.Str(pos, x.value.toLong.toBinaryString)
+              if (x.value < 0) "-" + x.value.toLong.abs.toBinaryString
+              else x.value.toLong.toBinaryString
             case x: Val.Str =>
-              if (x.value.startsWith("-")) Val.Str(pos, x.value.toLong.abs.toBinaryString)
-              else Val.Str(pos, x.value.toLong.toBinaryString)
-            case Val.Null(_) => value
-            case x => Error.fail("Expected Binary, got: " + x.prettyName)
+              if (x.value.startsWith("-")) x.value.toLong.abs.toBinaryString
+              else x.value.toLong.toBinaryString
+            case x => Error.fail("Expected Number or String, got: " + x.prettyName)
           }
       },
 
@@ -1797,13 +1575,12 @@ object DS extends Library {
         (pos, ev, value: Val) =>
           value match {
             case x: Val.Num =>
-              if (x.value < 0) Val.Str(pos, "-" + x.value.toLong.abs.toHexString)
-              else Val.Str(pos, x.value.toLong.toHexString)
+              if (x.value < 0) "-" + x.value.toLong.abs.toHexString
+              else x.value.toLong.toHexString
             case x: Val.Str =>
-              if (x.value.startsWith("-")) Val.Str(pos, x.value.toLong.abs.toHexString)
-              else Val.Str(pos, x.value.toLong.toHexString)
-            case Val.Null(_) => value
-            case x => Error.fail("Expected Binary, got: " + x.prettyName)
+              if (x.value.startsWith("-")) x.value.toLong.abs.toHexString
+              else x.value.toLong.toHexString
+            case x => Error.fail("Expected Number or String, got: " + x.prettyName)
           }
       },
 
@@ -1811,12 +1588,12 @@ object DS extends Library {
         (pos, ev, value: Val, num: Int) =>
           value match {
             case x: Val.Num =>
-              if (x.value < 0) Val.Str(pos, "-" + BigInt.apply(x.value.toLong).toString(num))
-              else Val.Str(pos, BigInt.apply(x.value.toLong).toString(num)).asInstanceOf[Val]
+              if (x.value < 0) "-" + BigInt.apply(x.value.toLong).toString(num)
+              else BigInt.apply(x.value.toLong).toString(num)
             // Val.Str(Integer.toString(x.toInt, num))
             case x: Val.Str =>
-              if (x.value.startsWith("-")) Val.Str(pos, "-" + BigInt.apply(x.value.toLong).toString(num))
-              else Val.Str(pos, BigInt.apply(x.value.toLong).toString(num)).asInstanceOf[Val]
+              if (x.value.startsWith("-")) "-" + BigInt.apply(x.value.toLong).toString(num)
+              else BigInt.apply(x.value.toLong).toString(num)
             case x => Error.fail("Expected Binary, got: " + x.prettyName)
             //DW functions does not support null
           }
@@ -1825,58 +1602,43 @@ object DS extends Library {
 
     "strings" -> moduleFrom(
       builtin("appendIfMissing", "str1", "str2") {
-        (pos, ev, value: Val, append: String) =>
-          value match {
-            case str: Val.Str =>
-              var ret = str.value
-              if (!ret.endsWith(append)) {
-                ret = ret + append
-              }
-              Val.Str(pos, ret)
-            case Val.Null(_) => value
-            case x => Error.fail("Expected String, got: " + x.prettyName)
+        (pos, ev, str: String, append: String) =>
+          var ret = str
+          if (!ret.endsWith(append)) {
+            ret = ret + append
           }
+          ret
       },
 
       builtin("camelize", "str") {
-        (pos, ev, str: Val) =>
-          str match {
-            case value: Val.Str =>
-              //regex fo _CHAR
-              val regex = "(_+)([0-9A-Za-z])".r("underscore", "letter")
+        (pos, ev, str: String) =>
+          //regex fo _CHAR
+          val regex = "(_+)([0-9A-Za-z])".r("underscore", "letter")
 
-              //Start string at first non underscore, lower case xt
-              var temp = value.value.substring("[^_]".r.findFirstMatchIn(value.value).map(_.start).toList.head)
-              temp = temp.replaceFirst(temp.charAt(0).toString, temp.charAt(0).toLower.toString)
+          //Start string at first non underscore, lower case xt
+          var temp = str.substring("[^_]".r.findFirstMatchIn(str).map(_.start).toList.head)
+          temp = temp.replaceFirst(temp.charAt(0).toString, temp.charAt(0).toLower.toString)
 
-              //replace and uppercase
-              temp = regex.replaceAllIn(temp, m => s"${(m group "letter").toUpperCase()}")
-              Val.Str(pos, temp).asInstanceOf[Val]
-            case n: Val.Null => n
-            case x => Error.fail("Expected String, got: " + x.prettyName)
-          }
+          //replace and uppercase
+          temp = regex.replaceAllIn(temp, m => s"${(m group "letter").toUpperCase()}")
+          temp
       },
 
       builtin("capitalize", "str") {
-        (pos, ev, str: Val) =>
-          str match {
-            case value: Val.Str =>
-              //regex fo _CHAR
-              val regex = "([_\\s-]+)([0-9A-Za-z])([A-Z]+|)".r("one", "two", "three")
-              val middleRegex = "([a-z])([A-Z])".r("end", "start")
+        (pos, ev, str: String) =>
+          //regex fo _CHAR
+          val regex = "([_\\s-]+)([0-9A-Za-z])([A-Z]+|)".r("one", "two", "three")
+          val middleRegex = "([a-z])([A-Z])".r("end", "start")
 
-              //Start string at first non underscore, lower case xt
-              var temp = value.value.substring("[0-9A-Za-z]".r.findFirstMatchIn(value.value).map(_.start).toList.head)
-              temp = temp.replaceFirst(temp.charAt(0).toString, temp.charAt(0).toUpper.toString)
+          //Start string at first non underscore, lower case xt
+          var temp = str.substring("[0-9A-Za-z]".r.findFirstMatchIn(str).map(_.start).toList.head)
+          temp = temp.replaceFirst(temp.charAt(0).toString, temp.charAt(0).toUpper.toString)
 
-              //replace and uppercase
-              temp = regex.replaceAllIn(temp, m => s" ${(m group "two").toUpperCase() + (m group "three").toLowerCase()}")
-              temp = middleRegex.replaceAllIn(temp, m => s"${m group "end"} ${(m group "start").toUpperCase()}")
+          //replace and uppercase
+          temp = regex.replaceAllIn(temp, m => s" ${(m group "two").toUpperCase() + (m group "three").toLowerCase()}")
+          temp = middleRegex.replaceAllIn(temp, m => s"${m group "end"} ${(m group "start").toUpperCase()}")
 
-              Val.Str(pos, temp).asInstanceOf[Val]
-            case n: Val.Null => n
-            case x => Error.fail("Expected String, got: " + x.prettyName)
-          }
+          temp
       },
 
       builtin("charCode", "str") {
@@ -1890,24 +1652,19 @@ object DS extends Library {
       },
 
       builtin("dasherize", "str") {
-        (pos, ev, str: Val) =>
-          str match {
-            case value: Val.Str =>
-              //regex fo _CHAR
-              val regex = "([_\\s-]+)([0-9A-Za-z])([A-Z]+|)".r("one", "two", "three")
-              val middleRegex = "([a-z])([A-Z])".r("end", "start")
+        (pos, ev, str: String) =>
+          //regex fo _CHAR
+          val regex = "([_\\s-]+)([0-9A-Za-z])([A-Z]+|)".r("one", "two", "three")
+          val middleRegex = "([a-z])([A-Z])".r("end", "start")
 
-              //Start string at first non underscore, lower case xt
-              var temp = value.value
+          //Start string at first non underscore, lower case xt
+          var temp = str
 
-              //replace and uppercase
-              temp = regex.replaceAllIn(temp, m => s"-${(m group "two") + (m group "three").toLowerCase()}")
-              temp = middleRegex.replaceAllIn(temp, m => s"${m group "end"}-${m group "start"}")
+          //replace and uppercase
+          temp = regex.replaceAllIn(temp, m => s"-${(m group "two") + (m group "three").toLowerCase()}")
+          temp = middleRegex.replaceAllIn(temp, m => s"${m group "end"}-${m group "start"}")
 
-              Val.Str(pos, temp.toLowerCase());
-            case Val.Null(_) => str
-            case x => Error.fail("Expected String, got: " + x.prettyName)
-          }
+          temp.toLowerCase()
       },
 
       builtin("fromCharCode", "num") {
@@ -1918,14 +1675,7 @@ object DS extends Library {
       builtin("isAlpha", "str") {
         (pos, ev, str: Val) =>
           str match {
-            case value: Val.Str =>
-              if ("^[A-Za-z]+$".r.matches(value.value)) {
-                true
-              }
-              else {
-                false
-              }
-            case Val.Null(_) => false
+            case value: Val.Str => "^[A-Za-z]+$".r.matches(value.value)
             case _: Val.Num => false
             case _: Val.Bool => true
             case x => Error.fail("Expected String, got: " + x.prettyName)
@@ -1935,14 +1685,7 @@ object DS extends Library {
       builtin("isAlphanumeric", "str") {
         (pos, ev, str: Val) =>
           str match {
-            case value: Val.Str =>
-              if ("^[A-Za-z0-9]+$".r.matches(value.value)) {
-                true
-              }
-              else {
-                false
-              }
-            case Val.Null(_) => false
+            case value: Val.Str => "^[A-Za-z0-9]+$".r.matches(value.value)
             case _: Val.Num => true
             case _: Val.Bool => true
             case x => Error.fail("Expected String, got: " + x.prettyName)
@@ -1950,156 +1693,79 @@ object DS extends Library {
       },
 
       builtin("isLowerCase", "str") {
-        (pos, ev, str: Val) =>
-          str match {
-            case value: Val.Str =>
-              if ("^[a-z]+$".r.matches(value.value)) {
-                true
-              }
-              else {
-                false
-              }
-            case Val.Null(_) => false
-            case _: Val.Num => false
-            case _: Val.Bool => true
-            case x => Error.fail("Expected String, got: " + x.prettyName)
-          }
+        (pos, ev, str: String) => "^[a-z]+$".r.matches(str)
       },
 
       builtin("isNumeric", "str") {
         (pos, ev, str: Val) =>
           str match {
-            case value: Val.Str =>
-              if ("^[0-9]+$".r.matches(value.value)) {
-                true
-              }
-              else {
-                false
-              }
+            case value: Val.Str => "^[0-9]+$".r.matches(value.value)
             case _: Val.Num => true
-            case _: Val.Bool | Val.Null(_) => false
+            case _: Val.Bool => false
             case x => Error.fail("Expected String, got: " + x.prettyName)
           }
       },
 
       builtin("isUpperCase", "str") {
-        (pos, ev, str: Val) =>
-          str match {
-            case value: Val.Str =>
-              if ("^[A-Z]+$".r.matches(value.value)) {
-                true
-              }
-              else {
-                false
-              }
-            case _: Val.Num => false
-            case _: Val.Bool | Val.Null(_) => false
-            case x => Error.fail("Expected String, got: " + x.prettyName)
-          }
+        (pos, ev, str: String) => "^[A-Z]+$".r.matches(str)
       },
 
       builtin("isWhitespace", "str") {
-        (pos, ev, str: Val) =>
-          str match {
-            case value: Val.Str => value.value.trim().isEmpty
-            case _: Val.Num => false
-            case _: Val.Bool | Val.Null(_) => false
-            case x => Error.fail("Expected String, got: " + x.prettyName)
-          }
+        (pos, ev, str: String) => str.trim().isEmpty
       },
 
       builtin("leftPad", "str", "offset") {
         (pos, ev, str: Val, offset: Int) =>
           str match {
             case str: Val.Str =>
-              Val.Str(pos, ("%" + offset + "s").format(str.value))
-            case _: Val.True =>
-              Val.Str(pos, ("%" + offset + "s").format("true"))
-            case _: Val.False =>
-              Val.Str(pos, ("%" + offset + "s").format("false"))
+              ("%" + offset + "s").format(str.value)
             case x: Val.Num =>
               //TODO change to use sjsonnet's Format and DecimalFormat
-              Val.Str(pos, ("%" + offset + "s").format(new DecimalFormat("0.#").format(x.value))).asInstanceOf[Val]
-            case Val.Null(_) => str
+              ("%" + offset + "s").format(new DecimalFormat("0.#").format(x.value))
             case x => Error.fail("Expected String, got: " + x.prettyName)
           }
       },
 
       builtin("ordinalize", "num") {
         (pos, ev, num: Val) =>
-          (num match { //convert number value to string
-            case Val.Null(_) => "null"
+          val str = num match { //convert number value to string
             case value: Val.Str =>
-              if ("^[0-9]+$".r.matches(value.value)) {
-                value.value
-              }
-              else {
-                "X"
-              }
+              if ("^[0-9]+$".r.matches(value.value)) value.value
+              else Error.fail("Expected Number, got: " + value.value)
             case value: Val.Num => value.value.toInt.toString
             case _ => Error.fail("Expected Number, got: " + num.prettyName)
-          }) match { //convert string number to ordinalized string number
-            case "null" => Val.Null(pos)
-            case "X" => Error.fail("Expected Number, got: " + num.prettyName)
-            case str =>
-              if (str.endsWith("11") || str.endsWith("12") || str.endsWith("13")) {
-                Val.Str(pos, str + "th")
-              }
-              else {
-                if (str.endsWith("1")) {
-                  Val.Str(pos, str + "st")
-                }
-                else if (str.endsWith("2")) {
-                  Val.Str(pos, str + "nd")
-                }
-                else if (str.endsWith("3")) {
-                  Val.Str(pos, str + "rd")
-                }
-                else {
-                  Val.Str(pos, str + "th").asInstanceOf[Val]
-                }
-              }
+          }
+          if (str.endsWith("11") || str.endsWith("12") || str.endsWith("13")) str + "th"
+          else {
+            if (str.endsWith("1")) str + "st"
+            else if (str.endsWith("2")) str + "nd"
+            else if (str.endsWith("3")) str + "rd"
+            else str + "th"
           }
       },
 
       builtin("pluralize", "value") {
-        (pos, ev, value: Val) =>
-          value match {
-            case str: Val.Str =>
-              val comparator = str.value.toLowerCase()
-              val specialSList = List("monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday")
-              if (specialSList.contains(comparator)) {
-                Val.Str(pos, str.value + "s")
-              }
-              else if (comparator.isEmpty) Val.Str(pos, "")
-              else {
-                if (comparator.endsWith("y")) {
-                  Val.Str(pos, str.value.substring(0, str.value.length - 1) + "ies")
-                }
-                else if (comparator.endsWith("x")) {
-                  Val.Str(pos, str.value + "es")
-                }
-                else {
-                  Val.Str(pos, str.value + "s")
-                }
-              }
-            case Val.Null(_) => value
-            case x => Error.fail("Expected Number, got: " + x.prettyName)
+        (pos, ev, str: String) =>
+          val comparator = str.toLowerCase()
+          val specialSList = List("monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday")
+          if (specialSList.contains(comparator)) {
+            str + "s"
+          }
+          else if (comparator.isEmpty) ""
+          else {
+            if (comparator.endsWith("y")) str.substring(0, str.length - 1) + "ies"
+            else if (comparator.endsWith("x")) str + "es"
+            else str + "s"
           }
       },
 
       builtin("prependIfMissing", "str1", "str2") {
-        (pos, ev, value: Val, append: String) =>
-          value match {
-            case str: Val.Str =>
-              var ret = str.value
-              if (!ret.startsWith(append)) {
-                ret = append + ret
-              }
-              Val.Str(pos, ret)
-            case Val.Null(_) => value
-            case x => Error.fail("Expected String, got: " + x.prettyName)
+        (pos, ev, str: String, append: String) =>
+          var ret = str
+          if (!ret.startsWith(append)) {
+            ret = append + ret
           }
+          ret
       },
 
       builtin("repeat", "str", "num") {
@@ -2108,173 +1774,138 @@ object DS extends Library {
           for (_ <- 0 until num) {
             ret += str
           }
-          Val.Str(pos, ret).asInstanceOf[Val]
+          ret
       },
 
       builtin("rightPad", "str", "offset") {
         (pos, ev, value: Val, offset: Int) =>
           value match {
-            case str: Val.Str =>
-              Val.Str(pos, str.value.padTo(offset, ' '))
+            case str: Val.Str => str.value.padTo(offset, ' ')
             case x: Val.Num =>
               //TODO change to use sjsonnet's Format and DecimalFormat
-              Val.Str(pos, new DecimalFormat("0.#").format(x.value).padTo(offset, ' '))
-            case _: Val.True =>
-              Val.Str(pos, "true".padTo(offset, ' '))
-            case _: Val.False =>
-              Val.Str(pos, "false".padTo(offset, ' '))
-            case Val.Null(_) => value
+              new DecimalFormat("0.#").format(x.value).padTo(offset, ' ')
             case x => Error.fail("Expected String, got: " + x.prettyName)
           }
       },
 
       builtin("singularize", "value") {
-        (pos, ev, value: Val) =>
-          value match {
-            case s: Val.Str =>
-              if (s.value.endsWith("ies"))
-                Val.Str(pos, s.value.substring(0, s.value.length - 3) + "y")
-              else if (s.value.endsWith("es"))
-                Val.Str(pos, s.value.substring(0, s.value.length - 2))
-              else
-                Val.Str(pos, s.value.substring(0, s.value.length - 1))
-            case Val.Null(_) => value
-            case x => Error.fail("Expected String, got: " + x.prettyName)
-          }
+        (pos, ev, s: String) =>
+          if (s.endsWith("ies"))
+            s.substring(0, s.length - 3) + "y"
+          else if (s.endsWith("es"))
+            s.substring(0, s.length - 2)
+          else
+            s.substring(0, s.length - 1)
       },
 
       builtin("substringAfter", "value", "sep") {
-        (pos, ev, value: Val, sep: String) =>
-          value match {
-            case s: Val.Str =>
-              Val.Str(pos, s.value.substring(
-                s.value.indexOf(sep) match {
-                  case -1 => s.value.length
-                  case i => if (sep.equals("")) i else i + 1
-                }
-              ))
-            case Val.Null(_) => value
-            case x => Error.fail("Expected String, got: " + x.prettyName)
-          }
+        (pos, ev, s: String, sep: String) =>
+          s.substring(
+            s.indexOf(sep) match {
+              case -1 => s.length
+              case i => if (sep.equals("")) i else i + 1
+            }
+          )
       },
 
       builtin("substringAfterLast", "value", "sep") {
-        (pos, ev, value: Val, sep: String) =>
-          value match {
-            case s: Val.Str =>
-              val split = s.value.split(sep)
-              if (sep.equals("")) Val.Str(pos, "")
-              else if (split.length == 1) Val.Str(pos, "")
-              else Val.Str(pos, split(split.length - 1))
-            case Val.Null(_) => value
-            case x => Error.fail("Expected String, got: " + x.prettyName)
-          }
+        (pos, ev, s: String, sep: String) =>
+          val split = s.split(sep)
+          if (sep.equals("")) ""
+          else if (split.length == 1) ""
+          else split(split.length - 1)
       },
 
       builtin("substringBefore", "value", "sep") {
-        (pos, ev, value: Val, sep: String) =>
-          value match {
-            case s: Val.Str =>
-              Val.Str(pos, s.value.substring(0,
-                s.value.indexOf(sep) match {
-                  case -1 => 0
-                  case x => x
-                }
-              ))
-            case Val.Null(_) => value
-            case x => Error.fail("Expected String, got: " + x.prettyName)
-          }
+        (pos, ev, s: String, sep: String) =>
+          s.substring(0,
+            s.indexOf(sep) match {
+              case -1 => 0
+              case x => x
+            }
+          )
       },
 
       builtin("substringBeforeLast", "value", "sep") {
-        (pos, ev, value: Val, sep: String) =>
-          value match {
-            case s: Val.Str =>
-              Val.Str(pos, s.value.substring(0,
-                s.value.lastIndexOf(sep) match {
-                  case -1 => 0
-                  case x => x
-                }
-              ))
-            case Val.Null(_) => value
-            case x => Error.fail("Expected String, got: " + x.prettyName)
-          }
+        (pos, ev, s: String, sep: String) =>
+          s.substring(0,
+            s.lastIndexOf(sep) match {
+              case -1 => 0
+              case x => x
+            }
+          )
       },
 
       builtin("underscore", "str") {
-        (pos, ev, str: Val) =>
-          str match {
-            case value: Val.Str =>
-              //regex fo _CHAR
-              val regex = "([_\\s-]+)([0-9A-Za-z])([A-Z]+|)".r("one", "two", "three")
-              val middleRegex = "([a-z])([A-Z])".r("end", "start")
+        (pos, ev, str: String) =>
+          //regex fo _CHAR
+          val regex = "([_\\s-]+)([0-9A-Za-z])([A-Z]+|)".r("one", "two", "three")
+          val middleRegex = "([a-z])([A-Z])".r("end", "start")
 
-              //Start string at first non underscore, lower case xt
-              var temp = value.value.substring("[0-9A-Za-z]".r.findFirstMatchIn(value.value).map(_.start).toList.head)
-              temp = temp.replaceFirst(temp.charAt(0).toString, temp.charAt(0).toLower.toString)
+          //Start string at first non underscore, lower case xt
+          var temp = str.substring("[0-9A-Za-z]".r.findFirstMatchIn(str).map(_.start).toList.head)
+          temp = temp.replaceFirst(temp.charAt(0).toString, temp.charAt(0).toLower.toString)
 
-              //replace and uppercase
-              temp = regex.replaceAllIn(temp, m => s"_${(m group "two") + (m group "three")}")
-              temp = middleRegex.replaceAllIn(temp, m => s"${m group "end"}_${m group "start"}")
+          //replace and uppercase
+          temp = regex.replaceAllIn(temp, m => s"_${(m group "two") + (m group "three")}")
+          temp = middleRegex.replaceAllIn(temp, m => s"${m group "end"}_${m group "start"}")
 
-              Val.Str(pos, temp.toLowerCase);
-
-            case Val.Null(_) => str
-            case x => Error.fail("Expected String, got: " + x.prettyName)
-          }
+          temp.toLowerCase
       },
 
       builtin("unwrap", "value", "wrapper") {
-        (pos, ev, value: Val, wrapper: String) =>
-          value match {
-            case str: Val.Str =>
-              val starts = str.value.startsWith(wrapper)
-              val ends = str.value.endsWith(wrapper)
-              if (starts && ends) Val.Str(pos, str.value.substring(0 + wrapper.length, str.value.length - wrapper.length))
-              else if (starts) Val.Str(pos, str.value.substring(0 + wrapper.length, str.value.length) + wrapper)
-              else if (ends) Val.Str(pos, wrapper + str.value.substring(0, str.value.length - wrapper.length))
-              else str
-            case Val.Null(_) => value
-            case x => Error.fail("Expected String, got: " + x.prettyName)
-          }
+        (pos, ev, str: String, wrapper: String) =>
+          val starts = str.startsWith(wrapper)
+          val ends = str.endsWith(wrapper)
+          if (starts && ends) str.substring(0 + wrapper.length, str.length - wrapper.length)
+          else if (starts) str.substring(0 + wrapper.length, str.length) + wrapper
+          else if (ends) wrapper + str.substring(0, str.length - wrapper.length)
+          else str
       },
 
       builtin("withMaxSize", "value", "num") {
-        (pos, ev, value: Val, num: Int) =>
-          value match {
-            case str: Val.Str =>
-              if (str.value.length <= num) str
-              else Val.Str(pos, str.value.substring(0, num))
-            case Val.Null(_) => value
-            case x => Error.fail("Expected String, got: " + x.prettyName)
-          }
+        (pos, ev, str: String, num: Int) =>
+          if (str.length <= num) str
+          else str.substring(0, num)
       },
 
       builtin("wrapIfMissing", "value", "wrapper") {
-        (pos, ev, value: Val, wrapper: String) =>
-          value match {
-            case str: Val.Str =>
-              val ret = new StringBuilder(str.value)
-              if (!str.value.startsWith(wrapper)) ret.insert(0, wrapper)
-              if (!str.value.endsWith(wrapper)) ret.append(wrapper)
-              Val.Str(pos, ret.toString())
-            case Val.Null(_) => value
-            case x => Error.fail("Expected String, got: " + x.prettyName)
-          }
+        (pos, ev, str: String, wrapper: String) =>
+          val ret = new mutable.StringBuilder(str)
+          if (!str.startsWith(wrapper)) ret.insert(0, wrapper)
+          if (!str.endsWith(wrapper)) ret.append(wrapper)
+          ret.toString()
       },
 
-      builtin("wrapWith", "value", "wrapper") {
-        (pos, ev, value: Val, wrapper: String) =>
-          value match {
-            case str: Val.Str => Val.Str(pos, wrapper + str.value + wrapper)
-            case Val.Null(_) => value
-            case x => Error.fail("Expected String, got: " + x.prettyName)
-          }
+      builtin("wrap", "value", "wrapper") {
+        (pos, ev, str: String, wrapper: String) => wrapper + str + wrapper
+      },
+
+      builtin("scan", "str", "regex") {
+        (pos, ev, str: String, regex: String) =>
+          new Val.Arr(pos, regex.r.findAllMatchIn(str).map(item => {
+            new Val.Arr(pos, (0 to item.groupCount).map(i => Val.Str(pos, item.group(i))).toArray)
+          }).toArray
+          )
+      },
+
+      builtin("match", "string", "regex") {
+        (pos, _, string: String, regex: String) =>
+          val out = new ArrayBuffer[Lazy]
+          regex.r.findAllMatchIn(string).foreach(
+            word => (0 to word.groupCount).foreach(index => out += Val.Str(pos, word.group(index)))
+          )
+          new Val.Arr(pos, out.toArray)
+      },
+
+      builtin("matches", "string", "regex") {
+        (pos, ev, string: String, regex: String) =>
+          regex.r.matches(string);
       }
-    )
+    ),
   ).asJava
 
-  private def convertToString(value: Val): String = {
+  private def stringValueOf(value: Val): String = {
     value match {
       case x: Val.Num =>
         val tmp = x.value
@@ -2543,14 +2174,14 @@ object DS extends Library {
     if (args == 2) {
       while (i < array.length) {
         val v = array(i)
-        val k = convertToString(func.apply2(v, Val.Num(pos, i), pos.noOffset)(ev))
+        val k = stringValueOf(func.apply2(v, Val.Num(pos, i), pos.noOffset)(ev))
         mScala.getOrElseUpdate(k, mutable.ArrayBuffer[Lazy]()).addOne(v)
         i = i + 1
       }
     } else if (args == 1) {
       while (i < array.length) {
         val v = array(i)
-        val k = convertToString(func.apply1(v, pos.noOffset)(ev))
+        val k = stringValueOf(func.apply1(v, pos.noOffset)(ev))
         mScala.getOrElseUpdate(k, mutable.ArrayBuffer[Lazy]()).addOne(v)
         i = i + 1
       }
@@ -2573,7 +2204,7 @@ object DS extends Library {
       while (i < obj.visibleKeyNames.length) {
         val k = obj.visibleKeyNames(i)
         val v = obj.value(k, pos)(ev)
-        val funcKey = convertToString(func.apply2(v, Val.Str(pos, k), pos.noOffset)(ev))
+        val funcKey = stringValueOf(func.apply2(v, Val.Str(pos, k), pos.noOffset)(ev))
         mScala.getOrElseUpdate(funcKey, new util.LinkedHashMap[String, Val.Obj.Member]()).put(k, memberOf(v))
         i = i + 1
       }
@@ -2581,7 +2212,7 @@ object DS extends Library {
       while (i < obj.visibleKeyNames.length) {
         val k = obj.visibleKeyNames(i)
         val v = obj.value(k, pos)(ev)
-        val funcKey = convertToString(func.apply1(v, pos.noOffset)(ev))
+        val funcKey = stringValueOf(func.apply1(v, pos.noOffset)(ev))
         mScala.getOrElseUpdate(funcKey, new util.LinkedHashMap[String, Val.Obj.Member]()).put(k, memberOf(v))
         i = i + 1
       }

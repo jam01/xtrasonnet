@@ -52,7 +52,6 @@ public class CoreTest {
     @Test
     void test_filter() {
         assertEquals("[3,4,5]", transform("ds.filter([0,1,2,3,4,5], function(value) value >= 3)"));
-        assertEquals("null", transform("ds.filter(null, function(value) value >= 3)"));
         assertEquals("[3,4,5]", transform("ds.filter([0,1,2,3,4,5], function(value,index) index >= 3)"));
     }
 
@@ -65,25 +64,23 @@ public class CoreTest {
 
     @Test
     void test_find() {
-        assertEquals("[1,4]", transform("ds.find([1,2,3,4,2,5], 2)"));
-        assertEquals("[0,2]", transform("ds.find('aba', 'a')"));
-        assertEquals("[2,8]", transform("ds.find('I heart DataWeave', '\\\\w*ea\\\\w*(\\\\b)')"));
+        assertEquals("[1,4]", transform("ds.indicesOf([1,2,3,4,2,5], 2)"));
+        assertEquals("[0,2]", transform("ds.indicesOf('aba', 'a')"));
+        assertEquals("[2,8]", transform("ds.indicesOf('I heart DataWeave', '\\\\w*ea\\\\w*(\\\\b)')"));
         // TODO Regex version may need work, doesnt seem to be 1:1 with DW
     }
 
     @Test
     void test_flatMap() {
         assertEquals("[3,5,1,2,5]", transform("ds.flatMap([[3,5],[1,2,5]], function(value) value)"));
-        assertEquals("null", transform("ds.flatMap(null, function(value) value)"));
         assertEquals("[3,6,1,3,7]", transform("ds.flatMap([[3,5],[1,2,5]], function(value,index) value + index)"));
     }
 
     @Test
     void test_flatten() {
         assertEquals("[0,0,1,1,2,3,5,8]", transform("ds.flatten([ [0.0, 0], [1,1], [2,3], [5,8] ])"));
-        assertEquals("null", transform("ds.flatten(null)"));
-        assertEquals("[null]", transform("ds.flatten([null])"));
-        assertEquals("[null,null,null]", transform("ds.flatten([[null,null],null])"));
+        assertEquals("[null]", transform("ds.flatten([[null]])"));
+        assertEquals("[null,null,null]", transform("ds.flatten([[null, null],[null]])"));
     }
 
 
@@ -151,10 +148,10 @@ public class CoreTest {
 
     @Test
     void test_joinBy() {
-        assertEquals("1-2-3.5", transform("ds.joinBy([1.0,2,3.5], '-')"));
-        assertEquals("a-b-c", transform("ds.joinBy(['a','b','c'], '-')"));
-        assertEquals("a-b-c", transform("ds.joinBy(['a','b','c'], '-')"));
-        assertEquals("true-false-true", transform("ds.joinBy([true,false,true], '-')"));
+        assertEquals("1-2-3.5", transform("ds.join([1.0,2,3.5], '-')"));
+        assertEquals("a-b-c", transform("ds.join(['a','b','c'], '-')"));
+        assertEquals("a-b-c", transform("ds.join(['a','b','c'], '-')"));
+        assertEquals("true-false-true", transform("ds.join([true,false,true], '-')"));
     }
 
     @Test
@@ -171,7 +168,6 @@ public class CoreTest {
     void test_map() {
         assertEquals("[{obj:1},{obj:3}]", transform("ds.map([1,2], function(item,index) {'obj': item+index})"));
         assertEquals("[1,2]", transform("ds.map([1,2], function(item) item)"));
-        assertEquals("null", transform("ds.map(null, function(item) item)"));
     }
 
     @Test
@@ -183,13 +179,13 @@ public class CoreTest {
 
     @Test
     void test_match() {
-        assertEquals("[me@mulesoft.com,me,mulesoft]", transform("ds.match('me@mulesoft.com', '([a-z]*)@([a-z]*).com')"));
+        assertEquals("[me@mulesoft.com,me,mulesoft]", transform("ds.strings.match('me@mulesoft.com', '([a-z]*)@([a-z]*).com')"));
     }
 
     @Test
     void test_matches() {
-        assertEquals("true", transform("ds.matches('admin123', 'a.*\\\\d+')"));
-        assertEquals("false", transform("ds.matches('admin123', 'b.*\\\\d+')"));
+        assertEquals("true", transform("ds.strings.matches('admin123', 'a.*\\\\d+')"));
+        assertEquals("false", transform("ds.strings.matches('admin123', 'b.*\\\\d+')"));
     }
 
     @Test
@@ -269,7 +265,7 @@ public class CoreTest {
 
     @Test
     void test_scan() {
-        assertEquals("[[anypt@mulesoft.com,anypt,mulesoft],[max@mulesoft.com,max,mulesoft]]", transform("ds.scan('anypt@mulesoft.com,max@mulesoft.com', '([a-z]*)@([a-z]*).com')"));
+        assertEquals("[[anypt@mulesoft.com,anypt,mulesoft],[max@mulesoft.com,max,mulesoft]]", transform("ds.strings.scan('anypt@mulesoft.com,max@mulesoft.com', '([a-z]*)@([a-z]*).com')"));
     }
 
     @Test
@@ -277,21 +273,20 @@ public class CoreTest {
         assertEquals("5", transform("ds.sizeOf([1,2,3,4,5])"));
         assertEquals("5", transform("ds.sizeOf('Hello')"));
         assertEquals("1", transform("ds.sizeOf({'a':0})"));
-        assertEquals("0", transform("ds.sizeOf(null)"));
     }
 
     @Test
     void test_splitBy() {
         String input = "{" +
-                "'split1': " + "ds.splitBy('a-b-c','^*.b.')," +
-                "'split2': " + "ds.splitBy('hello world','\\\\s')," +
-                "'split3': " + "ds.splitBy('no match','^s')," +
-                "'split4': " + "ds.splitBy('no match','^n..')," +
-                "'split5': " + "ds.splitBy('a1b2c3d4A1B2C3D','^*[0-9A-Z]')," +
-                "'split6': " + "ds.splitBy('a-b-c','-')," +
-                "'split7': " + "ds.splitBy('hello world','')," +
-                "'split8': " + "ds.splitBy('first,middle,last',',')," +
-                "'split9': " + "ds.splitBy('no split','NO')" +
+                "'split1': " + "ds.split('a-b-c','^*.b.')," +
+                "'split2': " + "ds.split('hello world','\\\\s')," +
+                "'split3': " + "ds.split('no match','^s')," +
+                "'split4': " + "ds.split('no match','^n..')," +
+                "'split5': " + "ds.split('a1b2c3d4A1B2C3D','^*[0-9A-Z]')," +
+                "'split6': " + "ds.split('a-b-c','-')," +
+                "'split7': " + "ds.split('hello world','')," +
+                "'split8': " + "ds.split('first,middle,last',',')," +
+                "'split9': " + "ds.split('no split','NO')" +
                 "}";
         String comparison = "{split1:[a,c]," +
                 "split2:[hello,world]," +
@@ -317,9 +312,9 @@ public class CoreTest {
 
     @Test
     void test_toString() {
-        assertEquals("5", transform("ds.toString(5)"));
-        assertEquals("true", transform("ds.toString(true)"));
-        assertEquals("null", transform("ds.toString(null)"));
+        assertEquals("5", transform("ds.stringOf(5)"));
+        assertEquals("true", transform("ds.stringOf(true)"));
+        assertEquals("null", transform("ds.stringOf(null)"));
     }
 
     @Test
@@ -362,26 +357,15 @@ public class CoreTest {
     }
 
     @Test
-    void test_combine() {
-        assertEquals("[1,2]", transform("ds.combine([1],[2])"));
-        assertEquals("{a:1,b:2}", transform("ds.combine({a:1},{b:2})"));
-        assertEquals("12", transform("ds.combine(1,2)"));
-        assertEquals("1.22", transform("ds.combine(1.2,2)"));
-        assertEquals("12", transform("ds.combine('1',2)"));
-        assertEquals("12", transform("ds.combine('1','2')"));
-    }
-
-    @Test
     void test_remove() {
-        assertEquals("[2]", transform("ds.remove([1,2,1],1)"));
-        assertEquals("{b:2}", transform("ds.remove({a:1,b:2},'a')"));
-        assertEquals("{b:2}", transform("ds.remove({a:1,b:2,c:3},['a','c'])"));
+        assertEquals("[2]", transform("ds.rmWhereEq([1,2,1],1)"));
+        assertEquals("{b:2}", transform("ds.rm({a:1,b:2},'a')"));
     }
 
     @Test
-    void test_removeMatch() {
-        assertEquals("[2]", transform("ds.removeMatch([1,2,1],[1,3])"));
-        assertEquals("{b:2}", transform("ds.removeMatch({a:1,b:2},{a:1,c:3})"));
+    void test_removeAll() {
+        assertEquals("[2]", transform("ds.rmWhereIn([1,2,1],[1,3])"));
+        assertEquals("{b:2}", transform("ds.rmAll({a:1,b:2,c:3},['a','c'])"));
     }
 
     @Test

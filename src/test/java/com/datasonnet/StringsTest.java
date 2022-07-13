@@ -25,7 +25,6 @@ public class StringsTest {
     void testStrings_appendIfMissing() {
         assertEquals("abcxyz", transform("ds.strings.appendIfMissing('abc', 'xyz')"));
         assertEquals("abcxyz", transform("ds.strings.appendIfMissing('abcxyz', 'xyz')"));
-        assertEquals("null", transform("ds.strings.appendIfMissing(null, '')"));
         assertEquals("xyzaxyz", transform("ds.strings.appendIfMissing('xyza', 'xyz')"));
         assertEquals("xyz", transform("ds.strings.appendIfMissing('', 'xyz')"));
     }
@@ -35,7 +34,6 @@ public class StringsTest {
         assertEquals("customerFirstName", transform("ds.strings.camelize('customer_first_name')"));
         assertEquals("customerFirstName", transform("ds.strings.camelize('_customer_first_name')"));
         assertEquals("customerFirstName", transform("ds.strings.camelize('_______customer_first_name')"));
-        assertEquals("null", transform("ds.strings.camelize(null)"));
     }
 
     @Test
@@ -44,7 +42,6 @@ public class StringsTest {
         assertEquals("Customer First Name", transform("ds.strings.capitalize('customer_first_name')"));
         assertEquals("Customer Name", transform("ds.strings.capitalize('customer NAME')"));
         assertEquals("Customer Name", transform("ds.strings.capitalize('customerName')"));
-        assertEquals("null", transform("ds.strings.capitalize(null)"));
     }
 
     @Test
@@ -65,7 +62,6 @@ public class StringsTest {
         assertEquals("customer-first-name", transform("ds.strings.dasherize('customer_first_name')"));
         assertEquals("customer-name", transform("ds.strings.dasherize('customer NAME')"));
         assertEquals("customer-name", transform("ds.strings.dasherize('customerName')"));
-        assertEquals("null", transform("ds.strings.dasherize(null)"));
     }
 
     @Test
@@ -95,8 +91,6 @@ public class StringsTest {
         assertEquals("true", transform("ds.strings.isLowerCase('sdfvxer')"));
         assertEquals("false", transform("ds.strings.isLowerCase('ecvt4')"));
         assertEquals("false", transform("ds.strings.isLowerCase('eCvt')"));
-        assertEquals("true", transform("ds.strings.isLowerCase(true)"));
-        assertEquals("false", transform("ds.strings.isLowerCase(45)"));
     }
 
     @Test
@@ -111,29 +105,22 @@ public class StringsTest {
         assertEquals("true", transform("ds.strings.isUpperCase('SDFVXER')"));
         assertEquals("false", transform("ds.strings.isUpperCase('ECVT4')"));
         assertEquals("false", transform("ds.strings.isUpperCase('EcVT')"));
-        assertEquals("false", transform("ds.strings.isUpperCase(true)"));
-        assertEquals("false", transform("ds.strings.isUpperCase(45)"));
     }
 
     @Test
     void testStrings_isWhitespace() {
-        assertEquals("false", transform("ds.strings.isWhitespace(null)"));
         assertEquals("true", transform("ds.strings.isWhitespace('')"));
         assertEquals("true", transform("ds.strings.isWhitespace('       ')"));
         assertEquals("false", transform("ds.strings.isWhitespace('   abc    ')"));
-        assertEquals("false", transform("ds.strings.isWhitespace(true)"));
-        assertEquals("false", transform("ds.strings.isWhitespace(45)"));
     }
 
     @Test
     void testStrings_leftPad() {
-        assertEquals("null", transform("ds.strings.leftPad(null,3)"));
         assertEquals("   ", transform("ds.strings.leftPad('',3)"));
         assertEquals("  bat", transform("ds.strings.leftPad('bat',5)"));
         assertEquals("bat", transform("ds.strings.leftPad('bat',3)"));
         assertEquals("bat", transform("ds.strings.leftPad('bat',-1)"));
         assertEquals(" 45", transform("ds.strings.leftPad(45,3)"));
-        assertEquals("      true", transform("ds.strings.leftPad(true,10)"));
     }
 
     @Test
@@ -143,12 +130,10 @@ public class StringsTest {
         assertEquals("3rd", transform("ds.strings.ordinalize(3)"));
         assertEquals("111th", transform("ds.strings.ordinalize(111)"));
         assertEquals("22nd", transform("ds.strings.ordinalize(22)"));
-        assertEquals("null", transform("ds.strings.ordinalize(null)"));
     }
 
     @Test
     void testStrings_pluralize() {
-        assertEquals("null", transform("ds.strings.pluralize(null)"));
         assertEquals("helps", transform("ds.strings.pluralize('help')"));
         assertEquals("boxes", transform("ds.strings.pluralize('box')"));
         assertEquals("mondays", transform("ds.strings.pluralize('monday')"));
@@ -159,7 +144,6 @@ public class StringsTest {
     void testStrings_prependIfMissing() {
         assertEquals("xyzabc", transform("ds.strings.prependIfMissing('abc', 'xyz')"));
         assertEquals("xyzabc", transform("ds.strings.prependIfMissing('xyzabc', 'xyz')"));
-        assertEquals("null", transform("ds.strings.prependIfMissing(null, '')"));
         assertEquals("xyzaxyz", transform("ds.strings.prependIfMissing('axyz', 'xyz')"));
         assertEquals("xyz", transform("ds.strings.prependIfMissing('', 'xyz')"));
     }
@@ -173,18 +157,15 @@ public class StringsTest {
 
     @Test
     void testStrings_rightPad() {
-        assertEquals("null", transform("ds.strings.rightPad(null,3)"));
         assertEquals("   ", transform("ds.strings.rightPad('',3)"));
         assertEquals("bat  ", transform("ds.strings.rightPad('bat',5)"));
         assertEquals("bat", transform("ds.strings.rightPad('bat',3)"));
         assertEquals("bat", transform("ds.strings.rightPad('bat',-1)"));
         assertEquals("45 ", transform("ds.strings.rightPad(45,3)"));
-        assertEquals("true      ", transform("ds.strings.rightPad(true,10)"));
     }
 
     @Test
     void testStrings_singularize() {
-        assertEquals("null", transform("ds.strings.singularize(null)"));
         assertEquals("help", transform("ds.strings.singularize('helps')"));
         assertEquals("box", transform("ds.strings.singularize('boxes')"));
         assertEquals("monday", transform("ds.strings.singularize('mondays')"));
@@ -193,7 +174,6 @@ public class StringsTest {
 
     @Test
     void testStrings_substringAfter() {
-        assertEquals("null", transform("ds.strings.substringAfter(null, \"'\")"));
         assertEquals("", transform("ds.strings.substringAfter('', '-')"));
         assertEquals("bc", transform("ds.strings.substringAfter('abc', 'a')"));
         assertEquals("c", transform("ds.strings.substringAfter('abc', 'b')"));
@@ -204,7 +184,6 @@ public class StringsTest {
 
     @Test
     void testStrings_substringAfterLast() {
-        assertEquals("null", transform("ds.strings.substringAfterLast(null, \"'\")"));
         assertEquals("", transform("ds.strings.substringAfterLast('', '-')"));
         assertEquals("xy", transform("ds.strings.substringAfterLast('abcaxy', 'a')"));
         assertEquals("c", transform("ds.strings.substringAfterLast('abc', 'b')"));
@@ -215,7 +194,6 @@ public class StringsTest {
 
     @Test
     void testStrings_substringBefore() {
-        assertEquals("null", transform("ds.strings.substringBefore(null, \"'\")"));
         assertEquals("", transform("ds.strings.substringBefore('', '-')"));
         assertEquals("", transform("ds.strings.substringBefore('abc', 'a')"));
         assertEquals("a", transform("ds.strings.substringBefore('abc', 'b')"));
@@ -226,7 +204,6 @@ public class StringsTest {
 
     @Test
     void testStrings_substringBeforeLast() {
-        assertEquals("null", transform("ds.strings.substringBeforeLast(null, \"'\")"));
         assertEquals("", transform("ds.strings.substringBeforeLast('', '-')"));
         assertEquals("", transform("ds.strings.substringBeforeLast('abc', 'a')"));
         assertEquals("a", transform("ds.strings.substringBeforeLast('abc', 'b')"));
@@ -241,12 +218,10 @@ public class StringsTest {
         assertEquals("customer_first_name", transform("ds.strings.underscore('customer-first-name')"));
         assertEquals("customer_name", transform("ds.strings.underscore('customer NAME')"));
         assertEquals("customer_name", transform("ds.strings.underscore('customerName')"));
-        assertEquals("null", transform("ds.strings.underscore(null)"));
     }
 
     @Test
     void testStrings_unwrap() {
-        assertEquals("null", transform("ds.strings.unwrap(null, '')"));
         assertEquals("abc", transform("ds.strings.unwrap('abc', \"'\")"));
         assertEquals("ABabcBA", transform("ds.strings.unwrap('AABabcBAA', 'A')"));
         assertEquals("A", transform("ds.strings.unwrap('A', '#')"));
@@ -255,7 +230,6 @@ public class StringsTest {
 
     @Test
     void testStrings_withMaxSize() {
-        assertEquals("null", transform("ds.strings.withMaxSize(null, 10)"));
         assertEquals("123", transform("ds.strings.withMaxSize('123', 10)"));
         assertEquals("123", transform("ds.strings.withMaxSize('123', 3)"));
         assertEquals("12", transform("ds.strings.withMaxSize('123', 2)"));
@@ -264,7 +238,6 @@ public class StringsTest {
 
     @Test
     void testStrings_wrapIfMissing() {
-        assertEquals("null", transform("ds.strings.wrapIfMissing(null, \"'\")"));
         assertEquals("'abc'", transform("ds.strings.wrapIfMissing('abc', \"'\")"));
         assertEquals("'abc'", transform("ds.strings.wrapIfMissing(\"'abc'\", \"'\")"));
         assertEquals("'abc'", transform("ds.strings.wrapIfMissing('abc', \"'\")"));
@@ -272,8 +245,7 @@ public class StringsTest {
 
     @Test
     void testStrings_wrapWith() {
-        assertEquals("null", transform("ds.strings.wrapWith(null, \"'\")"));
-        assertEquals("'abc'", transform("ds.strings.wrapWith('abc', \"'\")"));
-        assertEquals("''abc'", transform("ds.strings.wrapWith(\"'abc\", \"'\")"));
+        assertEquals("'abc'", transform("ds.strings.wrap('abc', \"'\")"));
+        assertEquals("''abc'", transform("ds.strings.wrap(\"'abc\", \"'\")"));
     }
 }

@@ -37,30 +37,16 @@ public class ObjectsTest {
 
     @Test
     void testObjects_everyEntry() {
-        assertEquals("true", transform("ds.objects.everyEntry({'a':'','b':'123'}, function(value) std.isString(value))"));
-        assertEquals("false", transform("ds.objects.everyEntry({'a':'','b':'123'}, function(value,key) key =='a')"));
-        assertEquals("true", transform("ds.objects.everyEntry({'b':''}, function(value,key) key == 'b')"));
-        assertEquals("true", transform("ds.objects.everyEntry(null, function(value) std.isString(value))"));
-        assertEquals("true", transform("ds.objects.everyEntry(null, function(value) std.isString(value))"));
-    }
-
-    @Test
-    void testObjects_mergeWith() {
-        String obj1, obj2;
-        obj1 = "{'a': true, 'b': 1}";
-        obj2 = "{'a': false, 'c': 'Test'}";
-
-        assertEquals("{a:false,b:1,c:Test}", transform("ds.objects.mergeWith(" + obj1 + ", " + obj2 + ")"));
-        assertEquals("{a:true,b:1}", transform("ds.objects.mergeWith(" + obj1 + ", null)"));
-        assertEquals("{a:false,c:Test}", transform("ds.objects.mergeWith(null, " + obj2 + ")"));
+        assertEquals("true", transform("ds.objects.allEntries({'a':'','b':'123'}, function(value) std.isString(value))"));
+        assertEquals("false", transform("ds.objects.allEntries({'a':'','b':'123'}, function(value,key) key =='a')"));
+        assertEquals("true", transform("ds.objects.allEntries({'b':''}, function(value,key) key == 'b')"));
     }
 
     @Test
     void testObjects_someEntry() {
-        assertEquals("true", transform("ds.objects.someEntry({ 'a' : true, 'b' : 1}, function(value,key) value == true)"));
-        assertEquals("false", transform("ds.objects.someEntry({ 'a' : true, 'b' : 1}, function(value,key) value == false)"));
-        assertEquals("true", transform("ds.objects.someEntry({ 'a' : true, 'b' : 1}, function(value,key) key == 'a')"));
-        assertEquals("false", transform("ds.objects.someEntry(null, function(value,key) key == 'a')"));
+        assertEquals("true", transform("ds.objects.anyEntry({ 'a' : true, 'b' : 1}, function(value,key) value == true)"));
+        assertEquals("false", transform("ds.objects.anyEntry({ 'a' : true, 'b' : 1}, function(value,key) value == false)"));
+        assertEquals("true", transform("ds.objects.anyEntry({ 'a' : true, 'b' : 1}, function(value,key) key == 'a')"));
     }
 
     @Test

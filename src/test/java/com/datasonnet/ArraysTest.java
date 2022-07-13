@@ -27,8 +27,8 @@ public class ArraysTest {
 
     @Test
     void testArrays_divideBy() {
-        assertEquals("[[1,2],[3,4],[5]]", transform("ds.arrays.divideBy([1,2,3,4,5], 2)"));
-        assertEquals("[[1,2,3],[4,5]]", transform("ds.arrays.divideBy([1,2,3,4,5], 3)"));
+        assertEquals("[[1,2],[3,4],[5]]", transform("ds.arrays.splitEvery([1,2,3,4,5], 2)"));
+        assertEquals("[[1,2,3],[4,5]]", transform("ds.arrays.splitEvery([1,2,3,4,5], 3)"));
     }
 
     @Test
@@ -50,15 +50,14 @@ public class ArraysTest {
 
     @Test
     void testArrays_every() {
-        assertEquals("true", transform("ds.arrays.every([1,1,1], function(item) item == 1)"));
-        assertEquals("true", transform("ds.arrays.every(null, function(item) item == 1)"));
-        assertEquals("false", transform("ds.arrays.every([1,2,1], function(item) item == 1)"));
+        assertEquals("true", transform("ds.arrays.all([1,1,1], function(item) item == 1)"));
+        assertEquals("false", transform("ds.arrays.all([1,2,1], function(item) item == 1)"));
     }
 
     @Test
     void testArrays_firstWith() {
-        assertEquals("2", transform("ds.arrays.firstWith([1,2,3], function(item) (item % 2) == 0)"));
-        assertEquals("null", transform("ds.arrays.firstWith([1,2,3], function(item) (item % 10) == 0)"));
+        assertEquals("2", transform("ds.arrays.find([1,2,3], function(item) (item % 2) == 0)"));
+        assertEquals("null", transform("ds.arrays.find([1,2,3], function(item) (item % 10) == 0)"));
     }
 
     @Test
@@ -70,7 +69,6 @@ public class ArraysTest {
     void testArrays_indexOf() {
         assertEquals("2", transform("ds.arrays.indexOf([1,2,3,4,5,3], 3)"));
         assertEquals("2", transform("ds.arrays.indexOf(['Mariano', 'Leandro', 'Julian', 'Julian'], 'Julian')"));
-        assertEquals("-1", transform("ds.arrays.indexOf(null, 10)"));
         assertEquals("1", transform("ds.arrays.indexOf([1,2,3], 2)"));
         assertEquals("-1", transform("ds.arrays.indexOf([1,2,3], 5)"));
         assertEquals("1", transform("ds.arrays.indexOf([1,2,3,2], 2)"));
@@ -87,12 +85,11 @@ public class ArraysTest {
     @Test
     void testArrays_join() {
         assertEquals("[{l:{id:1,v:a},r:{id:1,v:c}},{l:{id:1,v:b},r:{id:1,v:c}}]",
-                transform("ds.arrays.join([{'id':1,'v':'a'},{'id':1,'v':'b'}],[{'id':1,'v':'c'}], function(item) item.id, function(item) item.id)"));
+                transform("ds.arrays.innerJoin([{'id':1,'v':'a'},{'id':1,'v':'b'}],[{'id':1,'v':'c'}], function(item) item.id, function(item) item.id)"));
     }
 
     @Test
     void testArrays_lastIndexOf() {
-        assertEquals("-1", transform("ds.arrays.lastIndexOf(null, 10)"));
         assertEquals("1", transform("ds.arrays.lastIndexOf([1,2,3], 2)"));
         assertEquals("-1", transform("ds.arrays.lastIndexOf([1,2,3], 5)"));
         assertEquals("3", transform("ds.arrays.lastIndexOf([1,2,3,2], 2)"));
@@ -114,7 +111,7 @@ public class ArraysTest {
     @Test
     void testArrays_outerJoin() {
         assertEquals("[{l:{id:1,v:a},r:{id:1,v:c}},{l:{id:1,v:b},r:{id:1,v:c}},{l:{id:2,v:d}},{r:{id:3,v:e}}]",
-                transform("ds.arrays.outerJoin([{'id':1,'v':'a'},{'id':1,'v':'b'},{'id':2,'v':'d'}],[{'id':1,'v':'c'},{'id':3,'v':'e'}], function(item) item.id,function(item) item.id)"));
+                transform("ds.arrays.rightJoin([{'id':1,'v':'a'},{'id':1,'v':'b'},{'id':2,'v':'d'}],[{'id':1,'v':'c'},{'id':3,'v':'e'}], function(item) item.id,function(item) item.id)"));
     }
 
     @Test
@@ -131,10 +128,10 @@ public class ArraysTest {
 
     @Test
     void testArrays_some() {
-        assertEquals("true", transform("ds.arrays.some([1,2,3], function(item) (item % 2) == 0)"));
-        assertEquals("true", transform("ds.arrays.some([1,2,3], function(item) (item % 2) == 1)"));
-        assertEquals("true", transform("ds.arrays.some([1,2,3], function(item) item == 3)"));
-        assertEquals("false", transform("ds.arrays.some([1,2,3], function(item) item == 4)"));
+        assertEquals("true", transform("ds.arrays.any([1,2,3], function(item) (item % 2) == 0)"));
+        assertEquals("true", transform("ds.arrays.any([1,2,3], function(item) (item % 2) == 1)"));
+        assertEquals("true", transform("ds.arrays.any([1,2,3], function(item) item == 3)"));
+        assertEquals("false", transform("ds.arrays.any([1,2,3], function(item) item == 4)"));
     }
 
     @Test

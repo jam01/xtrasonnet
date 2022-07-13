@@ -22,7 +22,6 @@
  * limitations under the License.
  */
 {
-    local PortXMapper = self,
     local defaultF = function(x) x,
 
     /*
