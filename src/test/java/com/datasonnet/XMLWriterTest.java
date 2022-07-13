@@ -19,12 +19,14 @@ import com.datasonnet.document.DefaultDocument;
 import com.datasonnet.document.Document;
 import com.datasonnet.document.MediaType;
 import com.datasonnet.document.MediaTypes;
-import com.datasonnet.util.TestResourceReader;
+import com.datasonnet.util.TestUtils;
 import org.junit.jupiter.api.Test;
 import org.xmlunit.matchers.CompareMatcher;
 
 import java.util.Collections;
 
+import static com.datasonnet.util.TestUtils.resourceAsString;
+import static com.datasonnet.util.TestUtils.stacktraceFrom;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
@@ -35,7 +37,7 @@ public class XMLWriterTest {
     @Test
     void testOverrideNamespaces() throws Exception {
         String json = "{\"b:a\":{\"@xmlns\":{\"b\":\"http://example.com/1\",\"b1\":\"http://example.com/2\"},\"b1:b\":{}}}";
-        String datasonnet = TestResourceReader.readFileAsString("xmlOverrideNamespaces.ds");
+        String datasonnet = resourceAsString("xmlOverrideNamespaces.ds");
 
         Mapper mapper = new Mapper(datasonnet);
 
@@ -59,7 +61,7 @@ public class XMLWriterTest {
     void testNamespaceBump() throws Exception {
         String json = "{\"b:a\":{\"@xmlns\":{\"b\":\"http://example.com/1\",\"b1\":\"http://example.com/2\"},\"b1:b\":{}}}";
 
-        String datasonnet = TestResourceReader.readFileAsString("xmlNamespaceBump.ds");
+        String datasonnet = resourceAsString("xmlNamespaceBump.ds");
 
         Mapper mapper = new Mapper(datasonnet);
 
@@ -81,9 +83,9 @@ public class XMLWriterTest {
 
     @Test
     void testXMLWriterExt() throws Exception {
-        String jsonData = TestResourceReader.readFileAsString("readXMLExtTest.json");
-        String datasonnet = TestResourceReader.readFileAsString("writeXMLExtTest.ds");
-        String expectedXml = TestResourceReader.readFileAsString("readXMLExtTest.xml");
+        String jsonData = resourceAsString("readXMLExtTest.json");
+        String datasonnet = resourceAsString("writeXMLExtTest.ds");
+        String expectedXml = resourceAsString("readXMLExtTest.xml");
 
         Mapper mapper = new Mapper(datasonnet);
 
@@ -94,9 +96,9 @@ public class XMLWriterTest {
 
     @Test
     void testNoDoubleWrite() throws Exception {
-        String jsonData = TestResourceReader.readFileAsString("writeXMLExtDouble.json");
-        String datasonnet = TestResourceReader.readFileAsString("writeXMLExtTest.ds");
-        String expectedXml = TestResourceReader.readFileAsString("readXMLExtTest.xml");
+        String jsonData = resourceAsString("writeXMLExtDouble.json");
+        String datasonnet = resourceAsString("writeXMLExtTest.ds");
+        String expectedXml = resourceAsString("readXMLExtTest.xml");
 
         Mapper mapper = new Mapper(datasonnet);
 
@@ -113,23 +115,23 @@ public class XMLWriterTest {
                 "   '$1': 'dDocTitle <substring> foo <and> dDocCreatedDate >= bar'" +
                 " } " +
                 "}";
-        String expectedXml = TestResourceReader.readFileAsString("writeXMLEscapedTest.xml");
+        String expectedXml = resourceAsString("writeXMLEscapedTest.xml");
 
         Mapper mapper = new Mapper(datasonnet);
-        String mappedXml = mapper.transform(DefaultDocument.NULL_INSTANCE, Collections.emptyMap(), MediaTypes.APPLICATION_XML, String.class).getContent();
+        String mappedXml = mapper.transform(DefaultDocument.NULL_INSTANCE, Collections.emptyMap(), MediaTypes.APPLICATION_XML.withParameter("badgerfish", "extended"), String.class).getContent();
 
         assertThat(mappedXml, CompareMatcher.isSimilarTo(expectedXml).ignoreWhitespace());
     }
 
     @Test
     void testNonAscii() throws Exception {
-        String jsonData = TestResourceReader.readFileAsString("writerXmlNonAscii.json");
-        String expectedXml = TestResourceReader.readFileAsString("xmlNonAscii.xml");
-        String datasonnet = TestResourceReader.readFileAsString("xmlNonAscii.ds");
+        String jsonData = resourceAsString("writerXmlNonAscii.json");
+        String expectedXml = resourceAsString("xmlNonAscii.xml");
+        String datasonnet = resourceAsString("xmlNonAscii.ds");
 
         Mapper mapper = new Mapper(datasonnet);
 
-        String mappedXml = mapper.transform(new DefaultDocument<>(jsonData, MediaTypes.APPLICATION_JSON), Collections.emptyMap(), MediaTypes.APPLICATION_XML).getContent();
+        String mappedXml = mapper.transform(new DefaultDocument<>(jsonData, MediaTypes.APPLICATION_JSON), Collections.emptyMap(), MediaTypes.APPLICATION_XML.withParameter("badgerfish", "simple")).getContent();
 
         assertEquals(expectedXml, mappedXml);
 
@@ -139,9 +141,9 @@ public class XMLWriterTest {
 
     @Test
     void testCDATA() throws Exception {
-        String jsonData = TestResourceReader.readFileAsString("xmlCDATA.json");
-        String expectedXml = TestResourceReader.readFileAsString("xmlCDATA.xml");
-        String datasonnet = TestResourceReader.readFileAsString("xmlNonAscii.ds");//Reuse existing one to avoid duplication
+        String jsonData = resourceAsString("xmlCDATA.json");
+        String expectedXml = resourceAsString("xmlCDATA.xml");
+        String datasonnet = resourceAsString("xmlNonAscii.ds");//Reuse existing one to avoid duplication
 
         Mapper mapper = new Mapper(datasonnet);
 
@@ -152,11 +154,12 @@ public class XMLWriterTest {
 
     @Test
     void testXMLMixedContent() throws Exception {
-        String jsonData = TestResourceReader.readFileAsString("xmlMixedContent.json");
-        String expectedXml = TestResourceReader.readFileAsString("xmlMixedContent.xml");
+        String jsonData = resourceAsString("xmlMixedContent.json");
+        String expectedXml = resourceAsString("xmlMixedContent.xml");
 
         Mapper mapper = new Mapper("local params = {\n" +
-                "    \"XmlVersion\" : \"1.1\"\n" +
+                "    \"XmlVersion\" : \"1.1\",\n" +
+                "    \"badgerfish\" : \"extended\"\n" +
                 "};ds.write(payload, \"application/xml\", params)");
 
 
@@ -167,9 +170,9 @@ public class XMLWriterTest {
 
     @Test
     void testEmptyElements() throws Exception {
-        String jsonData = TestResourceReader.readFileAsString("xmlEmptyElements.json");
-        String expectedXml = TestResourceReader.readFileAsString("xmlEmptyElementsNull.xml");
-        String datasonnet = TestResourceReader.readFileAsString("xmlEmptyElementsNull.ds");
+        String jsonData = resourceAsString("xmlEmptyElements.json");
+        String expectedXml = resourceAsString("xmlEmptyElementsNull.xml");
+        String datasonnet = resourceAsString("xmlEmptyElementsNull.ds");
 
         Mapper mapper = new Mapper(datasonnet);
 
@@ -177,8 +180,8 @@ public class XMLWriterTest {
 
         assertThat(mappedXml, CompareMatcher.isSimilarTo(expectedXml).ignoreWhitespace());
 
-        expectedXml = TestResourceReader.readFileAsString("xmlEmptyElementsNoNull.xml");
-        datasonnet = TestResourceReader.readFileAsString("xmlEmptyElementsNoNull.ds");
+        expectedXml = resourceAsString("xmlEmptyElementsNoNull.xml");
+        datasonnet = resourceAsString("xmlEmptyElementsNoNull.ds");
 
         mapper = new Mapper(datasonnet);
 
@@ -190,7 +193,7 @@ public class XMLWriterTest {
 
     @Test
     void testOmitXml() throws Exception {
-        String jsonData = TestResourceReader.readFileAsString("xmlEmptyElements.json");
+        String jsonData = resourceAsString("xmlEmptyElements.json");
 
         Mapper mapper = new Mapper("/** DataSonnet\n" +
                 "version=2.0\n" +
@@ -216,40 +219,40 @@ public class XMLWriterTest {
     // TODO add version using namespaces
     @Test
     void testFlattenMixedContent() throws Exception {
-        String xmlData = TestResourceReader.readFileAsString("xmlMixedContent.xml");
-        String expected = TestResourceReader.readFileAsString("xmlMixedContent.txt");
+        String xmlData = resourceAsString("xmlMixedContent.xml");
+        String expected = resourceAsString("xmlMixedContent.txt");
 
-        Mapper mapper = new Mapper("ds.xml.flattenContents(payload.letter)");
+        Mapper mapper = new Mapper("ds.xml.flattenContents(payload.letter, {}, {badgerfish: 'extended'})");
 
-        String mapped = mapper.transform(new DefaultDocument<>(xmlData, MediaType.valueOf(MediaTypes.APPLICATION_XML_VALUE)), Collections.emptyMap(), MediaTypes.TEXT_PLAIN).getContent();
+        String mapped = mapper.transform(new DefaultDocument<>(xmlData, MediaTypes.APPLICATION_XML.withParameter("badgerfish", "extended")), Collections.emptyMap(), MediaTypes.TEXT_PLAIN).getContent();
 
         assertEquals(expected, mapped);
     }
 
     @Test
     void testFlattenMixedContentWithNamespaces() throws Exception {
-        String xmlData = TestResourceReader.readFileAsString("xmlMixedContentNamespaces.xml");
-        String expected = TestResourceReader.readFileAsString("xmlMixedContent.txt");
+        String xmlData = resourceAsString("xmlMixedContentNamespaces.xml");
+        String expected = resourceAsString("xmlMixedContent.txt");
 
-        Mapper mapper = new Mapper("ds.xml.flattenContents(payload[\"ns:letter\"], {\"$\": \"https://example.com\"})");
+        Mapper mapper = new Mapper("ds.xml.flattenContents(payload[\"ns:letter\"], {\"$\": \"https://example.com\"}, {badgerfish: 'extended'})");
 
-        String mapped = mapper.transform(new DefaultDocument<>(xmlData, MediaType.valueOf(MediaTypes.APPLICATION_XML_VALUE)), Collections.emptyMap(), MediaTypes.TEXT_PLAIN).getContent();
+        String mapped = mapper.transform(new DefaultDocument<>(xmlData, MediaTypes.APPLICATION_XML.withParameter("badgerfish", "extended")), Collections.emptyMap(), MediaTypes.TEXT_PLAIN).getContent();
 
         assertEquals(expected, mapped, "Expected " + expected + " but got " + mapped);
     }
 
     @Test
     void testXMLRoot() throws Exception {
-        String jsonData = TestResourceReader.readFileAsString("xmlRoot.json");
-
+        String jsonData = resourceAsString("xmlRoot.json");
         Mapper mapper = new Mapper("ds.write(payload, \"application/xml\")");
-
 
         try {
             String mappedXml = mapper.transform(new DefaultDocument<>(jsonData, MediaTypes.APPLICATION_JSON), Collections.emptyMap(), MediaTypes.APPLICATION_XML).getContent();
             fail("Must fail to transform");
         } catch (IllegalArgumentException e) {
-            assertTrue(e.getMessage().contains("Object must have only one root element"), "Found message: " + e.getMessage());
+            String stacktrace = stacktraceFrom(e);
+            assertTrue(stacktrace.contains("Object must have only one root element"), "Stacktrace does not indicate the issue");
+            assertTrue(stacktrace.contains("((main):1:9)"), "Stacktrace does not indicate the issue");
         }
 
         mapper = new Mapper("/** DataSonnet\n" +
@@ -267,12 +270,12 @@ public class XMLWriterTest {
 
     @Test
     void testNestedNamespaces() throws Exception {
-        String jsonData = TestResourceReader.readFileAsString("xmlNestedNamespaces.json");
-        String expectedXml = TestResourceReader.readFileAsString("xmlNestedNamespaces.xml");
+        String jsonData = resourceAsString("xmlNestedNamespaces.json");
+        String expectedXml = resourceAsString("xmlNestedNamespaces.xml");
 
         Mapper mapper = new Mapper("payload");
 
-        String mappedXml = mapper.transform(new DefaultDocument<String>(jsonData, MediaTypes.APPLICATION_JSON), Collections.emptyMap(), MediaTypes.APPLICATION_XML).getContent();
+        String mappedXml = mapper.transform(new DefaultDocument<String>(jsonData, MediaTypes.APPLICATION_JSON), Collections.emptyMap(), MediaTypes.APPLICATION_XML.withParameter("badgerfish", "extended")).getContent();
         assertThat(mappedXml, CompareMatcher.isSimilarTo(expectedXml).ignoreWhitespace());
     }
 

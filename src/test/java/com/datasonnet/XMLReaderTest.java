@@ -19,7 +19,7 @@ package com.datasonnet;
 import com.datasonnet.document.DefaultDocument;
 import com.datasonnet.document.MediaType;
 import com.datasonnet.document.MediaTypes;
-import com.datasonnet.util.TestResourceReader;
+import com.datasonnet.util.TestUtils;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 
@@ -64,14 +64,14 @@ public class XMLReaderTest {
 
     @Test
     void testXMLReaderExt() throws Exception {
-        String xmlData = TestResourceReader.readFileAsString("readXMLExtTest.xml");
-        String jsonnet = TestResourceReader.readFileAsString("readXMLExtTest.ds");
-        String expectedJson = TestResourceReader.readFileAsString("readXMLExtTest.json");
+        String xmlData = TestUtils.resourceAsString("readXMLExtTest.xml");
+        String jsonnet = TestUtils.resourceAsString("readXMLExtTest.ds");
+        String expectedJson = TestUtils.resourceAsString("readXMLExtTest.json");
 
         Mapper mapper = new Mapper(jsonnet);
 
 
-        String mappedJson = mapper.transform(new DefaultDocument<>(xmlData, MediaType.valueOf(MediaTypes.APPLICATION_XML_VALUE)), Collections.emptyMap(), MediaTypes.APPLICATION_JSON).getContent();
+        String mappedJson = mapper.transform(new DefaultDocument<>(xmlData, MediaTypes.APPLICATION_XML.withParameter("badgerfish", "extended")), Collections.emptyMap(), MediaTypes.APPLICATION_JSON).getContent();
 
         JSONAssert.assertEquals(expectedJson, mappedJson, true);
     }
@@ -97,12 +97,12 @@ public class XMLReaderTest {
     }
 
     private void mapAndAssert(String inputFileName, String expectedFileName) throws Exception {
-        String xmlData = TestResourceReader.readFileAsString(inputFileName);
-        String expectedJson = TestResourceReader.readFileAsString(expectedFileName);
+        String xmlData = TestUtils.resourceAsString(inputFileName);
+        String expectedJson = TestUtils.resourceAsString(expectedFileName);
 
         Mapper mapper = new Mapper("payload");
 
-        String mappedJson = mapper.transform(new DefaultDocument<>(xmlData, MediaType.valueOf(MediaTypes.APPLICATION_XML_VALUE)), Collections.emptyMap(), MediaTypes.APPLICATION_JSON).getContent();
+        String mappedJson = mapper.transform(new DefaultDocument<>(xmlData, MediaTypes.APPLICATION_XML.withParameter("badgerfish", "extended")), Collections.emptyMap(), MediaTypes.APPLICATION_JSON).getContent();
         JSONAssert.assertEquals(expectedJson, mappedJson, true);
     }
 

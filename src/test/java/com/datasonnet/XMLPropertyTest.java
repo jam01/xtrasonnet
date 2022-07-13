@@ -50,8 +50,8 @@ public class XMLPropertyTest {
         // the round trip is performed by the use of the XML mime types
         Mapper mapper = new Mapper("payload");
 
-        DefaultDocument<String> payload = new DefaultDocument<>(xml, MediaTypes.APPLICATION_XML);
-        String output = mapper.transform(payload, Collections.emptyMap(), MediaTypes.APPLICATION_XML).getContent();
+        DefaultDocument<String> payload = new DefaultDocument<>(xml, MediaTypes.APPLICATION_XML.withParameter("badgerfish", "extended"));
+        String output = mapper.transform(payload, Collections.emptyMap(), MediaTypes.APPLICATION_XML.withParameter("badgerfish", "extended")).getContent();
 
         DocumentBuilder db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
         Document parsed = db.parse(new ByteArrayInputStream(output.getBytes(StandardCharsets.UTF_8)));

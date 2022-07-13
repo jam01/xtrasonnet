@@ -24,8 +24,6 @@ package com.datasonnet.plugins.xml
  * limitations under the License.
  */
 
-import java.util
-
 import org.xml.sax.helpers.NamespaceSupport
 
 import scala.collection.mutable
