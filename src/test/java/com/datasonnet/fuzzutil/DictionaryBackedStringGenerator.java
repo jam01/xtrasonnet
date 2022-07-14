@@ -1,27 +1,6 @@
-package com.datasonnet.util;
+package com.datasonnet.fuzzutil;
 
-/*-
- * The original work for this file is available under the terms of the
- * BSD 2-Clause "Simplified" License. The derived work is made available
- * under the terms of the Apache License, Version 2.0
- */
-
-/*-
- * Copyright 2019-2020 the original author or authors.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
+/* JQF copyright/notice, per BSD-2-Clause § 1  */
 /*
  * Copyright (c) 2017-2018 The Regents of the University of California
  *
@@ -61,23 +40,20 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
-// TODO: 9/23/20 state modifications
-public class DictionaryBackedStringGenerator extends Generator<String> {
+public class DictionaryBackedStringGenerator extends Generator<String>  {
 
     private final List<String> dictionary;
     private Generator<String> fallback;
 
     public DictionaryBackedStringGenerator(String source, Generator<String> fallback) throws IOException {
         super(String.class);
+        this.dictionary = new ArrayList<>();
         this.fallback = fallback;
 
-        List<String> dictionary = new ArrayList<>();
-
         // Read dictionary words
-        try (InputStream in = ClassLoader.getSystemClassLoader().getResourceAsStream(source)) {
+        try (InputStream in = this.getClass().getClassLoader().getResourceAsStream(source)) {
             if (in == null) {
                 throw new FileNotFoundException("Dictionary file not found: " + source);
             }
@@ -88,7 +64,6 @@ public class DictionaryBackedStringGenerator extends Generator<String> {
                 dictionary.add(item);
             }
         }
-        this.dictionary = Collections.unmodifiableList(dictionary);
     }
 
     @Override

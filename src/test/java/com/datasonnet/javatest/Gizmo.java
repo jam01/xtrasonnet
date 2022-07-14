@@ -1,5 +1,6 @@
 package com.datasonnet.javatest;
 
+/* datasonnet-mapper copyright/notice, per Apache-2.0 § 4.c */
 /*-
  * Copyright 2019-2020 the original author or authors.
  *

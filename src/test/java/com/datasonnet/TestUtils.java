@@ -1,13 +1,11 @@
-package com.datasonnet.util;
+package com.datasonnet;
 
 /*-
- * Copyright 2022 the original author or authors.
+ * Copyright 2022 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
  */
-
-import com.datasonnet.Mapper;
 
 import java.io.IOException;
 import java.io.PrintWriter;

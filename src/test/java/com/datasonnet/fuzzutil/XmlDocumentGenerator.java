@@ -1,11 +1,6 @@
-package com.datasonnet.util;
+package com.datasonnet.fuzzutil;
 
-/*-
- * The original work for this file is available under the terms of the
- * BSD 2-Clause "Simplified" License. The derived work is made available
- * under the terms of the Apache License, Version 2.0
- */
-
+/* datasonnet-mapper copyright/notice, per Apache-2.0 § 4.c */
 /*-
  * Copyright 2019-2020 the original author or authors.
  *
@@ -21,7 +16,12 @@ package com.datasonnet.util;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/*-
+ * Changes:
+ * - Catch DOMExceptions and no-op in populateElement(...)
+ */
 
+/* JQF copyright/notice, per BSD-2-Clause § 1  */
 /*
  * Copyright (c) 2017-2018 The Regents of the University of California
  *
@@ -72,13 +72,12 @@ import java.io.IOException;
  *
  * @author Rohan Padhye
  */
-// TODO: 9/23/20 state modifications
-public class XMLGenerator extends Generator<Document> {
+public class XmlDocumentGenerator extends Generator<Document> {
 
-    private static final DocumentBuilderFactory documentBuilderFactory =
+    private static DocumentBuilderFactory documentBuilderFactory =
             DocumentBuilderFactory.newInstance();
 
-    private static final GeometricDistribution geometricDistribution =
+    private static GeometricDistribution geometricDistribution =
             new GeometricDistribution();
 
     /**
@@ -107,7 +106,7 @@ public class XMLGenerator extends Generator<Document> {
 
     private Generator<String> stringGenerator = new AlphaStringGenerator();
 
-    public XMLGenerator() {
+    public XmlDocumentGenerator() {
         super(Document.class);
     }
 

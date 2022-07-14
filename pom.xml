@@ -7,7 +7,7 @@
     compliance with the Elastic License 2.0.
 
 -->
-<!-- datasonnet-mapper copyright retention, per Apache 2.0-4.c -->
+<!-- datasonnet-mapper copyright/notice, per Apache-2.0 § 4.c -->
 <!--
 
     Copyright 2019-2021 the original author or authors.
@@ -260,6 +260,14 @@
                                 <exclude>docs/**</exclude>
                                 <exclude>src/test/resources/**</exclude>
                                 <exclude>**/target/**</exclude>
+                                <exclude>src/main/java/**/JsonPath.java</exclude>
+                                <exclude>src/main/java/**/RecentsMap.java</exclude>
+                                <exclude>src/main/java/**/PluginException.java</exclude>
+                                <exclude>src/main/java/**/plugins/jackson/*.java</exclude>
+                                <exclude>src/main/scala/**/xml/OverridingNamespaceTranslator.scala</exclude>
+                                <exclude>src/**/commands/*.java</exclude>
+                                <exclude>src/test/**/javatest/*.java</exclude>
+                                <exclude>src/test/**/fuzzutil/*.java</exclude>
                             </excludes>
                         </licenseSet>
                     </licenseSets>

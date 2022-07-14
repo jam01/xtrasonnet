@@ -1,11 +1,6 @@
-package com.datasonnet.util;
+package com.datasonnet.fuzzutil;
 
-/*-
- * The original work for this file is available under the terms of the
- * BSD 2-Clause "Simplified" License. The derived work is made available
- * under the terms of the Apache License, Version 2.0
- */
-
+/* datasonnet-mapper copyright/notice, per Apache-2.0 § 4.c */
 /*-
  * Copyright 2019-2020 the original author or authors.
  *
@@ -21,7 +16,12 @@ package com.datasonnet.util;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/*-
+ * Changes:
+ * - Copied source of original super class AbstractStringGenerator from junit-quickcheck
+ */
 
+/* JQF copyright/notice, per BSD-2-Clause § 1  */
 /*-
  * Copyright (c) 2017-2018 The Regents of the University of California
  *
@@ -51,6 +51,32 @@ package com.datasonnet.util;
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+/* junit-quickcheck copyright/notice, per MIT */
+/*
+ The MIT License
+
+ Copyright (c) 2010-2021 Paul R. Holser, Jr.
+
+ Permission is hereby granted, free of charge, to any person obtaining
+ a copy of this software and associated documentation files (the
+ "Software"), to deal in the Software without restriction, including
+ without limitation the rights to use, copy, modify, merge, publish,
+ distribute, sublicense, and/or sell copies of the Software, and to
+ permit persons to whom the Software is furnished to do so, subject to
+ the following conditions:
+
+ The above copyright notice and this permission notice shall be
+ included in all copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+
 import com.pholser.junit.quickcheck.generator.GenerationStatus;
 import com.pholser.junit.quickcheck.generator.Generator;
 import com.pholser.junit.quickcheck.internal.Lists;
@@ -67,11 +93,9 @@ import static com.pholser.junit.quickcheck.internal.Sequences.halving;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.StreamSupport.stream;
 
-
 /**
  * @author Rohan Padhye
  */
-// TODO: 9/23/20 state modifications
 public class AlphaStringGenerator extends Generator<String> {
 
     protected int nextCodePoint(SourceOfRandomness sourceOfRandomness) {

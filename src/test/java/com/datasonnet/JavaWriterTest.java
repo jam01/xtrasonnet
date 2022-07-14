@@ -1,6 +1,14 @@
 package com.datasonnet;
 
 /*-
+ * Copyright 2022 Jose Montoya.
+ *
+ * Licensed under the Elastic License 2.0; you may not use this file except in
+ * compliance with the Elastic License 2.0.
+ */
+
+/* datasonnet-mapper copyright/notice, per Apache-2.0 § 4.c */
+/*-
  * Copyright 2019-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,7 +29,6 @@ import com.datasonnet.document.MediaTypes;
 import com.datasonnet.javatest.Gizmo;
 import com.datasonnet.javatest.MixInTestClass;
 import com.datasonnet.javatest.WsdlGeneratedObj;
-import com.datasonnet.util.TestUtils;
 import org.junit.jupiter.api.Test;
 
 import jakarta.xml.bind.JAXBContext;
@@ -34,7 +41,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TimeZone;
 
-import static com.datasonnet.util.TestUtils.stacktraceFrom;
+import static com.datasonnet.TestUtils.stacktraceFrom;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;

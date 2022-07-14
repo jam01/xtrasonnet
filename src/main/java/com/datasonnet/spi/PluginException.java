@@ -1,13 +1,6 @@
 package com.datasonnet.spi;
 
-/*-
- * Copyright 2022 Jose Montoya.
- *
- * Licensed under the Elastic License 2.0; you may not use this file except in
- * compliance with the Elastic License 2.0.
- */
-
-/* datasonnet-mapper copyright retention, per Apache 2.0-4.c */
+/* datasonnet-mapper copyright/notice, per Apache-2.0 § 4.c */
 /*-
  * Copyright 2019-2021 the original author or authors.
  *

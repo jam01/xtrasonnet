@@ -7,7 +7,7 @@ package com.datasonnet.plugins.xml
  * compliance with the Elastic License 2.0.
  */
 
-/* datasonnet-mapper copyright retention, per Apache 2.0-4.c */
+/* datasonnet-mapper copyright/notice, per Apache-2.0 § 4.c */
 /*-
  * Copyright 2019-2020 the original author or authors. *
  * Licensed under the Apache License, Version 2.0 (the "License");

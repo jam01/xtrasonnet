@@ -7,7 +7,7 @@ package com.datasonnet;
  * compliance with the Elastic License 2.0.
  */
 
-/* spring-framework copyright retention, per Apache 2.0-4.c */
+/* spring-framework copyright/notice, per Apache-2.0 § 4.c */
 /*
  * Copyright 2002-2020 the original author or authors.
  *

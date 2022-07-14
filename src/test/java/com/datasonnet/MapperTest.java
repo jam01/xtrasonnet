@@ -1,6 +1,14 @@
 package com.datasonnet;
 
 /*-
+ * Copyright 2022 Jose Montoya.
+ *
+ * Licensed under the Elastic License 2.0; you may not use this file except in
+ * compliance with the Elastic License 2.0.
+ */
+
+/* datasonnet-mapper copyright/notice, per Apache-2.0 § 4.c */
+/*-
  * Copyright 2019-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,7 +27,6 @@ package com.datasonnet;
 import com.datasonnet.document.DefaultDocument;
 import com.datasonnet.document.Document;
 import com.datasonnet.document.MediaTypes;
-import com.datasonnet.util.TestUtils;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -31,7 +38,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import static com.datasonnet.util.TestUtils.stacktraceFrom;
+import static com.datasonnet.TestUtils.stacktraceFrom;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class MapperTest {

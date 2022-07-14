@@ -1,6 +1,14 @@
 package com.datasonnet;
 
 /*-
+ * Copyright 2022 Jose Montoya.
+ *
+ * Licensed under the Elastic License 2.0; you may not use this file except in
+ * compliance with the Elastic License 2.0.
+ */
+
+/* datasonnet-mapper copyright/notice, per Apache-2.0 § 4.c */
+/*-
  * Copyright 2019-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,15 +27,13 @@ package com.datasonnet;
 
 import com.datasonnet.document.DefaultDocument;
 import com.datasonnet.document.MediaTypes;
-import com.datasonnet.util.Dictionary;
-import com.datasonnet.util.XMLDocumentUtils;
-import com.datasonnet.util.XMLGenerator;
-import com.datasonnet.util.XMLJsonGenerator;
+import com.datasonnet.fuzzutil.Dictionary;
+import com.datasonnet.fuzzutil.XMLDocumentUtils;
+import com.datasonnet.fuzzutil.XmlDocumentGenerator;
+import com.datasonnet.fuzzutil.XMLJsonGenerator;
 import com.pholser.junit.quickcheck.From;
 import com.pholser.junit.quickcheck.Property;
-import com.pholser.junit.quickcheck.When;
 import com.pholser.junit.quickcheck.runner.JUnitQuickcheck;
-import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.w3c.dom.Document;
 
@@ -45,7 +51,7 @@ public class XMLPropertyTest {
 
 
     @Property
-    public void reversible(@From(XMLGenerator.class) @Dictionary("xml.dict") Document dom) throws Exception {
+    public void reversible(@From(XmlDocumentGenerator.class) @Dictionary("xml.dict") Document dom) throws Exception {
         String xml = XMLDocumentUtils.documentToString(dom);
         // the round trip is performed by the use of the XML mime types
         Mapper mapper = new Mapper("payload");
