@@ -6,6 +6,7 @@ package com.datasonnet
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
  */
+
 import com.datasonnet.Mapper.{ERROR_LINE_REGEX, handleException, main}
 import com.datasonnet.document.{DefaultDocument, Document, MediaType, MediaTypes}
 import com.datasonnet.header.Header
@@ -89,15 +90,15 @@ class Mapper(var script: String,
   // an importer that will resolve scripts from the classpath
   private val classpathImporter: Importer = new Importer {
     override def resolve(docBase: Path, importName: String): Option[Path] = docBase match {
-      case DataSonnetPath("") => Some(DataSonnetPath(importName))
-      case DataSonnetPath(_) => Some(docBase / importName)
+      case ClasspathPath("") => Some(ClasspathPath(importName))
+      case ClasspathPath(_) => Some(docBase / importName)
       case _ => None
     }
 
     override def read(path: Path): Option[String] = {
-      val p = "/" + path.asInstanceOf[DataSonnetPath].path
+      val p = "/" + path.asInstanceOf[ClasspathPath].path
       getClass.getResource(p) match {
-        case null => Option(imports.get(path.asInstanceOf[DataSonnetPath].path))
+        case null => Option(imports.get(path.asInstanceOf[ClasspathPath].path))
         case _ => Using.resource(getClass.getResourceAsStream(p)) { stream =>
           Some(Source.fromInputStream(stream).mkString)
         }
@@ -109,7 +110,7 @@ class Mapper(var script: String,
     override def process(expr: Expr, fs: FileScope): Either[Error, (Expr, FileScope)] =
       handleException((optimizer.optimize(expr), fs))
   }
-  private val evaluator = new Evaluator(resolver, Map.empty, DataSonnetPath(""), settings, null)
+  private val evaluator = new Evaluator(resolver, Map.empty, ClasspathPath(""), settings, null)
   // reserving indices for DS and additional libraries, the reservations must be exactly the same in ValScope
   private val optimizer = new StaticOptimizer(evaluator)
   optimizer.scope = new Scope(immutable.HashMap.from(allLibs
@@ -127,7 +128,7 @@ class Mapper(var script: String,
   // see StaticOptimizer#transform{case e @ Id(pos, name)}
   optimizer.scope = new Scope(immutable.HashMap.from(optimizer.scope.mappings).concat(libMappingsMap), optimizer.scope.size)
 
-  private val scriptFn: Val.Func = evaluate(script, DataSonnetPath(main)) match {
+  private val scriptFn: Val.Func = evaluate(script, ClasspathPath(main)) match {
     case Right(value) => value match {
       case func: Val.Func => if (func.params.names.length < 1)
         throw new IllegalArgumentException("Top Level Function must have at least one argument.")
@@ -211,7 +212,7 @@ class Mapper(var script: String,
 
   private def evalLibsonnet(name: String): Val = {
     val fName = s"$name.libsonnet"
-    val path = DataSonnetPath(fName)
+    val path = ClasspathPath(fName)
     classpathImporter.read(path) match {
       case None => throw new IllegalArgumentException("libsonnet not found: " + fName)
       case Some(txt) => evaluate(txt, path) match {

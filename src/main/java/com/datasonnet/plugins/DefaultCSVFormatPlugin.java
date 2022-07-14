@@ -7,6 +7,30 @@ package com.datasonnet.plugins;
  * compliance with the Elastic License 2.0.
  */
 
+
+/* datasonnet-mapper copyright/notice, per Apache-2.0 § 4.c */
+/*-
+ * Copyright 2019-2020 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+/*-
+ * Changed:
+ * - Re-implemented plugin under new interface, only keeping the central Schema building
+ * Adopted:
+ * - 695eba21d86ca7ab9b1812ce7689af41db4c83a4: fix up lost disablequotes support for CSVs
+ */
+
 import com.datasonnet.document.DefaultDocument;
 import com.datasonnet.document.Document;
 import com.datasonnet.document.MediaType;
@@ -21,7 +45,6 @@ import com.fasterxml.jackson.dataformat.csv.CsvParser;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import ujson.Value;
 
-import javax.swing.text.html.Option;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

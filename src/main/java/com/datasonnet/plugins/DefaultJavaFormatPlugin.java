@@ -23,6 +23,17 @@ package com.datasonnet.plugins;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/*-
+ * Changed:
+ * - Re-implemented plugin under new interface, only keeping the Jackson serialization support
+ *
+ * Adopted:
+ * - c7583088a7add211939e29bcd75422f76b6e6412: Re-enable runtime object specification, falling back to existing stat...
+ *  ic-type-driven functionality if the runtime type is not compatible
+ * - f5220d180a6ffadc5ae4d727875ba790bd9792d8: make jackson use UTC for datetime parsing
+ * - 2dd7c89a1815bc9d6a49c9f919f1a6c691b4599d: Change to a bounded map for object mapper cache
+ * - b51fd5bfe805138fb8f05698b30f15793058a9e8: Merge pull request #93 from datasonnet/java-plugin-improvements
+ */
 
 import com.datasonnet.RecentsMap;
 import com.datasonnet.document.DefaultDocument;

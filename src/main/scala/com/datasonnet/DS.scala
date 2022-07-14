@@ -23,7 +23,42 @@ package com.datasonnet
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+/*-
+ * Changed:
+ * - d74e8ff8838292274aa0c386d39fece6db16916d: Encapsulates Library logic
+ *      Reimplemented DS under the new Library interface, while keeping some function names under ZonedDateTime,
+ *      Formats, Crypto, JsonPath, and URL
+ *
+ * Adopted:
+ * - 37ddbe63a9092ebb2fe5cde12407e53737f32d03: Added missing join,leftJoin, and outerJoin functions & tests
+ * - 6b92da38753b0f8d00f12dc5859c644027d92cd1: Added operations for concatentation and removal
+ *      Functions: combine, remove, removeMatch
+ * - 1f825ac1b33849febe0129b5554874a23f75ea55: Added append and prepend operations
+ * - a19bfc766c12661021240cd20f83057350b16ad4: Fixed minBy and maxBy for effeciency
+ * - 5666b472de694383231b043c8c7861833831db96: Fixed numbers module to allow long values
+ * - 386223447f864492ca4703a4d9eaa49eea9b64a3: Converted util functions to scala
+ *      Functions: duplicates, deepFlatten, occurrences
+ * - 482b67a18b29a331cbb6366c81885ee35d9c9075: Fixed orderBy Functionality
+ *      Functions: orderBy, toString
+ * - 5bb242721f728c00432234cd24f7256e21c4caac: Added some expanded functionality
+ *      Functions: indexOf, lastIndexOf, datetime.atBeginningOf*
+ * - 78acf4ebf5545b88df4cf9f77434335fc857eaa1: Added date function and period module
+ * - 5f7619dea8ac4e04e0d7e527999095d6bbac6029: Added String option to reverse function
+ *      Functions: reverse
+ * - 31724d6ab5e36b06ceb523f7282d19c5495dadaf: Updated plus & minus to check if duration or period
+ *      Functions: datetime.minus, datetime.plus
+ * - e631a62e414218c7933ca16b58a33f4aecf37dfd: Add function for flattening XML content
+ * - c20475cacff9b6790e85afaf7ae730d4aa9c4470: Merge pull request #86 from datasonnet/unix-timestamp
+ *      Functions: datetime.parse
+ *
+ * Changed:
+ * - d19a57dfcf4382669d55ac4427916c8440c1bac3: fixes orderBy comparison
+ * - c8ee3b88d01c29c499921f3a8e5edd30e674e9dd: fixes zoneddatetime tests
+ *      Use ISO_OFFSET_DATE_TIME instead of ISO_DATE_TIME in all datetime functions
+ * - rename join to innerJoin, outerJoin to rightJoin, toString to stringOf, remove to rm and rmAll,
+ *  removeMatch to rmWhereEq and rmWhereIn
+ * - removed null support from most functions, including those adopted
+ */
 
 import com.datasonnet.document.{DefaultDocument, MediaType}
 import com.datasonnet.header.Header
@@ -350,7 +385,7 @@ object DS extends Library {
     builtin("readUrl", "url") {
       (pos, ev, url: String) =>
         url match {
-          case str if str.startsWith("classpath://") => importer.read(DataSonnetPath(str.substring(12))) match {
+          case str if str.startsWith("classpath://") => importer.read(ClasspathPath(str.substring(12))) match {
             case Some(value) => Materializer.reverse(pos, ujsonUtils.parse(value))
             case None => Val.Null(pos)
           }

@@ -23,6 +23,10 @@ package com.datasonnet.spi
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/*-
+ * Adopted:
+ * - e6698ae51aed518a9c671ae39682d7068fa10deb: Merge pull request #62 from datasonnet/java-friendly-libraries
+ */
 
 import com.datasonnet.header.Header
 import com.datasonnet.spi.Library.{dummyPosition, memberOf}

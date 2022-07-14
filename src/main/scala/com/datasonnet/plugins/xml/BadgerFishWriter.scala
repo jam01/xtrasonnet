@@ -23,6 +23,13 @@ package com.datasonnet.plugins.xml
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/*-
+ * Adopted:
+ * - 7ce8eca5f5394e4a2e4c95755a37d4eefa03a900: Add write namespace override support
+ *
+ * Changed:
+ * - 1570c045ab8e750305e1d86206f4cddeadabfedd: conformed badgerfish ordering behavior
+ */
 
 import com.datasonnet.plugins.DefaultXMLFormatPlugin.{BadgerFishMode, EffectiveParams}
 import org.xml.sax.helpers.NamespaceSupport

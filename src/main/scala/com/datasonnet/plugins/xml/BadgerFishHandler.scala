@@ -22,6 +22,14 @@ package com.datasonnet.plugins.xml
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/*-
+ * Adopted:
+ * - 290693116f36cd82f17edc0ac2384cf0f30c6b41: XML namespace support for reading
+ * - 12270ae72d5432b916359b3c1747936ffaf26be1: Merge pull request #73 from datasonnet/ordering-keys
+ *
+ * Changed:
+ * - 1570c045ab8e750305e1d86206f4cddeadabfedd: conformed badgerfish ordering behavior
+ */
 
 import com.datasonnet.plugins.DefaultXMLFormatPlugin.{BadgerFishMode, DEFAULT_NS_KEY, EffectiveParams}
 import org.xml.sax.ext.DefaultHandler2

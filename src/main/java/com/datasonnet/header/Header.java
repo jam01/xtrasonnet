@@ -23,6 +23,24 @@ package com.datasonnet.header;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/*-
+ * Adopted:
+ * - 0b946df9667c64ac631934a77d2444700889accf: fix system-dependent header parsing; allow any standard line separators
+ * - f3e2584ce6d2bf68f49d762503b876255cb29ac4: convert opaque array index exceptions to descriptive exceptions and i...
+ *  mprove locating of invalid media format problems in commit
+ * - d94c7e337e77a358dd3f8944b81b2425c0235d43: improve resilience of header parsing, including unknown header lines...
+ *  and unterminated headers
+ * - 695eba21d86ca7ab9b1812ce7689af41db4c83a4: change so the new header format is opt-in with new DataSonnet (the la...
+ *  nguage) version, re-add support for old headers with old version
+ * - 6f5fb26e1c5550f1074748a7e34a8e7dc99dc788: adjust default functionality to align with multiple output and named...
+ *  input formats
+ * - eade46e7493bf1f2e2fcbe5269890b8cf7969a96: Merge pull request #69 from datasonnet/minor-header-versions
+ * - ad59b61447ad423a66c2e51b3ec79914aaed28bb: Merge pull request #67 from datasonnet/header-comments
+ *
+ * Changed:
+ * - fd1273fc9745dece77ec44a314c52f82f1e23b62: Merge pull request #76 from datasonnet/qparam
+ * - 2abc04cd80fa82d1dae7805964e9165f13ea6889: remove header 1.0 support
+ */
 
 import com.datasonnet.document.Document;
 import com.datasonnet.document.InvalidMediaTypeException;
