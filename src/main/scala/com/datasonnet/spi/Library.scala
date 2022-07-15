@@ -35,6 +35,7 @@ import sjsonnet.Expr.Params
 import sjsonnet.Val.Obj
 import sjsonnet.{EvalScope, Expr, FileScope, Importer, Position, Val, ValScope}
 
+import java.util.Collections
 import scala.jdk.CollectionConverters._
 
 object Library {
@@ -47,11 +48,14 @@ object Library {
 abstract class Library {
   def namespace(): String
 
-  def functions(dataFormats: DataFormatService, header: Header, importer: Importer): java.util.Map[String, Val.Func]
+  def functions(dataFormats: DataFormatService, header: Header, importer: Importer): java.util.Map[String, Val.Func] =
+    Collections.emptyMap()
 
-  def modules(dataFormats: DataFormatService, header: Header, importer: Importer): java.util.Map[String, Val.Obj]
+  def modules(dataFormats: DataFormatService, header: Header, importer: Importer): java.util.Map[String, Val.Obj] =
+    Collections.emptyMap()
 
   def libsonnets(): java.util.Set[String]
+    Collections.emptySet()
 
   protected def moduleFrom(functions: (String, Val.Func)*): Val.Obj = {
     Val.Obj.mk(dummyPosition, functions.map { case (k, v) => (k, memberOf(v)) }: _*)
