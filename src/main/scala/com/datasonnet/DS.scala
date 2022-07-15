@@ -65,10 +65,11 @@ import com.datasonnet.header.Header
 import com.datasonnet.modules.{Crypto, JsonPath}
 import com.datasonnet.spi.Library.{emptyObj, memberOf}
 import com.datasonnet.spi.{DataFormatService, Library, ujsonUtils}
+import sjsonnet.Expr.Member.Visibility
 import sjsonnet.ReadWriter.{ArrRead, ObjRead, ValRead}
-import sjsonnet.Std.{builtin, builtinWithDefaults}
-import sjsonnet.Val.Builtin
-import sjsonnet.{Error, EvalScope, Expr, Importer, Lazy, Materializer, Position, ReadWriter, Val}
+import sjsonnet.Std.{builtin, builtinWithDefaults, stringChars}
+import sjsonnet.Val.{Builtin, Obj}
+import sjsonnet.{Error, EvalScope, Expr, FileScope, Importer, Lazy, Materializer, Position, ReadWriter, Val}
 
 import java.math.{BigDecimal, RoundingMode}
 import java.net.URL
@@ -78,7 +79,7 @@ import java.time._
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.util
-import java.util.{Base64, Scanner, UUID}
+import java.util.{Base64, Collections, Scanner, UUID}
 import javax.crypto.Cipher
 import javax.crypto.spec.{IvParameterSpec, SecretKeySpec}
 import scala.collection.mutable
@@ -101,7 +102,7 @@ object DS extends Library {
 
   override def namespace() = "ds"
 
-  override def libsonnets(): java.util.Set[String] = Set("util").asJava
+  override def libsonnets(): java.util.Set[String] = Collections.emptySet();
 
   private val dummyPosition = new Position(null, 0)
 
@@ -134,7 +135,6 @@ object DS extends Library {
     builtin("filter", "array", "func") {
       (pos, ev, arr: Val.Arr, func: Val.Func) => filter(arr.asLazyArray, func, ev)
     },
-
 
     builtin("filterObject", "array", "func") {
       (pos, ev, obj: Val.Obj, func: Val.Func) => filterObject(obj, func, ev).asInstanceOf[Val]
@@ -652,6 +652,39 @@ object DS extends Library {
             Val.Obj.mk(pos, result: _*).asInstanceOf[Val]
           case x => Error.fail("Expected Array or Object, got: " + x.prettyName)
         }
+    },
+
+    builtinWithDefaults("objectFrom",
+      "arr" -> null,
+      "keyF" -> null,
+      "valueF" -> Val.False(dummyPosition)) { (args, pos, ev) =>
+      val lzyArr = args(0) match {
+        case arr: Val.Arr => arr.asLazyArray
+        case x => Error.fail("Expected Array, got: " + x.prettyName)
+      }
+      val kFunc = args(1) match {
+        case f: Val.Func => f.asFunc
+        case x => Error.fail("Expected Function, got: " + x.prettyName)
+      }
+      val vFunc = args(2)
+
+      val m = new util.LinkedHashMap[String, Val.Obj.Member](lzyArr.length)
+      var i = 0
+      while (i < lzyArr.length) {
+        val k = kFunc.apply1(lzyArr(i), pos.noOffset)(ev)
+        if (!k.isInstanceOf[Val.Str]) Error.fail("Key Function should return a String, got: " + k.prettyName)
+        val j = i.intValue // ints are objects in Scala, so we must set a 'final' reference
+
+        m.put(k.asString,
+        if (vFunc.isInstanceOf[Val.False]) new Obj.Member(false, Visibility.Normal) {
+            override def invoke(self: Obj, sup: Obj, fs: FileScope, ev: EvalScope): Val = lzyArr(j).force
+          } else new Obj.Member(false, Visibility.Normal) {
+            override def invoke(self: Obj, sup: Obj, fs: FileScope, ev: EvalScope): Val = vFunc.asFunc.apply1(lzyArr(j), pos.noOffset)(ev)
+          })
+        i = i + 1
+      }
+
+      new Val.Obj(pos, m, false, null, null).asInstanceOf[Val]
     }
   ).asJava
 

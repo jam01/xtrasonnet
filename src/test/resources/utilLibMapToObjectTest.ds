@@ -25,7 +25,7 @@ local languages = [
 local expected = {
                  "Java": {
                    "name": "Java",
-                   "version": "1.8"
+                   "version": "1.7"
                  },
                  "Scala": {
                    "name": "Scala",
@@ -33,7 +33,7 @@ local expected = {
                  }
                };
 
-local mapped = ds.util.mapToObject(languages, function(x) x.language.name, function(v) v.language);
+local mapped = ds.objectFrom(languages, function(x) x.language.name, function(v) v.language);
 
 assert expected == mapped : "MapToObject result is " + mapped;
 
