@@ -166,7 +166,7 @@ public class XMLWriterTest {
         Mapper mapper = new Mapper("local params = {\n" +
                 "    \"XmlVersion\" : \"1.1\",\n" +
                 "    \"badgerfish\" : \"extended\"\n" +
-                "};ds.write(payload, \"application/xml\", params)");
+                "};tro.write(payload, \"application/xml\", params)");
 
 
         String mappedXml = mapper.transform(new DefaultDocument<>(jsonData, MediaTypes.APPLICATION_JSON), Collections.emptyMap(), MediaTypes.TEXT_PLAIN).getContent();
@@ -228,7 +228,7 @@ public class XMLWriterTest {
         String xmlData = resourceAsString("xmlMixedContent.xml");
         String expected = resourceAsString("xmlMixedContent.txt");
 
-        Mapper mapper = new Mapper("ds.xml.flattenContents(payload.letter, {}, {badgerfish: 'extended'})");
+        Mapper mapper = new Mapper("tro.xml.flattenContents(payload.letter, {}, {badgerfish: 'extended'})");
 
         String mapped = mapper.transform(new DefaultDocument<>(xmlData, MediaTypes.APPLICATION_XML.withParameter("badgerfish", "extended")), Collections.emptyMap(), MediaTypes.TEXT_PLAIN).getContent();
 
@@ -240,7 +240,7 @@ public class XMLWriterTest {
         String xmlData = resourceAsString("xmlMixedContentNamespaces.xml");
         String expected = resourceAsString("xmlMixedContent.txt");
 
-        Mapper mapper = new Mapper("ds.xml.flattenContents(payload[\"ns:letter\"], {\"$\": \"https://example.com\"}, {badgerfish: 'extended'})");
+        Mapper mapper = new Mapper("tro.xml.flattenContents(payload[\"ns:letter\"], {\"$\": \"https://example.com\"}, {badgerfish: 'extended'})");
 
         String mapped = mapper.transform(new DefaultDocument<>(xmlData, MediaTypes.APPLICATION_XML.withParameter("badgerfish", "extended")), Collections.emptyMap(), MediaTypes.TEXT_PLAIN).getContent();
 
@@ -250,7 +250,7 @@ public class XMLWriterTest {
     @Test
     void testXMLRoot() throws Exception {
         String jsonData = resourceAsString("xmlRoot.json");
-        Mapper mapper = new Mapper("ds.write(payload, \"application/xml\")");
+        Mapper mapper = new Mapper("tro.write(payload, \"application/xml\")");
 
         try {
             String mappedXml = mapper.transform(new DefaultDocument<>(jsonData, MediaTypes.APPLICATION_JSON), Collections.emptyMap(), MediaTypes.APPLICATION_XML).getContent();
@@ -258,7 +258,7 @@ public class XMLWriterTest {
         } catch (IllegalArgumentException e) {
             String stacktrace = stacktraceFrom(e);
             assertTrue(stacktrace.contains("Object must have only one root element"), "Stacktrace does not indicate the issue");
-            assertTrue(stacktrace.contains("((main):1:9)"), "Stacktrace does not indicate the issue");
+            assertTrue(stacktrace.contains("((main):1:10)"), "Stacktrace does not indicate the issue");
         }
 
         mapper = new Mapper("/** DataSonnet\n" +

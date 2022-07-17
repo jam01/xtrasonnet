@@ -33,68 +33,68 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class MathTest {
     @Test
     void testMath_mantissa() {
-        assertEquals("0.5", transform("ds.math.mantissa(2)"));
+        assertEquals("0.5", transform("tro.math.mantissa(2)"));
     }
 
     @Test
     void testMath_exponent() {
-        assertEquals("3", transform("ds.math.exponent(5)"));
+        assertEquals("3", transform("tro.math.exponent(5)"));
     }
 
     @Test
     void test_abs() {
-        assertEquals("1", transform("ds.math.abs(-1)"));
+        assertEquals("1", transform("tro.math.abs(-1)"));
     }
 
     @Test
     void test_avg() {
-        assertEquals("3", transform("ds.math.avg([1,2,3,4,5])"));
+        assertEquals("3", transform("tro.math.avg([1,2,3,4,5])"));
     }
 
     @Test
     void test_ceil() {
-        assertEquals("2", transform("ds.math.ceil(1.5)"));
+        assertEquals("2", transform("tro.math.ceil(1.5)"));
     }
 
     @Test
     void test_sqrt() {
-        assertEquals("2", transform("ds.math.sqrt(4)"));
+        assertEquals("2", transform("tro.math.sqrt(4)"));
     }
 
     @Test
     void test_mod() {
-        assertEquals("1", transform("ds.math.mod(3,2)"));
+        assertEquals("1", transform("tro.math.mod(3,2)"));
     }
 
     @Test
     void test_pow() {
-        assertEquals("8", transform("ds.math.pow(2,3)"));
+        assertEquals("8", transform("tro.math.pow(2,3)"));
     }
 
     @Test
     void test_sum() {
-        assertEquals("15", transform("ds.math.sum([1,2,3,4,5])"));
+        assertEquals("15", transform("tro.math.sum([1,2,3,4,5])"));
     }
 
     @Test
     void test_randomInt() {
-        double dblVal = Double.parseDouble(transform("ds.math.randomInt(10)"));
+        double dblVal = Double.parseDouble(transform("tro.math.randomInt(10)"));
         assertTrue(dblVal >= 0 && dblVal <= 10);
     }
 
     @Test
     void test_random() {
-        double dblVal = Double.parseDouble(transform("ds.math.random()"));
+        double dblVal = Double.parseDouble(transform("tro.math.random()"));
         assertTrue(dblVal >= 0 && dblVal <= 1);
     }
 
     @Test
     void test_floor() {
-        assertEquals("1", transform("ds.math.floor(1.9)"));
+        assertEquals("1", transform("tro.math.floor(1.9)"));
     }
 
     @Test
     void test_round() {
-        assertEquals("2", transform("ds.math.round(1.5)"));
+        assertEquals("2", transform("tro.math.round(1.5)"));
     }
 }

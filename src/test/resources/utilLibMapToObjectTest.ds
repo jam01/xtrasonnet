@@ -33,7 +33,7 @@ local expected = {
                  }
                };
 
-local mapped = ds.objectFrom(languages, function(x) x.language.name, function(v) v.language);
+local mapped = tro.objectFrom(languages, function(x) x.language.name, function(v) v.language);
 
 assert expected == mapped : "MapToObject result is " + mapped;
 

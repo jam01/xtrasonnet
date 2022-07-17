@@ -32,42 +32,42 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class BinariesTest {
     @Test
     void testBinaries_fromBase64() {
-        assertEquals("Hello World", transform("ds.binaries.fromBase64('SGVsbG8gV29ybGQ=')"));
-        assertEquals("45", transform("ds.binaries.fromBase64('NDU=')"));
+        assertEquals("Hello World", transform("tro.binaries.fromBase64('SGVsbG8gV29ybGQ=')"));
+        assertEquals("45", transform("tro.binaries.fromBase64('NDU=')"));
     }
 
     @Test
     void testBinaries_fromHex() {
-        assertEquals("Hello World", transform("ds.binaries.fromHex('48656C6C6F20576F726C64')"));
-        assertEquals("45", transform("ds.binaries.fromHex('3435')"));
-        assertEquals("-", transform("ds.binaries.fromHex('2D')"));
+        assertEquals("Hello World", transform("tro.binaries.fromHex('48656C6C6F20576F726C64')"));
+        assertEquals("45", transform("tro.binaries.fromHex('3435')"));
+        assertEquals("-", transform("tro.binaries.fromHex('2D')"));
     }
 
     // TODO: 8/19/20 additional testing
     @Test
     void testBinaries_readLinesWith() {
-        assertEquals("[Line 1,Line 2,Line 3,Line 4,Line 5]", transform("ds.binaries.readLinesWith('Line 1\\nLine 2\\nLine 3\\nLine 4\\nLine 5\\n', 'UTF-8')"));
+        assertEquals("[Line 1,Line 2,Line 3,Line 4,Line 5]", transform("tro.binaries.readLinesWith('Line 1\\nLine 2\\nLine 3\\nLine 4\\nLine 5\\n', 'UTF-8')"));
     }
 
     @Test
     void testBinaries_toBase64() {
-        assertEquals("SGVsbG8gV29ybGQ=", transform("ds.binaries.toBase64('Hello World')"));
-        assertEquals("NDU=", transform("ds.binaries.toBase64(45)"));
-        assertEquals("NDU=", transform("ds.binaries.toBase64(45.0)"));
-        assertEquals("NDUuMQ==", transform("ds.binaries.toBase64(45.1)"));
+        assertEquals("SGVsbG8gV29ybGQ=", transform("tro.binaries.toBase64('Hello World')"));
+        assertEquals("NDU=", transform("tro.binaries.toBase64(45)"));
+        assertEquals("NDU=", transform("tro.binaries.toBase64(45.0)"));
+        assertEquals("NDUuMQ==", transform("tro.binaries.toBase64(45.1)"));
     }
 
     @Test
     void testBinaries_toHex() {
-        assertEquals("48656C6C6F20576F726C64", transform("ds.binaries.toHex('Hello World')"));
-        assertEquals("2D", transform("ds.binaries.toHex(45)"));
-        assertEquals("2D", transform("ds.binaries.toHex(45.0)"));
-        assertEquals("2D", transform("ds.binaries.toHex(45.1)"));
+        assertEquals("48656C6C6F20576F726C64", transform("tro.binaries.toHex('Hello World')"));
+        assertEquals("2D", transform("tro.binaries.toHex(45)"));
+        assertEquals("2D", transform("tro.binaries.toHex(45.0)"));
+        assertEquals("2D", transform("tro.binaries.toHex(45.1)"));
     }
 
     //TODO additional testing
     @Test
     void testBinaries_writeLinesWith() {
-        assertEquals("Line 1\\nLine 2\\nLine 3\\nLine 4\\nLine 5\\n", transform("ds.binaries.writeLinesWith(['Line 1','Line 2','Line 3','Line 4','Line 5'], 'UTF-8')"));
+        assertEquals("Line 1\\nLine 2\\nLine 3\\nLine 4\\nLine 5\\n", transform("tro.binaries.writeLinesWith(['Line 1','Line 2','Line 3','Line 4','Line 5'], 'UTF-8')"));
     }
 }

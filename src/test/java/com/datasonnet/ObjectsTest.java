@@ -38,29 +38,29 @@ public class ObjectsTest {
                 "'d' : false, " +
                 "'e' : 3}";
         String compare = "[{a:1,b:true},{c:2,d:false},{e:3}]";
-        assertEquals(compare, transform("ds.objects.divideBy(" + input + ", 2)"));
+        assertEquals(compare, transform("tro.objects.divideBy(" + input + ", 2)"));
 
         compare = "[{a:1,b:true,c:2},{d:false,e:3}]";
-        assertEquals(compare, transform("ds.objects.divideBy(" + input + ", 3)"));
+        assertEquals(compare, transform("tro.objects.divideBy(" + input + ", 3)"));
     }
 
     @Test
     void testObjects_everyEntry() {
-        assertEquals("true", transform("ds.objects.allEntries({'a':'','b':'123'}, function(value) std.isString(value))"));
-        assertEquals("false", transform("ds.objects.allEntries({'a':'','b':'123'}, function(value,key) key =='a')"));
-        assertEquals("true", transform("ds.objects.allEntries({'b':''}, function(value,key) key == 'b')"));
+        assertEquals("true", transform("tro.objects.allEntries({'a':'','b':'123'}, function(value) std.isString(value))"));
+        assertEquals("false", transform("tro.objects.allEntries({'a':'','b':'123'}, function(value,key) key =='a')"));
+        assertEquals("true", transform("tro.objects.allEntries({'b':''}, function(value,key) key == 'b')"));
     }
 
     @Test
     void testObjects_someEntry() {
-        assertEquals("true", transform("ds.objects.anyEntry({ 'a' : true, 'b' : 1}, function(value,key) value == true)"));
-        assertEquals("false", transform("ds.objects.anyEntry({ 'a' : true, 'b' : 1}, function(value,key) value == false)"));
-        assertEquals("true", transform("ds.objects.anyEntry({ 'a' : true, 'b' : 1}, function(value,key) key == 'a')"));
+        assertEquals("true", transform("tro.objects.anyEntry({ 'a' : true, 'b' : 1}, function(value,key) value == true)"));
+        assertEquals("false", transform("tro.objects.anyEntry({ 'a' : true, 'b' : 1}, function(value,key) value == false)"));
+        assertEquals("true", transform("tro.objects.anyEntry({ 'a' : true, 'b' : 1}, function(value,key) key == 'a')"));
     }
 
     @Test
     void testObjects_takeWhile() {
-        assertEquals("{a:1,b:1}", transform("ds.objects.takeWhile({'a':1,'b':1,'c':5,'d':1}, function(value,key) value == 1)"));
-        assertEquals("{a:1}", transform("ds.objects.takeWhile({'a':1,'b':1,'c':5,'d':1}, function(value,key) key == 'a')"));
+        assertEquals("{a:1,b:1}", transform("tro.objects.takeWhile({'a':1,'b':1,'c':5,'d':1}, function(value,key) value == 1)"));
+        assertEquals("{a:1}", transform("tro.objects.takeWhile({'a':1,'b':1,'c':5,'d':1}, function(value,key) key == 'a')"));
     }
 }

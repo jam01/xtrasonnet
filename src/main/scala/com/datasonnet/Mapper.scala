@@ -85,7 +85,7 @@ class Mapper(var script: String,
   if (asFunction) script = Mapper.asFunction(script, inputNames.asScala)
   private val parseCache = new DefaultParseCache
   private val settings = new Settings(preserveOrder = header.isPreserveOrder)
-  private val allLibs: IndexedSeq[Library] = IndexedSeq(DS).appendedAll(additionalLibs.asScala)
+  private val allLibs: IndexedSeq[Library] = IndexedSeq(Trobador).appendedAll(additionalLibs.asScala)
 
   // an importer that will resolve scripts from the classpath
   private val classpathImporter: Importer = new Importer {

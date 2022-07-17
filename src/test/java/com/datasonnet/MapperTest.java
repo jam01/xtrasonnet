@@ -54,7 +54,7 @@ public class MapperTest {
         return Stream.of(
                 new String[] { "{ \"uid\": payload.user_id }", "{ \"user_id\": 7 }", "{\"uid\":7}"},
                 new String[] { "{ \"uid\": payload.user_id }", "{ \"user_id\": 8 }", "{\"uid\":8}"},
-                new String[] { "ds.datetime.plus(\"2019-07-22T21:00:00Z\", \"P1Y1D\")", "{}", "\"2020-07-23T21:00:00Z\""}
+                new String[] { "tro.datetime.plus(\"2019-07-22T21:00:00Z\", \"P1Y1D\")", "{}", "\"2020-07-23T21:00:00Z\""}
                 );
     }
 
@@ -76,22 +76,22 @@ public class MapperTest {
     @Test
     void parseErrorLineNumber() {
         try {
-            Mapper mapper = new Mapper("function(payload) DS.time.now() a", Collections.emptyList(), Collections.emptyMap(), false);
+            Mapper mapper = new Mapper("function(payload) tro.time.now() a", Collections.emptyList(), Collections.emptyMap(), false);
             fail("Must fail to parse");
         } catch(IllegalArgumentException e) {
             String stacktrace = stacktraceFrom(e);
             assertTrue(e.getMessage().contains("Could not parse transformation script"), "Found message: " + e.getMessage());
-            assertTrue(stacktrace.contains("Expected end-of-input:1:33"), "Stacktrace does not indicate the issue");
+            assertTrue(stacktrace.contains("Expected end-of-input:1:34"), "Stacktrace does not indicate the issue");
         }
     }
 
     @Test
     void parseErrorLineNumberWhenWrapped() {
         try {
-            Mapper mapper = new Mapper("DS.time.now() a", Collections.emptyList());
+            Mapper mapper = new Mapper("tro.time.now() a", Collections.emptyList());
             fail("Must fail to parse");
         } catch(IllegalArgumentException e) {
-            assertTrue(e.getCause().getMessage().contains("Expected end-of-input:1:15"), "Found message: " + e.getCause().getMessage());
+            assertTrue(e.getCause().getMessage().contains("Expected end-of-input:1:16"), "Found message: " + e.getCause().getMessage());
         }
     }
 
@@ -134,7 +134,7 @@ public class MapperTest {
     @Disabled
     @Test
     void includedJsonnetLibraryWorks() {
-        Mapper mapper = new Mapper("DS.Util.select({a: {b: 5}}, 'a.b')", Collections.emptyList());
+        Mapper mapper = new Mapper("tro.Util.select({a: {b: 5}}, 'a.b')", Collections.emptyList());
         assertEquals("5", mapper.transform("{}"));
     }
 

@@ -53,7 +53,7 @@ public class HeaderTest {
             "input * application/xml;text-value-key=__text\n" +
             "input myvar application/csv;separator=|\n" +
             "dataformat application/vnd.ms-excel;payload.param=xyz\n" +
-            "  output application/csv;ds.csv.quote=\"\"\"\n" +
+            "  output application/csv;tro.csv.quote=\"\"\"\n" +
             "*/\n" +
             "[\n" +
             "    {\n" +
@@ -130,7 +130,7 @@ public class HeaderTest {
     @Test
     void testHeaderOutput() {
         Set<String> keys = header.getDefaultOutput().orElseThrow(AssertionError::new).getParameters().keySet();
-        assertTrue(keys.contains("ds.csv.quote"));
+        assertTrue(keys.contains("tro.csv.quote"));
     }
 
     @Test

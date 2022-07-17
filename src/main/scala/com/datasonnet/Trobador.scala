@@ -98,9 +98,9 @@ import scala.util.Random
 // further optimizations possible:
 // consider replacing memberOf(s) with lazy-invoke
 // prefer new Val.Obj() than Val.Obj.mk
-object DS extends Library {
+object Trobador extends Library {
 
-  override def namespace() = "ds"
+  override def namespace() = "tro"
 
   override def libsonnets(): java.util.Set[String] = Collections.emptySet();
 
