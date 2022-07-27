@@ -33,7 +33,7 @@ case class ClasspathPath(path: String) extends Path {
     path + ":" + offset
 
   override def equals(other: Any): Boolean = other match {
-    case other: ClasspathPath => other.path == path
+    case other: ClasspathPath => path.equals(other.path)
     case _ => false
   }
 
