@@ -82,7 +82,7 @@ public class MapperBuilder {
     }
 
     public MapperBuilder extendPlugins(Consumer<List<DataFormatPlugin>> extender) {
-        List<DataFormatPlugin> plugins = new ArrayList<>(DataFormatService.DEFAULT.getPlugins());
+        List<DataFormatPlugin> plugins = new ArrayList<>(this.service.getPlugins());
         extender.accept(plugins);
         this.service = new DataFormatService(plugins);
         return this;
