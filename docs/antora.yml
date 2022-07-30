@@ -1,7 +1,7 @@
-name: datasonnet
-title: DataSonnet
+name: trobador
+title: Trobador
 version: latest
+
 start_page: ROOT:index.adoc
 nav:
 - modules/ROOT/nav.adoc
-- modules/ROOT/nav-intellij.adoc

@@ -1,9 +1,9 @@
-# DataSonnet Cookbook
+= Trobador Cookbook
 :toc:
 :toclevels: 3
 =================
 
-### Single Field to Single Field
+=== Single Field to Single Field
 
 Here's an example of оne-to-one mapping of JSON object fields to the JSON output:
 
@@ -11,7 +11,7 @@ Here's an example of оne-to-one mapping of JSON object fields to the JSON outpu
 -------------
 {
   "userId" : "123",
-  "name" : "DataSonnet"
+  "name" : "Trobador"
 }
 -------------
 .Mapping
@@ -25,11 +25,11 @@ Here's an example of оne-to-one mapping of JSON object fields to the JSON outpu
 -------------
 {
   "uid" : "123",
-  "uname" : "DataSonnet"
+  "uname" : "Trobador"
 }
 -------------
 
-### Multiple Fields to Single Field
+=== Multiple Fields to Single Field
 
 Field values can be combined together, concatenated as a string, added as numerical values or merged as objects. Strings may be concatenated with *`+`*, which implicitly converts one operand to string if needed. Objects may be combined with *`+`* where the right-hand side wins field conflicts.
 
@@ -37,7 +37,7 @@ Field values can be combined together, concatenated as a string, added as numeri
 -------------
 {
   "userId" : "123",
-  "name" : "DataSonnet",
+  "name" : "Trobador",
   "number1" : 1,
   "number2" : 2,
   "object1" : {
@@ -75,18 +75,18 @@ Field values can be combined together, concatenated as a string, added as numeri
     2,
     4
   ],
-  "nameId": "DataSonnet - 123",
+  "nameId": "Trobador - 123",
   "numberPlusNumber": 3,
-  "numberPlusString": "1DataSonnet",
+  "numberPlusString": "1Trobador",
   "objects": {
     "Hello": "Hello",
     "World": "World"
   },
-  "stringPlusNumber": "DataSonnet1"
+  "stringPlusNumber": "Trobador1"
 }
 -------------
 
-### Conditional Mapping
+=== Conditional Mapping
 Conditional expressions look like `if b then e else e`. The `else` branch is optional and defaults to `null`.
 
 .Payload
@@ -166,7 +166,7 @@ Conditional expressions look like `if b then e else e`. The `else` branch is opt
 }
 -------------
 
-### Validation
+=== Validation
 Errors can arise from the language itself (e.g. an array overrun) or thrown from Jsonnet code. Stack traces provide context for the error.
 
 - To raise an error: `error "foo"`;
@@ -175,7 +175,7 @@ Errors can arise from the language itself (e.g. an array overrun) or thrown from
 - Assert fields have a property: `assert self.f == 10`;
 - With custom failure message: `assert "foo" : "message"`
 
-### Array Index Selector
+=== Array Index Selector
 
 - arr[x] selects element with the index X from the array. Indexes start with 0;
 - arr[x : y] returns slice of an array from index X (inclusive) to index Y (exclusive). E.g.:
@@ -210,7 +210,7 @@ Errors can arise from the language itself (e.g. an array overrun) or thrown from
 }
 -------------
 
-### Looping
+=== Looping
 
 .Payload
 -------------
@@ -307,7 +307,7 @@ Indexes are not available in `for` loop. In order to use both element value and 
 ]
 -------------
 
-### Filter By
+=== Filter By
 Standard Jsonnet library has `std.filter()` function:
 
 .Payload
@@ -369,7 +369,7 @@ local isInsured(person) = std.objectHas(person, "insurance") &&
 
 -------------
 
-### Order By / Sorting
+=== Order By / Sorting
 The `std.sort(arr)` function is available in the standard library. All elements of an array must be of the same type. If elements of array are objects or other arrays, a function must be provided to to extract comparison key from each list element.
 
 .Payload
@@ -404,8 +404,8 @@ std.sort(payload)
 
 //TODO Sort with key
 
-### Group By
-`DS.Util.groupBy()` function provided. The first argument is a list of objects, the second is the name of the element to group by. The following example groups list of objects by name of the language:
+=== Group By
+`TRO.Util.groupBy()` function provided. The first argument is a list of objects, the second is the name of the element to group by. The following example groups list of objects by name of the language:
 
 .Payload
 -------------
@@ -442,7 +442,7 @@ std.sort(payload)
 [subs="quotes"]
 -------------
 {
-  languages: DS.Util.groupBy(payload.languages, 'language.name'),
+  languages: TRO.Util.groupBy(payload.languages, 'language.name'),
 }
 -------------
 .Output
@@ -480,8 +480,8 @@ std.sort(payload)
    }
 }
 -------------
-### Distinct By
-`DS.Util.distinctBy()` function provided.
+=== Distinct By
+`TRO.Util.distinctBy()` function provided.
 
 .Payload
 -------------
@@ -526,8 +526,8 @@ std.sort(payload)
 [subs="quotes"]
 -------------
 {
-  uniqueLetters: *DS.Util.distinctBy*(payload.arrayOfLetters),
-  uniqueObjects: *DS.Util.distinctBy*(payload.arrayOfObjects)
+  uniqueLetters: *TRO.Util.distinctBy*(payload.arrayOfLetters),
+  uniqueObjects: *TRO.Util.distinctBy*(payload.arrayOfObjects)
 }
 -------------
 .Output
@@ -590,7 +590,7 @@ local listOfLanguages =
       }
     ];
 
-DS.Util.distinctBy(listOfLanguages, *"language.name"*)
+TRO.Util.distinctBy(listOfLanguages, *"language.name"*)
 -------------
 .Output
 -------------
@@ -610,11 +610,11 @@ DS.Util.distinctBy(listOfLanguages, *"language.name"*)
 ]
 -------------
 
-### Count
+=== Count
 `std.length()` function is available out of the box. If parameter is an array, it will return number of elements in the array.
 
-### Array Flattening
-`DS.Util.deepFlattenArrays()` function recursively iterates over array of elements, some or all of which may be arrays too, and merges them all in a single array.
+=== Array Flattening
+`TRO.Util.deepFlattenArrays()` function recursively iterates over array of elements, some or all of which may be arrays too, and merges them all in a single array.
 
 .Payload
 -------------
@@ -640,7 +640,7 @@ DS.Util.distinctBy(listOfLanguages, *"language.name"*)
 .Mapping
 [subs="quotes"]
 -------------
-DS.Util.deepFlattenArrays(payload)
+TRO.Util.deepFlattenArrays(payload)
 -------------
 .Output
 -------------
@@ -660,7 +660,7 @@ DS.Util.deepFlattenArrays(payload)
 
 Note that `std.flattenArrays(arrs)` function is also available, it only flattens a single level of nesting.
 
-### Insert Literal Data
+=== Insert Literal Data
 It's possible to import both code and raw data from other files.
 
 - The import construct is like copy/pasting Jsonnet code.
@@ -670,7 +670,7 @@ It's possible to import both code and raw data from other files.
 
 Usually, imported Jsonnet content is stashed in a top-level local variable. This resembles the way other programming languages handle modules. Jsonnet libraries typically return an object, so that they can easily be extended. Neither of these conventions are enforced.
 
-### Sum Up Numbers in an Array
+=== Sum Up Numbers in an Array
 Standard library has the `foldl` function which calls the function on each array element and the result of the previous function call, or init in the case of the initial element. It traverses the array from left to right.
 
 .Payload
@@ -699,7 +699,7 @@ Standard library has the `foldl` function which calls the function on each array
 }
 -------------
 
-### Default Values
+=== Default Values
 One option to set fields with default values is to create an overlay object with default values and add your input objects to it. Consider the following example:
 
 .Payload
@@ -761,13 +761,13 @@ std.map(function(obj) *defaultValues + obj*, payload)
 ]
 -------------
 
-### Add and Subtract Dates
-DataSonnet uses ISO-8601 dates and periods. To add or subtract a number of years. months and days, use `DS.LocalDateTime.offset()` and `DS.ZonedDateTime.offset()` functions.
+=== Add and Subtract Dates
+Trobador uses ISO-8601 dates and periotro. To add or subtract a number of years. months and days, use `TRO.LocalDateTime.offset()` and `TRO.ZonedDateTime.offset()` functions.
 
 .Mapping
 [subs="quotes"]
 ---------------
-DS.LocalDateTime.offset("2019-07-22T21:00:00", "P1Y1D")
+TRO.LocalDateTime.offset("2019-07-22T21:00:00", "P1Y1D")
 ---------------
 .Output
 [subs="quotes"]
@@ -777,8 +777,8 @@ DS.LocalDateTime.offset("2019-07-22T21:00:00", "P1Y1D")
 
 See https://docs.oracle.com/javase/8/docs/api/java/time/Period.html#parse-java.lang.CharSequence-[Java 8 Period documentation] for period format details and examples.
 
-### Creating a Pivot Table
-There are number of ways to pivot a table in DataSonnet. For example, `std.foldl` reduce function can be used:
+=== Creating a Pivot Table
+There are number of ways to pivot a table in Trobador. For example, `std.foldl` reduce function can be used:
 
 .Payload
 --------
@@ -838,7 +838,7 @@ local payloadWithDefaults = std.map(function(obj) overlay + obj, payload);
 }
 -------------
 
-### Removing Fields from Object
+=== Removing Fields from Object
 The field will not be included in the result object if its key is set to `null`. For example:
 
 .Payload
@@ -880,14 +880,14 @@ local removeFields = [ "photo", "generic", "disabled", "update_whitelist", "id" 
 }
 --------
 
-`DS.Util.remove(object, key)` and `DS.Util.removeAll(object, arrayOfKeys)` functions provided for convenience:
+`TRO.Util.remove(object, key)` and `TRO.Util.removeAll(object, arrayOfKeys)` functions provided for convenience:
 
 [subs="quotes"]
 --------
-*DS.Util.removeAll*(payload, [ "photo", "generic", "disabled", "update_whitelist", "id" ])
+*TRO.Util.removeAll*(payload, [ "photo", "generic", "disabled", "update_whitelist", "id" ])
 --------
 
-### Finding If Array Contains Value
+=== Finding If Array Contains Value
 For simple scenarios `std.count(arr, val) > 0` will return `true` if an array contains the value. For more complex scenarios JsonPath can be used.
 
 .Payload
@@ -910,7 +910,7 @@ For simple scenarios `std.count(arr, val) > 0` will return `true` if an array co
 .Mapping
 [subs="quotes"]
 --------
-local javaLanguages = DS.JsonPath.select(payload, "$..language[?(@.name == 'Java')]");
+local javaLanguages = TRO.JsonPath.select(payload, "$..language[?(@.name == 'Java')]");
 
 std.length(javaLanguages) > 0
 --------
@@ -920,9 +920,9 @@ std.length(javaLanguages) > 0
 true
 -------------
 
-### Merging Objects and Adding Fields to Objects
+=== Merging Objects and Adding Fields to Objects
 
-DataSonnet allows objects to be merged, i.e. there's a `+` operation defined with the resulting object being a union of both objects. This allows adding fields to existing objects without having to map each field individually. For example:
+Trobador allows objects to be merged, i.e. there's a `+` operation defined with the resulting object being a union of both objects. This allows adding fields to existing objects without having to map each field individually. For example:
 
 .Payload
 ----------
@@ -965,29 +965,29 @@ payload + { "middleName": "NMN",
 }
 -------------
 
-### Reading and writing XML
+=== Reading and writing XML
 
-DataSonnet supports XML as an input and output format. xref:headers.adoc[Headers] can be used to control the behavior of the mapper.
+Trobador supports XML as an input and output format. xref:headers.adoc[Headers] can be used to control the behavior of the mapper.
 
-#### Reading XML
+==== Reading XML
 Let's take the following XML input as an example:
 
 --------------
 <?xml version="1.0" encoding="UTF-8"?>
-<test:root xmlns:test="http://www.datasonnet.com">
-    <test:datasonnet version="1.0">Hello World</test:datasonnet>
+<test:root xmlns:test="http://www.trobador.com">
+    <test:trobador version="1.0">Hello World</test:trobador>
 </test:root>
 --------------
 
-The internal representation of this input in DataSonnet would be:
+The internal representation of this input in Trobador would be:
 
 --------------
 {
   "test:root": {
     "@xmlns": {
-      "test": "http://www.datasonnet.com"
+      "test": "http://www.trobador.com"
     },
-    "test:datasonnet": {
+    "test:trobador": {
       "@version": "1.0",
       "$": "Hello World"
     }
@@ -995,36 +995,36 @@ The internal representation of this input in DataSonnet would be:
 }
 --------------
 
-Our mapping can simply extract the value of the `<test:datasonnet>` elemeng, e.g.:
+Our mapping can simply extract the value of the `<test:trobador>` elemeng, e.g.:
 
 --------------
 {
-  greeting: payload["test:root"]["test:datasonnet"]["$"]
+  greeting: payload["test:root"]["test:trobador"]["$"]
 }
 --------------
 
-Note that `["_key_"]` syntax is used to look up the property instead of `._key_` syntax, because colon `:` cannot be used in the DataSonnet identifier. In addition, the text value of the element is mapped to a dollar sign `$` which is not a valid identifier either. Let's use headers to fix this:
+Note that `["_key_"]` syntax is used to look up the property instead of `._key_` syntax, because colon `:` cannot be used in the Trobador identifier. In addition, the text value of the element is mapped to a dollar sign `$` which is not a valid identifier either. Let's use headers to fix this:
 
 --------------
-/** DataSonnet
+/** Trobador
 version=1.0
 input.payload.application/xml.NamespaceSeparator=_
 input.payload.application/xml.TextValueKey=__text
 */
 
 {
-  greeting: payload.test_root.test_datasonnet.__text
+  greeting: payload.test_root.test_trobador.__text
 }
 --------------
 
-#### Writing XML
+==== Writing XML
 
 To control the resulting XML, the `output` headers can be used. For example:
 
 --------------
-/** DataSonnet
+/** Trobador
 version=1.0
-output.application/xml.NamespaceDeclarations.datasonnet=http://www.modusbox.com
+output.application/xml.NamespaceDeclarations.trobador=http://www.modusbox.com
 output.application/xml.NamespaceSeparator=%
 output.application/xml.TextValueKey=__text
 output.application/xml.AttributeCharacter=*
@@ -1032,11 +1032,11 @@ output.application/xml.XmlVersion=1.0
 */
 
 {
-    "datasonnet%root": {
+    "trobador%root": {
         "*xmlns": {
-            "datasonnet": "http://www.modusbox.com"
+            "trobador": "http://www.modusbox.com"
         },
-        "datasonnet%datasonnet": {
+        "trobador%trobador": {
             "*version": "1.0",
             "__text": "Hello World"
         }
@@ -1057,9 +1057,9 @@ XML can only contain one root element. That means the mapping must only contain 
 ----
 ======
 
-### Reading and writing CSV
+=== Reading and writing CSV
 
-#### Reading CSV
+==== Reading CSV
 
 The CSV files are represented as arrays of arrays or arrays of maps (if the CSV contains headers). For example, if the CSV input is:
 
@@ -1092,7 +1092,7 @@ Penelopa|Vasilic|pvasilic2@google.pl
 In this case the headers are required:
 
 -----------
-/** DataSonnet
+/** Trobador
 version=1.0
 input.payload.application/csv.UseHeader=false
 input.payload.application/csv.Separator=|
@@ -1107,12 +1107,12 @@ input.payload.application/csv.Separator=|
 }
 -----------
 
-#### Writing CSV
+==== Writing CSV
 
 To produce a valid CSV, the mapping must result in array of arrays or array of objects with identical keys (in this case the keys from the first object will be used as CSV headers). Header can be used to override the default CSV file generation, i.e. set custom separator, quote character, etc. For example:
 
 -----------
-/** DataSonnet
+/** Trobador
 version=1.0
 output.application/csv.UseHeader=false
 output.application/csv.Quote='
