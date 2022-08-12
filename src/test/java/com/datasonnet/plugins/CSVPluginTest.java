@@ -1,5 +1,12 @@
 package com.datasonnet.plugins;
 
+/*-
+ * Copyright 2022 Jose Montoya.
+ *
+ * Licensed under the Elastic License 2.0; you may not use this file except in
+ * compliance with the Elastic License 2.0.
+ */
+
 import com.datasonnet.Mapper;
 import com.datasonnet.document.DefaultDocument;
 import com.datasonnet.document.MediaTypeUtils;
