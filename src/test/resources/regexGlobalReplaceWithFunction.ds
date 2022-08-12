@@ -1,5 +1,0 @@
-local inputStr = "xxx2yyy4zzz6aaa";
-
-local testF(str) = std.toString(std.pow(std.parseInt(str.string), 2));
-
-tro.regex.regexGlobalReplace(inputStr, "\\d", testF)

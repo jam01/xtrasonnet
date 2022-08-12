@@ -43,7 +43,7 @@ public class XMLWriterTest {
     @Test
     void testOverrideNamespaces() throws Exception {
         String json = "{\"b:a\":{\"@xmlns\":{\"b\":\"http://example.com/1\",\"b1\":\"http://example.com/2\"},\"b1:b\":{}}}";
-        String datasonnet = resourceAsString("xmlOverrideNamespaces.ds");
+        String datasonnet = resourceAsString("xml/xmlOverrideNamespaces.ds");
 
         Mapper mapper = new Mapper(datasonnet);
 
@@ -67,7 +67,7 @@ public class XMLWriterTest {
     void testNamespaceBump() throws Exception {
         String json = "{\"b:a\":{\"@xmlns\":{\"b\":\"http://example.com/1\",\"b1\":\"http://example.com/2\"},\"b1:b\":{}}}";
 
-        String datasonnet = resourceAsString("xmlNamespaceBump.ds");
+        String datasonnet = resourceAsString("xml/xmlNamespaceBump.ds");
 
         Mapper mapper = new Mapper(datasonnet);
 
@@ -89,9 +89,9 @@ public class XMLWriterTest {
 
     @Test
     void testXMLWriterExt() throws Exception {
-        String jsonData = resourceAsString("readXMLExtTest.json");
-        String datasonnet = resourceAsString("writeXMLExtTest.ds");
-        String expectedXml = resourceAsString("readXMLExtTest.xml");
+        String jsonData = resourceAsString("xml/readXMLExtTest.json");
+        String datasonnet = resourceAsString("xml/writeXMLExtTest.ds");
+        String expectedXml = resourceAsString("xml/readXMLExtTest.xml");
 
         Mapper mapper = new Mapper(datasonnet);
 
@@ -102,9 +102,9 @@ public class XMLWriterTest {
 
     @Test
     void testNoDoubleWrite() throws Exception {
-        String jsonData = resourceAsString("writeXMLExtDouble.json");
-        String datasonnet = resourceAsString("writeXMLExtTest.ds");
-        String expectedXml = resourceAsString("readXMLExtTest.xml");
+        String jsonData = resourceAsString("xml/writeXMLExtDouble.json");
+        String datasonnet = resourceAsString("xml/writeXMLExtTest.ds");
+        String expectedXml = resourceAsString("xml/readXMLExtTest.xml");
 
         Mapper mapper = new Mapper(datasonnet);
 
@@ -121,7 +121,7 @@ public class XMLWriterTest {
                 "   '$1': 'dDocTitle <substring> foo <and> dDocCreatedDate >= bar'" +
                 " } " +
                 "}";
-        String expectedXml = resourceAsString("writeXMLEscapedTest.xml");
+        String expectedXml = resourceAsString("xml/writeXMLEscapedTest.xml");
 
         Mapper mapper = new Mapper(datasonnet);
         String mappedXml = mapper.transform(DefaultDocument.NULL_INSTANCE, Collections.emptyMap(), MediaTypes.APPLICATION_XML.withParameter("badgerfish", "extended"), String.class).getContent();
@@ -131,9 +131,9 @@ public class XMLWriterTest {
 
     @Test
     void testNonAscii() throws Exception {
-        String jsonData = resourceAsString("writerXmlNonAscii.json");
-        String expectedXml = resourceAsString("xmlNonAscii.xml");
-        String datasonnet = resourceAsString("xmlNonAscii.ds");
+        String jsonData = resourceAsString("xml/writerXmlNonAscii.json");
+        String expectedXml = resourceAsString("xml/xmlNonAscii.xml");
+        String datasonnet = resourceAsString("xml/xmlNonAscii.ds");
 
         Mapper mapper = new Mapper(datasonnet);
 
@@ -147,9 +147,9 @@ public class XMLWriterTest {
 
     @Test
     void testCDATA() throws Exception {
-        String jsonData = resourceAsString("xmlCDATA.json");
-        String expectedXml = resourceAsString("xmlCDATA.xml");
-        String datasonnet = resourceAsString("xmlNonAscii.ds");//Reuse existing one to avoid duplication
+        String jsonData = resourceAsString("xml/xmlCDATA.json");
+        String expectedXml = resourceAsString("xml/xmlCDATA.xml");
+        String datasonnet = resourceAsString("xml/xmlNonAscii.ds");//Reuse existing one to avoid duplication
 
         Mapper mapper = new Mapper(datasonnet);
 
@@ -160,8 +160,8 @@ public class XMLWriterTest {
 
     @Test
     void testXMLMixedContent() throws Exception {
-        String jsonData = resourceAsString("xmlMixedContent.json");
-        String expectedXml = resourceAsString("xmlMixedContent.xml");
+        String jsonData = resourceAsString("xml/xmlMixedContent.json");
+        String expectedXml = resourceAsString("xml/xmlMixedContent.xml");
 
         Mapper mapper = new Mapper("local params = {\n" +
                 "    \"XmlVersion\" : \"1.1\",\n" +
@@ -176,9 +176,9 @@ public class XMLWriterTest {
 
     @Test
     void testEmptyElements() throws Exception {
-        String jsonData = resourceAsString("xmlEmptyElements.json");
-        String expectedXml = resourceAsString("xmlEmptyElementsNull.xml");
-        String datasonnet = resourceAsString("xmlEmptyElementsNull.ds");
+        String jsonData = resourceAsString("xml/xmlEmptyElements.json");
+        String expectedXml = resourceAsString("xml/xmlEmptyElementsNull.xml");
+        String datasonnet = resourceAsString("xml/xmlEmptyElementsNull.ds");
 
         Mapper mapper = new Mapper(datasonnet);
 
@@ -186,8 +186,8 @@ public class XMLWriterTest {
 
         assertThat(mappedXml, CompareMatcher.isSimilarTo(expectedXml).ignoreWhitespace());
 
-        expectedXml = resourceAsString("xmlEmptyElementsNoNull.xml");
-        datasonnet = resourceAsString("xmlEmptyElementsNoNull.ds");
+        expectedXml = resourceAsString("xml/xmlEmptyElementsNoNull.xml");
+        datasonnet = resourceAsString("xml/xmlEmptyElementsNoNull.ds");
 
         mapper = new Mapper(datasonnet);
 
@@ -199,7 +199,7 @@ public class XMLWriterTest {
 
     @Test
     void testOmitXml() throws Exception {
-        String jsonData = resourceAsString("xmlEmptyElements.json");
+        String jsonData = resourceAsString("xml/xmlEmptyElements.json");
 
         Mapper mapper = new Mapper("/** DataSonnet\n" +
                 "version=2.0\n" +
@@ -225,8 +225,8 @@ public class XMLWriterTest {
     // TODO add version using namespaces
     @Test
     void testFlattenMixedContent() throws Exception {
-        String xmlData = resourceAsString("xmlMixedContent.xml");
-        String expected = resourceAsString("xmlMixedContent.txt");
+        String xmlData = resourceAsString("xml/xmlMixedContent.xml");
+        String expected = resourceAsString("xml/xmlMixedContent.txt");
 
         Mapper mapper = new Mapper("tro.xml.flattenContents(payload.letter, {}, {badgerfish: 'extended'})");
 
@@ -237,8 +237,8 @@ public class XMLWriterTest {
 
     @Test
     void testFlattenMixedContentWithNamespaces() throws Exception {
-        String xmlData = resourceAsString("xmlMixedContentNamespaces.xml");
-        String expected = resourceAsString("xmlMixedContent.txt");
+        String xmlData = resourceAsString("xml/xmlMixedContentNamespaces.xml");
+        String expected = resourceAsString("xml/xmlMixedContent.txt");
 
         Mapper mapper = new Mapper("tro.xml.flattenContents(payload[\"ns:letter\"], {\"$\": \"https://example.com\"}, {badgerfish: 'extended'})");
 
@@ -249,7 +249,7 @@ public class XMLWriterTest {
 
     @Test
     void testXMLRoot() throws Exception {
-        String jsonData = resourceAsString("xmlRoot.json");
+        String jsonData = resourceAsString("xml/xmlRoot.json");
         Mapper mapper = new Mapper("tro.write(payload, \"application/xml\")");
 
         try {
@@ -276,8 +276,8 @@ public class XMLWriterTest {
 
     @Test
     void testNestedNamespaces() throws Exception {
-        String jsonData = resourceAsString("xmlNestedNamespaces.json");
-        String expectedXml = resourceAsString("xmlNestedNamespaces.xml");
+        String jsonData = resourceAsString("xml/xmlNestedNamespaces.json");
+        String expectedXml = resourceAsString("xml/xmlNestedNamespaces.xml");
 
         Mapper mapper = new Mapper("payload");
 

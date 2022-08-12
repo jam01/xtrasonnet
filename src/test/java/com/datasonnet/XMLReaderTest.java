@@ -39,7 +39,7 @@ public class XMLReaderTest {
 
     @Test
     void testNonAscii() throws Exception {
-        mapAndAssert("xmlNonAscii.xml", "xmlNonAscii.json");
+        mapAndAssert("xml/xmlNonAscii.xml", "xml/xmlNonAscii.json");
     }
 
     @Test
@@ -70,9 +70,9 @@ public class XMLReaderTest {
 
     @Test
     void testXMLReaderExt() throws Exception {
-        String xmlData = TestUtils.resourceAsString("readXMLExtTest.xml");
-        String jsonnet = TestUtils.resourceAsString("readXMLExtTest.ds");
-        String expectedJson = TestUtils.resourceAsString("readXMLExtTest.json");
+        String xmlData = TestUtils.resourceAsString("xml/readXMLExtTest.xml");
+        String jsonnet = TestUtils.resourceAsString("xml/readXMLExtTest.ds");
+        String expectedJson = TestUtils.resourceAsString("xml/readXMLExtTest.json");
 
         Mapper mapper = new Mapper(jsonnet);
 
@@ -84,22 +84,22 @@ public class XMLReaderTest {
 
     @Test
     void nestedNamespaces() throws Exception {
-        mapAndAssert("xmlNestedNamespaces.xml", "xmlNestedNamespaces.json");
+        mapAndAssert("xml/xmlNestedNamespaces.xml", "xml/xmlNestedNamespaces.json");
     }
 
     @Test
     void testMixedContent() throws Exception {
-        mapAndAssert("xmlMixedContent.xml", "xmlMixedContent.json");
+        mapAndAssert("xml/xmlMixedContent.xml", "xml/xmlMixedContent.json");
     }
 
     @Test
     void testCDATA() throws Exception {
-        mapAndAssert("xmlCDATA.xml", "xmlCDATA.json");
+        mapAndAssert("xml/xmlCDATA.xml", "xml/xmlCDATA.json");
     }
 
     @Test
     void testMultipleCDATA() throws Exception {
-        mapAndAssert("xmlMultipleCDATA.xml", "xmlMultipleCDATA.json");
+        mapAndAssert("xml/xmlMultipleCDATA.xml", "xml/xmlMultipleCDATA.json");
     }
 
     private void mapAndAssert(String inputFileName, String expectedFileName) throws Exception {

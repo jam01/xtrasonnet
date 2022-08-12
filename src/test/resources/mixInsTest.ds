@@ -1,6 +1,0 @@
-{
-  animal: {
-    "@type": "cat",
-    catsName: "Fritz"
-  }
-}

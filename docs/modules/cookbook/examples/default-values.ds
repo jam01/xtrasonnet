@@ -1,6 +1,0 @@
-local defaultValues = {
-    "name": "No Name",
-    "company": "N/A"
-};
-
-std.map(function(obj) defaultValues + obj, payload)

@@ -1,6 +1,0 @@
-{
-    shipper: payload.from,
-    items: [
-        item + { inStock: true } for item in payload.items
-    ]
-}

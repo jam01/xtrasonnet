@@ -1,8 +1,0 @@
-local result = std.sort(payload);
-
-assert result == output;
-
-result
-
-
-

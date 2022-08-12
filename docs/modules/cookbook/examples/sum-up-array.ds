@@ -1,3 +1,0 @@
-{
-    sum: std.foldl(function(aggregate, num) aggregate + num, payload, 0)
-}

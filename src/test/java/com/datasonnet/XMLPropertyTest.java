@@ -51,7 +51,7 @@ public class XMLPropertyTest {
 
 
     @Property
-    public void reversible(@From(XmlDocumentGenerator.class) @Dictionary("xml.dict") Document dom) throws Exception {
+    public void reversible(@From(XmlDocumentGenerator.class) @Dictionary("xml/xml.dict") Document dom) throws Exception {
         String xml = XMLDocumentUtils.documentToString(dom);
         // the round trip is performed by the use of the XML mime types
         Mapper mapper = new Mapper("payload");
@@ -68,7 +68,7 @@ public class XMLPropertyTest {
     }
 
     @Property
-    public void jsonSerializes(@From(XMLJsonGenerator.class) @Dictionary("xml.dict") String json) throws Exception {
+    public void jsonSerializes(@From(XMLJsonGenerator.class) @Dictionary("xml/xml.dict") String json) throws Exception {
         Mapper mapper = new Mapper("payload");
         try {
             String xml = mapper.transform(new DefaultDocument<String>(json, MediaTypes.APPLICATION_JSON), Collections.emptyMap(), MediaTypes.APPLICATION_XML).getContent();
