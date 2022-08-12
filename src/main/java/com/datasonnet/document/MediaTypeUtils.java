@@ -47,6 +47,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static com.datasonnet.document.MediaType.unquote;
+
 /**
  * Miscellaneous {@link MediaType} utility methods.
  *
@@ -54,7 +56,7 @@ import java.util.stream.Collectors;
  * This file is a derived work of org.springframework.util.MimeTypeUtils class from
  * Spring Framework v5.3.0-M1. Modifications made to the original work include:
  * <li>Handle escape chars when parsing params in parseMediaTypeInternal</li>
- * <li>Check parameter validity when parsing params in parseMediaTypeInternal</li>
+ * <li>Check parameter validity when parsing params in parseMediaTypeInternal using MediaType.checkParametersParsed</li>
  * </p>
  *
  * @author Arjen Poutsma (2002-2020)
@@ -140,9 +142,14 @@ public abstract class MediaTypeUtils {
                     }
                 } else if (ch == '"') {
                     quoted = !quoted;
-                } else if (ch == '\\') {
-                    nextIndex++; // skip the escaped char too. eg: "\";"
+                } else if (ch == '\\' && quoted) { // escaping a char
+                    char toEsc = mimeType.charAt(nextIndex + 1);
+                    if (toEsc != '"' && toEsc != '\\') { // only valid escapes are \" and \\
+                        throw new IllegalArgumentException("Invalid escape character sequence '" + ch + toEsc + "' in media type \"" + mimeType + "\"");
+                    }
+                    nextIndex++; // skip the escaped char
                 }
+
                 nextIndex++;
             }
             String parameter = mimeType.substring(index + 1, nextIndex).trim();
@@ -156,12 +163,12 @@ public abstract class MediaTypeUtils {
                     String value = parameter.substring(eqIndex + 1).trim();
 
                     try {
-                        MediaType.checkParameters(attribute, value);
+                        MediaType.checkParametersParsed(attribute, value);
                     } catch (IllegalArgumentException ex) {
                         throw new InvalidMediaTypeException(mimeType, ex.getMessage());
                     }
 
-                    parameters.put(attribute, value);
+                    parameters.put(attribute, unquote(value));
                 }
             }
             index = nextIndex;

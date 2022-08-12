@@ -55,8 +55,10 @@ import static com.datasonnet.document.MediaTypes.PARAM_QUALITY_FACTOR;
  * <li>Added null check to isQuotedString</li>
  * <li>Replace escape chars from parameter values in unquote</li>
  * <li>Made checkParameters and support methods static</li>
- * <li>Removed parameters validation in constructor</li>
- * <li>unquote each param value in constructor</li>
+ * <li>Renamed checkParameters to checkParametersParsed</li>
+ * <li>Created checkParameters version which doesn't validate param values</li>
+ * <li>Changed parameters validation in constructor to use new checkParameters</li>
+ * <li>Quote each param value in toString if necessary</li>
  * </p>
  *
  * @author Arjen Poutsma (2002-2020)
@@ -218,7 +220,8 @@ public class MediaType implements Comparable<MediaType>, Serializable {
         if ((parameters != null && !parameters.isEmpty())) {
             Map<String, String> map = new LinkedHashMap<>(parameters.size());
             parameters.forEach((attribute, value) -> {
-                map.put(attribute.toLowerCase(Locale.ENGLISH), unquote(value));
+                checkParameters(attribute, value);
+                map.put(attribute.toLowerCase(Locale.ENGLISH), value);
             });
             this.parameters = Collections.unmodifiableMap(map);
         } else {
@@ -256,6 +259,16 @@ public class MediaType implements Comparable<MediaType>, Serializable {
                 throw new IllegalArgumentException("Invalid token character '" + ch + "' in token \"" + token + "\"");
             }
         }
+    }
+
+    private static boolean shouldQuote(String token) {
+        for (int i = 0; i < token.length(); i++) {
+            char ch = token.charAt(i);
+            if (!TOKEN.get(ch)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static boolean isQuotedString(String s) {
@@ -456,13 +469,28 @@ public class MediaType implements Comparable<MediaType>, Serializable {
         appendTo(this.parameters, builder);
     }
 
-    // TODO: 8/12/20 quote param values as necessary, the reverse of unquote(String)
     private void appendTo(Map<String, String> map, StringBuilder builder) {
         map.forEach((key, val) -> {
+            if (val == null) return; // params require values
+
             builder.append(';');
             builder.append(key);
             builder.append('=');
+            boolean quoted = false;
+            if (shouldQuote(val)) {
+                quoted = true;
+                builder.append("\"");
+            }
+
+            if (val.contains("\"")) {
+                val = val.replace("\"", "\\\"");
+            }
+
             builder.append(val);
+
+            if (quoted) {
+                builder.append("\"");
+            }
         });
     }
 
@@ -573,7 +601,7 @@ public class MediaType implements Comparable<MediaType>, Serializable {
         }
     }
 
-    protected static void checkParameters(String attribute, String value) {
+    protected static void checkParametersParsed(String attribute, String value) {
         if (attribute == null || attribute.isEmpty()) {
             throw new IllegalArgumentException("'attribute' must not be empty");
         }
@@ -588,6 +616,30 @@ public class MediaType implements Comparable<MediaType>, Serializable {
             Charset.forName(value);
         } else if (!isQuotedString(value)) {
             checkToken(value);
+        }
+
+        if (PARAM_QUALITY_FACTOR.equals(attribute)) {
+            value = unquote(value);
+            double d = Double.parseDouble(value);
+
+            if (!(d >= 0D && d <= 1D)) {
+                throw new IllegalArgumentException("Invalid quality value \"" + value + "\": should be between 0.0 and 1.0");
+            }
+        }
+    }
+
+    protected static void checkParameters(String attribute, String value) {
+        if (attribute == null || attribute.isEmpty()) {
+            throw new IllegalArgumentException("'attribute' must not be empty");
+        }
+
+        if (value == null || value.isEmpty()) {
+            throw new IllegalArgumentException("'value' must not be empty");
+        }
+
+        checkToken(attribute);
+        if (PARAM_CHARSET.equals(attribute)) {
+            Charset.forName(value);
         }
 
         if (PARAM_QUALITY_FACTOR.equals(attribute)) {
