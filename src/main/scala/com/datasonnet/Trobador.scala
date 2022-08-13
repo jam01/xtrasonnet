@@ -42,7 +42,6 @@ package com.datasonnet
  * - 78acf4ebf5545b88df4cf9f77434335fc857eaa1: Added date function and period module
  * - 5f7619dea8ac4e04e0d7e527999095d6bbac6029: Added String option to reverse function
  *      Functions: reverse
- * - e631a62e414218c7933ca16b58a33f4aecf37dfd: Add function for flattening XML content
  * - c20475cacff9b6790e85afaf7ae730d4aa9c4470: Merge pull request #86 from datasonnet/unix-timestamp
  *      Functions: datetime.parse
  *
@@ -677,36 +676,6 @@ object Trobador extends Library {
 
   override def modules(dataFormats: DataFormatService,
                        header: Header, importer: Importer): java.util.Map[String, Val.Obj] = Map(
-    "xml" -> moduleFrom(
-      builtinWithDefaults("flattenContents",
-        "element" -> Val.Null(dummyPosition),
-        "namespaces" -> emptyObj,
-        "params" -> emptyObj) {
-        (args, pos, ev) =>
-          val element = args(0).asObj
-          val namespaces = args(1).asObj
-          val params = args(2).asObj
-
-          val wrapperName = "a"
-          val wrapperStop = s"</$wrapperName>"
-
-          val wrapperProperties = new util.LinkedHashMap[String, Val.Obj.Member]()
-          wrapperProperties.put("a", memberOf(element))
-          val wrapped = new Val.Obj(pos, wrapperProperties, false, null, null)
-
-          val xmlProperties = new util.LinkedHashMap[String, Val.Obj.Member]()
-          xmlProperties.put("OmitXmlDeclaration", memberOf(Val.Str(pos, "true")))
-          namespaces.visibleKeyNames.foreach(key => {
-            xmlProperties.put("NamespaceDeclarations." + key, memberOf(namespaces.value(key, pos)(ev)))
-          })
-
-          val properties = Val.Obj.mk(pos, params.visibleKeyNames.map(k => (k, memberOf(params.value(k, pos)(ev)))) ++ xmlProperties.asScala.toArray: _*)
-          val written = write(dataFormats, wrapped, "application/xml", properties, ev)
-
-          written.substring(written.indexOf(">") + 1, written.length - wrapperStop.length)
-      },
-    ),
-
     "datetime" -> moduleFrom(
       builtin0("now") { (pos, ev) => OffsetDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME) },
 

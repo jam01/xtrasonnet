@@ -222,31 +222,6 @@ public class XMLWriterTest {
         assertTrue(mappedXml.startsWith("<?xml"));
     }
 
-    // TODO add version using namespaces
-    @Test
-    void testFlattenMixedContent() throws Exception {
-        String xmlData = resourceAsString("xml/xmlMixedContent.xml");
-        String expected = resourceAsString("xml/xmlMixedContent.txt");
-
-        Mapper mapper = new Mapper("tro.xml.flattenContents(payload.letter, {}, {badgerfish: 'extended'})");
-
-        String mapped = mapper.transform(new DefaultDocument<>(xmlData, MediaTypes.APPLICATION_XML.withParameter("badgerfish", "extended")), Collections.emptyMap(), MediaTypes.TEXT_PLAIN).getContent();
-
-        assertEquals(expected, mapped);
-    }
-
-    @Test
-    void testFlattenMixedContentWithNamespaces() throws Exception {
-        String xmlData = resourceAsString("xml/xmlMixedContentNamespaces.xml");
-        String expected = resourceAsString("xml/xmlMixedContent.txt");
-
-        Mapper mapper = new Mapper("tro.xml.flattenContents(payload[\"ns:letter\"], {\"$\": \"https://example.com\"}, {badgerfish: 'extended'})");
-
-        String mapped = mapper.transform(new DefaultDocument<>(xmlData, MediaTypes.APPLICATION_XML.withParameter("badgerfish", "extended")), Collections.emptyMap(), MediaTypes.TEXT_PLAIN).getContent();
-
-        assertEquals(expected, mapped, "Expected " + expected + " but got " + mapped);
-    }
-
     @Test
     void testXMLRoot() throws Exception {
         String jsonData = resourceAsString("xml/xmlRoot.json");
