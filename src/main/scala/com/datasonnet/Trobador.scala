@@ -1034,7 +1034,7 @@ object Trobador extends Library {
     ),
 
     "jsonpath" -> moduleFrom(
-      builtin("select", "json", "path") {
+      builtin("eval", "json", "path") {
         (pos, ev, json: Val, path: String) =>
           Materializer.reverse(pos, ujson.read(JsonPath.select(ujson.write(Materializer.apply(json)(ev)), path)))
       }

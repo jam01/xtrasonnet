@@ -20,7 +20,6 @@ package com.datasonnet.modules;
 public class JsonPath {
 
     public static String select(String json, String path) {
-        String selected = com.jayway.jsonpath.JsonPath.read(json, path).toString();
-        return selected;
+        return com.jayway.jsonpath.JsonPath.read(json, path).toString();
     }
 }
