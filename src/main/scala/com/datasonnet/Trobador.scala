@@ -688,7 +688,8 @@ object Trobador extends Library {
     }
   ).asJava
 
-  override def modules(dataFormats: DataFormatService, header: Header, importer: Importer): java.util.Map[String, Val.Obj] = Map(
+  override def modules(dataFormats: DataFormatService,
+                       header: Header, importer: Importer): java.util.Map[String, Val.Obj] = Map(
     "xml" -> moduleFrom(
       builtinWithDefaults("flattenContents",
         "element" -> Val.Null(dummyPosition),
@@ -1973,7 +1974,7 @@ object Trobador extends Library {
     ),
   ).asJava
 
-  private def stringValueOf(value: Val): String = {
+  private def keyFrom(value: Val): String = {
     value match {
       case x: Val.Num =>
         val tmp = x.value
