@@ -1,440 +1,352 @@
-## strings
+= `tro.strings`
 
-### `appendIfMissing(string str, string value)`
-Appends `str` with `value` if `str` does not already end with `value`.
+== `appendIfMissing(str: String, suffix: String): String`
+Returns `str`, appended with `suffix` if it does not already end with `suffix`.
 
-*Example*
-
-.DataSonnet map:
-------------------------
-{
-    existing: ds.strings.appendIfMissing("Hello World","World"),
-    missing: ds.strings.appendIfMissing("Hello ","World")
-}
-------------------------
+.Example
+----
+tro.strings.appendIfMissing('Hello', ' World')
+----
 .Result
-------------------------
-{
-  "existing": "Hello World",
-  "missing": "Hello World"
-}
-------------------------
+----
+'Hello World'
+----
 
-### `camelize(string str)`
-Converts words in `str` using camel case, which removes all spaces and converts the first letter of each word except the first word to upper case.
+== `camelize(str: String): String`
+Returns the camelized version of `str`, by removing all spaces and underscores, and capitalizing the first letter of every word after the first.
 
-*Example*
-
-.DataSonnet map:
-------------------------
-ds.strings.camelize("Hello_world")
-------------------------
+.Example
+----
+tro.strings.camelize('Hello to_everyone')
+----
 .Result
-------------------------
-"helloWorld"
-------------------------
+----
+'helloToEveryone'
+----
 
-### `capitalize(string str)`
-Converts words in `str` using capitalized case, which changes the first letter of each word to uppercase, with the rest of the letters in lowercase.
+== `capitalize(str: String): String`
+Returns the capitalized version of `str`, by capitalizing the first letter of every word.
 
-*Example*
-
-.DataSonnet map:
-------------------------
-ds.strings.capitalize("hello world")
-------------------------
+.Example
+----
+tro.strings.capitalize('hello world')
+----
 .Result
-------------------------
-"Hello World"
-------------------------
+----
+'Hello World'
+----
 
-### `charCode(string char)`
-Converts `char` to its char code.
+== `charCode(char: String): String`
+Returns the character-code for the given `char`.
 
-*Example*
-
-.DataSonnet map:
-------------------------
-ds.strings.charCode("*")
-------------------------
+.Example
+----
+tro.strings.charCode('*')
+----
 .Result
-------------------------
+----
 42
-------------------------
+----
 
-### `charCodeAt(string str, number index)`
-Returns the char code at `index` in `str`.
+== `charCodeAt(str: String, index: Number): String`
+Returns the character-code for the character at the given `index` in `str`.
 
-*Example*
-
-.DataSonnet map:
-------------------------
-ds.strings.charCodeAt("*", 0)
-------------------------
+.Example
+----
+tro.strings.charCodeAt('_*_', 1)
+----
 .Result
-------------------------
+----
 42
-------------------------
+----
 
-### `dasherize(string str)`
-Converts words in `str` using kebab-case, which converts all letters in `str` to lowercase and all spaces into dashes (-).
+== `dasherize(str: String): String`
+Returns the dasherized version of `str`, by changing alphabetic characters to lowercase, and replacing all spaces and underscores for dashes.
 
-*Example*
-
-.DataSonnet map:
-------------------------
-ds.strings.dasherize("Hello WorldX")
-------------------------
+.Example
+----
+tro.strings.dasherize('Hello World_X')
+----
 .Result
-------------------------
-"hello-world-x"
-------------------------
+----
+'hello-world-x'
+----
 
-### `fromCharCode(number charCode)`
-Converts `charCode` to its string value.
+== `ofCharCode(code: Number): String`
+Returns the character for the given character-code.
 
-*Example*
-
-.DataSonnet map:
-------------------------
-ds.strings.fromCharCode(42)
-------------------------
+.Example
+----
+tro.strings.ofCharCode(42)
+----
 .Result
-------------------------
-"*"
-------------------------
+----
+'*'
+----
 
-### `isAlpha(string str)`
-Returns a boolean which determines if the provided string only contains alpha characters.
+== `isAlpha(str: String): String`
+Returns `true` if the given `str` contains only alphabetic characters, otherwise `false`.
 
-*Example*
-
-.DataSonnet map:
-------------------------
-ds.strings.isAlpha("abcde")
-------------------------
+.Example
+----
+tro.strings.isAlpha('abcde')
+----
 .Result
-------------------------
+----
 true
-------------------------
+----
 
-### `isAlphanumeric(string str)`
-Returns a boolean which determines if `str` only contains alpha numeric values.
+== `isAlphanumeric(str: String): String`
+Returns `true` if the given `str` contains only alphanumeric characters, otherwise `false`.
 
-*Example*
-
-.DataSonnet map:
-------------------------
-ds.strings.isAlphanumeric("a1b2cd3e4")
-------------------------
+.Example
+----
+tro.strings.isAlphanumeric('a1b2cd3e4')
+----
 .Result
-------------------------
+----
 true
-------------------------
+----
 
-### `isLowerCase(string str)`
-Returns a boolean which determines if `str` is all lowercase.
+== `isLowerCase(str: String): String`
+Returns `true` if the alphabetic characters in the given `str` are all lowercase, otherwise `false`.
 
-*Example*
-
-.DataSonnet map:
-------------------------
-ds.strings.isLowerCase("hello")
-------------------------
+.Example
+----
+tro.strings.isLowerCase('hello')
+----
 .Result
-------------------------
+----
 true
-------------------------
+----
 
-### `isNumeric(string str)`
-Returns a boolean which determines if `str` contains only numbers.
+== `isNumeric(str: String): String`
+Returns `true` if the given `str` contains only numeric characters.
 
-*Example*
-
-.DataSonnet map:
-------------------------
-ds.strings.isNumeric("34634")
-------------------------
+.Example
+----
+tro.strings.isNumeric('34634')
+----
 .Result
-------------------------
+----
 true
-------------------------
+----
 
-### `isUpperCase(string str)`
-Returns a boolean which determines if `str` is all uppercase.
+== `isUpperCase(str: String): String`
+Returns `true` if the alphabetic characters in the given `str` are all uppercse, otherwise `false`.
 
-*Example*
-
-.DataSonnet map:
-------------------------
-ds.strings.isUpperCase("HELLO")
-------------------------
+.Example
+----
+tro.strings.isUpperCase('HELLO')
+----
 .Result
-------------------------
+----
 true
-------------------------
+----
 
-### `isWhitespace(string str)`
-Returns a boolean which determines if `str` only contains spaces.
+== `isWhitespace(str: String): String`
+Returns `true` if the given `str` contains only whitespaces.
 
-*Example*
-
-.DataSonnet map:
-------------------------
-ds.strings.isWhitespace("      ")
-------------------------
+.Example
+----
+tro.strings.isWhitespace('      ')
+----
 .Result
-------------------------
+----
 true
-------------------------
+----
 
-### `leftPad(string str, number offset)`
-Pads the left side of `str` with spaces if the string is below the `offset` length.
+== `leftPad(str: String, size: Number, char: String): String`
+Returns `str` prepended with enough repetitions of `char` required to meet the given `size`, otherwise returns `str` if its size is already equal or longer than `size`.
 
-*Example*
-
-.DataSonnet map:
-------------------------
-ds.strings.leftPad("Hello",10)
-------------------------
+.Example
+----
+tro.strings.leftPad('Hello', 10, ' ')
+----
 .Result
-------------------------
-"     Hello"
-------------------------
+----
+'     Hello'
+----
 
-### `ordinalize(number num)`
-Converts `num` to its ordinal string format, e.g. 1st, 2nd, 3rd, etc.
+// todo: num in result?
+== `ordinalOf(num: Number): String`
+Returns the ordinal name for the given `num`.
 
-*Example*
-
-.DataSonnet map:
-------------------------
-ds.strings.ordinalize(1)
-------------------------
+.Example
+----
+tro.strings.ordinalOf(1)
+----
 .Result
-------------------------
-"1st"
-------------------------
+----
+'1st'
+----
 
-### `pluralize(string singularWord)`
-Converts `singularWord` to its plural counterpart. May not work with all edge cases.
+// todo: document algo
+== `pluralize(word: String): String`
+Returns the plural of the given `word`.
 
-*Example*
-
-.DataSonnet map:
-------------------------
-ds.strings.pluralize("car")
-------------------------
+.Example
+----
+tro.strings.pluralize('car')
+----
 .Result
-------------------------
-"cars"
-------------------------
+----
+'cars'
+----
 
-### `prependIfMissing(string str, string value)`
-Prepends `str` with `value` if `str` does not already begin with `value`.
+== `prependIfMissing(str: String, prefix: String): String`
+Returns `str`, prepended with `suffix` if it does not already start with `prefix`.
 
-*Example*
-
-.DataSonnet map:
-------------------------
-{
-    existing: ds.strings.prependIfMissing("Hello World","Hello"),
-    missing: ds.strings.prependIfMissing(" World","Hello")
-}
-------------------------
+.Example
+----
+tro.strings.prependIfMissing('World', 'Hello ')
+----
 .Result
-------------------------
-{
-  "existing": "Hello World",
-  "missing": "Hello World"
-}
-------------------------
+----
+'Hello World'
+----
 
-### `repeat(string str, number times)`
-Repeats `str` the given amount of `times`.
+== `repeat(str: String, n: Number): String`
+Returns a new `String` with `str` repeated `n` times.
 
-*Example*
-
-.DataSonnet map:
-------------------------
-ds.strings.repeat("Hello ", 2)
-------------------------
+.Example
+----
+tro.strings.repeat('hey ', 2)
+----
 .Result
-------------------------
-"Hello Hello "
-------------------------
+----
+'hey hey hey '
+----
 
-### `rightPad(string str, number offset)`
-Pads the right side `str` with spaces if the string is below the `offset` length.
+== `rightPad(str: String, size: Number, char: String): String`
+Returns `str` prepended with enough repetitions of `char` required to meet the given `size`, otherwise returns `str` if its size is already equal or longer than `size`.
 
-*Example*
-
-.DataSonnet map:
-------------------------
-ds.strings.rightPad("Hello",10)
-------------------------
+.Example
+----
+tro.strings.rightPad('Hello', 10, ' ')
+----
 .Result
-------------------------
-"Hello     "
-------------------------
+----
+'Hello     '
+----
 
-### `singularize(string pluralWord)`
-Converts `pluralWord` to a singular word. May not work with all edge cases.
+// todo: document algo
+== `singularize(word: String): String`
+Returns the singular of the given `word`.
 
-*Example*
-
-.DataSonnet map:
-------------------------
-ds.strings.singularize("cars")
-------------------------
+.Example
+----
+tro.strings.singularize('cars')
+----
 .Result
-------------------------
-"car"
-------------------------
+----
+'car'
+----
 
-### `substringAfter(string str, string separator)`
-Gets the substring of `str` after the first occurrence of the `separator`.
+== `substringAfter(str1: String, str2: String): String`
+Returns the contents of `str1` after the first occurrence of `str2`, otherwise returns `str1` if it does not contain `str2`.
 
-*Example*
-
-.DataSonnet map:
-------------------------
-ds.strings.substringAfter("!XHelloXWorldXAfter", "X")
-------------------------
+.Example
+----
+tro.strings.substringAfter('!XHelloXWorldXAfter', 'X')
+----
 .Result
-------------------------
-"HelloXWorldXAfter"
-------------------------
+----
+'HelloXWorldXAfter'
+----
 
-### `substringAfterLast(string str, string separator)`
-Gets the substring in `str` after the final occurrence of the `separator`.
+== `substringAfterLast(str1: String, str2: String): String`
+Returns the contents of `str1` after the last occurrence of `str2`, otherwise returns `str1` if it does not contain `str2`.
 
-*Example*
-
-.DataSonnet map:
-------------------------
-ds.strings.substringAfterLast("!XHelloXWorldXAfter", "X")
-------------------------
+.Example
+----
+tro.strings.substringAfterLast('!XHelloXWorldXAfter', 'X')
+----
 .Result
-------------------------
-"After"
-------------------------
+----
+'After'
+----
 
-### `substringBefore(string str, string separator)`
-Gets the substring in `str` before the first occurrence of the `separator`.
+== `substringBefore(str1: String, str2: String): String`
+Returns the contents of `str1` before the first occurrence of `str2`, otherwise returns `str1` if it does not contain `str2`.
 
-*Example*
-
-.DataSonnet map:
-------------------------
-ds.strings.substringBefore("!XHelloXWorldXAfter", "X")
-------------------------
+.Example
+----
+tro.strings.substringBefore('!XHelloXWorldXAfter', 'X')
+----
 .Result
-------------------------
-"!"
-------------------------
+----
+'!'
+----
 
-### `substringBeforeLast(string str, string separator)`
-Gets the substring in `str` before the final occurrence of the `separator`.
+== `substringBeforeLast(str1: String, str2: String): String`
+Returns the contents of `str1` before the last occurrence of `str2`, otherwise returns `str1` if it does not contain `str2`.
 
-*Example*
-
-.DataSonnet map:
-------------------------
-ds.strings.substringBeforeLast("!XHelloXWorldXAfter", "X")
-------------------------
+.Example
+----
+tro.strings.substringBeforeLast('!XHelloXWorldXAfter', 'X')
+----
 .Result
-------------------------
-"!XHelloXWorld"
-------------------------
+----
+'!XHelloXWorld'
+----
 
-### `underscore(string str)`
-Converts words in `str` using snake case, which converts all letters in `str` to lowercase and all spaces into underscores (_).
+== `underscore(str: String): String`
+Returns the underscored version (aka snake case) of the given `str`, by changing alphabetic characters to lowercase, and replacing all spaces for underscores.
 
-*Example*
-
-.DataSonnet map:
-------------------------
-ds.strings.underscore("Hello WorldX")
-------------------------
+.Example
+----
+tro.strings.underscore('Hello WorldX')
+----
 .Result
-------------------------
-"hello_world_x"
-------------------------
+----
+'hello_world_x'
+----
 
-### `unwrap(string str, string wrapper)`
-Returns the `str` without the `wrapper` text.
-Returns the `str` without the `wrapper` text.
-The `wrapper` text is the prepended and/or appended values to the `str`.
+== `unwrap(str: String, wrap: String): String`
+Returns `str` without the given `wrap` as prefix and suffix, if found.
 
-
-*Example*
-
-.DataSonnet map:
-------------------------
-{
-    exists: ds.strings.unwrap("Hello World Hello","Hello"),
-    partial: ds.strings.unwrap("Hello World ","Hello"),
-    missing: ds.strings.unwrap(" World ","Hello")
-}
-------------------------
+.Example
+----
+tro.strings.unwrap('_Hello, world!_', '_')
+----
 .Result
-------------------------
-{
-  "exists": " World ",
-  "partial": " World Hello",
-  "missing": " World "
-}
-------------------------
+----
+'Hello, world!'
+----
 
-### `withMaxSize(string str, number size)`
-Limits the `size` of `str`.
+== `truncate(str: String, size: Number): String`
+Returns `str` truncated by the given `size`.
 
-*Example*
-
-.DataSonnet map:
-------------------------
-ds.strings.withMaxSize("Hello World", 5)
-------------------------
+.Example
+----
+tro.strings.truncate('Hello, world!', 5)
+----
 .Result
-------------------------
-"Hello"
-------------------------
+----
+'Hello'
+----
 
-### `wrapIfMissing(string str, string wrapper)`
-Prepends and appends the `wrapper` to `str` if `str` is not already wrapped. Will update only missing side if `wrapper` already exists at the beginning or end.
+== `wrapIfMissing(str: String, wrap: String): String`
+Returns `str`, prepended and appended with `wrap`, if not found.
 
-*Example*
-
-.DataSonnet map:
-------------------------
-{
-    exists: ds.strings.wrapIfMissing("Hello World Hello","Hello"),
-    partialBeg: ds.strings.wrapIfMissing("Hello World ","Hello"),
-    partialEnd: ds.strings.wrapIfMissing(" World Hello","Hello"),
-    missing: ds.strings.wrapIfMissing(" World ","Hello")
-}
-------------------------
+.Example
+----
+tro.strings.wrapIfMissing('_Hello, world!', '_')
+----
 .Result
-------------------------
-{
-  "exists": "Hello World Hello",
-  "partialBeg": "Hello World Hello",
-  "partialEnd": "Hello World Hello",
-  "missing": "Hello World Hello"
-}
-------------------------
+----
+'_Hello, world!_'
+----
 
-### `wrapWith(string str, string wrapper)`
-Prepends and appends the `wrapper` to `str`.
+== `wrapWith(str: String, wrap: String): String`
+Returns `str`, prepended and appended with `wrap`.
 
-*Example*
-
-.DataSonnet map:
-------------------------
-ds.strings.wrapWith(" World ","Hello")
-------------------------
+.Example
+----
+tro.strings.wrapIfMissing('_Hello, world!', '_')
+----
 .Result
-------------------------
-"Hello World Hello"
-------------------------
+----
+'__Hello, world!_'
+----

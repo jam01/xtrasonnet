@@ -1521,15 +1521,10 @@ object Trobador extends Library {
       builtin("camelize", "str") {
         (pos, ev, str: String) =>
           //regex fo _CHAR
-          val regex = "(_+)([0-9A-Za-z])".r("underscore", "letter")
-
-          //Start string at first non underscore, lower case xt
-          var temp = str.substring("[^_]".r.findFirstMatchIn(str).map(_.start).toList.head)
-          temp = temp.replaceFirst(temp.charAt(0).toString, temp.charAt(0).toLower.toString)
-
-          //replace and uppercase
-          temp = regex.replaceAllIn(temp, m => s"${(m group "letter").toUpperCase()}")
-          temp
+          "([A-Z])|[\\s-_]+(\\w)".r("head", "tail").replaceAllIn(str, found => {
+            if (found.group(2) != null) found.group(2).toUpperCase
+            else found.group(1).toLowerCase
+          })
       },
 
       builtin("capitalize", "str") {
@@ -1575,7 +1570,7 @@ object Trobador extends Library {
           temp.toLowerCase()
       },
 
-      builtin("fromCharCode", "num") {
+      builtin("ofCharCode", "num") {
         (pos, ev, num: Int) =>
           String.valueOf(num.asInstanceOf[Char])
       },
@@ -1618,23 +1613,17 @@ object Trobador extends Library {
         (pos, ev, str: String) => "^[A-Z]+$".r.matches(str)
       },
 
-      builtin("isWhitespace", "str") {
-        (pos, ev, str: String) => str.trim().isEmpty
-      },
-
-      builtin("leftPad", "str", "offset") {
-        (pos, ev, str: Val, offset: Int) =>
+      builtin("leftPad", "str", "offset", "pad") {
+        (pos, ev, str: Val, size: Int, pad: String) =>
           str match {
-            case str: Val.Str =>
-              ("%" + offset + "s").format(str.value)
-            case x: Val.Num =>
-              //TODO change to use sjsonnet's Format and DecimalFormat
-              ("%" + offset + "s").format(new DecimalFormat("0.#").format(x.value))
+            case str: Val.Str => ("%" + size + "s").format(str.value).replace(" ", pad.substring(0, 1))
+            //TODO change to use sjsonnet's Format and DecimalFormat
+            case x: Val.Num => ("%" + size + "s").format(new DecimalFormat("0.#").format(x.value)).replace(" ", pad.substring(0, 1))
             case x => Error.fail("Expected String, got: " + x.prettyName)
           }
       },
 
-      builtin("ordinalize", "num") {
+      builtin("ordinalOf", "num") {
         (pos, ev, num: Val) =>
           val str = num match { //convert number value to string
             case value: Val.Str =>
@@ -1685,13 +1674,12 @@ object Trobador extends Library {
           ret
       },
 
-      builtin("rightPad", "str", "offset") {
-        (pos, ev, value: Val, offset: Int) =>
+      builtin("rightPad", "str", "offset", "pad") {
+        (pos, ev, value: Val, offset: Int, pad: String) =>
           value match {
-            case str: Val.Str => str.value.padTo(offset, ' ')
-            case x: Val.Num =>
-              //TODO change to use sjsonnet's Format and DecimalFormat
-              new DecimalFormat("0.#").format(x.value).padTo(offset, ' ')
+            case str: Val.Str => str.value.padTo(offset, pad.charAt(0))
+            //TODO change to use sjsonnet's Format and DecimalFormat
+            case x: Val.Num => new DecimalFormat("0.#").format(x.value).padTo(offset, pad.charAt(0))
             case x => Error.fail("Expected String, got: " + x.prettyName)
           }
       },
@@ -1771,7 +1759,7 @@ object Trobador extends Library {
           else str
       },
 
-      builtin("withMaxSize", "value", "num") {
+      builtin("truncate", "value", "num") {
         (pos, ev, str: String, num: Int) =>
           if (str.length <= num) str
           else str.substring(0, num)
@@ -1789,27 +1777,28 @@ object Trobador extends Library {
         (pos, ev, str: String, wrapper: String) => wrapper + str + wrapper
       },
 
-      builtin("scan", "str", "regex") {
-        (pos, ev, str: String, regex: String) =>
-          new Val.Arr(pos, regex.r.findAllMatchIn(str).map(item => {
-            new Val.Arr(pos, (0 to item.groupCount).map(i => Val.Str(pos, item.group(i))).toArray)
-          }).toArray
-          )
-      },
-
-      builtin("match", "string", "regex") {
-        (pos, _, string: String, regex: String) =>
-          val out = new ArrayBuffer[Lazy]
-          regex.r.findAllMatchIn(string).foreach(
-            word => (0 to word.groupCount).foreach(index => out += Val.Str(pos, word.group(index)))
-          )
-          new Val.Arr(pos, out.toArray)
-      },
-
-      builtin("matches", "string", "regex") {
-        (pos, ev, string: String, regex: String) =>
-          regex.r.matches(string);
-      }
+      // todo: and these?
+//      builtin("scan", "str", "regex") {
+//        (pos, ev, str: String, regex: String) =>
+//          new Val.Arr(pos, regex.r.findAllMatchIn(str).map(item => {
+//            new Val.Arr(pos, (0 to item.groupCount).map(i => Val.Str(pos, item.group(i))).toArray)
+//          }).toArray
+//          )
+//      },
+//
+//      builtin("match", "string", "regex") {
+//        (pos, _, string: String, regex: String) =>
+//          val out = new ArrayBuffer[Lazy]
+//          regex.r.findAllMatchIn(string).foreach(
+//            word => (0 to word.groupCount).foreach(index => out += Val.Str(pos, word.group(index)))
+//          )
+//          new Val.Arr(pos, out.toArray)
+//      },
+//
+//      builtin("matches", "string", "regex") {
+//        (pos, ev, string: String, regex: String) =>
+//          regex.r.matches(string);
+//      }
     ),
 
     "base64" -> moduleFrom(
