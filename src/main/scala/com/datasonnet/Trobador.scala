@@ -1404,47 +1404,21 @@ object Trobador extends Library {
     ),
 
     "objects" -> moduleFrom(
-      builtin("divideBy", "obj", "num") {
-        (pos, ev, obj: Val.Obj, num: Int) =>
-          val out = new ArrayBuffer[Lazy]
-
-          obj.visibleKeyNames.sliding(num, num).foreach({
-            map =>
-              val currentObject = new util.LinkedHashMap[String, Val.Obj.Member]()
-              map.foreach(key => currentObject.put(key, memberOf(obj.value(key, pos)(ev))))
-              out.append(new Val.Obj(pos, currentObject, false, null, null))
-          })
-          new Val.Arr(pos, out.toArray)
-      },
-
-      builtin("allEntries", "value", "func") {
+      builtin("all", "value", "func") {
         (pos, ev, obj: Val.Obj, func: Val.Func) =>
-          val pos = func.pos
-          val args = func.params.names.length
-          if (args == 2)
-            obj.visibleKeyNames.toSeq.forall(key => func.apply2(obj.value(key, pos)(ev), Val.Str(pos, key), pos.noOffset)(ev).isInstanceOf[Val.True])
-          else if (args == 1)
-            obj.visibleKeyNames.toSeq.forall(key => func.apply1(obj.value(key, pos)(ev), pos.noOffset)(ev).isInstanceOf[Val.True])
-          else {
-            Error.fail("Expected embedded function to have 1 or 2 parameters, received: " + args)
-          }
+          obj.visibleKeyNames.toSeq.forall(key => func.apply2(obj.value(key, pos)(ev), Val.Str(pos, key), pos.noOffset)(ev).isInstanceOf[Val.True])
       },
 
-      builtin("anyEntry", "value", "func") {
+      builtin("any", "value", "func") {
         (pos, ev, obj: Val.Obj, func: Val.Func) =>
           obj.visibleKeyNames.exists(
             item => func.apply2(obj.value(item, pos)(ev), Val.Str(pos, item), pos.noOffset)(ev).isInstanceOf[Val.True]
           )
       },
 
-      builtin("takeWhile", "obj", "func") {
-        (pos, ev, obj: Val.Obj, func: Val.Func) =>
-          val out = new util.LinkedHashMap[String, Val.Obj.Member]()
-          obj.visibleKeyNames.takeWhile(
-            item => func.apply2(obj.value(item, pos)(ev), Val.Str(pos, item), pos.noOffset)(ev).isInstanceOf[Val.True]
-          ).foreach(key => out.put(key, memberOf(obj.value(key, pos)(ev))))
-
-          new Val.Obj(pos, out, false, null, null)
+      builtin("distinctBy", "container", "func") {
+        (_, ev, obj: Val.Obj, func: Val.Func) =>
+          distinctBy(obj, func, ev)
       }
     ),
 
