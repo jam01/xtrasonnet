@@ -42,8 +42,6 @@ package com.datasonnet
  * - 78acf4ebf5545b88df4cf9f77434335fc857eaa1: Added date function and period module
  * - 5f7619dea8ac4e04e0d7e527999095d6bbac6029: Added String option to reverse function
  *      Functions: reverse
- * - 31724d6ab5e36b06ceb523f7282d19c5495dadaf: Updated plus & minus to check if duration or period
- *      Functions: datetime.minus, datetime.plus
  * - e631a62e414218c7933ca16b58a33f4aecf37dfd: Add function for flattening XML content
  * - c20475cacff9b6790e85afaf7ae730d4aa9c4470: Merge pull request #86 from datasonnet/unix-timestamp
  *      Functions: datetime.parse
@@ -55,6 +53,7 @@ package com.datasonnet
  * - rename join to innerJoin, outerJoin to rightJoin, toString to stringOf,
  *      changed remove to rm and rmAll to rmKey and rmKeyIn
  * - removed null support from most functions, including those adopted
+ * - refactored datetime to use OffsetDateTime and changed Period functionality for ISO8601 Duration
  */
 
 import com.datasonnet.document.{DefaultDocument, MediaType}
@@ -709,105 +708,134 @@ object Trobador extends Library {
     ),
 
     "datetime" -> moduleFrom(
-      builtin0("now") { (pos, ev) => ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME) },
+      builtin0("now") { (pos, ev) => OffsetDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME) },
 
       builtin("parse", "datetime", "inputFormat") { (pos, ev, datetime: Val, inputFormat: String) =>
-        var datetimeObj: ZonedDateTime = null
+        var datetimeObj: OffsetDateTime = null
         inputFormat.toLowerCase match {
-          case "timestamp" | "epoch" =>
+          case "epoch" =>
             var inst: Instant = null
             datetime match {
               case str: Val.Str => inst = Instant.ofEpochSecond(str.value.toInt.toLong)
               case num: Val.Num => inst = Instant.ofEpochSecond(num.value.toLong)
               case _ => Error.fail("Expected datetime to be a string or number, got: " + datetime.prettyName)
             }
-            datetimeObj = java.time.ZonedDateTime.ofInstant(inst, ZoneOffset.UTC)
-          case _ =>
-            datetimeObj = try { //will catch any errors if zone data is missing and default to Z
-              java.time.ZonedDateTime.parse(datetime.cast[Val.Str].value, DateTimeFormatter.ofPattern(inputFormat))
-            } catch {
-              case e: DateTimeException =>
-                LocalDateTime.parse(datetime.cast[Val.Str].value, DateTimeFormatter.ofPattern(inputFormat)).atZone(ZoneId.of("Z"))
-            }
+            datetimeObj = OffsetDateTime.ofInstant(inst, ZoneOffset.UTC)
+          case _ => datetimeObj = try { //will catch any errors if zone data is missing and default to Z
+            OffsetDateTime.parse(datetime.asString, DateTimeFormatter.ofPattern(inputFormat))
+          } catch {
+            case _: DateTimeException =>
+              LocalDateTime.parse(datetime.asString, DateTimeFormatter.ofPattern(inputFormat)).atOffset(ZoneOffset.UTC)
+          }
         }
         datetimeObj.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
       },
 
       builtin("format", "datetime", "outputFormat") { (pos, ev, datetime: String, outputFormat: String) =>
-        val datetimeObj = java.time.ZonedDateTime.parse(datetime, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+        val datetimeObj = OffsetDateTime.parse(datetime)
         datetimeObj.format(DateTimeFormatter.ofPattern(outputFormat))
       },
 
       builtin("compare", "datetime", "datetwo") { (pos, ev, datetimeone: String, datetimetwo: String) =>
-        val datetimeObj1 = java.time.ZonedDateTime
-          .parse(datetimeone, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-        val datetimeObj2 = java.time.ZonedDateTime
-          .parse(datetimetwo, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+        val datetimeObj1 = OffsetDateTime.parse(datetimeone)
+        val datetimeObj2 = OffsetDateTime.parse(datetimetwo)
 
-        datetimeObj1.compareTo(datetimeObj2)
+        Math.max(-1, Math.min(datetimeObj1.compareTo(datetimeObj2), 1))
       },
 
-      builtin("plus", "datetime", "period") { (pos, ev, date: String, period: String) =>
-        val datetime = java.time.ZonedDateTime.parse(date, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-        if (period.contains("T")) {
-          datetime.plus(Duration.parse(period)).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+      builtin("plus", "datetime", "duration") { (pos, ev, date: String, duration: String) =>
+        var datetime = OffsetDateTime.parse(date)
+        val timeIdx = duration.indexOf('T')
+
+        if (timeIdx != -1) {
+          datetime = datetime
+            .plus(Duration.parse('P' + duration.substring(timeIdx)))
+            .plus(Period.parse(duration.substring(0, timeIdx)))
         } else {
-          datetime.plus(Period.parse(period)).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+          datetime = datetime.plus(Period.parse(duration))
         }
+
+        datetime.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
       },
 
-      builtin("minus", "datetime", "period") { (pos, ev, date: String, period: String) =>
-        val datetime = java.time.ZonedDateTime.parse(date, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-        if (period.contains("T")) {
-          datetime.minus(Duration.parse(period)).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+      builtin("minus", "datetime", "duration") { (pos, ev, date: String, duration: String) =>
+        var datetime = OffsetDateTime.parse(date)
+        val timeIdx = duration.indexOf('T')
+
+        if (timeIdx != -1) {
+          datetime = datetime
+            .minus(Duration.parse('P' + duration.substring(timeIdx)))
+            .minus(Period.parse(duration.substring(0, timeIdx)))
         } else {
-          datetime.minus(Period.parse(period)).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+          datetime = datetime.minus(Period.parse(duration))
         }
+
+        datetime.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
       },
 
-      builtin("changeTimeZone", "datetime", "timezone") {
-        (pos, ev, datetime: String, timezone: String) =>
-          val datetimeObj = java.time.ZonedDateTime.parse(datetime, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-          val zoneId = ZoneId.of(timezone)
-          val newDateTimeObj = datetimeObj.withZoneSameInstant(zoneId)
+      builtin("inOffset", "datetime", "offset") {
+        (pos, ev, datetime: String, offset: String) =>
+          val datetimeObj = OffsetDateTime.parse(datetime)
+          val zoneId = ZoneOffset.of(offset)
+          val newDateTimeObj = datetimeObj.withOffsetSameInstant(zoneId)
           newDateTimeObj.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
       },
 
       builtin("toLocalDate", "datetime") { (pos, ev, datetime: String) =>
-        val datetimeObj = java.time.ZonedDateTime.parse(datetime, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+        val datetimeObj = OffsetDateTime.parse(datetime)
         datetimeObj.toLocalDate.format(DateTimeFormatter.ISO_LOCAL_DATE)
       },
 
       builtin("toLocalTime", "datetime") { (pos, ev, datetime: String) =>
-        val datetimeObj = java.time.ZonedDateTime.parse(datetime, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+        val datetimeObj = OffsetDateTime.parse(datetime)
         datetimeObj.toLocalTime.format(DateTimeFormatter.ISO_LOCAL_TIME)
       },
 
       builtin("toLocalDateTime", "datetime") { (pos, ev, datetime: String) =>
-        val datetimeObj = java.time.ZonedDateTime.parse(datetime, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+        val datetimeObj = OffsetDateTime.parse(datetime)
         datetimeObj.toLocalDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
       },
 
-      builtin("daysBetween", "datetime", "datetwo") {
-        (pos, ev, datetimeone: String, datetimetwo: String) =>
-          val dateone = java.time.ZonedDateTime
-            .parse(datetimeone, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-          val datetwo = java.time.ZonedDateTime
-            .parse(datetimetwo, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-          ChronoUnit.DAYS.between(dateone, datetwo).abs.toDouble;
+      builtin("between", "datetimeone", "datetimetwo") {
+        (_, _, datetimeone: String, datetimetwo: String) =>
+          val d1 = OffsetDateTime.parse(datetimeone)
+          val d2 = OffsetDateTime.parse(datetimetwo)
+
+          val dur = Duration.between(d1, d2)
+          val isNeg = dur.isNegative
+          val durStr = dur.abs.toString
+          val hoursIdx = durStr.indexOf('H')
+
+          if (hoursIdx == -1) {
+            (if (isNeg) "-" else "") + durStr
+          } else {
+            var hours = durStr.substring(2, hoursIdx).toLong
+            if (hours < 24) {
+              (if (isNeg) "-" else "") + durStr
+            } else {
+              val days = (hours / 24).toInt
+              hours = hours % 24
+              val per = Period.between(d1.toLocalDate, d1.toLocalDate.plusDays(days)).toString
+              (if (isNeg) "-" else "") + per + (
+                if (hours == 0 && durStr.endsWith("H")) "" // only had hours and now 0, remove
+                else "T" +
+                  (if (hours == 0) durStr.substring(hoursIdx + 1) // hours are now 0, remove hours
+                  else hours + durStr.substring(hoursIdx)) // some hours remaining
+                )
+            }
+          }
       },
 
       builtin("isLeapYear", "datetime") {
         (pos, ev, datetime: String) =>
-          java.time.ZonedDateTime
-            .parse(datetime, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+          OffsetDateTime
+            .parse(datetime)
             .toLocalDate.isLeapYear;
       },
 
       builtin("atBeginningOfDay", "datetime") {
         (_, _, datetime: String) =>
-          val date = java.time.ZonedDateTime
-            .parse(datetime, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+          val date = OffsetDateTime.parse(datetime)
           date.minusHours(date.getHour)
             .minusMinutes(date.getMinute)
             .minusSeconds(date.getSecond)
@@ -817,8 +845,7 @@ object Trobador extends Library {
 
       builtin("atBeginningOfHour", "datetime") {
         (_, _, datetime: String) =>
-          val date = java.time.ZonedDateTime
-            .parse(datetime, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+          val date = OffsetDateTime.parse(datetime)
           date.minusMinutes(date.getMinute)
             .minusSeconds(date.getSecond)
             .minusNanos(date.getNano)
@@ -827,8 +854,8 @@ object Trobador extends Library {
 
       builtin("atBeginningOfMonth", "datetime") {
         (_, _, datetime: String) =>
-          val date = java.time.ZonedDateTime
-            .parse(datetime, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+          val date = OffsetDateTime
+            .parse(datetime)
           date.minusDays(date.getDayOfMonth - 1)
             .minusHours(date.getHour)
             .minusMinutes(date.getMinute)
@@ -839,8 +866,8 @@ object Trobador extends Library {
 
       builtin("atBeginningOfWeek", "datetime") {
         (_, _, datetime: String) =>
-          val date = java.time.ZonedDateTime
-            .parse(datetime, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+          val date = OffsetDateTime
+            .parse(datetime)
 
           date.minusDays(if (date.getDayOfWeek.getValue == 7) 0 else date.getDayOfWeek.getValue)
             .minusHours(date.getHour)
@@ -852,8 +879,8 @@ object Trobador extends Library {
 
       builtin("atBeginningOfYear", "datetime") {
         (_, _, datetime: String) =>
-          val date = java.time.ZonedDateTime
-            .parse(datetime, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+          val date = OffsetDateTime
+            .parse(datetime)
           date.minusMonths(date.getMonthValue - 1)
             .minusDays(date.getDayOfMonth - 1)
             .minusHours(date.getHour)
@@ -863,26 +890,26 @@ object Trobador extends Library {
             .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
       },
 
-      builtin("date", "obj") {
+      builtin("of", "obj") {
         (pos, ev, obj: Val.Obj) =>
           //year, month, dayOfMonth, hour, minute, second, nanoSecond, zoneId
           val out = mutable.Map[String, Val]()
           obj.visibleKeyNames.foreach(key => out.addOne(key, obj.value(key, pos)(ev)))
-          java.time.ZonedDateTime.of(
-            out.getOrElse("year", Val.Num(pos, 0)).cast[Val.Num].value.toInt,
-            out.getOrElse("month", Val.Num(pos, 1)).cast[Val.Num].value.toInt,
-            out.getOrElse("day", Val.Num(pos, 1)).cast[Val.Num].value.toInt,
-            out.getOrElse("hour", Val.Num(pos, 0)).cast[Val.Num].value.toInt,
-            out.getOrElse("minute", Val.Num(pos, 0)).cast[Val.Num].value.toInt,
-            out.getOrElse("second", Val.Num(pos, 0)).cast[Val.Num].value.toInt,
-            0, //out.getOrElse("nanosecond", Val.Num(0)).cast[Val.Num].value.toInt TODO?
-            ZoneId.of(out.getOrElse("timezone", Val.Str(pos, "Z")).cast[Val.Str].value)
+          OffsetDateTime.of(
+            out.getOrElse("year", Val.Num(pos, 0)).asInt,
+            out.getOrElse("month", Val.Num(pos, 1)).asInt,
+            out.getOrElse("day", Val.Num(pos, 1)).asInt,
+            out.getOrElse("hour", Val.Num(pos, 0)).asInt,
+            out.getOrElse("minute", Val.Num(pos, 0)).asInt,
+            out.getOrElse("second", Val.Num(pos, 0)).asInt,
+            out.getOrElse("nanosecond", Val.Num(pos, 0)).asInt,
+            ZoneOffset.of(out.getOrElse("timezone", Val.Str(pos, "Z")).cast[Val.Str].value)
           ).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
       },
 
       builtin0("today") {
         (_, _) =>
-          val date = java.time.ZonedDateTime.now()
+          val date = OffsetDateTime.now()
           date.minusHours(date.getHour)
             .minusMinutes(date.getMinute)
             .minusSeconds(date.getSecond)
@@ -891,7 +918,7 @@ object Trobador extends Library {
 
       builtin0("tomorrow") {
         (_, _) =>
-          val date = java.time.ZonedDateTime.now()
+          val date = OffsetDateTime.now()
           date.plusDays(1)
             .minusHours(date.getHour)
             .minusMinutes(date.getMinute)
@@ -901,7 +928,7 @@ object Trobador extends Library {
 
       builtin0("yesterday") {
         (_, _) =>
-          val date = java.time.ZonedDateTime.now()
+          val date = OffsetDateTime.now()
           date.minusDays(1)
             .minusHours(date.getHour)
             .minusMinutes(date.getMinute)
@@ -910,48 +937,8 @@ object Trobador extends Library {
       },
     ),
 
-    "period" -> moduleFrom(
-      builtin("between", "datetimeone", "datetimetwo") {
-        (_, _, datetimeone: String, datetimetwo: String) =>
-          Period.between(
-            java.time.ZonedDateTime.parse(datetimeone, DateTimeFormatter.ISO_OFFSET_DATE_TIME).toLocalDate,
-            java.time.ZonedDateTime.parse(datetimetwo, DateTimeFormatter.ISO_OFFSET_DATE_TIME).toLocalDate
-          ).toString
-      },
-
-      builtin("days", "num") {
-        (_, _, num: Int) =>
-          Period.ofDays(num).toString
-      },
-
-      builtin("duration", "obj") {
-        (pos, ev, obj: Val.Obj) =>
-          val out = mutable.Map[String, Val]()
-          obj.visibleKeyNames.foreach(key => out.addOne(key, obj.value(key, pos)(ev)))
-          Duration.ZERO
-            .plusDays(out.getOrElse("days", Val.Num(pos, 0)).cast[Val.Num].value.toLong)
-            .plusHours(out.getOrElse("hours", Val.Num(pos, 0)).cast[Val.Num].value.toLong)
-            .plusMinutes(out.getOrElse("minutes", Val.Num(pos, 0)).cast[Val.Num].value.toLong)
-            .plusSeconds(out.getOrElse("seconds", Val.Num(pos, 0)).cast[Val.Num].value.toLong)
-            .toString
-      },
-
-      builtin("hours", "num") {
-        (_, _, num: Int) =>
-          Duration.ofHours(num).toString
-      },
-
-      builtin("minutes", "num") {
-        (_, _, num: Int) =>
-          Duration.ofMinutes(num).toString
-      },
-
-      builtin("months", "num") {
-        (_, _, num: Int) =>
-          Period.ofMonths(num).toString
-      },
-
-      builtin("period", "obj") {
+    "duration" -> moduleFrom(
+      builtin("of", "obj") {
         (pos, ev, obj: Val.Obj) =>
           val out = mutable.Map[String, Val]()
           obj.visibleKeyNames.foreach(key => out.addOne(key, obj.value(key, pos)(ev)))
@@ -959,18 +946,13 @@ object Trobador extends Library {
             .plusYears(out.getOrElse("years", Val.Num(pos, 0)).cast[Val.Num].value.toLong)
             .plusMonths(out.getOrElse("months", Val.Num(pos, 0)).cast[Val.Num].value.toLong)
             .plusDays(out.getOrElse("days", Val.Num(pos, 0)).cast[Val.Num].value.toLong)
-            .toString
-      },
-
-      builtin("seconds", "num") {
-        (_, _, num: Int) =>
-          Duration.ofSeconds(num).toString
-      },
-
-      builtin("years", "num") {
-        (_, _, num: Int) =>
-          Period.ofYears(num).toString
-      },
+            .toString +
+            Duration.ZERO
+              .plusHours(out.getOrElse("hours", Val.Num(pos, 0)).cast[Val.Num].value.toLong)
+              .plusMinutes(out.getOrElse("minutes", Val.Num(pos, 0)).cast[Val.Num].value.toLong)
+              .plusSeconds(out.getOrElse("seconds", Val.Num(pos, 0)).cast[Val.Num].value.toLong)
+              .toString.substring(1)
+      }
     ),
 
     "crypto" -> moduleFrom(

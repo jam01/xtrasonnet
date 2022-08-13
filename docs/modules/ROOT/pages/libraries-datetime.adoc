@@ -1,314 +1,311 @@
-## datetime
-This library uses Java's DateTimeFormatter library to format the date to a consistent value using ISO_OFFSET_DATE_TIME.
-If your datetime is not in this format, you can use the `parse` function to convert it. After you are finished executing your logic,
-you can use the `format` function to set the output format.
+= `tro.datetime`
 
-### `atBeginningOfDay(string datetime)`
-Returns the given datetime at midnight.
+The datetime module is based on the ISO-8601 extended offset date-time format, and the ISO-8601 duration format. The ISO-8601 format is the recommendation of the IETF through RFC 3339: _Date and Time on the Internet_.
 
-*Example*
+Users that need to operate on other date and time formats can use the `parse` function to convert it to the supported format, operate on the result, and optionally output it to any other format with the `format` function.
 
-------------------------
-ds.datetime.atBeginningOfDay("2020-12-31T23:19:35Z")
-------------------------
 
-.Result:
-------------------------
-"2020-12-31T00:00:00Z"
-------------------------
+== `atBeginningOfDay(datetime: String): String`
+Returns the given `datetime` at midnight.
 
-### `atBeginningOfHour(string datetime)`
-Returns the given datetime with the minutes and seconds set to zero.
-
-*Example*
-
-------------------------
-ds.datetime.atBeginningOfHour("2020-12-31T23:19:35Z")
-------------------------
-
-.Result:
-------------------------
-"2020-12-31T23:00:00Z"
-------------------------
-
-### `atBeginningOfMonth(string datetime)`
-Returns the given datetime with the day set to first of the month and the time set to midnight.
-
-*Example*
-
-------------------------
-ds.datetime.atBeginningOfMonth("2020-12-31T23:19:35Z")
-------------------------
-
-.Result:
-------------------------
-"2020-12-01T00:00:00Z"
-------------------------
-
-### `atBeginningOfWeek(string datetime)`
-Returns the given datetime at the first of the current week and the time set to midnight
-
-*Example*
-
-------------------------
-ds.datetime.atBeginningOfWeek("2020-12-31T23:19:35Z")
-------------------------
-
-.Result:
-------------------------
-"2020-12-27T00:00:00Z"
-------------------------
-
-### `atBeginningOfYear(string datetime)`
-Returns the given datetime at the first of the year
-
-*Example*
-
-------------------------
-ds.datetime.atBeginningOfYear("2020-12-31T23:19:35Z")
-------------------------
-
-.Result:
-------------------------
-"2020-01-01T00:00:00Z"
-------------------------
-
-### `changeTimeZone(string datetime, string timezone)`
-Changes the date timezone, retaining the instant. This normally results in a change to the local date-time.
-
-*Example*
-
-------------------------
-ds.datetime.changeTimeZone("2020-12-31T23:19:35Z", "America/Los_Angeles")
-------------------------
-.Result:
-------------------------
-"2020-12-31T15:19:35-08:00"
-------------------------
-
-### `compare(string datetime1, string datetime2)`
-Returns `1` if `datetime1 > datetime2`, `-1` if `datetime1 < datetime2`, and `0` if `datetime1 == datetime2`.
-
-*Example*
-
-------------------------
-ds.datetime.compare("2020-12-31T23:19:35Z","2020-01-01T00:00:00Z")
-------------------------
+.Example
+----
+tro.datetime.atBeginningOfDay('2020-12-31T23:19:35Z')
+----
 .Result
-------------------------
+----
+'2020-12-31T00:00:00Z'
+----
+
+== `atBeginningOfHour(datetime: String): String`
+Returns the given `datetime` with the minutes and seconds set to zero.
+
+.Example
+----
+tro.datetime.atBeginningOfHour('2020-12-31T23:19:35Z')
+----
+.Result
+----
+'2020-12-31T23:00:00Z'
+----
+
+== `atBeginningOfMonth(datetime: String): String`
+Returns the given `datetime` with the day set to first of the month, and the time set to midnight.
+
+.Example
+----
+tro.datetime.atBeginningOfMonth('2020-12-31T23:19:35Z')
+----
+.Result
+----
+'2020-12-01T00:00:00Z'
+----
+
+== `atBeginningOfWeek(datetime: String): String`
+Returns the given `datetime` with the day set to first of the current week, and the time set to midnight.
+
+.Example
+----
+tro.datetime.atBeginningOfWeek('2020-12-31T23:19:35Z')
+----
+.Result
+----
+'2020-12-27T00:00:00Z'
+----
+
+== `atBeginningOfYear(datetime: String): String`
+Returns the given `datetime` with the day/month set to January 1st, and the time set to midnight.
+
+.Example
+----
+tro.datetime.atBeginningOfYear('2020-12-31T23:19:35Z')
+----
+.Result
+----
+'2020-01-01T00:00:00Z'
+----
+
+== `inOffset(datetime: String, offset: String): String`
+Returns the given `datetime` in the given timezone `offset`, changing the date and time as appropriate.
+
+.Example
+----
+tro.datetime.inOffset('2020-12-31T23:19:35Z', '-08:00')
+----
+.Result
+----
+'2020-12-31T15:19:35-08:00'
+----
+
+== `compare(datetime1: String, datetime2: String): String`
+Returns:
+
+`1` if `datetime1` is after `datetime2`
+
+`-1` if `datetime1` is before `datetime2`
+
+`0` if `datetime1` and `datetime2` are the same
+
+.Example
+----
+tro.datetime.compare('2020-12-31T23:19:35Z','2020-01-01T00:00:00Z')
+----
+.Result
+----
 1
-------------------------
+----
 
-### `date(object datetime)`
-This function uses a datetime object to generate a datetime in string format.
-Every key in the object is an optional number value, except the timezone which is an optional string.
+== `of(parts: Object[Number|String]): String`
+Returns the `String` representation of the date and time given in `parts` as an `Object` of the form:
 
-Example structure:
-------------------------
+----
 {
-    "year": 0,
-    "month": 0,
-    "day": 0,
-    "hour": 0,
-    "minute": 0,
-    "second": 0,
-    "timezone": "Z"
+    year: Number, month: Number, day: Number,
+    hour: Number, minute: Number, second: Number,
+    timezone: String
 }
-------------------------
+----
 
-*Example*
+where all elements are optional.
 
-------------------------
-local datetime={
-    "year": 2021,
-    "timezone": "America/Los_Angeles"
+.Example
+----
+local parts = {
+    'year': 2021,
+    'timezone': '-08:00'
 };
-ds.datetime.date(datetime)
-------------------------
+
+tro.datetime.of(parts)
+----
 .Result
-------------------------
-"2021-01-01T00:00:00-08:00"
-------------------------
+----
+'2021-01-01T00:00:00-08:00'
+----
 
-### `daysBetween(string datetime1, string datetime2)`
-Returns the number of days between `datetime1` and `datetime2`.
+== `between(datetime1: String, datetime2: String): String`
+Returns the ISO-8601 duration between `datetime1` and `datetime2`.
 
-*Example*
+.Example
+----
+local date1 = '2019-09-20T18:53:41.425Z';
+local date2 = '2019-09-14T18:53:41.425Z';
 
-.DataSonnet map:
-------------------------
-local date1 = "2019-09-20T18:53:41.425Z";
-local date2 = "2019-09-14T18:53:41.425Z";
-
-ds.datetime.daysBetween(date1, date2)
-------------------------
+tro.datetime.between(date1, date2)
+----
 .Result
-------------------------
-6
-------------------------
+----
+'-P6D'
+----
 
-### `format(string datetime, string outputFormat)`
-Given a datetime, will convert it to the specified output format.
+== `format(datetime: String, format: String): String`
+Returns the given `datetime` formatted in the requested `format`.
 
-*Example*
-
-.DataSonnet map:
-------------------------
-ds.datetime.format("2019-09-20T18:53:41.425Z", "yyyy/MM/dd")
-------------------------
+.Example
+----
+tro.datetime.format('2019-09-20T18:53:41.425Z', 'yyyy/MM/dd')
+----
 .Result
-------------------------
-"2019/09/20"
-------------------------
+----
+'2019/09/20'
+----
 
-### `isLeapYear(string datetime)`
-Returns a boolean indicating if `datetime` is a leap year.
+== `isLeapYear(datetime: String): String`
+Returns a `true` if `datetime` is a leap year, otherwise `false`.
 
-*Example*
-
-.DataSonnet map:
-------------------------
-ds.datetime.isLeapYear("2019-09-14T18:53:41.425Z")
-------------------------
+.Example
+----
+tro.datetime.isLeapYear('2019-09-14T18:53:41.425Z')
+----
 .Result
-------------------------
+----
 false
-------------------------
+----
 
-### `minus(string datetime, string period)`
-Subtracts a `period` type from the given datetime.
+== `minus(datetime: String, duration: String): String`
+Returns the result of subtracting the specified ISO-8601 `duration` from the given `datetime`.
 
-*Example*
-
-.DataSonnet map:
-------------------------
-ds.datetime.minus("2019-09-20T18:53:41Z", "P2D")
-------------------------
+.Example
+----
+tro.datetime.minus('2019-09-20T18:53:41Z', 'P2D')
+----
 .Result
-------------------------
-"2019-09-18T18:53:41Z"
-------------------------
+----
+'2019-09-18T18:53:41Z'
+----
 
-### `now()`
+== `now(): String`
 Returns the current datetime.
 
-*Example*
-
-------------------------
-ds.datetime.now()
-------------------------
-
-.Result:
-------------------------
-"2021-01-05T13:09:45.476375-05:00"
-------------------------
-
-### `parse(string|number datetime, string inputFormat)`
-Parses the datetime using the input format and returns the value in the default format.
-If an epoch or timestamp value is used as the datetime you can use `"epoch"` or `"timestamp"` as the inputFormat
-
-*Example*
-
-------------------------
-ds.datetime.parse("12/31/1990 10:10:10", "MM/dd/yyyy HH:mm:ss")
-------------------------
-
-.Result:
-------------------------
-"1990-12-31T10:10:10Z"
-------------------------
-
-### `plus(string datetime, string period)`
-Adds a `period` type to the given datetime.
-
-*Example*
-
-.DataSonnet map:
-------------------------
-ds.datetime.plus("2019-09-18T18:53:41Z", "P2D")
-------------------------
+.Example
+----
+tro.datetime.now()
+----
 .Result
-------------------------
-"2019-09-20T18:53:41Z"
-------------------------
+----
+'2021-01-05T13:09:45.476375-05:00'
+----
 
-### `toLocalDate(string datetime)`
-Converts a zone datetime to a local date
+== `parse(datetime: String|Number, format: String): String`
+Returns an ISO-8601 extended offset date-time from the given `datetime` using the specified `format`.
 
-*Example*
+you can use `'epoch'` or `'timestamp'` as the inputFormat
 
-------------------------
-ds.datetime.toLocalDate("2019-07-04T18:53:41Z")
-------------------------
-.Result:
-------------------------
-2019-07-04
-------------------------
+.Example
+----
+tro.datetime.parse('12/31/1990 10:10:10', 'MM/dd/yyyy HH:mm:ss')
+----
+.Result
+----
+'1990-12-31T10:10:10Z'
+----
 
-### `toLocalDateTime(string datetime)`
-Converts a zone datetime to a local datetime
+== `plus(datetime: String, duration: String): String`
+Returns the result of adding the specified ISO-8601 `duration` to the given `datetime`.
 
-*Example*
+.Example
+----
+tro.datetime.plus('2019-09-18T18:53:41Z', 'P2D')
+----
+.Result
+----
+'2019-09-20T18:53:41Z'
+----
 
-------------------------
-ds.datetime.toLocalDateTime("2019-07-04T21:00:00Z")
-------------------------
-.Result:
-------------------------
-2019-07-04T21:00:00
-------------------------
+== `toLocalDate(datetime: String): String`
+Returns the given `datetime` without time or offset.
 
-### `toLocalTime(string datetime, string format)`
-Converts a zone datetime to a local time.
+.Example
+----
+tro.datetime.toLocalDate('2019-07-04T18:53:41Z')
+----
+.Result
+----
+'2019-07-04'
+----
 
-*Example*
+== `toLocalDateTime(datetime: String): String`
+Returns the given `datetime` without an offset.
 
-------------------------
-ds.datetime.toLocalTime("2019-07-04T21:00:00Z")
-------------------------
-.Result:
-------------------------
-21:00:00
-------------------------
+.Example
+----
+tro.datetime.toLocalDateTime('2019-07-04T21:00:00Z')
+----
+.Result
+----
+'2019-07-04T21:00:00'
+----
 
-### `today()`
-Returns the datetime of the current day at midnight.
+== `toLocalTime(datetime: String, format: String): String`
+Returns the given `datetime` without date or offset.
 
-*Example*
+.Example
+----
+tro.datetime.toLocalTime('2019-07-04T21:00:00Z')
+----
+.Result
+----
+'21:00:00'
+----
 
-------------------------
-ds.datetime.today
-------------------------
+== `toParts(datetime: String): Object[Number|String]`
+Returns the constituent parts of the given `datetime`, as an `Object` of the form:
 
-.Result:
-------------------------
-"2021-01-05T00:00:00-05:00"
-------------------------
+----
+{
+    year: Number, month: Number, day: Number,
+    hour: Number, minute: Number, second: Number,
+    offset: String
+}
+----
 
-### `tomorrow()`
-Returns the datetime of the next day at midnight.
+.Example
+----
+tro.datetime.toParts('2019-07-04T21:00:00Z')
+----
+.Result
+----
+{
+    year: 2019, month: 7, day: 4,
+    hour: 21, minute: 0, second: 0,
+    offset: 'Z'
+}
+----
 
-*Example*
+== `today(): String`
+Returns the current day at midnight.
 
-------------------------
-ds.datetime.tomorrow
-------------------------
+.Example
+----
+tro.datetime.today
+----
 
-.Result:
-------------------------
-"2021-01-06T00:00:00-05:00"
-------------------------
+.Result
+----
+'2021-01-05T00:00:00-05:00'
+----
 
-### `yesterday()`
-Returns the datetime of the previous day at midnight.
+== `tomorrow(): String`
+Returns the next day at midnight.
 
-*Example*
+.Example
+----
+tro.datetime.tomorrow
+----
 
-------------------------
-ds.datetime.yesterday
-------------------------
+.Result
+----
+'2021-01-06T00:00:00-05:00'
+----
 
-.Result:
-------------------------
-"2021-01-04T00:00:00-05:00"
-------------------------
+== `yesterday(): String`
+Returns the previous day at midnight.
+
+.Example
+----
+tro.datetime.yesterday
+----
+
+.Result
+----
+'2021-01-04T00:00:00-05:00'
+----
