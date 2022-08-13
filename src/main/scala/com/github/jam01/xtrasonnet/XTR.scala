@@ -669,7 +669,7 @@ object XTR extends Library {
       new Val.Obj(pos, m, false, null, null).asInstanceOf[Val]
     },
 
-    builtin("numFrom", "str") { (pos, ev, str: String) =>
+    builtin("parseNum", "str") { (pos, ev, str: String) =>
       str.toDouble
     }
   ).asJava
@@ -1592,7 +1592,7 @@ object XTR extends Library {
           }
       },
 
-      builtin("ordinalOf", "num") {
+      builtin("numOrdinalOf", "num") {
         (pos, ev, num: Val) =>
           val str = num match { //convert number value to string
             case value: Val.Str =>

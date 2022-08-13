@@ -56,8 +56,8 @@ public class StringsTest {
     }
 
     @Test
-    public void ordinalOf() {
-        assertEquals(transform("'1st'"), transform("xtr.strings.ordinalOf(1)"));
+    public void numOrdinalOf() {
+        assertEquals(transform("'1st'"), transform("xtr.strings.numOrdinalOf(1)"));
     }
 
     @Test

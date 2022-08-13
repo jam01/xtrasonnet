@@ -425,8 +425,8 @@ public class CoreTest {
     }
 
     @Test
-    public void numFrom() {
-        Assertions.assertEquals(TestUtils.transform("123.45"), TestUtils.transform("xtr.numFrom('123.45')"));
+    public void parseNum() {
+        Assertions.assertEquals(TestUtils.transform("123.45"), TestUtils.transform("xtr.parseNum('123.45')"));
     }
 
     @Test
