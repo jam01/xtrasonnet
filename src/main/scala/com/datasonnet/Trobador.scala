@@ -26,15 +26,12 @@ package com.datasonnet
 /*-
  * Changed:
  * - d74e8ff8838292274aa0c386d39fece6db16916d: Encapsulates Library logic
- *      Reimplemented DS under the new Library interface, while keeping some function names under ZonedDateTime,
+ *      Reimplemented DS under the new Library interface, while keeping some function under ZonedDateTime,
  *      Formats, Crypto, JsonPath, and URL
  *
  * Adopted:
- * - 37ddbe63a9092ebb2fe5cde12407e53737f32d03: Added missing join,leftJoin, and outerJoin functions & tests
  * - 6b92da38753b0f8d00f12dc5859c644027d92cd1: Added operations for concatentation and removal
  *      Functions: combine, remove, removeMatch
- * - 1f825ac1b33849febe0129b5554874a23f75ea55: Added append and prepend operations
- * - a19bfc766c12661021240cd20f83057350b16ad4: Fixed minBy and maxBy for effeciency
  * - 5666b472de694383231b043c8c7861833831db96: Fixed numbers module to allow long values
  * - 386223447f864492ca4703a4d9eaa49eea9b64a3: Converted util functions to scala
  *      Functions: duplicates, deepFlatten, occurrences
@@ -55,8 +52,8 @@ package com.datasonnet
  * - d19a57dfcf4382669d55ac4427916c8440c1bac3: fixes orderBy comparison
  * - c8ee3b88d01c29c499921f3a8e5edd30e674e9dd: fixes zoneddatetime tests
  *      Use ISO_OFFSET_DATE_TIME instead of ISO_DATE_TIME in all datetime functions
- * - rename join to innerJoin, outerJoin to rightJoin, toString to stringOf, remove to rm and rmAll,
- *  removeMatch to rmWhereEq and rmWhereIn
+ * - rename join to innerJoin, outerJoin to rightJoin, toString to stringOf,
+ *      changed remove to rm and rmAll to rmKey and rmKeyIn
  * - removed null support from most functions, including those adopted
  */
 
@@ -64,12 +61,13 @@ import com.datasonnet.document.{DefaultDocument, MediaType}
 import com.datasonnet.header.Header
 import com.datasonnet.modules.{Crypto, JsonPath}
 import com.datasonnet.spi.Library.{emptyObj, memberOf}
-import com.datasonnet.spi.{DataFormatService, Library, ujsonUtils}
+import com.datasonnet.spi.{DataFormatService, Library}
 import sjsonnet.Expr.Member.Visibility
 import sjsonnet.ReadWriter.{ArrRead, ObjRead, ValRead}
-import sjsonnet.Std.{builtin, builtinWithDefaults, stringChars}
+import sjsonnet.Std.{builtin, builtinWithDefaults}
 import sjsonnet.Val.{Builtin, Obj}
 import sjsonnet.{Error, EvalScope, Expr, FileScope, Importer, Lazy, Materializer, Position, ReadWriter, Val}
+import ujson.{Bool, Null, Num, Str}
 
 import java.math.{BigDecimal, RoundingMode}
 import java.net.URL
@@ -106,7 +104,8 @@ object Trobador extends Library {
 
   private val dummyPosition = new Position(null, 0)
 
-  override def functions(dataFormats: DataFormatService, header: Header, importer: Importer): java.util.Map[String, Val.Func] = Map(
+  override def functions(dataFormats: DataFormatService,
+                         header: Header, importer: Importer): java.util.Map[String, Val.Func] = Map(
     builtin("contains", "container", "value") {
       (_, ev, container: Val, value: Val) =>
         container match {
@@ -124,11 +123,10 @@ object Trobador extends Library {
     builtin("entriesOf", "obj") {
       (pos, ev, obj: Val.Obj) =>
         new Val.Arr(pos, obj.visibleKeyNames.collect({
-          case key =>
-            Val.Obj.mk(pos,
-              ("key", memberOf(Val.Str(pos, key))),
-              ("value", memberOf(obj.value(key, pos)(ev)))
-            )
+          case key => Val.Obj.mk(pos,
+            ("key", memberOf(Val.Str(pos, key))),
+            ("value", memberOf(obj.value(key, pos)(ev)))
+          )
         }))
     },
 
@@ -165,24 +163,19 @@ object Trobador extends Library {
       (pos, ev, value: Val.Arr, func: Val.Func) => flatMap(value.asLazyArray, func, ev)
     },
 
+    builtin("flatMapObject", "value", "func") {
+      (pos, ev, obj: Val.Obj, func: Val.Func) => flatMapObject(obj, func, ev)
+    },
+
     builtin("flatten", "array") {
       (pos, _, value: Val.Arr) =>
         val out = new ArrayBuffer[Lazy]
         var i = 0
         while (i < value.length) {
-          out.appendAll(value.asLazyArray(i).force.asArr.asLazyArray)
+          out.appendAll(value.asLazyArray(i).force.asArr.asLazyArray) // should we report we expected arr[arr]?
           i = i + 1
         }
         new Val.Arr(pos, out.toArray)
-    },
-
-    builtin("distinctBy", "container", "func") {
-      (_, ev, container: Val, func: Val.Func) =>
-        container match {
-          case arr: Val.Arr => distinctBy(arr.asLazyArray, func, ev)
-          case obj: Val.Obj => distinctBy(obj, func, ev)
-          case x => Error.fail("Expected Array or Object, got: " + x.prettyName)
-        }
     },
 
     builtin("endsWith", "main", "sub") {
@@ -200,12 +193,7 @@ object Trobador extends Library {
     },
 
     builtin("isBlank", "value") {
-      (pos, ev, value: Val) =>
-        value match {
-          case s: Val.Str => !Utils.hasText(s.asString)
-          case Val.Null(_) => true
-          case x => Error.fail("Expected String, got: " + x.prettyName)
-        }
+      (pos, ev, str: String) => !Utils.hasText(str)
     },
 
     builtin("isDecimal", "value") {
@@ -216,7 +204,6 @@ object Trobador extends Library {
     builtin("isEmpty", "container") {
       (pos, ev, container: Val) =>
         container match {
-          case Val.Null(_) => true
           case s: Val.Str => s.value.isEmpty.booleanValue()
           case array: Val.Arr => array.asLazyArray.isEmpty.booleanValue()
           case s: Val.Obj => !s.hasKeys.booleanValue()
@@ -244,8 +231,6 @@ object Trobador extends Library {
         array.asLazyArray.map({
           _.force match {
             case str: Val.Str => str.value
-            case _: Val.True => "true"
-            case _: Val.False => "false"
             case num: Val.Num => if (!num.value.isWhole) num.value.toString else num.value.intValue().toString
             case x => Error.fail("Expected String, Number, or Boolean, got: " + x.prettyName)
           }
@@ -303,9 +288,8 @@ object Trobador extends Library {
         val lazyArr = array.asLazyArray
         func.apply1(lazyArr.head, pos.noOffset)(ev) match {
           case _: Val.Str => lazyArr.maxBy(item => func.apply1(item, pos.noOffset)(ev).asString).force
-          case _: Val.Bool =>
-            if (lazyArr.exists(it => it.force.asBoolean)) Val.True(pos) else Val.False(pos)
-          case _: Val.Num => lazyArr.maxBy(item => func.apply1(item, pos.noOffset)(ev).asDouble).force
+          case _: Val.Bool => lazyArr.find(it => func.apply1(it, pos.noOffset)(ev).asBoolean).getOrElse(lazyArr.head).force
+          case _: Val.Num => lazyArr.maxBy(it => func.apply1(it, pos.noOffset)(ev).asDouble).force
           case x => Error.fail("Expected Array of type String, Boolean, or Number, got: Array of type " + x)
         }
     },
@@ -340,8 +324,7 @@ object Trobador extends Library {
         val lazyArr = array.asLazyArray
         func.apply1(lazyArr.head, pos.noOffset)(ev) match {
           case _: Val.Str => lazyArr.minBy(item => func.apply1(item, pos.noOffset)(ev).asString).force
-          case _: Val.Bool =>
-            if (lazyArr.exists(it => it.force.asBoolean)) Val.False(pos) else Val.True(pos)
+          case _: Val.Bool => lazyArr.find(it => !func.apply1(it, pos.noOffset)(ev).asBoolean).getOrElse(lazyArr.head).force
           case _: Val.Num => lazyArr.minBy(item => func.apply1(item, pos.noOffset)(ev).asDouble).force
           case x => Error.fail("Expected Array of type String, Boolean, or Number, got: Array of type " + x)
         }
@@ -362,36 +345,46 @@ object Trobador extends Library {
         new Val.Arr(pos, (begin to end).map(i => Val.Num(pos, i)).toArray)
     },
 
-    builtin("replace", "string", "regex", "replacement") {
-      (pos, ev, str: String, reg: String, replacement: String) =>
-        reg.r.replaceAllIn(str, replacement)
+    builtin("replace", "str1", "str2", "replacement") {
+      (pos, ev, str: String, str2: String, replacement: String) =>
+        str.replace(str2, replacement)
     },
 
     builtinWithDefaults("read",
-      "data" -> Val.Null(dummyPosition),
-      "mimeType" -> Val.Null(dummyPosition),
-      "params" -> null) { (args, pos, ev) =>
-      val data = args(0).cast[Val.Str].value
-      val mimeType = args(1).cast[Val.Str].value
-      val params = if (args(2).force.isInstanceOf[Val.Null]) {
-        emptyObj
-      } else {
-        args(2).cast[Val.Obj]
-      }
-      read(dataFormats, data, mimeType, params, ev)
+      "data" -> null,
+      "mimeType" -> null,
+      "params" -> Val.False(dummyPosition)) {
+      (args, pos, ev) =>
+        val data = args(0).cast[Val.Str].value
+        val mimeType = args(1).cast[Val.Str].value
+        val params = if (args(2).isInstanceOf[Val.False]) {
+          emptyObj
+        } else {
+          args(2).cast[Val.Obj]
+        }
+        read(dataFormats, data, mimeType, params, ev)
     },
 
-    //TODO add read mediatype
-    builtin("readUrl", "url") {
-      (pos, ev, url: String) =>
+    builtinWithDefaults("readUrl",
+      "url" -> null,
+      "mimeType" -> null,
+      "params" -> Val.False(dummyPosition)) {
+      (args, pos, ev) =>
+        val url = args(0).cast[Val.Str].value
+        val mimeType = args(1).cast[Val.Str].value
+        val params = if (args(2).isInstanceOf[Val.False]) {
+          emptyObj
+        } else {
+          args(2).cast[Val.Obj]
+        }
         url match {
           case str if str.startsWith("classpath://") => importer.read(ClasspathPath(str.substring(12))) match {
-            case Some(value) => Materializer.reverse(pos, ujsonUtils.parse(value))
+            case Some(value) => read(dataFormats, value, mimeType, params, ev)
             case None => Val.Null(pos)
           }
           case _ =>
             val out = new Scanner(new URL(url).openStream(), "UTF-8").useDelimiter("\\A").next()
-            Materializer.reverse(pos, ujsonUtils.parse(out));
+            read(dataFormats, out, mimeType, params, ev)
         }
     },
 
@@ -407,8 +400,8 @@ object Trobador extends Library {
     },
 
     builtin("split", "str", "regex") {
-      (pos, _, str: String, regex: String) =>
-        new Val.Arr(pos, regex.r.split(str).toIndexedSeq.map(item => Val.Str(pos, item)).toArray)
+      (pos, _, str: String, str2: String) =>
+        new Val.Arr(pos, str.split(str2.charAt(0)).toIndexedSeq.map(item => Val.Str(pos, item)).toArray)
     },
 
     builtin("startsWith", "str1", "str2") {
@@ -530,50 +523,35 @@ object Trobador extends Library {
       v.isInstanceOf[Val.Arr]
     },
 
-    builtin("isfunction", "v") { (pos, ev, v: Val) =>
+    builtin("isFunction", "v") { (pos, ev, v: Val) =>
       v.isInstanceOf[Val.Func]
     },
 
-    // moved array to first position
     builtin("foldLeft", "arr", "init", "func") {
       (pos, ev, arr: Val.Arr, init: Val, func: Val.Func) =>
         var current = init
-        for (item <- arr.asLazyArray) {
+        var i = 0
+        while (i < arr.asLazyArray.length) {
           val c = current
-          current = func.apply2(c, item, pos.noOffset)(ev)
+          current = func.apply2(arr.asLazy(i), c, pos.noOffset)(ev)
+          i = i + 1
         }
         current
     },
 
-    // TODO: add test
-    // TODO: can we do this without reverse? has to traverse the collection twice
     builtin("foldRight", "arr", "init", "func") {
       (pos, ev, arr: Val.Arr, init: Val, func: Val.Func) =>
         var current = init
-        for (item <- arr.asLazyArray.reverse) {
+        var i = arr.asLazyArray.length - 1
+        while (i >= 0) {
           val c = current
-          current = func.apply2(item, c, pos.noOffset)(ev)
+          current = func.apply2(arr.asLazy(i), c, pos.noOffset)(ev)
+          i = i - 1
         }
         current
     },
 
-    builtin("parseInt", "str") { (pos, ev, str: String) =>
-      str.toInt
-    },
-
-    builtin("parseOctal", "str") { (pos, ev, str: String) =>
-      Integer.parseInt(str, 8)
-    },
-
-    builtin("parseHex", "str") { (pos, ev, str: String) =>
-      Integer.parseInt(str, 16)
-    },
-
-    builtin("parseDouble", "str") { (pos, ev, str: String) =>
-      str.toDouble
-    },
-
-    builtin("rm", "collection", "value") {
+    builtin("rmKey", "collection", "value") {
       (pos, ev, obj: Val.Obj, value: Val) =>
         Val.Obj.mk(pos,
           (value match {
@@ -585,7 +563,7 @@ object Trobador extends Library {
           }): _*).asInstanceOf[Val]
     },
 
-    builtin("rmAll", "first", "second") {
+    builtin("rmKeyIn", "first", "second") {
       (pos, ev, obj: Val.Obj, second: Val) =>
         Val.Obj.mk(pos,
           (second match {
@@ -598,12 +576,12 @@ object Trobador extends Library {
           }): _*).asInstanceOf[Val]
     },
 
-    builtin("rmWhereEq", "collection", "value") {
+    builtin("filterNotEq", "collection", "value") {
       (pos, ev, arr: Val.Arr, value: Val) =>
         new Val.Arr(pos, arr.asLazyArray.filter(x => !ev.equal(x.force, value)))
     },
 
-    builtin("rmWhereIn", "first", "second") {
+    builtin("filterNotIn", "first", "second") {
       (pos, ev, first: Val, second: Val) =>
         first match {
           case arr: Val.Arr =>
@@ -616,27 +594,15 @@ object Trobador extends Library {
             }
           case obj: Val.Obj =>
             Val.Obj.mk(pos, (second match {
-                case arr: Val.Arr =>
-                  obj.visibleKeyNames.toSeq.collect({
-                    case key if !arr.asLazyArray.exists(item => item.force.asString.equals(key)) =>
-                      key -> memberOf(obj.value(key, pos)(ev))
-                  })
-                case x => Error.fail("Expected Array, got: " + x.prettyName)
-              }): _*).asInstanceOf[Val]
+              case arr: Val.Arr =>
+                obj.visibleKeyNames.toSeq.collect({
+                  case key if !arr.asLazyArray.exists(item => item.force.asString.equals(key)) =>
+                    key -> memberOf(obj.value(key, pos)(ev))
+                })
+              case x => Error.fail("Expected Array, got: " + x.prettyName)
+            }): _*).asInstanceOf[Val]
           case x => Error.fail("Expected Array or Object, got: " + x.prettyName)
         }
-    },
-
-    builtin("append", "first", "second") {
-      (pos, ev, arr: Val.Arr, second: Val) =>
-        val out = new ArrayBuffer[Lazy]
-        new Val.Arr(pos, out.appendAll(arr.asLazyArray).append(second).toArray)
-    },
-
-    builtin("prepend", "first", "second") {
-      (pos, ev, arr: Val.Arr, second: Val) =>
-        val out = new ArrayBuffer[Lazy]
-        new Val.Arr(pos, out.append(second).appendAll(arr.asLazyArray).toArray)
     },
 
     builtin("reverse", "collection") {
@@ -651,6 +617,24 @@ object Trobador extends Library {
             ))
             Val.Obj.mk(pos, result: _*).asInstanceOf[Val]
           case x => Error.fail("Expected Array or Object, got: " + x.prettyName)
+        }
+    },
+
+    builtin("indexOf", "container", "value") {
+      (pos, ev, container: Val, value: Val) =>
+        container match {
+          case str: Val.Str => str.value.indexOf(value.cast[Val.Str].value)
+          case array: Val.Arr => array.asLazyArray.indexWhere(lzy => ev.equal(lzy.force, value))
+          case x => Error.fail("Expected String or Array, got: " + x.prettyName)
+        }
+    },
+
+    builtin("lastIndexOf", "container", "value") {
+      (pos, ev, container: Val, value: Val) =>
+        container match {
+          case str: Val.Str => str.value.lastIndexOf(value.cast[Val.Str].value)
+          case array: Val.Arr => array.asLazyArray.lastIndexWhere(lzy => ev.equal(lzy.force, value))
+          case x => Error.fail("Expected String or Array, got: " + x.prettyName)
         }
     },
 
@@ -676,7 +660,7 @@ object Trobador extends Library {
         val j = i.intValue // ints are objects in Scala, so we must set a 'final' reference
 
         m.put(k.asString,
-        if (vFunc.isInstanceOf[Val.False]) new Obj.Member(false, Visibility.Normal) {
+          if (vFunc.isInstanceOf[Val.False]) new Obj.Member(false, Visibility.Normal) {
             override def invoke(self: Obj, sup: Obj, fs: FileScope, ev: EvalScope): Val = lzyArr(j).force
           } else new Obj.Member(false, Visibility.Normal) {
             override def invoke(self: Obj, sup: Obj, fs: FileScope, ev: EvalScope): Val = vFunc.asFunc.apply1(lzyArr(j), pos.noOffset)(ev)
@@ -685,6 +669,10 @@ object Trobador extends Library {
       }
 
       new Val.Obj(pos, m, false, null, null).asInstanceOf[Val]
+    },
+
+    builtin("numFrom", "str") { (pos, ev, str: String) =>
+      str.toDouble
     }
   ).asJava
 
@@ -2012,9 +2000,15 @@ object Trobador extends Library {
   }
 
   def read(dataFormats: DataFormatService, data: String, mimeType: String, params: Val.Obj, ev: EvalScope): Val = {
-    val Array(supert, subt) = mimeType.split("/", 2)
-    val paramsAsJava = ujsonUtils.javaObjectFrom(ujson.read(Materializer.apply(params)(ev)).obj).asInstanceOf[java.util.Map[String, String]]
-    val doc = new DefaultDocument(data, new MediaType(supert, subt, paramsAsJava))
+    val paramsAsJava = ujson.read(Materializer.apply(params)(ev)).obj.map(keyVal => {
+      (keyVal._1, keyVal._2 match {
+        case Str(value) => value
+        case Num(value) => String.valueOf(value)
+        case bool: Bool => String.valueOf(bool)
+        case Null => "null"
+      })
+    }).asJava
+    val doc = new DefaultDocument(data, MediaType.parseMediaType(mimeType).withParameters(paramsAsJava))
 
     val plugin = dataFormats.thatCanRead(doc)
       .orElseThrow(() => Error.fail("No suitable plugin found for mime type: " + mimeType))
@@ -2023,10 +2017,15 @@ object Trobador extends Library {
   }
 
   def write(dataFormats: DataFormatService, json: Val, mimeType: String, params: Val.Obj, ev: EvalScope): String = {
-    val Array(supert, subt) = mimeType.split("/", 2)
-    val paramsAsJava = ujsonUtils.javaObjectFrom(ujson.read(Materializer.apply(params)(ev)).obj).asInstanceOf[java.util.Map[String, String]]
-    val mediaType = new MediaType(supert, subt, paramsAsJava)
-
+    val paramsAsJava = ujson.read(Materializer.apply(params)(ev)).obj.map(keyVal => {
+      (keyVal._1, keyVal._2 match {
+        case Str(value) => value
+        case Num(value) => String.valueOf(value)
+        case bool: Bool => String.valueOf(bool)
+        case Null => "null"
+      })
+    }).asJava
+    val mediaType = MediaType.parseMediaType(mimeType).withParameters(paramsAsJava)
     val plugin = dataFormats.thatCanWrite(mediaType, classOf[String])
       .orElseThrow(() => Error.fail("No suitable plugin found for mime type: " + mimeType))
 
@@ -2134,27 +2133,21 @@ object Trobador extends Library {
     var i = 0
     if (args == 2) { // 2 args
       while (i < array.length) {
-        array(i).force match {
-          case inner: Val.Arr =>
-            var j = 0
-            while (j < inner.length) {
-              out.append(func.apply2(inner.asLazyArray(j).force, Val.Num(pos, j), pos.noOffset)(ev))
-              j = j + 1
-            }
-          case x => Error.fail("Expected Array of Arrays, got: Array of " + x.prettyName)
+        val inner = func.apply2(array(i).force, Val.Num(pos, i), pos.noOffset)(ev).asArr
+        var j = 0
+        while (j < inner.length) {
+          out.append(inner.asLazyArray(j))
+          j = j + 1
         }
         i = i + 1
       }
     } else if (args == 1) { //  1 arg
       while (i < array.length) {
-        array(i).force match {
-          case inner: Val.Arr =>
-            var j = 0
-            while (j < inner.length) {
-              out.append(func.apply1(inner.asLazyArray(j).force, pos.noOffset)(ev))
-              j = j + 1
-            }
-          case x => Error.fail("Expected Array of Arrays, got: Array of " + x.prettyName)
+        val inner = func.apply1(array(i).force, pos.noOffset)(ev).asArr
+        var j = 0
+        while (j < inner.length) {
+          out.append(inner.asLazyArray(j))
+          j = j + 1
         }
         i = i + 1
       }
@@ -2243,14 +2236,14 @@ object Trobador extends Library {
     if (args == 2) {
       while (i < array.length) {
         val v = array(i)
-        val k = stringValueOf(func.apply2(v, Val.Num(pos, i), pos.noOffset)(ev))
+        val k = keyFrom(func.apply2(v, Val.Num(pos, i), pos.noOffset)(ev))
         mScala.getOrElseUpdate(k, mutable.ArrayBuffer[Lazy]()).addOne(v)
         i = i + 1
       }
     } else if (args == 1) {
       while (i < array.length) {
         val v = array(i)
-        val k = stringValueOf(func.apply1(v, pos.noOffset)(ev))
+        val k = keyFrom(func.apply1(v, pos.noOffset)(ev))
         mScala.getOrElseUpdate(k, mutable.ArrayBuffer[Lazy]()).addOne(v)
         i = i + 1
       }
@@ -2273,7 +2266,7 @@ object Trobador extends Library {
       while (i < obj.visibleKeyNames.length) {
         val k = obj.visibleKeyNames(i)
         val v = obj.value(k, pos)(ev)
-        val funcKey = stringValueOf(func.apply2(v, Val.Str(pos, k), pos.noOffset)(ev))
+        val funcKey = keyFrom(func.apply2(v, Val.Str(pos, k), pos.noOffset)(ev))
         mScala.getOrElseUpdate(funcKey, new util.LinkedHashMap[String, Val.Obj.Member]()).put(k, memberOf(v))
         i = i + 1
       }
@@ -2281,7 +2274,7 @@ object Trobador extends Library {
       while (i < obj.visibleKeyNames.length) {
         val k = obj.visibleKeyNames(i)
         val v = obj.value(k, pos)(ev)
-        val funcKey = stringValueOf(func.apply1(v, pos.noOffset)(ev))
+        val funcKey = keyFrom(func.apply1(v, pos.noOffset)(ev))
         mScala.getOrElseUpdate(funcKey, new util.LinkedHashMap[String, Val.Obj.Member]()).put(k, memberOf(v))
         i = i + 1
       }
@@ -2329,6 +2322,56 @@ object Trobador extends Library {
   }
 
   private def mapObject(obj: Val.Obj, func: Val.Func, ev: EvalScope): Val = {
+    val pos = func.pos
+    val args = func.params.names.length
+    val out = new util.LinkedHashMap[String, Val.Obj.Member]()
+
+    var i = 0
+    var k: String = null
+    var v: Val = null
+    if (args.equals(3)) {
+      while (i < obj.visibleKeyNames.length) {
+        k = obj.visibleKeyNames(i)
+        v = obj.value(k, pos)(ev)
+        func.apply3(v, Val.Str(pos, k), Val.Num(pos, i), pos.noOffset)(ev) match {
+          case s: Val.Obj =>
+            if (s.visibleKeyNames.length > 1) Error.fail("Function must return a single key-value pair, otherwise consider flatMapObject.")
+            out.put(s.visibleKeyNames.head, memberOf(s.value(s.visibleKeyNames.head, dummyPosition)(ev)))
+          case x => Error.fail("function must return an Object, got: " + x.prettyName)
+        }
+        i = i + 1
+      }
+    } else if (args.equals(2)) {
+      while (i < obj.visibleKeyNames.length) {
+        k = obj.visibleKeyNames(i)
+        v = obj.value(k, pos)(ev)
+        func.apply2(v, Val.Str(pos, k), pos.noOffset)(ev) match {
+          case s: Val.Obj =>
+            if (s.visibleKeyNames.length > 1) Error.fail("Function must return a single key-value pair, otherwise consider flatMapObject.")
+            out.put(s.visibleKeyNames.head, memberOf(s.value(s.visibleKeyNames.head, dummyPosition)(ev)))
+          case x => Error.fail("function must return an Object, got: " + x.prettyName)
+        }
+        i = i + 1
+      }
+    } else if (args.equals(1)) {
+      while (i < obj.visibleKeyNames.length) {
+        k = obj.visibleKeyNames(i)
+        v = obj.value(k, pos)(ev)
+        func.apply1(v, pos.noOffset)(ev) match {
+          case s: Val.Obj =>
+            if (s.visibleKeyNames.length > 1) Error.fail("Function must return a single key-value pair, otherwise consider flatMapObject.")
+            out.put(s.visibleKeyNames.head, memberOf(s.value(s.visibleKeyNames.head, dummyPosition)(ev)))
+          case x => Error.fail("function must return an Object, got: " + x.prettyName)
+        }
+        i = i + 1
+      }
+    } else {
+      Error.fail("Expected embedded function to have between 1 and 3 parameters, received: " + args)
+    }
+    new Val.Obj(pos, out, false, null, null)
+  }
+
+  private def flatMapObject(obj: Val.Obj, func: Val.Func, ev: EvalScope): Val = {
     val pos = func.pos
     val args = func.params.names.length
     val out = new util.LinkedHashMap[String, Val.Obj.Member]()
@@ -2439,8 +2482,8 @@ object Trobador extends Library {
 object ValOrdering extends Ordering[Val] {
   def compare(x: Val, y: Val): Int =
     x match {
-      case value: Val.Num => Ordering.Double.TotalOrdering.compare(value.value, y.asInstanceOf[Val.Num].value)
-      case value: Val.Str => Ordering.String.compare(value.value, y.asInstanceOf[Val.Str].value)
+      case value: Val.Num => Ordering.Double.TotalOrdering.compare(value.value, y.asDouble)
+      case value: Val.Str => Ordering.String.compare(value.value, y.asString)
       case bool: Val.Bool => Ordering.Boolean.compare(bool.asBoolean, y.asBoolean)
       case unsupported: Val => Error.fail("Expected embedded function to return a String, Number, or Boolean, received: " + unsupported.prettyName)
     }

@@ -1,1691 +1,1386 @@
-## core
+= `tro`
 
-### `append(array arr, any val)`
-Given `arr` and `val`, appends `val` to the end of `arr`.
+Also called core or root functions.
 
-*Example*
+== `contains(arr: Array, value: Any): Boolean`
+Returns `true` if `arr` contains the given `value`, otherwise `false`.
 
-.Payload
-----------
-[
-    2,
-    3,
-    5,
-    7
-]
-----------
-.DataSonnet map:
-------------------------
-ds.append(payload, 11)
-------------------------
+.Example
+----
+tro.contains([1, 2, 3], 1)
+----
 .Result
-------------------------
-[
-  2,
-  3,
-  5,
-  7,
-  11
-]
-------------------------
-
-### `combine(any first, any second)`
-Combines `first` and `second`. Some values will auto-coerce, e.g. the number 5 will auto coerce to the string "5."
-
-*Example*
-
-.DataSonnet map:
-------------------------
-{
-    string: ds.combine("Hello ", "World"),
-    number: ds.combine(5, 7),
-    auto1: ds.combine("Hello ", 5),
-    auto2: ds.combine(5, "10"),
-    array: ds.combine([1,2], [3,4]),
-    obj: ds.combine({a:1}, {b:2})
-}
-------------------------
-.Result
-------------------------
-{
-  "string": "Hello World",
-  "number": "57",
-  "auto1": "Hello 5",
-  "auto2": "510",
-  "array": [
-    1,
-    2,
-    3,
-    4
-  ],
-  "obj": {
-    "a": 1,
-    "b": 2
-  }
-}
-------------------------
-
-### `contains(array|string item, any val)`
-If `item` is an array, returns true if `item` contains `val`.
-
-If `item` is a string, returns true if `item` contains the sub string `val`.
-
-*Example*
-
-.Payload
-----------
-[
-    2,
-    3,
-    5,
-    7
-]
-----------
-.DataSonnet map:
-------------------------
-ds.contains(payload, 2)
-------------------------
-.Result
-------------------------
+----
 true
-------------------------
+----
 
-### `distinctBy(array|object item, function discriminator)`
-Returns a new object containing only the items that are a unique result from `discriminator`.
+== `contains(obj: Object, value: Any): Boolean`
+Returns `true` if `obj` contains the given `value`, otherwise `false`.
 
-The function `discriminator` is expected to take the value as the first parameter (required) and the index as the second (optional).
-
-*Example*
-
-.Payload
-----------
-{
-  "array": [
-    1,
-    1,
-    2,
-    2,
-    3,
-    3,
-    4,
-    4,
-    5
-  ],
-  "obj": {
-    "a": 1,
-    "b": 2,
-    "c": 1
-  }
-}
-----------
-.DataSonnet map:
-------------------------
-{
-    array: ds.distinctBy(payload.array, function(item,index) item),
-    obj: ds.distinctBy(payload.obj, function(value,key) value)
-}
-------------------------
+.Example
+----
+tro.contains({ scala: '3.1.3' }, 'scala')
+----
 .Result
-------------------------
-{
-  "array": [
-    1,
-    2,
-    3,
-    4,
-    5
-  ],
-  "obj": {
-    "a": 1,
-    "b": 2
-  }
-}
-------------------------
-
-### `endsWith(string str, string subStr)`
-Returns true if `str` ends with `subStr`. Ignores casing.
-
-*Example*
-
-.Payload
-----------
-{
-    "name": "Scala",
-    "version": "1.0"
-}
-----------
-.DataSonnet map:
-------------------------
-ds.endsWith(payload.version, ".0")
-------------------------
-.Result
-------------------------
+----
 true
-------------------------
+----
 
-### `entriesOf(object obj)`
-Returns an array of objects describing each key value pair of `obj`.
+== `contains(str1: String, str2: String): Boolean`
+Returns `true` if `str1` contains `str2`, otherwise `false`.
 
-*Example*
-
-.Payload
-----------
-{
-    "name": "Scala",
-    "version": "1.0"
-}
-----------
-.DataSonnet map:
-------------------------
-ds.entriesOf(payload)
-------------------------
+.Example
+----
+tro.contains('Lorem ipsum', 'Lorem')
+----
 .Result
-------------------------
+----
+true
+----
+
+== `endsWith(str1: String, str2: String): String`
+Returns `true` if `str1` ends with `str2`, otherwise `false`.
+
+.Example
+----
+tro.endsWith('Lorem ipsum', 'ipsum')
+----
+.Result
+----
+true
+----
+
+== `entriesOf(obj: Object[A]): Array[Object[String|A]]`
+Returns an `Array[Object[String|A]]` with one `Object[String|A]` for every entry in `obj`. The result has the form of `[{ key: String, value: A }]`.
+
+.Example
+----
+tro.entriesOf({ scala: '3.1.3', java: '19' })
+----
+.Result
+----
 [
   {
-    "value": "Scala",
-    "key": "name"
+    key: 'scala',
+    value: '3.1.3'
   },
   {
-    "value": "1.0",
-    "key": "version"
+    key: 'java',
+    value: '19'
   }
 ]
-------------------------
+----
 
-### `filter(array arr, function func)`
-Filters `arr` depending on the result of `func`.
+== `filter(arr: Array[A], predicate Func[(A) => Boolean]): Array[A]`
+Returns a new `Array[A]` containing the elements of `arr` that satisfy the given `predicate`, which must accept an `A` value to test.
 
-The function `func` is expected to take the value as the first parameter (required) and the index as the second (optional).
-
-*Example*
-
-.Payload
-----------
-[
-    1,
-    2,
-    3,
-    4
-]
-----------
-.DataSonnet map:
-------------------------
-ds.filter(payload, function(value, index) value < 3)
-------------------------
+.Example
+----
+tro.filter([1, 2, 3, 4], function(item) item < 3)
+----
 .Result
-------------------------
-[
-  1,
-  2
-]
-------------------------
+----
+[1, 2]
+----
 
-### `filterObject(object obj, function func)`
-Filters `obj` depending on the result of `func`.
+== `filter(arr: Array[A], predicate Func[(A, Number) => Boolean]): Array[A]`
+Returns a new `Array[A]` containing the elements of `arr` that satisfy the given `predicate`, which must accept an `A` value and its `Number` index to test.
 
-The function `func` is expected to take the property value as the first parameter (required), the property key as the second (optional) and the index as the third (optional).
-
-*Example*
-
-.Payload
-----------
-{
-    "version": 1.7
-}
-----------
-.DataSonnet map:
-------------------------
-ds.filterObject(payload, function(value, key, index) value > 1.5)
-------------------------
+.Example
+----
+tro.filter([1, 2, 3, 4], function(item, idx) idx > 2)
+----
 .Result
-------------------------
-{
-  "version": 1.7
-}
-------------------------
+----
+[4]
+----
 
-### `find(string|array item, any val)`
-Returns an array containing the location where `val` occurs in `item`.
+== `filterNotEq(arr: Array[A], value: B): Array[A]`
+Returns a new `Array[A]` containing the elements of `arr` that are not equal to the given `value`.
 
-*Example*
-
-.Payload
-----------
-{
-    "string": "Hello World",
-    "array": [1,2,3,4]
-}
-----------
-.DataSonnet map:
-------------------------
-{
-    string: ds.find(payload.string, "World"),
-    array: ds.find(payload.array, 3)
-}
-------------------------
+.Example
+----
+tro.filterNotEq([1, 2, 3, 4, 3, 4], 3)
+----
 .Result
-------------------------
-{
-  "string": [6],
-  "array": [2]
-}
-------------------------
+----
+[1, 2, 4, 4]
+----
 
-### `flatten(array arr)`
-Given `arr`, which contains one level arrays, creates a flat array.
+== `filterNotIn(arr: Array[A], arr2: Array[B]): Array[A]`
+Returns a new `Array[A]` containing the elements of `arr1` that are not in the given `arr2`.
 
-*Example*
-
-.Payload
-----------
-[
-  [
-    1,
-    2
-  ],
-  [
-    3,
-    4
-  ]
-]
-----------
-.DataSonnet map:
-------------------------
-ds.flatten(payload)
-------------------------
+.Example
+----
+tro.filterNotIn([1, 2, 3, 4, 3, 4], [3, 4])
+----
 .Result
-------------------------
-[
-  1,
-  2,
-  3,
-  4
-]
-------------------------
+----
+[1, 2]
+----
 
-### `flatMap(array arr, function func)`
-Given an array of arrays `arr`, creates a flat array using the outcome of `func`.
+== `filterObject(obj: Object[A], predicate: Func[(A) => Boolean]): Object[A]`
+Returns a new `Object[A]` containing the entries of `obj` that satisfy the given `predicate`, which must accept an `A` value to test.
 
-The function `func` is expected to take the value as the first parameter (required) and the index as the second (optional).
+.Example
+----
+local languages = {
+    scala: { version: '3.1.3', isJvm: true },
+    java: { version: '19', isJvm: true },
+    python: { version: '3.10.4', isJvm: false }
+};
 
-*Example*
+tro.filterObject(languages, function(lang) lang.isJvm)
+----
+.Result
+----
+{
+    scala: { version: '3.1.3', isJvm: true },
+    java: { version: '19', isJvm: true }
+}
+----
 
-.Payload
-----------
-[
-    [
-        2,
-        3,
-        5,
-        7
+== `filterObject(obj: Object[A], predicate: Func[(A, String) => Boolean]): Object[A]`
+Returns a new `Object[A]` containing the entries of `obj` that satisfy the given `predicate`, which must accept an `A` value and its corresponding `String` key to test.
+
+.Example
+----
+local languages = {
+    scala: { version: '3.1.3', isJvm: true },
+    java: { version: '19', isJvm: true },
+    python: { version: '3.10.4', isJvm: false }
+};
+
+tro.filterObject(languages, function(lang, name) !lang.isJvm || name == 'scala')
+----
+.Result
+----
+{
+    scala: { version: '3.1.3', isJvm: true },
+    python: { version: '3.10.4', isJvm: false }
+}
+----
+
+== `filterObject(obj: Object[A], predicate: Func[(A, String, Number) => Boolean]): Object[A]`
+Returns a new `Object[A]` containing the entries of `obj` that satisfy the given `predicate`, which must accept an `A` value and its corresponding `String` key and `Number` index to test.
+
+.Example
+----
+local languages = {
+    scala: { version: '3.1.3', isJvm: true },
+    java: { version: '19', isJvm: true },
+    python: { version: '3.10.4', isJvm: false }
+};
+
+tro.filterObject(languages, function(lang, name, idx) idx == 0 || name == 'python')
+----
+.Result
+----
+{
+    scala: { version: '3.1.3', isJvm: true},
+    python: { version: '3.10.4', isJvm: false}
+}
+----
+
+== `flatMap(arr: Array[A], function: Func[(A) => Array[B]]): Array[B]`
+Returns a new `Array[B]` containing the elements of every `Array[B]` obtained by applying the given `function` to all elements in `arr`. `function` must accept an `A` value.
+
+.Example
+----
+tro.flatMap([1, 3, 5], function(item) [item, item * item])
+----
+.Result
+----
+[1, 1, 3, 9, 5, 25]
+----
+
+== `flatMap(arr: Array[A], function: Func[(A, Number) => Array[B]]): Array[B]`
+Returns a new `Array[B]` containing the elements of every `Array[B]` obtained by applying the given `function` to all elements in `arr`. `function` must accept an `A` value and its `Number` index.
+
+.Example
+----
+tro.flatMap([1, 3, 5], function(item, idx) [item, item * idx])
+----
+.Result
+----
+[1, 0, 3, 3, 5, 10]
+----
+
+== `flatMapObject(obj: Object[A], function: Func[(A) => Object[B]]): Object[B]`
+Returns a new `Object[B]` containing the entries of every `Object[B]` obtained by applying the given `function` to all entries in `obj`. `function` must accept an `A` value.
+
+.Example
+----
+local candidateReqs = {
+    req1: { skillsType: 'dev', required: ['java'], preferred: ['unit-testing'] },
+    req2: { skillsType: 'ops', required: ['containers'], preferred: ['kubernetes'] }
+};
+local reqsWeight(req) = {
+    [req.required[0]]: 5,
+    [req.preferred[0]]: 2,
+    [if req.skillsType == 'dev' then 'github']: 4,
+    [if req.skillsType == 'ops' then 'jenkins']: 4
+};
+
+tro.flatMapObject(candidateReqs, reqsWeight)
+----
+.Result
+----
+{
+    java: 5,
+    'unit-testing': 2,
+    github: 4,
+    containers: 5,
+    kubernetes: 2,
+    jenkins: 4
+}
+----
+
+== `flatMapObject(obj: Object[A], function: Func[(A, String) => Object[B]]): Object[B]`
+Returns a new `Object[B]` containing the entries of every `Object[B]` obtained by applying the given `function` to all entries in `obj`. `function` must accept an `A` value and its corresponding `String` key.
+
+.Example
+----
+local candidateReqs = {
+    dev: { required: ['java'], preferred: ['unit-testing'] },
+    ops: { required: ['containers'], preferred: ['kubernetes'] }
+};
+local reqsWeight(req, type) = {
+    [req.required[0]]: 5,
+    [req.preferred[0]]: 2,
+    [if type == 'dev' then 'github']: 4,
+    [if type == 'ops' then 'jenkins']: 4
+};
+
+tro.flatMapObject(candidateReqs, reqsWeight)
+----
+.Result
+----
+{
+    java: 5,
+    'unit-testing': 2,
+    github: 4,
+    containers: 5,
+    kubernetes: 2,
+    jenkins: 4
+}
+----
+
+== `flatMapObject(obj: Object[A], function: Func[(A, String, Number) => Object[B]]): Object[B]`
+Returns a new `Object[B]` containing the entries of every `Object[B]` obtained by applying the given `function` to all entries in `obj`. `function` must accept an `A` value and its corresponding `String` key and `Number` index.
+
+.Example
+----
+local candidateReqs = {
+    dev: { required: ['java'], preferred: ['unit-testing'] },
+    ops: { required: ['containers'], preferred: ['kubernetes'] }
+};
+local reqsWeight(req, type, idx) = {
+    [req.required[0]]: 5,
+    [req.preferred[0]]: if idx == 0 then 3 else 1,
+    [if type == 'dev' then 'github']: if idx == 0 then 4 else 2,
+    [if type == 'ops' then 'jenkins']: if idx == 0 then 4 else 2
+};
+
+tro.flatMapObject(candidateReqs, reqsWeight)
+----
+.Result
+----
+{
+    java: 5,
+    'unit-testing': 3,
+    github: 4,
+    containers: 5,
+    kubernetes: 1,
+    jenkins: 2
+}
+----
+
+== `flatten(arr: Array[Array[A]]): Array[A]`
+Returns a new `Array[A]` containing the elements of every `Array[A]` in `arr`.
+
+.Example
+----
+tro.flatten([[1, 2], [3]])
+----
+.Result
+----
+[1, 2, 3]
+----
+
+== `foldLeft(arr: Array[A], initValue: Any, function: Func[(A, Any) => Any]): Any`
+From left to right in `arr`, applies the given `function` to the first element along with `initValue`, then applies it to every subsequent element along with the result of the previous invocation. `function` must accept an `A` value and `Any` value, which is `initValue` for the first invocation, and the result of the previous one for all others.
+
+Returns the `Any` result of the final `function` invocation.
+
+> Note:
+fold functions usually mutate the "accumulator" value on each invocation, thus "folding" the array into a single value.
+
+.Example
+----
+tro.foldLeft([1, 2, 3], 0, function(item, acc) item + acc)
+----
+.Result
+----
+6
+----
+
+== `foldRight(arr: Array[A], initValue: Any, Func[(A, Any) => Any]): Any`
+From right to left in `arr`, applies the given `function` to the first element along with `initValue`, then applies it to every subsequent element along with the result of the previous invocation. `function` must accept an `A` value and `Any` value, which is `initValue` for the first invocation, and the result of the previous one for all others.
+
+Returns the `Any` result of the final `function` invocation.
+
+> Note:
+fold functions usually mutate the "accumulator" value on each invocation, thus "folding" the array into a single value.
+
+.Example
+----
+tro.foldRight(['Lorem', 'ipsum', 'dolor'], '', function(item, acc) acc + ' ' + item)
+----
+.Result
+----
+' dolor ipsum Lorem'
+----
+
+== `groupBy(arr: Array[A], Func[(A) => String]): Object[Array[A]]`
+Returns an `Object[Array[A]]` where the keys are the results of applying the given `function` to all elements in `arr`, and their corresponding values are the `arr` elements for which the `function` invocation resulted in such key. `function` must accept an `A` value.
+
+.Example
+----
+local languages = [
+    { name: 'scala', version: '3.1.3', isJvm: true },
+    { name: 'java', version: '19', isJvm: true },
+    { name: 'python', version: '3.10.4', isJvm: false }
+];
+
+tro.groupBy(languages, function(lang) if lang.isJvm then 'jvmLangs' else 'others')
+----
+.Result
+----
+{
+    jvmLangs: [
+        { name: 'scala', version: '3.1.3', isJvm: true },
+        { name: 'java', version: '19', isJvm: true }
     ],
-    [
-        11,
-        13,
-        17,
-        19
-    ]
-]
-----------
-.DataSonnet map:
-------------------------
-ds.flatMap(payload, function(value, index) value)
-------------------------
-.Result
-------------------------
-[
-  2,
-  3,
-  5,
-  7,
-  11,
-  13,
-  17,
-  19
-]
-------------------------
-
-### `foldLeft(array arr, any initVal, function func)`
-Iterates over `arr`, applying `func` to the previous result. Starts with the value provided in `initVal`.
-
-The function `func` is expected to take the current value as the first parameter (required) and the previous value as the second parameter (required).
-
-*Example*
-
-.Payload
-----------
-[
-    1,
-    2,
-    3,
-    4
-]
-----------
-.DataSonnet map:
-------------------------
-ds.foldLeft(payload, 1, function(curr, prev) curr * prev)
-------------------------
-.Result
-------------------------
-24
-/*
-  1 * 1 = 1
-  2 * 1 = 2
-  3 * 2 = 6
-  4 * 6 = 24
-*/
-------------------------
-
-### `foldRight(array arr, any initVal, function func)`
-Iterates backwards over an array, applying `func` to the previous result. Starts with the value provided in `initVal`.
-
-The function `func` is expected to take the current value as the first parameter (required) and the previous value as the second parameter (required).
-
-*Example*
-
-.Payload
-----------
-[
-    1,
-    2,
-    3,
-    4
-]
-----------
-.DataSonnet map:
-------------------------
-ds.foldRight(payload, 1, function(curr, prev) curr * prev)
-------------------------
-.Result
-------------------------
-24
-/*
-  4 * 1 = 4 // 1 in this case is the initial value
-  3 * 4 = 12
-  2 * 12 = 24
-  1 * 24 = 24
-*/
-------------------------
-
-### `groupBy(array|object items, function discriminator)`
-Groups the provided `items` into an object based on the result of `discriminator`.
-
-The function `discriminator` is expected to take the value as the first parameter (required) and the index as the second (optional).
-
-*Example*
-
-.Payload
-----------
-{
-    "array": [
-        "a",
-        "b",
-        "a"
-    ],
-    "obj": {
-        "a":"Alpha",
-        "b":"Bravo",
-        "c": "Alpha"
-    }
+    others: [{ name: 'python', version: '3.10.4', isJvm: false }]
 }
-----------
-.DataSonnet map:
-------------------------
-{
-    array: ds.groupBy(payload.array, function(item,index) item ),
-    obj: ds.groupBy(payload.obj, function(value,key) value)
-}
-------------------------
+----
+
+== `groupBy(arr: Array[A], Func[(A, Number) => String]): Object[Array[A]]`
+Returns an `Object[Array[A]]` where the keys are the results of applying the given `function` to all elements in `arr`, and their corresponding values are the `arr` elements for which the `function` invocation resulted in such key. `function` must accept an `A` value and its `Number` index.
+
+.Example
+----
+local languages = [
+    { name: 'scala', version: '3.1.3', isJvm: true },
+    { name: 'java', version: '19', isJvm: true },
+    { name: 'python', version: '3.10.4', isJvm: false }
+];
+local langFunc(lang, idx) = if idx == 0 then 'preferred'
+    else if lang.isJvm then 'jvmLangs'
+    else 'others';
+
+tro.groupBy(languages, langFunc)
+----
 .Result
-------------------------
+----
 {
-  "array": {
-    "a": [
-      "a",
-      "a"
-    ],
-    "b": [
-      "b"
-    ]
-  },
-  "obj": {
-    "Alpha": {
-      "a": "Alpha",
-      "c": "Alpha"
+    preferred: [{ name: 'scala', version: '3.1.3', isJvm: true }],
+    jvmLangs: [{ name: 'java', version: '19', isJvm: true }],
+    others: [{ name: 'python', version: '3.10.4', isJvm: false }]
+}
+----
+
+== `groupBy(obj: Object[A], Func[(A) => String]): Object[Object[A]]`
+Returns an `Object[Object[A]]` where the keys are the results of applying the given `function` to all elements in `arr`, and their corresponding values are the `arr` elements for which the `function` invocation resulted in such key. `function` must accept an `A` value.
+
+.Example
+----
+local languages = {
+    scala: { version: '3.1.3', isJvm: true, project: 'scala-lang.org' },
+    java: { version: '19', isJvm: true, project: 'jdk.java.net' },
+    python: { version: '3.10.4', isJvm: false, project: 'python.org' }
+};
+
+tro.groupBy(languages, function(lang) if lang.isJvm then 'jvmLangs' else 'others')
+----
+.Result
+----
+{
+    jvmLangs: {
+        scala: { version: '3.1.3', isJvm: true, project: 'scala-lang.org' },
+        java: { version: '19', isJvm: true, project: 'jdk.java.net' }
     },
-    "Bravo": {
-      "b": "Bravo"
-    }
-  }
+    others: { python: { version: '3.10.4', isJvm: false, project: 'python.org' }}
 }
-------------------------
+----
 
-### `isArray(any valToCheck)`
-Accepts any given value as `valToCheck` and checks if it is of type array.
+== `groupBy(obj: Object[A], Func[(A, String) => String]): Object[Object[A]]`
+Returns an `Object[Object[A]]` where the keys are the results of applying the given `function` to all elements in `arr`, and their corresponding values are the `arr` elements for which the `function` invocation resulted in such key.`function` must accept an `A` value and its corresponding `String` key.
 
-*Example*
+.Example
+----
+local languages = {
+    scala: { version: '3.1.3', isJvm: true, project: 'scala-lang.org' },
+    java: { version: '19', isJvm: true, project: 'jdk.java.net' },
+    python: { version: '3.10.4', isJvm: false, project: 'python.org' }
+};
+local langFunc(lang, name) = if name == 'scala' then 'preferred'
+    else if lang.isJvm then 'jvmLangs'
+    else 'others';
 
-.Payload
-----------
+tro.groupBy(languages, langFunc)
+----
+.Result
+----
+{
+    preferred: { scala: { version: '3.1.3', isJvm: true, project: 'scala-lang.org' }},
+    jvmLangs: { java: { version: '19', isJvm: true, project: 'jdk.java.net' }},
+    others: { python: { version: '3.10.4', isJvm: false, project: 'python.org' }}
+}
+----
+
+== `indicesOf(arr: Array, value: Any): Array[Number]`
+Returns an `Array[Number]` with the indices of the elements in `arr` that equal `value`.
+
+.Example
+----
+tro.indicesOf([1, 7, 3, 4, 7], 7)
+----
+.Result
+----
+[1, 4]
+----
+
+== `indicesOf(str1: String, str2: String): Array[Number]`
+Returns an `Array[Number]` with the indices of the substrings in `str1` that equal `str2`.
+
+.Example
+----
+tro.indicesOf('lorem ipsum dolor', 'lo')
+----
+.Result
+----
+[0, 14]
+----
+
+== `isArray(value: Any): Boolean`
+Returns `true` if `value` is an `Array`, otherwise `false`.
+
+.Example
+----
+tro.isArray([1, 2])
+----
+.Result
+----
+true
+----
+
+== `isBlank(str: String): Boolean`
+Returns `true` if `str` is empty or contains whitespace characters only, otherwise `false`.
+
+.Example
+----
+tro.isBlank('   ')
+----
+.Result
+----
+true
+----
+
+== `isBoolean(value: Any): Boolean`
+Returns `true` if `value` is a `Boolean`, otherwise `false`.
+
+.Example
+----
+tro.isBoolean(false)
+----
+.Result
+----
+true
+----
+
+== `isDecimal(num: Number): Boolean`
+Returns `true` if `num` is a decimal, otherwise `false`.
+
+.Example
+----
+tro.isDecimal(2.5)
+----
+.Result
+----
+true
+----
+
+== `isEmpty(arr: Array): Boolean`
+Returns `true` if `arr` is empty, otherwise `false`.
+
+.Example
+----
+tro.isEmpty([])
+----
+.Result
+----
+true
+----
+
+== `isEmpty(obj: Object): Boolean`
+Returns `true` if `obj` is empty, otherwise `false`.
+
+.Example
+----
+tro.isEmpty({})
+----
+.Result
+----
+true
+----
+
+== `isEmpty(str: String): Boolean`
+Returns `true` if `str` is empty, otherwise `false`.
+
+.Example
+----
+tro.isEmpty('')
+----
+.Result
+----
+true
+----
+
+== `isEven(num: Number): Boolean`
+Returns `true` if `num` is even, otherwise `false`.
+
+.Example
+----
+tro.isEven(2)
+----
+.Result
+----
+true
+----
+
+== `isFunction(value: Any): Boolean`
+Returns `true` if `value` is a `Function`, otherwise `false`.
+
+.Example
+----
+local increment(item) = item + 1;
+
+tro.isFunction(increment)
+----
+.Result
+----
+true
+----
+
+== `isInteger(num: Number): Boolean`
+Returns `true` if `num` is an integer, otherwise `false`.
+
+.Example
+----
+tro.isInteger(2)
+----
+.Result
+----
+true
+----
+
+== `isNumber(value: Any): Boolean`
+Returns `true` if `value` is a `Number`, otherwise `false`.
+
+.Example
+----
+tro.isNumber(2)
+----
+.Result
+----
+true
+----
+
+== `isObject(value: Any): Boolean`
+Returns `true` if `value` is an `Object`, otherwise `false`.
+
+.Example
+----
+tro.isObject({})
+----
+.Result
+----
+true
+----
+
+== `isOdd(num: Number): Boolean`
+Returns `true` if `num` is odd, otherwise `false`.
+
+.Example
+----
+tro.isOdd(1)
+----
+.Result
+----
+true
+----
+
+== `isString(value: Any): Boolean`
+Returns `true` if `value` is a `String`, otherwise `false`.
+
+.Example
+----
+tro.isString('Lorem')
+----
+.Result
+----
+true
+----
+
+== `join(arr: Array[Number], separator: String): String`
+Returns a new `String` composed of all the elements in `arr` separated by the `separator`.
+
+.Example
+----
+tro.join([0, 1, 1, 2, 3, 5, 8], ', ')
+----
+.Result
+----
+'0, 1, 1, 2, 3, 5, 8'
+----
+
+== `join(arr: Array[String], String): String`
+Returns a new `String` composed of all the elements in `arr` separated by the `separator`.
+
+.Example
+----
+tro.join(['hello', 'world', '!'], ' ')
+----
+.Result
+----
+'hello world !'
+----
+
+== `keysOf(obj: Object): Array[String]`
+Returns an `Array[String]` containing all the keys in `obj`.
+
+.Example
+----
+tro.keysOf({ scala: '3.1.3', java: '19' })
+----
+.Result
+----
+['scala', 'java']
+----
+
+== `lower(str: String): String`
+Returns the lowercase representation of `str`.
+
+.Example
+----
+tro.lower('Hello World!')
+----
+.Result
+----
+'hello world!'
+----
+
+== `map(arr: Array[A], function: Func[(A) => B]): Array[B]`
+Returns a new `Array[B]` with the results of applying `function` to all elements in `arr`. `function` must accept an `A`.
+
+.Example
+----
+tro.map([1, 2, 3, 4], function(item) item * item)
+----
+.Result
+----
+[1, 4, 9, 16]
+----
+
+== `map(arr: Array[A], function: Func[(A, Number) => B]): Array[B]`
+Returns a new `Array[B]` with the results of applying `function` to all elements in `arr`. `function` must accept an `A` and its `Number` index.
+
+.Example
+----
+tro.map([1, 2, 3, 4], function(item, idx) item * idx)
+----
+.Result
+----
+[0, 2, 6, 12]
+----
+
+== `mapEntries(obj: Object[A], function: Func[(Object[A]) => B]): Array[B]`
+Returns an `Array[B]` with the results of applying `function` to all entries in `obj`. `function` must accept an `A`.
+
+.Example
+----
+local languages = {
+    scala: { version: '3.1.3', isJvm: true, project: 'scala-lang.org' },
+    java: { version: '19', isJvm: true, project: 'jdk.java.net' },
+    python: { version: '3.10.4', isJvm: false, project: 'python.org' }
+};
+
+tro.mapEntries(languages, function(lang) lang.project)
+----
+.Result
+----
+['scala-lang.org', 'jdk.java.net', 'python.org']
+----
+
+== `mapEntries(obj: Object[A], function: Func[(Object[A], String) => B]): Array[B]`
+Returns an `Array[B]` with the results of applying `function` to all entries in `obj`. `function` must accept an `A` and its corresponding `String` key.
+
+.Example
+----
+local languages = {
+    scala: { version: '3.1.3', isJvm: true, project: 'scala-lang.org' },
+    java: { version: '19', isJvm: true, project: 'jdk.java.net' }
+};
+
+tro.mapEntries(languages, function(lang, name) {
+    name: name,
+    version: lang.version
+})
+----
+.Result
+----
 [
-    1,
-    2,
-    3,
-    4
+    { name: 'scala', version: '3.1.3' },
+    { name: 'java', version: '19' }
 ]
-----------
-.DataSonnet map:
-------------------------
-ds.isArray(payload)
-------------------------
+----
+
+== `mapEntries(obj: Object[A], function: Func[(Object[A], String, Number) => B]): Array[B]`
+Returns an `Array[B]` with the results of applying `function` to all entries in `obj`. `function` must accept an `A` and its corresponding `String` key and `Number` index.
+
+.Example
+----
+local languages = {
+    scala: { version: '3.1.3', isJvm: true, project: 'scala-lang.org' },
+    java: { version: '19', isJvm: true, project: 'jdk.java.net' }
+};
+local langFunc(lang, name, idx) = {
+    name: name,
+    [if idx == 0 then 'preferred']: true
+};
+
+tro.mapEntries(languages, langFunc)
+----
 .Result
-------------------------
+----
+[{ name: 'scala', preferred: true }, { name: 'java' }]
+----
+
+== `mapObject(obj: Object[A], function: Func[(A) => Object[B]]): Object[B]`
+Returns a new Object[B] containing the entry of every Object[B] obtained by applying the given `function` to all entries in obj. `function` must accept an `A` value.
+
+== `mapObject(obj: Object[A], function: Func[(A, String) => Object[B]]): Object[B]`
+Returns a new Object[B] containing the entry of every Object[B] obtained by applying the given `function` to all entries in obj. `function` must accept an `A` value and its corresponding `String` key.
+
+== `mapObject(obj: Object[A], function: Func[(A, String, Number) => Object[B]]): Object[B]`
+Returns a new Object[B] containing the entry of every Object[B] obtained by applying the given `function` to all entries in obj. `function` must accept an `A` value and its corresponding `String` key and `Number` index.
+
+== `max(arr: Array[Boolean]): Boolean`
+Returns the max `Boolean` in `arr`, with `true` being "bigger" than `false`.
+
+.Example
+----
+tro.max([false, false, true])
+----
+.Result
+----
 true
-------------------------
+----
 
-### `isBlank(string strToCheck)`
-Checks if `strToCheck` is blank. Also returns true if null.
+== `max(arr: Array[Number]): Number`
+Returns the max `Number` in `arr`.
 
-*Example*
-
-.DataSonnet map:
-------------------------
-{
-    str1: ds.isBlank("     "),
-    str2: ds.isBlank(""),
-    'null': ds.isBlank(null)
-}
-------------------------
+.Example
+----
+tro.max([0, 8, 2, 100])
+----
 .Result
-------------------------
-{
-  "str1": true,
-  "str2": true,
-  "null": true
-}
-------------------------
+----
+100
+----
 
-### `isBoolean(any valToCheck)`
-Accepts any given value as `valToCheck` and checks if it is of type bool.
+== `max(arr: Array[String]): String`
+Returns the max `String` in `arr`.
 
-*Example*
-
-.Payload
-----------
-{
-  "name": "Java",
-  "isObjectOriented": true
-}
-----------
-.DataSonnet map:
-------------------------
-ds.isBoolean(payload.isObjectOriented)
-------------------------
+.Example
+----
+tro.max(['Lorem', 'zzz', 'ipsum', 'dolor'])
+----
 .Result
-------------------------
-true
-------------------------
+----
+'zzz'
+----
 
-### `isDecimal(num numToCheck)`
-Checks that the input number `numToCheck` is a decimal number. Trailing zeros are ignored.
+== `maxBy(arr: Array[A], function: Func[(A) => Boolean]): Array[A]`
+Returns the max `A` by comparing the values returned by `function`, which must accept an `A`.
 
-*Example*
+.Example
+----
+local languages = [
+    { name: 'java', version: '19', isPreferred: false },
+    { name: 'python', version: '3.1.14', isPreferred: false }
+    { name: 'scala', version: '3.1.3', isPreferred: true },
+];
 
-.DataSonnet map:
-------------------------
-{
-    a: ds.isDecimal(2),
-    b: ds.isDecimal(2.0),
-    c: ds.isDecimal(2.1),
-}
-------------------------
+tro.maxBy(languages, function(lang) lang.isPreferred)
+----
 .Result
-------------------------
-{
-  "a": false,
-  "b": false,
-  "c": true
-}
-------------------------
+----
+{ name: 'scala', version: '3.1.3', isPreferred: true }
+----
 
-### `isEmpty(any valToCheck)`
-Checks if `valToCheck` is empty. Does not ignore white space if string. Returns true if null.
+== `maxBy(arr: Array[A], function: Func[(A) => Number]): Array[A]`
+Returns the max `A` by comparing the values returned by `function`, which must accept an `A`.
 
-*Example*
+.Example
+----
+local languages = [
+    { name: 'java', version: '19', weight: 2 },
+    { name: 'python', version: '3.1.14', weight: 2 }
+    { name: 'scala', version: '3.1.3', weight: 4 },
+];
 
-.DataSonnet map:
-------------------------
-{
-    "null": ds.isEmpty(null),
-    str: ds.isEmpty("    "),
-    array: ds.isEmpty([]),
-    obj: ds.isEmpty({})
-}
-------------------------
+tro.maxBy(languages, function(lang) lang.weight)
+----
 .Result
-------------------------
-{
-  "null": true,
-  "str": false,
-  "array": true,
-  "obj": true
-}
-------------------------
+----
+{ name: 'scala', version: '3.1.3', weight: 4 }
+----
 
-### `isEven(num numToCheck)`
-Checks that the input number `numToCheck` is an even number.
+== `maxBy(arr: Array[A], function: Func[(A) => String]): Array[A]`
+Returns the max `A` by comparing the values returned by `function`, which must accept an `A`.
 
-*Example*
+.Example
+----
+local languages = [
+    { name: 'java', version: '19', code: 'B' },
+    { name: 'python', version: '3.1.14', code: 'B' },
+    { name: 'scala', version: '3.1.3', code: 'S' }
+];
 
-.Payload
-----------
-{
-    "version": 2.0
-}
-----------
-.DataSonnet map:
-------------------------
-ds.isEven(payload.version)
-------------------------
+tro.maxBy(languages, function(lang) lang.code)
+----
 .Result
-------------------------
-true
-------------------------
+----
+{ name: 'scala', version: '3.1.3', code: 'S' }
+----
 
-### `isFunction(any valToCheck)`
-Accepts any given value `valToCheck` and checks if it is of type function.
+== `min(arr: Array[Boolean]): Boolean`
+Returns the min `Boolean` in `arr`, with `false` being "smaller" than `true`.
 
-*Example*
-
-.DataSonnet map:
-------------------------
-ds.isFunction(function() "5")
-------------------------
+.Example
+----
+tro.min([false, false, true])
+----
 .Result
-------------------------
-true
-------------------------
+----
+false
+----
 
-### `isInteger(num numToCheck)`
-Checks that the input number `numToCheck` is an integer. Trailing zeros are ignored.
+== `min(arr: Array[Number]): Number`
+Returns the min `Number` in `arr`.
 
-*Example*
-
-.Payload
-----------
-{
-    "version": 2.0
-}
-----------
-.DataSonnet map:
-------------------------
-ds.isInteger(payload.version)
-------------------------
+.Example
+----
+tro.min([0, 8, 2, 100])
+----
 .Result
-------------------------
-true
-------------------------
+----
+0
+----
 
-### `isNumber(any valToCheck)`
-Accepts any given value `valToCheck` and checks if it is of type number.
+== `min(arr: Array[String]): String`
+Returns the min `String` in `arr`.
 
-*Example*
-
-.Payload
-----------
-{
-    "age": 5
-}
-----------
-.DataSonnet map:
-------------------------
-ds.isNumber(payload.age)
-------------------------
+.Example
+----
+tro.min(['Lorem', 'AAA', 'ipsum', 'dolor'])
+----
 .Result
-------------------------
-true
-------------------------
+----
+'AAA'
+----
 
-### `isObject(any valToCheck)`
-Accepts any given value `valToCheck` and checks if it is of type object.
+== `minBy(arr: Array[A], comparator: Func[(A) => Boolean]): Array[A]`
+Returns the min `A` by comparing the values returned by `function`, which must accept an `A`.
 
-*Example*
+.Example
+----
+local languages = [
+    { name: 'java', version: '19', isPreferred: false },
+    { name: 'python', version: '3.1.14', isPreferred: false },
+    { name: 'scala', version: '3.1.3', isPreferred: true }
+];
 
-.Payload
-----------
-{
-    "language": "Java"
-}
-----------
-.DataSonnet map:
-------------------------
-ds.isObject(payload)
-------------------------
+tro.minBy(languages, function(lang) lang.isPreferred)
+----
 .Result
-------------------------
-true
-------------------------
+----
+{ name: 'java', version: '19', isPreferred: false }
+----
 
-### `isOdd(num numToCheck)`
-Checks that `numToCheck` is an odd number.
+== `minBy(arr: Array[A], comparator: Func[(A) => Number]): Array[A]`
+Returns the min `A` by comparing the values returned by `function`, which must accept an `A`.
 
-*Example*
+.Example
+----
+local languages = [
+    { name: 'java', version: '19', weight: 2 },
+    { name: 'python', version: '3.1.14', weight: 2 },
+    { name: 'scala', version: '3.1.3', weight: 4 }
+];
 
-.Payload
-----------
-{
-    "age": 5
-}
-----------
-.DataSonnet map:
-------------------------
-ds.isOdd(payload.age)
-------------------------
+tro.minBy(languages, function(lang) lang.weight)
+----
 .Result
-------------------------
-true
-------------------------
+----
+{ name: 'java', version: '19', weight: 2 }
+----
 
-### `isString(any valToCheck)`
-Accepts any given value `valToCheck` and checks if it is of type string.
+== `minBy(arr: Array[A], comparator: Func[(A) => String]): Array[A]`
+Returns the min `A` by comparing the values returned by `function`, which must accept an `A`.
 
-*Example*
+.Example
+----
+local languages = [
+    { name: 'java', version: '19', code: 'B' },
+    { name: 'python', version: '3.1.14', code: 'B' },
+    { name: 'scala', version: '3.1.3', code: 'S' }
+];
 
-.Payload
-----------
-{
-    "language":"Java"
-}
-----------
-.DataSonnet map:
-------------------------
-ds.isString(payload.language)
-------------------------
+tro.minBy(languages, function(lang) lang.code)
+----
 .Result
-------------------------
-true
-------------------------
+----
+{ name: 'java', version: '19', code: 'B' }
+----
 
-### `joinBy(array arr, string separator)`
-Joins `arr` into a string with the provided `separator`.
+== `numOf(str: String): Number`
+Returns the `Number` representation of the given `str`.
 
-*Example*
+.Example
+----
+numOf('123.45')
+----
+Result
+----
+123.45
+----
 
-.Payload
-----------
-{
-    "versions": [1.0, 1.2, 1.7, 1.8]
-}
-----------
-.DataSonnet map:
-------------------------
-ds.joinBy(payload.versions, ", ")
-------------------------
+== `objectFrom(arr: Array[A], Func[(A) => Object[B]): Object[B]`
+Returns a new `Object[B]` containing the entry of every `Object[B]` obtained by applying the given `function` to all elements in `arr`. `function` must accept an `A` value.
+
+== `objectFrom(arr: Array[A], Func[(A, Number) => Object[B]]: Object[B]`
+Returns a new `Object[B]` containing the entry of every `Object[B]` obtained by applying the given `function` to all elements in `arr`. `function` must accept an `A` value and its `Number` index.
+
+== `orderBy(arr: Array[A], Func[(A) => Boolean]): Array[A]`
+Returns a new `Array[A]` with the conents of `arr` sorted by comparing the values returned by `function`, which must accept and `A`.
+
+.Example
+----
+local languages = [
+    { name: 'java', version: '19', isPreferred: false },
+    { name: 'scala', version: '3.1.3', isPreferred: true },
+    { name: 'python', version: '3.1.14', isPreferred: false }
+];
+
+tro.minBy(languages, function(lang) lang.isPreferred)
+----
 .Result
-------------------------
-"1, 1.2, 1.7, 1.8"
-------------------------
-
-### `keysOf(object obj)`
-Returns an array of all the key names in `obj`.
-
-*Example*
-
-.Payload
-----------
-{
-   "departureDate": "01/20/2019",
-   "origin": "PHX",
-   "destination": "SEA"
- }
-----------
-.DataSonnet map:
-------------------------
-ds.keysOf(payload)
-------------------------
-.Result
-------------------------
+----
 [
-  "departureDate",
-  "origin",
-  "destination"
+    { name: 'java', version: '19', isPreferred: false },
+    { name: 'python', version: '3.1.14', isPreferred: false },
+    { name: 'scala', version: '3.1.3', isPreferred: true }
 ]
-------------------------
+----
 
-### `lower(string str)`
-Converts `str` to all lower case characters.
+== `orderBy(arr: Array[A], Func[(A) => Number]): Array[A]`
+Returns a new `Array[A]` with the conents of `arr` sorted by comparing the values returned by `function`, which must accept and `A`.
 
-*Example*
+.Example
+----
+local languages = [
+    { name: 'java', version: '19', weight: 3 },
+    { name: 'scala', version: '3.1.3', weight: 4 },
+    { name: 'python', version: '3.1.14', weight: 2 }
+];
 
-.Payload
-----------
-{
-   "origin": "PHX",
-   "destination": "SEA"
- }
-----------
-.DataSonnet map:
-------------------------
-ds.lower(payload.origin)
-------------------------
+tro.orderBy(languages, function(lang) lang.weight)
+----
 .Result
-------------------------
-"phx"
-------------------------
-
-### `map(array arr, function func)`
-Loops through all items in `arr`, applies `func` to each, and returns a new array containing each result. Returns null if `arr` is null.
-
-The function `func` is expected to take the value as the first parameter (required) and the index as the second (optional).
-
-*Example*
-
-.Payload
-----------
-{
-    "versions": [1.0, 1.2, 1.7, 1.8]
-}
-----------
-.DataSonnet map:
-------------------------
-ds.map(payload.versions, function(value, index) value > 1.2)
-------------------------
-.Result
-------------------------
+----
 [
-  false,
-  false,
-  true,
-  true
+    { name: 'python', version: '3.1.14', weight: 2 },
+    { name: 'java', version: '19', weight: 3 },
+    { name: 'scala', version: '3.1.3', weight: 4 }
 ]
-------------------------
+----
 
-### `mapEntries(object obj, function func)`
-Loops through all properties in `obj`, applies `func` to each, and returns a new array containing each result.
+== `orderBy(arr: Array[A], Func[(A) => String]): Array[A]`
+Returns a new `Array[A]` with the conents of `arr` sorted by comparing the values returned by `function`, which must accept and `A`.
 
-The function `func` is expected to take the property value as the first parameter (required), the property key as the second (optional) and the index as the third (optional).
+.Example
+----
+local languages = [
+    { name: 'java', version: '19', code: 'B' },
+    { name: 'scala', version: '3.1.3', code: 'S' },
+    { name: 'python', version: '3.1.14', code: 'B' }
+];
 
-*Example*
-
-.Payload
-----------
-{
-   "origin": "PHX",
-   "destination": "SEA"
-}
-----------
-.DataSonnet map:
-------------------------
-ds.mapEntries(payload, function(value, key, index) value)
-------------------------
+tro.orderBy(languages, function(lang) lang.code)
+----
 .Result
-------------------------
+----
 [
-  "PHX",
-  "SEA"
+    { name: 'java', version: '19', code: 'B' },
+    { name: 'python', version: '3.1.14', code: 'B' },
+    { name: 'scala', version: '3.1.3', code: 'S' }
 ]
-------------------------
+----
 
-### `mapObject(object obj, function func)`
-Loops through all properties in `obj`, applies `func` to each, and returns a new object containing each result.
+== `range(first: Number, last: Number): Array[Number]`
+Returns an `Array[Number]` containing numbers from `first` to `last`.
 
-The function `func` is expected to take the property value as the first parameter (required), the property key as the second (optional) and the index as the third (optional).
+.Example
+----
+tro.range(1, 5)
+----
+.Result
+----
+[1, 2, 3, 4, 5]
+----
 
-*Example*
+== `read(data: String, mediaType: String): Any`
+Parses the `data` as the given `mediaType`.
 
-.Payload
-----------
+.Example
+----
+tro.read('<hello>world!</hello>', 'application/xml')
+----
+.Result
+----
 {
-   "origin": "PHX",
-   "destination": "SEA"
+  hello: { '$': 'world!' }
 }
-----------
-.DataSonnet map:
-------------------------
-ds.mapObject(payload, function(value, key, index) {[key]:value})
-------------------------
+----
+
+== `read(data: String, mediaType: String, params: Object): Any`
+Parses the `data` as the given `mediaType` with `params` options.
+
+.Example
+----
+tro.read('<hello>world!</hello>', 'application/xml', { textvaluekey: '_txt' })
+----
 .Result
-------------------------
+----
 {
-  "origin": "PHX",
-  "destination": "SEA"
+  hello: { _txt: 'world!' }
 }
-------------------------
+----
 
-### `match(string str, string regex)`
-Executes the regex expression `regex` against `str` and returns an array with the match groups.
+== `readUrl(url: String, mediaType: String): Any`
+Retrieves the data at `url` and parses it as the given `mediaType`. Supported schemes/protocols are `http`, `https`, `classpath`, and `file`.
 
-*Example*
+Asumming `example.com` returns `<hello>world!</hello>`:
 
-.Payload
-----------
+.Example
+----
+tro.readUrl('example.com/data', 'application/xml')
+----
+.Result
+----
 {
-    "email": "test@server.com"
+  hello: { '$': 'world!' }
 }
-----------
-.DataSonnet map:
-------------------------
-ds.match(payload.email, "(.*)@(.*)(.com)")
-------------------------
+----
+
+== `readUrl(url: String, mediaType: String, params: Object): Any`
+Retrieves the data at `url` and parses it as the given `mediaType` with `params` options. Supported schemes/protocols are `http`, `https`, `classpath`, and `file`.
+
+Asumming `example.com` returns `<hello>world!</hello>`:
+
+.Example
+----
+tro.readUrl('example.com', 'application/xml', { textvaluekey: '_txt' })
+----
 .Result
-------------------------
-[
-  "test@server.com",
-  "test",
-  "server",
-  ".com"
-]
-------------------------
-
-### `matches(string str, string regex)`
-Executes the regex expression `regex` against `str` and returns `true` or `false` if the expression matches the input.
-
-*Example*
-
-.Payload
-----------
+----
 {
-    "email": "test@server.com"
+  hello: { _txt: 'world!' }
 }
-----------
-.DataSonnet map:
-------------------------
-ds.matches(payload.email, "(.*)@(.*)(.com)")
-------------------------
+----
+
+== `rmKey(obj: Object[A], key: String): Object[A]`
+Returns a new `Object[A]` containing the entries of `obj` minus the entry for the given `key`.
+
+.Example
+----
+tro.rmKey({ scala: '3.1.3', java: '19' }, 'java')
+----
 .Result
-------------------------
-true
-------------------------
+----
+{ scala: '3.1.3' }
+----
 
-### `max(array arr)`
-Returns the max value in `arr`.
+== `rmKeyIn(obj: Object[A], arr: Array[String]): Object[A]`
+Returns a new `Object[A]` containing the entries of `obj` minus the entries whose key is not in the given `arr`.
 
-*Example*
-
-.Payload
-----------
-[
-    5,
-    2,
-    7,
-    3
-]
-----------
-.DataSonnet map:
-------------------------
-ds.max(payload)
-------------------------
+.Example
+----
+tro.rmKeyIn({ scala: '3.1.3', java: '19' }, ['java', 'scala'])
+----
 .Result
-------------------------
-7
-------------------------
+----
+{}
+----
 
-### `maxBy(array arr, function func)`
-Returns the max result of `func` in `arr`.
+== `replace(str1: String, str2: String, str3: String): String`
+Returns a new `String` with the contents of `str1`, with occurrences of `str2` replaced by `str3`.
 
-The function `func` is expected to take the value as the first parameter (required).
-
-*Example*
-
-.Payload
-----------
-[
-    {"age": 5},
-    {"age": 7},
-    {"age": 3}
-]
-----------
-.DataSonnet map:
-------------------------
-ds.maxBy(payload, function(value) value.age)
-------------------------
+.Example
+----
+tro.replace('hello, world!', 'world', 'everyone')
+----
 .Result
-------------------------
-{
-  "age": 7
-}
-------------------------
+----
+'hello, everyone!'
+----
 
-### `min(array arr)`
-Returns the min value in `arr`.
+== `reverse(arr: Array): Array`
+Returns a new `Array` with the elements of `arr` in reversed order.
 
-*Example*
-
-.Payload
-----------
-[
-    5,
-    2,
-    7,
-    3
-]
-----------
-.DataSonnet map:
-------------------------
-ds.min(payload)
-------------------------
+.Example
+----
+tro.reverse([1, 2, 3])
+----
 .Result
-------------------------
+----
+[3, 2, 1]
+----
+
+== `reverse(obj: Object): Object`
+Returns a new `Object` with the entries of `obj` in reversed order.
+
+.Example
+----
+tro.reverse({ key1: 'value1', key2: 'value2' })
+----
+.Result
+----
+{ key2: 'value2', key1: 'value1' }
+----
+
+== `reverse(str: String): String`
+Returns a new `String` with the characters of `str` in reversed order.
+
+.Example
+----
+tro.reverse('rolod muspi meroL')
+----
+.Result
+----
+'Lorem ipsum dolor'
+----
+
+== `sizeOf(arr: Array): Number`
+Returns the size of `arr`.
+
+.Example
+----
+tro.sizeOf([1, 2, 3])
+----
+.Result
+----
+3
+----
+
+== `sizeOf(func: Function): Number`
+Returns the number of `func` parameters.
+
+.Example
+----
+local add(item, item2) = item + item2;
+
+tro.sizeOf(add)
+----
+.Result
+----
 2
-------------------------
+----
 
-### `minBy(array arr, function func)`
-Returns the max result of `func` in `arr`.
+== `sizeOf(obj: Object): Number`
+Returns the number of entries in `obj`.
 
-The function `func` is expected to take the value as the first parameter (required).
-
-*Example*
-
-.Payload
-----------
-[
-    {"age": 5},
-    {"age": 7},
-    {"age": 3}
-]
-----------
-.DataSonnet map:
-------------------------
-ds.minBy(payload, function(value) value.age)
-------------------------
+.Example
+----
+tro.sizeOf({ key: 'value' })
+----
 .Result
-------------------------
-{
-  "age": 3
-}
-------------------------
+----
+1
+----
 
-### `orderBy(array|object items, function func)`
-Reorders the array `items` by the result of `func`.
+== `sizeOf(str: String): Number`
+Returns the number of characters in `str`.
 
-If `items` is an array: the function `func` is expected to take the value as the first parameter (required).
-
-If `items` is an object: the function `func` is expected to take the value as the first parameter (required) and the key as the second parameter (optional).
-
-*Example*
-
-.Payload
-----------
-[
-    {"age": 5},
-    {"age": 7},
-    {"age": 3}
-]
-----------
-.DataSonnet map:
-------------------------
-ds.orderBy(payload, function(value) value.age)
-------------------------
+.Example
+----
+tro.sizeOf('hello, world!')
+----
 .Result
-------------------------
-[
-  {
-    "age": 3
-  },
-  {
-    "age": 5
-  },
-  {
-    "age": 7
-  }
-]
-------------------------
+----
+13
+----
 
-### `parseDouble(string str)`
-Parses a string `str` containing a number and returns its decimal value. Trailing zeros are ignored.
+== `split(str1: String, str2: String): Array[String]`
+Returns an `Array[String]` containing the chunks of `str1` split by the contents of `str2`.
 
-*Example*
-
-.Payload
-----------
-{
-    "version":"1.5"
-}
-----------
-.DataSonnet map:
-------------------------
-ds.parseDouble(payload.version)
-------------------------
+.Example
+----
+tro.split('hello, world!', 'o')
+----
 .Result
-------------------------
-1.5
-------------------------
+----
+['hell', ', w', 'rld!']
+----
 
-### `parseHex(string str)`
-Parses a hex value given as a string `str` and returns its decimal value.
+== `startsWith(str1: String, str2: String): Boolean`
+Returns `true` if `str1` starts with `str2`.
 
-*Example*
-
-.Payload
-----------
-{
-    "hex":"F"
-}
-----------
-.DataSonnet map:
-------------------------
-ds.parseHex(payload.hex)
-------------------------
+.Example
+----
+tro.startsWith('hello, world!', 'hello')
+----
 .Result
-------------------------
-15
-------------------------
-
-### `parseInt(string str)`
-Parses an int value given as a string `str` and returns its integer value.
-
-*Example*
-
-.Payload
-----------
-{
-    "number":"50"
-}
-----------
-.DataSonnet map:
-------------------------
-ds.parseInt(payload.number)
-------------------------
-.Result
-------------------------
-50
-------------------------
-
-### `parseOctal(string str)`
-Parses an octal value given as a string `str` and returns its integer value.
-
-*Example*
-
-.Payload
-----------
-{
-    "octal":"107136"
-}
-----------
-.DataSonnet map:
-------------------------
-ds.parseOctal(payload.octal)
-------------------------
-.Result
-------------------------
-36446
-------------------------
-
-### `prepend(array arr, any val)`
-Given `arr` and `val`, inserts `val` at the beginning of `arr`.
-
-*Example*
-
-.Payload
-----------
-[
-    2,
-    3,
-    4
-]
-----------
-.DataSonnet map:
-------------------------
-ds.prepend(payload, 1)
-------------------------
-.Result
-------------------------
-[
-  1,
-  2,
-  3,
-  4
-]
-------------------------
-
-### `range(number start, number end)`
-Returns an array with the numbers from the `start` to the `end` of the range, inclusive.
-
-*Example*
-
-.Payload
-----------
-{
-    "start": 0,
-    "end": 3
-}
-----------
-.DataSonnet map:
-------------------------
-ds.range(payload.start, payload.end)
-------------------------
-.Result
-------------------------
-[
-  0,
-  1,
-  2,
-  3
-]
-------------------------
-
-### `read(string data, string mimeType, object params)`
-Reads a string `data` as the given `mimetype`.
-
-*Example*
-
-.DataSonnet map:
-------------------------
-ds.read("{\"price\": 8.95}", "application/json", {})
-------------------------
-.Result
-------------------------
-{
-  "price": 8.95
-}
-------------------------
-
-### `readUrl(string url)`
-Reads `url` and returns the content of the url, if it's JSON.
-
-*Example*
-
-.DataSonnet map:
-------------------------
-ds.readUrl("http://httpbin.org/get")
-------------------------
-.Result
-------------------------
-{
-  "args": {},
-  "headers": {
-    "Accept": "text/html, image/gif, image/jpeg, *; q=.2, */*; q=.2",
-    "Host": "httpbin.org",
-    "User-Agent": "Java/14.0.1",
-    "X-Amzn-Trace-Id": "Root=1-5f7f568d-481e623471c21cc2686e53e8"
-  },
-  "origin": "69.250.49.68",
-  "url": "http://httpbin.org/get"
-}
-------------------------
-
-### `remove(array|object item, string|array value)`
-Removes `value` from `item` and returns the remaining array or object.
-All properties of the object can be removed using a `value` in the array format.
-
-*Example*
-
-.Payload
-----------
-{
-    "array": [
-        1,
-        2,
-        3,
-        4
-    ],
-    "obj": {
-        "a": 1,
-        "b": 2
-    }
-}
-----------
-.DataSonnet map:
-------------------------
-{
-  array: ds.remove(payload.array, 3),
-  obj: ds.remove(payload.obj, "b"),
-  emptyObj: ds.remove(payload.obj, ["a","b"])
-}
-------------------------
-.Result
-------------------------
-{
-  "array": [
-    1,
-    2,
-    4
-  ],
-  "obj": {
-    "a": 1
-  },
-  "emptyObj": {}
-}
-------------------------
-
-### `removeMatch(array|object items, any val)`
-Given an array or an object `items` and `val` of the same type, removes the matching values. If `items` is an object, both key and value must match.
-
-*Example*
-
-.Payload
-----------
-{
-    "array": [1,2,3,4],
-    "obj": {"a":1,"b":2}
-}
-----------
-.DataSonnet map:
-------------------------
-{
-  array: ds.removeMatch(payload.array, [1,4]),
-  obj: ds.removeMatch(payload.obj, {a:1,b:3})
-}
-------------------------
-.Result
-------------------------
-{
-  "array": [
-    2,
-    3
-  ],
-  "obj": {
-    "b": 2
-  }
-}
-------------------------
-
-### `replace(string phrase, string regex, string replacement)`
-Replaces the matching `regex` with the `replacement` in the `phrase`.
-
-*Example*
-
-.Payload
-----------
-{
-    "regex": "Hello",
-    "replacement": "Goodbye"
-}
-----------
-.DataSonnet map:
-------------------------
-ds.replace("Hello World", payload.regex, payload.replacement)
-------------------------
-.Result
-------------------------
-"Goodbye World"
-------------------------
-
-### `reverse(array|object items)`
-Given an array or object as `items`, reverses the order of the elements.
-
-*Example*
-
-.Payload
-----------
-{
-    "array": [
-        1,
-        2,
-        3,
-        4
-    ],
-    "obj": {
-        "a":1,
-        "b":2
-    }
-}
-----------
-.DataSonnet map:
-------------------------
-{
-  array: ds.reverse(payload.array),
-  obj: ds.reverse(payload.obj)
-}
-------------------------
-.Result
-------------------------
-{
-  "array": [
-    4,
-    3,
-    2,
-    1
-  ],
-  "obj": {
-    "b": 2,
-    "a": 1
-  }
-}
-------------------------
-
-### `scan(string str, string regex)`
-Executes the regex expression `regex` against `str` and returns an array with each match as an array.
-
-*Example*
-
-.Payload
-----------
-{
-    "email": "test@server.com"
-}
-----------
-.DataSonnet map:
-------------------------
-ds.scan(payload.email, "(.*)@(.*)(.com)")
-------------------------
-.Result
-------------------------
-[
-  [
-    "test@server.com",
-    "test",
-    "server",
-    ".com"
-  ]
-]
-------------------------
-
-### `select(object obj, string path)`
-Returns a value inside `obj` by the provided `path`. For nested objects, the path is separated by a dot ('.').
-
-*Example*
-
-.Payload
-----------
-{
-  "language": {
-      "name": "Java",
-      "version": "1.8"
-  }
-}
-----------
-.DataSonnet map:
-------------------------
-{
-  language: ds.select(payload, 'language.name')
-}
-------------------------
-.Result
-------------------------
-{
-  "language": "Java"
-}
-------------------------
-
-### `sizeOf(any val)`
-Returns the size of `val`.
-
-*Example*
-
-.Payload
-----------
-{
-    "array": [1, 2],
-    "obj": {"prop": 2},
-    "string": "x"
-}
-----------
-.DataSonnet map:
-------------------------
-{
-    array: ds.sizeOf(payload.array),
-    object: ds.sizeOf(payload.obj),
-    'null': ds.sizeOf(null),
-    'function': ds.sizeOf(function(a,b,c) 1),
-    string: ds.sizeOf(payload.string)
-}
-------------------------
-.Result
-------------------------
-{
-  "array": 2,
-  "object": 1,
-  "null": 0,
-  "function": 3,
-  "string": 1
-}
-------------------------
-
-### `splitBy(string strToSplit, string regex)`
-Splits `strToSplit` into an array based on the matching `regex`.
-
-*Example*
-
-.Payload
-----------
-{
-    "string": "Hello World"
-}
-----------
-.DataSonnet map:
-------------------------
-ds.splitBy(payload.string, " ")
-------------------------
-.Result
-------------------------
-[
-  "Hello",
-  "World"
-]
-------------------------
-
-### `startsWith(string str, string subStr)`
-Checks if `str` starts with `subStr`. Ignores casing.
-
-*Example*
-
-.Payload
-----------
-{
-    "string": "Hello World"
-}
-----------
-.DataSonnet map:
-------------------------
-ds.startsWith(payload.string, "hello")
-------------------------
-.Result
-------------------------
+----
 true
-------------------------
+----
 
-### `toString(any val)`
-Returns `val` to a string.
+== `stringOf(value: String|Number|Boolean|Null): String`
+Returns the `String` representation of `value`.
 
-*Example*
-
-.Payload
-----------
+.Example
+----
 {
-    "num": 5
+    bool: tro.stringOf(true),
+    num: tro.stringOf(365),
+    nil: tro.stringOf(null)
 }
-----------
-.DataSonnet map:
-------------------------
-ds.toString(payload.num)
-------------------------
+----
 .Result
-------------------------
-"5"
-------------------------
-
-### `trim(string str)`
-Removes leading and trailing spaces in `str`.
-
-*Example*
-
-.Payload
-----------
+----
 {
-    "string": "      Hello World       "
+    bool: 'true',
+    num: '365',
+    nil: 'null'
 }
-----------
-.DataSonnet map:
-------------------------
-ds.trim(payload.string)
-------------------------
+----
+
+== `trim(str: String): String`
+Returns a new `String` with the contents of `str` removed of leading and trailing whitespaces.
+
+.Example
+----
+tro.trim('  hello, world!   ')
+----
 .Result
-------------------------
-"Hello World"
-------------------------
+----
+'hello, world!'
+----
 
-### `typeOf(any val)`
-Returns a string describing the type of object `val` is.
+== `typeOf(value: Any): String`
+Returns the `String` name of the type of `value`.
 
-*Example*
+.Example
+----
+local func(it) = it;
 
-.DataSonnet map:
-------------------------
 {
-    string: ds.typeOf(""),
-    bool: ds.typeOf(true),
-    "null": ds.typeOf(null),
-    number: ds.typeOf(0),
-    "function": ds.typeOf(function() 1),
-    array: ds.typeOf([]),
-    object: ds.typeOf({})
+    bool: tro.typeOf(true),
+    num: tro.typeOf(365),
+    nil: tro.typeOf(null),
+    arr: tro.typeOf([]),
+    obj: tro.typeOf({}),
+    func: tro.typeOf(func)
 }
-------------------------
+----
 .Result
-------------------------
+----
 {
-  "string": "string",
-  "bool": "boolean",
-  "null": "null",
-  "number": "number",
-  "function": "function",
-  "array": "array",
-  "object": "object"
+    bool: 'boolean',
+    num: 'number',
+    nil: 'null',
+    arr: 'array',
+    obj: 'object',
+    func: 'function'
 }
-------------------------
+----
 
-### `unzip(array arr)`
-Unzips an array of arrays `arr` and creates a new array of arrays based on their index in `arr`.
+== `upper(String): String`
+Returns the uppercase representation of `str`.
 
-*Example*
-
-.Payload
-----------
-[
-  [
-    1,
-    2
-  ],
-  [
-    1,
-    2
-  ]
-]
-----------
-.DataSonnet map:
-------------------------
-ds.unzip(payload)
-------------------------
+.Example
+----
+tro.upper('Hello World!')
+----
 .Result
-------------------------
-[
-  [
-    1,
-    1
-  ],
-  [
-    2,
-    2
-  ]
-]
-------------------------
+----
+'HELLO WORLD!'
+----
 
-### `upper(string str)`
-Converts a string to all uppercase characters.
+== `uuid(): String`
+Generates a new random UUID v4 `String`.
 
-*Example*
-
-.Payload
-----------
-{
-    "string": "HeLlO wOrLd"
-}
-----------
-.DataSonnet map:
-------------------------
-ds.upper(payload.string)
-------------------------
+.Example
+----
+tro.uuid()
+----
 .Result
-------------------------
-"HELLO WORLD"
-------------------------
+----
+'8eae62af-d2dc-4759-8316-ce6eeca0b61c'
+----
 
-### `uuid`
-Generates random alphanumeric uuid.
+== `valuesOf(obj: Object[A]): Array[A]`
+Returns an `Array[String]` containing all the values in `obj`.
 
-*Example*
-
-.DataSonnet map:
-------------------------
-ds.uuid
-------------------------
+.Example
+----
+tro.valuesOf({ scala: '3.1.3', java: '19' })
+----
 .Result
-------------------------
-"cj36alpm-8mlt-fm43-8vth-mbd961259lqh"
-------------------------
+----
+['3.1.3', '19']
+----
 
-### `valuesOf(object obj)`
-Given an object `obj`, returns an array of the values inside `obj`.
+== `write(data: Any, mediaType: String): String`
+Writes the `data` as the given `mediaType`
 
-*Example*
-
-.Payload
-----------
-{
-   "origin": "PHX",
-   "destination": "SEA"
-}
-----------
-.DataSonnet map:
-------------------------
-ds.valuesOf(payload)
-------------------------
+.Example
+----
+tro.write({ hello: 'world', arr: [], nil: null }, 'application/json')
+----
 .Result
-------------------------
-[
-  "PHX",
-  "SEA"
-]
-------------------------
+----
+'{"hello":"world","arr":[],"nil":null}'
+----
 
-### `write(array|object item, string mimeType, object params)`
-Converts `item` to a string.
+== `write(data: Any, mediaType: String, params: Object[): String`
+Writes the `data` as the given `mediaType` with `params` options.
 
-*Example*
-
-.Payload
-----------
-{
-    "price": 8.95
-}
-----------
-.DataSonnet map:
-------------------------
-ds.write(payload, "application/json", {})
-------------------------
+.Example
+----
+tro.write({ hello: 'world', arr: [] }, 'application/json', { indent: true })
+----
 .Result
-------------------------
-"{\"price\":8.95}"
-------------------------
+----
+'{\n    "hello": "world",\n    "arr": [\n        \n    ]\n}'
+----
 
-### `zip(array array1, array array2)`
-Accepts `array1` and `array2` and combines them into one using elements with matching indexes.
-
-*Example*
-
-.Payload
-----------
-{
-    "firstNames": ["Evelyn", "Herman"],
-    "lastNames": ["Waugh" , "Melville", "Tolkien"]
-}
-----------
-.DataSonnet map:
-------------------------
-ds.zip(payload.firstNames, payload.lastNames)
-------------------------
-.Result
-------------------------
-[
-  [
-    "Evelyn",
-    "Waugh"
-  ],
-  [
-    "Herman",
-    "Melville"
-  ]
-]
-------------------------
+// todo
+// == `indexOf(arr: Array[A], value: A): Number
+// == `indexOf(str1: String, str2: String): Number
+// == `lastIndexOf(arr: Array[A], value: A): Number
+// == `lastIndexOf(str1: Array[A], str2: String): Number
