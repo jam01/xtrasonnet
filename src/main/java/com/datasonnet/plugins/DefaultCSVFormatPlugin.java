@@ -36,10 +36,10 @@ import com.datasonnet.document.Document;
 import com.datasonnet.document.MediaType;
 import com.datasonnet.document.MediaTypes;
 import com.datasonnet.spi.PluginException;
-import com.datasonnet.spi.ujsonUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvParser;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
@@ -50,21 +50,19 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 public class DefaultCSVFormatPlugin extends BaseJacksonDataFormatPlugin {
-    public static final String DS_PARAM_USE_HEADER = "useheader";
-    public static final String DS_PARAM_QUOTE_CHAR = "quote";
-    public static final String DS_PARAM_SEPARATOR_CHAR = "separator";
-    public static final String DS_PARAM_ESCAPE_CHAR = "escape";
-    public static final String DS_PARAM_NEW_LINE = "newline";
-    public static final String DS_PARAM_HEADERS = "headers";
-    public static final String DS_PARAM_DISABLE_QUOTES = "disablequotes";
+    public static final String DS_PARAM_QUOTE_CHAR = "qchar";
+    public static final String DS_PARAM_SEPARATOR_CHAR = "sep";
+    public static final String DS_PARAM_ESCAPE_CHAR = "esc";
+    public static final String DS_PARAM_HEADERS = "head";
 
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private static final CsvMapper CSV_MAPPER = new CsvMapper();
+    private static final Map<Object, ObjectReader> READER_CACHE = new HashMap<>();
 
     static {
         CSV_MAPPER.enable(CsvParser.Feature.WRAP_AS_ARRAY);
@@ -74,13 +72,10 @@ public class DefaultCSVFormatPlugin extends BaseJacksonDataFormatPlugin {
         supportedTypes.add(MediaTypes.APPLICATION_CSV);
         supportedTypes.add(MediaType.parseMediaType("text/csv"));
 
-        readerParams.add(DS_PARAM_USE_HEADER);
         readerParams.add(DS_PARAM_QUOTE_CHAR);
         readerParams.add(DS_PARAM_SEPARATOR_CHAR);
         readerParams.add(DS_PARAM_ESCAPE_CHAR);
-        readerParams.add(DS_PARAM_NEW_LINE);
         readerParams.add(DS_PARAM_HEADERS);
-        readerParams.add(DS_PARAM_DISABLE_QUOTES);
 
         writerParams.addAll(readerParams);
 
@@ -93,136 +88,124 @@ public class DefaultCSVFormatPlugin extends BaseJacksonDataFormatPlugin {
         writerSupportedClasses.add(String.class);
     }
 
-    private boolean isUseHeader(MediaType mediaType) {
-        if (mediaType.getParameter(DS_PARAM_USE_HEADER) != null) {
-            return Boolean.parseBoolean(mediaType.getParameter(DS_PARAM_USE_HEADER));
-        }
-        return true;
-    }
-
     @Override
     public Value read(Document<?> doc) throws PluginException {
         if (doc.getContent() == null) {
             return ujson.Null$.MODULE$;
         }
 
-        CsvSchema.Builder builder = this.getBuilder(doc.getMediaType());
-        boolean useHeader = isUseHeader(doc.getMediaType());
-        CsvSchema csvSchema = builder.build();
+        ObjectReader reader = READER_CACHE.computeIfAbsent(doc.getMediaType().getParameters(), (p) -> {
+            CsvSchema.Builder builder = baseBuilderFor(doc.getMediaType());
+            if (paramAbsent(doc.getMediaType(), DS_PARAM_HEADERS)) { // no header param, return JSON Obj
+                builder.setUseHeader(true);
+                return CSV_MAPPER.readerFor(Map.class).with(builder.build());
+            } else if (paramEq(doc.getMediaType(), DS_PARAM_HEADERS, "false")) { // skip headers, return JSON Arr[Arr]
+                builder.setUseHeader(false);
+                return CSV_MAPPER.readerFor(List.class).with(builder.build());
+            } else {
+                List<String> headers = paramAsList(doc.getMediaType(), DS_PARAM_HEADERS, Collections.emptyList());
+                if (headers.size() > 0) { // headers found in param, return JSON Obj with param headers
+                    builder.setUseHeader(false);
+                    for (String header : headers) {
+                        builder.addColumn(header);
+                    }
+                    return CSV_MAPPER.readerFor(Map.class).with(builder.build());
+                }
+                throw new IllegalArgumentException("'" + DS_PARAM_HEADERS + "' parameter must be a comma separated list of headers!");
+            }
+        });
 
         // Read data from CSV file
         try {
             if (String.class.isAssignableFrom(doc.getContent().getClass())) {
-                JsonNode result = CSV_MAPPER
-                        .readerFor(useHeader ? Map.class : List.class)
-                        .with(csvSchema)
-                        .readTree((String) doc.getContent());
-
+                JsonNode result = reader.readTree((String) doc.getContent());
                 return ujsonFrom(result);
             } else if (byte[].class.isAssignableFrom(doc.getContent().getClass())) {
-                JsonNode result = CSV_MAPPER
-                        .readerFor(useHeader ? Map.class : List.class)
-                        .with(csvSchema)
-                        .readTree((byte[]) doc.getContent());
-
+                JsonNode result = reader.readTree((String) doc.getContent());
                 return ujsonFrom(result);
             } else if (InputStream.class.isAssignableFrom(doc.getContent().getClass())) {
-                JsonNode result = CSV_MAPPER
-                        .readerFor(useHeader ? Map.class : List.class)
-                        .with(csvSchema)
-                        .readTree((InputStream) doc.getContent());
-
+                JsonNode result = reader.readTree((String) doc.getContent());
                 return ujsonFrom(result);
             } else {
                 throw new PluginException(new IllegalArgumentException("Unsupported document content class, use the test method canRead before invoking read"));
             }
         } catch (JsonProcessingException jpe) {
             throw new PluginException("Unable to convert CSV to JSON", jpe);
-        } catch (IOException ioe) {
-            throw new PluginException("Unable to read CSV input", ioe);
         }
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public <T> Document<T> write(Value input, MediaType mediaType, Class<T> targetType) throws PluginException {
-        Map<String, String> params = mediaType.getParameters();
-        CsvSchema.Builder builder = this.getBuilder(mediaType);
+        JsonNode node = jsonNodeOf(input);
+        assertArrayNode(node);
+        JsonNode first = node.elements().next();
+
+        ObjectWriter writer;
+        CsvSchema.Builder builder = baseBuilderFor(mediaType);
+        if (first.isObject() && paramAbsent(mediaType, DS_PARAM_HEADERS)) { // no header param, use first Obj for headers
+            builder.setUseHeader(true);
+            assertObjectNode(first);
+            first.fieldNames().forEachRemaining(builder::addColumn);
+            writer = CSV_MAPPER.writerFor(JsonNode.class).with(builder.build());
+        } else if (first.isObject() && paramEq(mediaType, DS_PARAM_HEADERS, "false")) { // skip headers, but still need columns - user first Obj
+            builder.setUseHeader(false);
+            first.fieldNames().forEachRemaining(builder::addColumn);
+            writer = CSV_MAPPER.writerFor(JsonNode.class).with(builder.build());
+        } else if (first.isArray() &&
+                (paramAbsent(mediaType, DS_PARAM_HEADERS) || paramEq(mediaType, DS_PARAM_HEADERS, "false"))) { // an array and no given headers
+            builder.setUseHeader(false);
+            writer = CSV_MAPPER.writerFor(JsonNode.class).with(builder.build());
+        } else {
+            List<String> headers = paramAsList(mediaType, DS_PARAM_HEADERS, Collections.emptyList());
+            if (first.isArray() && headers.size() > 0) { // headers
+                builder.setUseHeader(true);
+                for (String header : headers) {
+                    builder.addColumn(header);
+                }
+                writer = CSV_MAPPER.writerFor(JsonNode.class).with(builder.build());
+            } else {
+                throw new IllegalArgumentException("Unsupported combination of input and parameters."); // we give up
+            }
+        }
 
         try {
-            final JsonNode jsonTree = OBJECT_MAPPER.valueToTree(ujsonUtils.javaObjectFrom(input));
-            if (isUseHeader(mediaType)) {
-                if (params.containsKey(DS_PARAM_HEADERS)) {
-                    String[] headers = params.get(DS_PARAM_HEADERS).split(",");
-                    for (String header : headers) {
-                        builder.addColumn(header);
-                    }
-                } else {
-                    JsonNode firstObject = jsonTree.elements().next();
-                    firstObject.fieldNames().forEachRemaining(builder::addColumn);
-                }
-            }
-
-            CsvSchema csvSchema = builder.build();
-
             if (targetType.isAssignableFrom(String.class)) {
-                return (Document<T>) new DefaultDocument<>(CSV_MAPPER.writerFor(JsonNode.class)
-                        .with(csvSchema)
-                        .writeValueAsString(jsonTree), MediaTypes.APPLICATION_CSV);
+                return (Document<T>) new DefaultDocument<>(writer.writeValueAsString(node),
+                        MediaTypes.APPLICATION_CSV);
             }
 
             if (targetType.isAssignableFrom(OutputStream.class)) {
                 OutputStream out = new BufferedOutputStream(new ByteArrayOutputStream());
-                CSV_MAPPER.writerFor(JsonNode.class)
-                        .with(csvSchema)
-                        .writeValue(out, jsonTree);
+                writer.writeValue(out, node);
                 return (Document<T>) new DefaultDocument<>(out, MediaTypes.APPLICATION_CSV);
             }
 
             if (targetType.isAssignableFrom(byte[].class)) {
-                return (Document<T>) new DefaultDocument<>(CSV_MAPPER.writerFor(JsonNode.class)
-                        .with(csvSchema)
-                        .writeValueAsBytes(jsonTree), MediaTypes.APPLICATION_CSV);
+                return (Document<T>) new DefaultDocument<>(writer.writeValueAsBytes(node),
+                        MediaTypes.APPLICATION_CSV);
             }
-
             throw new PluginException(new IllegalArgumentException("Unsupported document content class, use the test method canWrite before invoking write"));
-
         } catch (IOException e) {
             throw new PluginException("Unable to processing CSV", e);
         }
     }
 
-    private CsvSchema.Builder getBuilder(MediaType mediaType) {
+    private CsvSchema.Builder baseBuilderFor(MediaType type) {
         CsvSchema.Builder builder = CsvSchema.builder();
 
-        String useHeadrStr = mediaType.getParameter(DS_PARAM_USE_HEADER);
-        boolean useHeader = Boolean.parseBoolean(Optional.ofNullable(useHeadrStr).orElse("true"));
-        builder.setUseHeader(useHeader);
-
-        String disableQuotesStr = mediaType.getParameter(DS_PARAM_DISABLE_QUOTES);
-        boolean disableQuotes = Boolean.parseBoolean(Optional.ofNullable(disableQuotesStr).orElse("false"));
-
-        if(disableQuotes) {
+        // no quotes or quote char
+        if (paramEq(type, DS_PARAM_QUOTE_CHAR, "false")) {
             builder.disableQuoteChar();
-        } else if (mediaType.getParameter(DS_PARAM_QUOTE_CHAR) != null) {
-            builder.setQuoteChar(mediaType.getParameter(DS_PARAM_QUOTE_CHAR).charAt(0));
+        } else {
+            builder.setQuoteChar(paramAsChar(type, DS_PARAM_QUOTE_CHAR, '"'));
         }
 
-        if (mediaType.getParameter(DS_PARAM_SEPARATOR_CHAR) != null) {
-            builder.setColumnSeparator(mediaType.getParameter(DS_PARAM_SEPARATOR_CHAR).charAt(0));
-        }
+        // separator char
+        builder.setColumnSeparator(paramAsChar(type, DS_PARAM_SEPARATOR_CHAR, ','));
 
-        if (mediaType.getParameter(DS_PARAM_ESCAPE_CHAR) != null) {
-            builder.setEscapeChar(mediaType.getParameter(DS_PARAM_ESCAPE_CHAR).charAt(0)
-            );
-        }
-
-        if (mediaType.getParameter(DS_PARAM_NEW_LINE) != null) {
-            builder.setLineSeparator(mediaType.getParameter(DS_PARAM_NEW_LINE)
-                    .replaceAll("LF", "\n")
-                    .replaceAll("CR", "\r")
-            );
-        }
+        // escape
+        builder.setEscapeChar(paramAsChar(type, DS_PARAM_ESCAPE_CHAR, '\\'));
 
         return builder;
     }

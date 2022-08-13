@@ -7,32 +7,17 @@ package com.datasonnet.plugins
  * compliance with the Elastic License 2.0.
  */
 
-/* datasonnet-mapper copyright/notice, per Apache-2.0 § 4.c */
-/*-
- * Copyright 2019-2020 the original author or authors. *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-/*-
- * Adopted:
- * - da3176f6190b61146f7c8b6005a9c7c3c8a695f5: XML namespace support for reading
- */
-
+import com.datasonnet.plugins.BaseJacksonDataFormatPlugin.OBJECT_MAPPER
 import com.datasonnet.spi.AbstractDataFormatPlugin
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.node.{ArrayNode, BooleanNode, NullNode, NumericNode, ObjectNode, TextNode}
-import ujson.Value
+import com.fasterxml.jackson.databind.node._
+import com.fasterxml.jackson.databind.{JsonNode, ObjectMapper}
+import ujson._
 
-import scala.jdk.CollectionConverters.IteratorHasAsScala
+import scala.jdk.CollectionConverters.{IteratorHasAsScala, MapHasAsJava, SeqHasAsJava}
+
+object BaseJacksonDataFormatPlugin {
+  protected val OBJECT_MAPPER = new ObjectMapper
+}
 
 abstract class BaseJacksonDataFormatPlugin extends AbstractDataFormatPlugin {
   protected def ujsonFrom(jsonNode: JsonNode): Value = jsonNode match {
@@ -43,5 +28,22 @@ abstract class BaseJacksonDataFormatPlugin extends AbstractDataFormatPlugin {
     case a: ArrayNode => ujson.Arr.from(a.elements.asScala.map(ujsonFrom))
     case _: NullNode => ujson.Null
     case _ => throw new IllegalArgumentException("Jackson node " + jsonNode + " not supported!")
+  }
+
+  protected def jsonNodeOf(value: Value): JsonNode = value match {
+    case Str(value) => new TextNode(value);
+    case Obj(value) => new ObjectNode(OBJECT_MAPPER.getNodeFactory, value.map{case (k, v) => (k, jsonNodeOf(v))}.asJava)
+    case Arr(value) => new ArrayNode(OBJECT_MAPPER.getNodeFactory, value.map(jsonNodeOf).asJava)
+    case Num(value) => new DoubleNode(value);
+    case bool: Bool => BooleanNode.valueOf(value.bool);
+    case Null => NullNode.getInstance();
+  }
+
+  protected def assertObjectNode(firstObject: JsonNode): Unit = {
+    if (!firstObject.isObject) throw new IllegalArgumentException("The combination of parameters given requires a JSON Object, found: " + firstObject.getNodeType.name)
+  }
+
+  protected def assertArrayNode(firstObject: JsonNode): Unit = {
+    if (!firstObject.isArray) throw new IllegalArgumentException("The combination of parameters given requires a JSON Array, found: " + firstObject.getNodeType.name)
   }
 }
