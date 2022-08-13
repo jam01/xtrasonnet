@@ -1,0 +1,25 @@
+= `tro.base64`
+
+== `decode(data: String): String`
+Returns the Base64-decoded `data`.
+
+.Example
+----
+tro.url.decode('SGVsbG8gV29ybGQ=')
+----
+.Result
+----
+'Hello World'
+----
+
+== `encode(data: String): String`
+Returns the Base64-encoded `data`.
+
+.Example
+----
+tro.url.encode('Hello World')
+----
+.Result
+----
+'SGVsbG8gV29ybGQ='
+----

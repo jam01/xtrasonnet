@@ -1852,6 +1852,28 @@ object Trobador extends Library {
           regex.r.matches(string);
       }
     ),
+
+    "base64" -> moduleFrom(
+      builtin("decode", "value") {
+        (pos, ev, value: Val) =>
+          value match {
+            case x: Val.Num => new String(Base64.getDecoder.decode(x.value.toString))
+            case x: Val.Str => new String(Base64.getDecoder.decode(x.value))
+            case x => Error.fail("Expected String, got: " + x.prettyName)
+          }
+      },
+
+      builtin("encode", "value") {
+        (pos, ev, value: Val) =>
+          value match {
+            case x: Val.Num =>
+              if (x.value % 1 == 0) new String(Base64.getEncoder.encode(x.value.toInt.toString.getBytes()))
+              else new String(Base64.getEncoder.encode(x.value.toString.getBytes()))
+            case x: Val.Str => new String(Base64.getEncoder.encode(x.value.getBytes()))
+            case x => Error.fail("Expected String, got: " + x.prettyName)
+          }
+      }
+    )
   ).asJava
 
   private def keyFrom(value: Val): String = {
