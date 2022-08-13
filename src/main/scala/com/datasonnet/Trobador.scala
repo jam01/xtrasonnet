@@ -1090,11 +1090,6 @@ object Trobador extends Library {
           Math.floor(num);
       },
 
-      builtin("mod", "num1", "num2") {
-        (pos, ev, num1: Double, num2: Double) =>
-          num1 % num2;
-      },
-
       builtin("pow", "num1", "num2") {
         (pos, ev, num1: Double, num2: Double) =>
           Math.pow(num1, num2)
@@ -1107,7 +1102,7 @@ object Trobador extends Library {
 
       builtin("randomInt", "num") {
         (pos, ev, num: Int) =>
-          (Random.nextInt((num - 0) + 1) + 0).intValue()
+          (Random.nextInt(num - 0) + 0).intValue()
       },
 
       builtinWithDefaults("round",
