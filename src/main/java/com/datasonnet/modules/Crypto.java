@@ -24,18 +24,12 @@ package com.datasonnet.modules;
  * limitations under the License.
  */
 
-import org.bouncycastle.crypto.CryptoException;
-import org.bouncycastle.crypto.engines.BlowfishEngine;
-import org.bouncycastle.crypto.paddings.PaddedBufferedBlockCipher;
-import org.bouncycastle.crypto.params.KeyParameter;
 import org.bouncycastle.util.encoders.Hex;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
-import java.util.Base64;
-
 
 public class Crypto {
     /*
@@ -43,8 +37,7 @@ public class Crypto {
      */
     public static String hash(String value, String algorithm) throws Exception {
         MessageDigest digest = MessageDigest.getInstance(algorithm);
-        byte[] hash = digest.digest(
-                value.getBytes(StandardCharsets.UTF_8));
+        byte[] hash = digest.digest(value.getBytes(StandardCharsets.UTF_8));
         return new String(Hex.encode(hash), StandardCharsets.UTF_8);
     }
 

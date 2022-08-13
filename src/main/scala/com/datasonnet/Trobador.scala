@@ -984,23 +984,6 @@ object Trobador extends Library {
           Crypto.hmac(value, secret, algorithm)
       },
 
-      /**
-       * Encrypts the value with specified JDK Cipher Transformation and the provided secret. Converts the encryption
-       * to a readable format with Base64
-       *
-       * @builtinParam value The message to be encrypted.
-       * @types [String]
-       * @builtinParam secret The secret used to encrypt the original messsage.
-       * @types [String]
-       * @builtinParam transformation The string that describes the operation (or set of operations) to be performed on
-       *               the given input, to produce some output. A transformation always includes the name of a cryptographic algorithm
-       *               (e.g., AES), and may be followed by a feedback mode and padding scheme. A transformation is of the form:
-       *               "algorithm/mode/padding" or "algorithm"
-       * @types [String]
-       * @builtinReturn Base64 String value of the encrypted message
-       * @types [String]
-       * @changed 2.0.3
-       */
       builtin("encrypt", "value", "secret", "algorithm") {
         (pos, ev, value: String, secret: String, transformation: String) =>
           val cipher = Cipher.getInstance(transformation)
@@ -1035,23 +1018,6 @@ object Trobador extends Library {
           }
       },
 
-      /**
-       * Decrypts the Base64 value with specified JDK Cipher Transformation and the provided secret.
-       *
-       * @builtinParam value The encrypted message to be decrypted.
-       * @types [String]
-       * @builtinParam secret The secret used to encrypt the original messsage.
-       * @types [String]
-       * @builtinParam algorithm The algorithm used for the encryption.
-       * @types [String]
-       * @builtinParam mode The encryption mode to be used.
-       * @types [String]
-       * @builtinParam padding The encryption secret padding to be used
-       * @types [String]
-       * @builtinReturn Base64 String value of the encrypted message
-       * @types [String]
-       * @changed 2.0.3
-       */
       builtin("decrypt", "value", "secret", "algorithm") {
         (pos, ev, value: String, secret: String, transformation: String) =>
           val cipher = Cipher.getInstance(transformation)
