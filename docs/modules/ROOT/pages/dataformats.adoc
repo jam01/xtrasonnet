@@ -1,10 +1,10 @@
-# Formats Library
+= Formats Library
 :toc:
 :toclevels: 1
 
-## Generic Read and Write Functions
+== Generic Read and Write Functions
 
-The `Formats` library contains `read`, and `write` functions for serializing and deserializing data in other formats, e.g. XML or CSV. The XML and CSV plugins are built into the standard DataSonnet distributions while other formats can be supported by implementing `DataFormatPlugin` interface.
+The `Formats` library contains `read`, and `write` functions for serializing and deserializing data in other formats, e.g. XML or CSV. The XML and CSV plugins are built into the standard Trobador distributions while other formats can be supported by implementing `DataFormatPlugin` interface.
 
 These functions can be used if the data contains embedded data in other formats, for example:
 
@@ -14,44 +14,44 @@ These functions can be used if the data contains embedded data in other formats,
 }
 -----------------------
 
-If the payload or variable itself is in the format other than JSON, it will be automatically detected by the DataSonnet, therefore using the `read` will cause an error. The input and output of payload and variables is controlled by xref:headers.adoc[the headers].
+If the payload or variable itself is in the format other than JSON, it will be automatically detected by the Trobador, therefore using the `read` will cause an error. The input and output of payload and variables is controlled by xref:headers.adoc[the headers].
 
-### `read(string input, string inputMimeType, object params={})`
+=== `read(string input, string inputMimeType, object params={})`
 
 Reads input data in the specified mime type and accepts additional parameters which override default plugin behavior. The list and format of parameters is specific to a plugin implementation.
 
 *Example*
 ------------------------
-ds.read(payload.embeddedXMLValue, "application/xml")
+tro.read(payload.embeddedXMLValue, "application/xml")
 ------------------------
 *Example*
 ------------------------
 local params = {
     "NamespaceDeclarations" : {
-        "datasonnet" : "http://www.modusbox.com"
+        "trobador" : "http://www.modusbox.com"
     },
     "NamespaceSeparator": "%",
     "TextValueKey": "__text",
     "AttributeCharacter": "*"
 };
 
-ds.read(payload.embeddedXMLValue, "application/xml", params);
+tro.read(payload.embeddedXMLValue, "application/xml", params);
 ------------------------
 
-### `write(string output, string outputMimeType, object params={})`
+=== `write(string output, string outputMimeType, object params={})`
 
 Outputs the data into specified data format and accepts additional parameters which override default plugin behavior. The list and format of parameters is specific to a plugin implementation.
 
 *Example*
 ------------------------
-ds.write(payload.embeddedXMLValue, "application/xml")
+tro.write(payload.embeddedXMLValue, "application/xml")
 ------------------------
 
 *Example*
 ------------------------
 local params = {
     "NamespaceDeclarations" : {
-        "datasonnet" : "http://www.modusbox.com"
+        "trobador" : "http://www.modusbox.com"
     },
     "NamespaceSeparator": "%",
     "TextValueKey": "__text",
@@ -60,16 +60,16 @@ local params = {
     "AutoEmptyElements": false
 };
 
-ds.write(payload.someObj, "application/xml", params);
+tro.write(payload.someObj, "application/xml", params);
 ------------------------
 
-## XML Format
+== XML Format
 
-### MIME types and identifiers
+=== MIME types and identifiers
     * `application/xml`
     * `xml`
 
-### `read`
+=== `read`
 Converts input XML string to a JSON object using http://wiki.open311.org/JSON_and_XML_Conversion/#the-badgerfish-convention[BadgerFish convention]:
 
 * Element names become object properties
@@ -91,12 +91,12 @@ Converts input XML string to a JSON object using http://wiki.open311.org/JSON_an
 ------------------------
 <?xml version="1.0" encoding="UTF-8"?>
 <test:root xmlns:test="http://www.modusbox.com">
-    <test:datasonnet version="1.0">Hello World</test:datasonnet>
+    <test:trobador version="1.0">Hello World</test:trobador>
 </test:root>
 ------------------------
-.DataSonnet map:
+.Trobador map:
 ------------------------
-ds.read(payload.embeddedXMLValue, "application/xml")
+tro.read(payload.embeddedXMLValue, "application/xml")
 ------------------------
 .Result
 ------------------------
@@ -105,7 +105,7 @@ ds.read(payload.embeddedXMLValue, "application/xml")
         "@xmlns": {
             "test":"http://www.modusbox.com"
         },
-        "test:datasonnet": {
+        "test:trobador": {
             "@version": "1.0",
             "$": "Hello World"
         }
@@ -142,7 +142,7 @@ Providing an optional `params` object allows for additional control over JSON ge
 
 ```
 "NamespaceDeclarations" : {
-    "datasonnet" : "http://www.datasonnet.com",
+    "trobador" : "http://www.trobador.com",
     "test" : "urn:com.foo.bar",
     "": "http://www.modusbox.com"
 }
@@ -160,30 +160,30 @@ Providing an optional `params` object allows for additional control over JSON ge
 ------------------------
 <?xml version="1.0" encoding="UTF-8"?>
 <test:root xmlns:test="http://www.modusbox.com">
-    <test:datasonnet version="1.0">Hello World</test:datasonnet>
+    <test:trobador version="1.0">Hello World</test:trobador>
 </test:root>
 ------------------------
-.DataSonnet map:
+.Trobador map:
 ------------------------
 local params = {
     "NamespaceDeclarations" : {
-        "datasonnet": "http://www.modusbox.com"
+        "trobador": "http://www.modusbox.com"
     },
     "NamespaceSeparator": "%",
     "TextValueKey": "__text",
     "AttributeCharacter": "*"
 };
 
-ds.read(payload.embeddedXMLValue, "application/xml", params);
+tro.read(payload.embeddedXMLValue, "application/xml", params);
 ------------------------
 .Result
 ------------------------
 {
-    "datasonnet%root": {
+    "trobador%root": {
         "*xmlns": {
-            "datasonnet": "http://www.modusbox.com"
+            "trobador": "http://www.modusbox.com"
         },
-        "datasonnet%datasonnet": {
+        "trobador%trobador": {
             "*version": "1.0",
             "__text": "Hello World"
         }
@@ -191,7 +191,7 @@ ds.read(payload.embeddedXMLValue, "application/xml", params);
 }
 ------------------------
 
-### `write`
+=== `write`
 Converts the input JSON object into XML using the Badgerfish convention.
 
 [IMPORTANT]
@@ -206,7 +206,7 @@ The input JSON must have a single key which will be mapped to the root element o
   *"person"*: {
     "firstName": "John",
     "lastName": "Doe",
-    "title": "Rookie DataSonnet mapper"
+    "title": "Rookie Trobador mapper"
   }
 }
 ------------------
@@ -216,7 +216,7 @@ The input JSON must have a single key which will be mapped to the root element o
 {
   "firstName": "John",
   "lastName": "Doe",
-  "title": "Rookie DataSonnet mapper"
+  "title": "Rookie Trobador mapper"
 }
 ------------------
 .Incorrect:
@@ -225,7 +225,7 @@ The input JSON must have a single key which will be mapped to the root element o
   "person": {
     "firstName": "John",
     "lastName": "Doe",
-    "title": "Rookie DataSonnet mapper"
+    "title": "Rookie Trobador mapper"
   },
   "anotherKey": "anotherValue"
 }
@@ -241,23 +241,23 @@ The input JSON must have a single key which will be mapped to the root element o
         "@xmlns": {
             "test":"http://www.modusbox.com"
         },
-        "test:datasonnet": {
+        "test:trobador": {
             "@version": "1.0",
             "$": "Hello World"
         }
     }
 }
 ------------------------
-.DataSonnet map:
+.Trobador map:
 ------------------------
 {
-    embeddedXMLValue: ds.write(payload, "application/xml")
+    embeddedXMLValue: tro.write(payload, "application/xml")
 }
 ------------------------
 .Result
 ------------------------
 {
-    "embeddedXMLValue": "<?xml version=\"1.0\" encoding=\"UTF-8\"?> <test:root xmlns:test=\"http://www.modusbox.com\"> <test:datasonnet version=\"1.0\">Hello World</test:datasonnet> </test:root>"
+    "embeddedXMLValue": "<?xml version=\"1.0\" encoding=\"UTF-8\"?> <test:root xmlns:test=\"http://www.modusbox.com\"> <test:trobador version=\"1.0\">Hello World</test:trobador> </test:root>"
 }
 ------------------------
 
@@ -298,7 +298,7 @@ Providing a `params` object allows for more control over generated XML. In addit
         "*xmlns": {
             "test":"http://www.modusbox.com"
         },
-        "test%datasonnet": {
+        "test%trobador": {
             "*version": "1.0",
             "__text": "Hello World"
         },
@@ -306,11 +306,11 @@ Providing a `params` object allows for more control over generated XML. In addit
     }
 }
 ------------------------
-.DataSonnet map:
+.Trobador map:
 ------------------------
 local params = {
     "NamespaceDeclarations" : {
-        "datasonnet" : "http://www.modusbox.com"
+        "trobador" : "http://www.modusbox.com"
     },
     "NamespaceSeparator": "%",
     "TextValueKey": "__text",
@@ -320,23 +320,23 @@ local params = {
 };
 
 {
-    embeddedXMLValue: ds.write(payload, "application/xml")
+    embeddedXMLValue: tro.write(payload, "application/xml")
 }
 ------------------------
 .Result
 ------------------------
 {
-    "embeddedXMLValue": "<?xml version=\"1.1\" encoding=\"UTF-8\"?> <datasonnet:root xmlns:test=\"http://www.modusbox.com\"> <datasonnet:datasonnet version=\"1.0\">Hello World</datasonnet:datasonnet> <datasonnet:empty/> </datasonnet:root>"
+    "embeddedXMLValue": "<?xml version=\"1.1\" encoding=\"UTF-8\"?> <trobador:root xmlns:test=\"http://www.modusbox.com\"> <trobador:trobador version=\"1.0\">Hello World</trobador:trobador> <trobador:empty/> </trobador:root>"
 ------------------------
 
-## CSV Format
+== CSV Format
 
-### MIME types and identifiers
+=== MIME types and identifiers
 * `application/csv`
 * `text/csv`
 * `csv`
 
-### `read`
+=== `read`
 
 Parses the CSV and converts it to a JSON array of objects. It expects the CSV input to be in a default format, with first row as column headers, comma separator, double quote, backslash escape character and `\n` newline character. CSV headers are used as keys for the corresponding JSON object values.
 
@@ -348,10 +348,10 @@ Parses the CSV and converts it to a JSON array of objects. It expects the CSV in
 William,Shakespeare,"(123)456-7890"
 Christopher,Marlow,"(987)654-3210"
 ------------------------
-.DataSonnet map:
+.Trobador map:
 ------------------------
 {
-    local csvInput = ds.read(payload.embeddedCSVValue, "application/csv");
+    local csvInput = tro.read(payload.embeddedCSVValue, "application/csv");
 
     {
         name: csvInput[0]["First Name"] + " " + csvInput[0]["Last Name"]
@@ -401,7 +401,7 @@ Providing an optional `params` object allows more control over the format of the
 'William'|'Shakespeare'|'(123)456-7890'
 'Christopher'|'Marlow'|'(987)654-3210'
 ------------------------
-.DataSonnet map:
+.Trobador map:
 ------------------------
 local params = {
     "UseHeader": false,
@@ -411,7 +411,7 @@ local params = {
     "NewLine": "\n"
 };
 
-local csvInput = ds.read(payload.embeddedCSVValue, "application/csv", params);
+local csvInput = tro.read(payload.embeddedCSVValue, "application/csv", params);
 
 {
     name: csvInput[0][0] + " " + csvInput[0][1]
@@ -424,7 +424,7 @@ local csvInput = ds.read(payload.embeddedCSVValue, "application/csv", params);
 }
 ------------------------
 
-### `write`
+=== `write`
 
 Creates a CSV out of an array of JSON objects, using default quote, separator, escape and new line characters. The keys of JSON object values are used as a CSV headers.
 
@@ -445,10 +445,10 @@ Creates a CSV out of an array of JSON objects, using default quote, separator, e
   }
 ]
 ------------------------
-.DataSonnet map:
+.Trobador map:
 ------------------------
 {
-    embeddedCSVValue: ds.write(payload, "application/csv")
+    embeddedCSVValue: tro.write(payload, "application/csv")
 }
 ------------------------
 .Result
@@ -494,7 +494,7 @@ Providing an optional `params` object allows for more control over the format of
   ]
 ]
 ------------------------
-.DataSonnet map:
+.Trobador map:
 ------------------------
 local params = {
     "UseHeader": false,
@@ -504,7 +504,7 @@ local params = {
 };
 
 {
-    embeddedCSVValue: ds.write(payload, "application/csv", params)
+    embeddedCSVValue: tro.write(payload, "application/csv", params)
 }
 ------------------------
 .Result
@@ -515,9 +515,9 @@ local params = {
 }
 ------------------------
 
-## Java Objects
+== Java Objects
 
-### `read`
+=== `read`
 
 Converts POJO to JSON format using https://github.com/FasterXML/jackson[Jackson ObjectMapper].
 
@@ -534,12 +534,12 @@ The following read parameters are supported:
 |`yyyy-MM-dd'T'HH:mm:ss.SSSZ`
 
 |`FailOnEmptyBeans`
-|If set to `true`, an exception is thrown if no serializer is found for a Java type. Setting it to `false` instructs DataSonnet to ignore the field that cannot be serialized. See https://github.com/FasterXML/jackson-databind/wiki/Serialization-Features[Jackson Serialization Features] for details.
+|If set to `true`, an exception is thrown if no serializer is found for a Java type. Setting it to `false` instructs Trobador to ignore the field that cannot be serialized. See https://github.com/FasterXML/jackson-databind/wiki/Serialization-Features[Jackson Serialization Features] for details.
 |`true`
 
 |===
 
-### `write`
+=== `write`
 
 Converts JSON objects to Java POJOs using https://github.com/FasterXML/jackson[Jackson ObjectMapper].
 
@@ -566,7 +566,7 @@ The following write parameters are supported:
 
 |
 |`MixIns`
-|Adds a map of classes and their mix-ins to customize the Datasonnet / Jackson deserialization behavior. See the example below for the
+|Adds a map of classes and their mix-ins to customize the Trobador / Jackson deserialization behavior. See the example below for the
 example of polymorphic deserialization.
 |
 
@@ -581,14 +581,14 @@ example of polymorphic deserialization.
 
 |===
 
-### `JAXBElement` serialization and deserialization
+=== `JAXBElement` serialization and deserialization
 
 When serializing or deserializing Java object with fields of type `JAXBElement`, the mapping has to include additional fields `value`, `name` and `declaredType`. For example, a JAXB-annotated class may look like this:
 
 -------------
 @XmlRootElement(name = "WsdlGeneratedObj")
 public class WsdlGeneratedObj {
-    @XmlElementRef(name = "testField", namespace = "http://com.datasonnet.test", type = JAXBElement.class, required = true)
+    @XmlElementRef(name = "testField", namespace = "http://com.trobador.test", type = JAXBElement.class, required = true)
     protected JAXBElement<TestField> testField;
 ...
 }
@@ -597,14 +597,14 @@ public class WsdlGeneratedObj {
 Mapping from JSON to the `WsdlGeneratedObj` is:
 
 -------------
-/** DataSonnet
+/** Trobador
 version=1.0
-output.application/java.OutputClass=com.datasonnet.javatest.WsdlGeneratedObj
+output.application/java.type=com.trobador.javatest.WsdlGeneratedObj
 */
 {
     "testField": {
-        "name": "{http://com.datasonnet.test}testField",
-        "declaredType": "com.datasonnet.test.TestField",
+        "name": "{http://com.trobador.test}testField",
+        "declaredType": "com.trobador.test.TestField",
         "value": {
             test: "Hello World"
         }
@@ -612,13 +612,13 @@ output.application/java.OutputClass=com.datasonnet.javatest.WsdlGeneratedObj
 }
 -------------
 
-### Polymorphic deserialization
+=== Polymorphic deserialization
 
-In a situation where the property of the deserialized Java class is of an abstract type with multiple extending classes, it is necessary to provide an additional information so that Datasonnet can instantiate correct class. Consider the following mapping:
+In a situation where the property of the deserialized Java class is of an abstract type with multiple extending classes, it is necessary to provide an additional information so that Trobador can instantiate correct class. Consider the following mapping:
 --------------
-/** DataSonnet
+/** Trobador
 version=2.0
-output application/x-java-object; dateformat=yyyy-MM-dd; outputclass=com.foo.bar.Household;
+output application/x-java-object; dateformat=yyyy-MM-dd; type=com.foo.bar.Household;
 */
 {
     family: [
@@ -661,7 +661,7 @@ public class Child extends Person {
     String school;
 }
 --------------
-This mapping will fail, because Datasonnet doesn't know which classes it should instantiate for the elements of the `family` list.
+This mapping will fail, because Trobador doesn't know which classes it should instantiate for the elements of the `family` list.
 To fix this, first we need to create a mixin class, e.g.:
 
 --------------
@@ -684,9 +684,9 @@ This class maps the value of the property `@type` in a JSON object to the class 
 
 Now change the mapping to the following:
 --------------
-/** DataSonnet
+/** Trobador
 version=2.0
-output application/x-java-object; dateformat=yyyy-MM-dd; outputclass=com.foo.bar.Household; mixins="{"com.foo.bar.Person":"com.foo.bar.PersonMixIn"}"
+output application/x-java-object; dateformat=yyyy-MM-dd; type=com.foo.bar.Household; mixins="{"com.foo.bar.Person":"com.foo.bar.PersonMixIn"}"
 */
 {
     family: [
@@ -705,12 +705,12 @@ output application/x-java-object; dateformat=yyyy-MM-dd; outputclass=com.foo.bar
 --------------
 The value of the property `@type` will be matched to one of the annotations in the mix-in class.
 
-For the typical use case of an abstract class with concrete subtypes, where the type names are in a property on the JSON objects, you do not need to write your own Mixin, DataSonnet can handle it for you. In this case, the `PolymorphicTypes` header must be set, and optionally the `PolymorphicTypeIdProperty`, e.g.:
+For the typical use case of an abstract class with concrete subtypes, where the type names are in a property on the JSON objects, you do not need to write your own Mixin, Trobador can handle it for you. In this case, the `PolymorphicTypes` header must be set, and optionally the `PolymorphicTypeIdProperty`, e.g.:
 
 --------------
-/** DataSonnet
+/** Trobador
 version=2.0
-output application/x-java-object; dateformat=yyyy-MM-dd; outputclass=com.foo.bar.Household; polymorphictypes=com.foo.bar.Person
+output application/x-java-object; dateformat=yyyy-MM-dd; type=com.foo.bar.Household; polymorphictypes=com.foo.bar.Person
 */
 {
     family: [
@@ -728,9 +728,9 @@ output application/x-java-object; dateformat=yyyy-MM-dd; outputclass=com.foo.bar
 }
 --------------
 --------------
-/** DataSonnet
+/** Trobador
 version=2.0
-output application/x-java-object; dateformat=yyyy-MM-dd; outputclass=com.foo.bar.Household; polymorphictypes=com.foo.bar.Person; polymorphictypeidproperty=__clazz
+output application/x-java-object; dateformat=yyyy-MM-dd; type=com.foo.bar.Household; polymorphictypes=com.foo.bar.Person; polymorphictypeidproperty=__clazz
 */
 {
     family: [

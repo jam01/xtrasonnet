@@ -1,6 +1,6 @@
-# DataSonnet Header
+= Trobador Header
 
-The header is an optional comment section in the mapping document which must start with `/\** DataSonnet` followed by a new line character and end with a line `*/` and contains a set of configuration properties.
+The header is an optional comment section in the mapping document which must start with `/\** Trobador` followed by a new line character and end with a line `*/` and contains a set of configuration properties.
 The properties are hierarchical, with sections separated by the ` ` (space) character, e.g.:
 
 ------------
@@ -11,7 +11,7 @@ input myVar application/csv;quote="""
 The header must be the first comment before any other line of code, in the following format:
 
 -------------
-/** DataSonnet
+/** Trobador
 version=<VERSION_NUMBER>
 <PROPERTY>=<VALUE>
 ...
@@ -19,10 +19,10 @@ version=<VERSION_NUMBER>
 -------------
 *Example*
 ------------------------
-/** DataSonnet
+/** Trobador
 version=1.0
 */
-//DataSonnet mapping starts here
+//Trobador mapping starts here
 {
     mappedValue: payload.value
 }
@@ -30,13 +30,13 @@ version=1.0
 
 The header is optional; if omitted, all default settings will be used. The default version is *1.0*. For the data format-specific defaults see the xref:dataformats.adoc[Data Formats] section.
 
-## Data Format Properties
+== Data Format Properties
 
 The data format properties control the data format plugins behavior. The property names must start with one of `input|output|\*`.
 The input properties format must be `input <INPUT_NAME>|* <MIME_TYPE>;<MIME_TYPE_SPECIFIC_PARAMETER>`, where:
 
     - `<INPUT_NAME>` is a name of input variable or payload;
-    - `<MIME_TYPE>` is a mime type supported by DataSonnet;
+    - `<MIME_TYPE>` is a mime type supported by Trobador;
     - `<MIME_TYPE_SPECIFIC_PARAMETER>` is one of the parameters supported by the plugin for this mime type.
 
 Additional `<MIME_TYPE_SPECIFIC_PARAMETER>`s can be added with a `;` (semicolon). The values that should be escaped with quotes are `;` (semicolon), `:` (colon),  `"` (quote) and `,` (comma).
@@ -73,7 +73,7 @@ dataformat application/csv;commaSeparatedVar.separator=","
 
 For the list of the supported data formats and their configurable properties, see the xref:dataformats.adoc[Data Formats] section.
 
-## Miscellaneous Properties
+== Miscellaneous Properties
 
 [%header, cols=4*a]
 |===
@@ -83,7 +83,7 @@ For the list of the supported data formats and their configurable properties, se
 |Default value
 
 |`version`
-| DataSonnet language version. Currently this property has no effect on the DataSonnet behavior.
+| Trobador language version. Currently this property has no effect on the Trobador behavior.
 | no
 | `1.0`
 
