@@ -1,85 +1,97 @@
-## numbers
+= `tro.numbers`
 
-### `fromBinary(number value)`
-Converts `value` from binary to decimal.
+== `fromBinary(binary: String | Number): Number`
+Returns the `Number` representation for the given `binary`.
 
-*Example*
-
-.DataSonnet map:
-------------------------
-ds.numbers.fromBinary(1100100)
-------------------------
+.Example
+----
+tro.numbers.fromBinary(1100100)
+----
 .Result
-------------------------
+----
 100
-------------------------
+----
 
-### `fromHex(number value)`
-Converts `value` from hex to decimal.
+== `fromHex(hexadecimal: String): Number`
+Returns the `Number` representation for the given `hexadecimal`.
 
-*Example*
-
-.DataSonnet map:
-------------------------
-ds.numbers.fromHex(64)
-------------------------
+.Example
+----
+tro.numbers.fromHex('F')
+----
 .Result
-------------------------
-100
-------------------------
+----
+15
+----
 
-### `fromRadixNumber(number value, number baseAsBinary)`
-Converts `value` to a decimal with the base `baseAsBinary`.
+== `fromOctal(octal: String | Number): Number`
+Returns the `Number` representation for the given `octal`.
 
-*Example*
-
-.DataSonnet map:
-------------------------
-ds.numbers.fromRadixNumber(1101000, 2)
-------------------------
+.Example
+----
+tro.numbers.fromOctal(107136)
+----
 .Result
-------------------------
-104
-------------------------
+----
+36446
+----
 
-### `toBinary(number value)`
-Converts `value` from decimal to binary.
+== `fromRadix(value: String | Number, n: Number): Number`
+Returns the `Number` representation for the given Base-`n` `value`
 
-*Example*
-
-.DataSonnet map:
-------------------------
-ds.numbers.toBinary(100)
-------------------------
+.Example
+----
+tro.numbers.fromRadixNumber('10', 3)
+----
 .Result
-------------------------
-"1100100"
-------------------------
+----
+3
+----
 
-### `toHex(number value)`
-Converts `value` from decimal to hex.
+== `toBinary(number: Number): String`
+Returns the binary representation for the given `number`.
 
-*Example*
-
-.DataSonnet map:
-------------------------
-ds.numbers.toHex(100)
-------------------------
+.Example
+----
+tro.numbers.toBinary(100)
+----
 .Result
-------------------------
-"64"
-------------------------
+----
+'1100100'
+----
 
-### `toRadixNumber(number value, number baseAsDecimal)`
-Converts `value` to a number with the base `baseAsDecimal`.
+== `toHex(number: Number): String`
+Returns the hexadecimal representation for the given `number`.
 
-*Example*
-
-.DataSonnet map:
-------------------------
-ds.numbers.toRadixNumber(104, 2)
-------------------------
+.Example
+----
+tro.numbers.toHex(15)
+----
 .Result
-------------------------
-"1101000"
-------------------------
+----
+'F'
+----
+
+== `toOctal(number: Number): String`
+Returns the octal representation for the given `number`.
+
+.Example
+----
+tro.numbers.toOctal(36446)
+----
+.Result
+----
+'107136'
+----
+
+== `toRadix(value: Number, n: Number): String`
+Returns the Base-`n` representation for the given `value` as a `String`.
+
+.Example
+----
+tro.numbers.toRadix('3', 3)
+----
+.Result
+----
+'10'
+----

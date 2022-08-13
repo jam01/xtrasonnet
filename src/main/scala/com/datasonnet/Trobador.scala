@@ -1449,7 +1449,7 @@ object Trobador extends Library {
           }
       },
 
-      builtin("fromRadixNumber", "value", "num") {
+      builtin("fromRadix", "value", "num") {
         (pos, ev, value: Val, num: Int) =>
           value match {
             case x: Val.Num => BigInt.apply(x.value.toLong.toString, num).bigInteger.doubleValue
@@ -1475,16 +1475,16 @@ object Trobador extends Library {
         (pos, ev, value: Val) =>
           value match {
             case x: Val.Num =>
-              if (x.value < 0) "-" + x.value.toLong.abs.toHexString
-              else x.value.toLong.toHexString
+              if (x.value < 0) "-" + x.value.toLong.abs.toHexString.toUpperCase
+              else x.value.toLong.toHexString.toUpperCase
             case x: Val.Str =>
-              if (x.value.startsWith("-")) x.value.toLong.abs.toHexString
-              else x.value.toLong.toHexString
+              if (x.value.startsWith("-")) x.value.toLong.abs.toHexString.toUpperCase
+              else x.value.toLong.toHexString.toUpperCase
             case x => Error.fail("Expected Number or String, got: " + x.prettyName)
           }
       },
 
-      builtin("toRadixNumber", "value", "num") {
+      builtin("toRadix", "value", "num") {
         (pos, ev, value: Val, num: Int) =>
           value match {
             case x: Val.Num =>
@@ -1497,6 +1497,14 @@ object Trobador extends Library {
             case x => Error.fail("Expected Binary, got: " + x.prettyName)
             //DW functions does not support null
           }
+      },
+
+      builtin("fromOctal", "str") { (pos, ev, num: Val) =>
+        num match {
+          case str: Val.Str => Integer.parseInt(str.asString, 8)
+          case n: Val.Num => Integer.parseInt(n.asInt.toString, 8)
+          case x => Error.fail("Expected Number or String, got: " + x.prettyName)
+        }
       }
     ),
 
