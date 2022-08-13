@@ -1,4 +1,4 @@
-= `tro.objects`
+= `xtr.objects`
 
 == `all(obj, Object[A], predicate: Func[(A, String) => Boolean]): Boolean`
 Returns `true` if all entries in `obj` satisfy the given `predicate`, otherwise `false`. `predicate` must accept an `A` and its corresponding `String` key.
@@ -11,7 +11,7 @@ local languages = {
     python: { version: '3.10.4', isJvm: false }
 };
 
-tro.objects.all(languages, function(lang, name) lang.isJvm)
+xtr.objects.all(languages, function(lang, name) lang.isJvm)
 ----
 .Result
 ----
@@ -29,7 +29,7 @@ local languages = {
     python: { version: '3.10.4', isJvm: false }
 };
 
-tro.objects.any(languages, function(lang, name) lang.isJvm)
+xtr.objects.any(languages, function(lang, name) lang.isJvm)
 ----
 .Result
 ----
@@ -47,7 +47,7 @@ local languages = {
     third: { name: 'java', version: '18', isJvm: true }
 };
 
-tro.objects.distinctBy(languages, function(lang) lang.name)
+xtr.objects.distinctBy(languages, function(lang) lang.name)
 ----
 .Result
 ----
@@ -68,7 +68,7 @@ local languages = {
     third: { name: 'java', version: '18', isJvm: true }
 };
 
-tro.objects.distinctBy(languages, function(lang, ordinal)
+xtr.objects.distinctBy(languages, function(lang, ordinal)
     if (lang.name == 'java') then lang.version
     else ordinal
 )
@@ -100,7 +100,7 @@ local orders = [
     { orderId: 10311, customerId: 93, date: '2021-05-03' }
 ];
 
-tro.objects.innerJoin(customers, orders
+xtr.objects.innerJoin(customers, orders
     function(cust) cust.id, function(order) order.customerId)
 ----
 .Result
@@ -133,7 +133,7 @@ local orders = [
     { orderId: 10311, customerId: 93, date: '2021-05-03' }
 ];
 
-tro.objects.innerJoin(customers, orders
+xtr.objects.innerJoin(customers, orders
     function(cust) cust.id, function(order) order.customerId,
     function(cust, order) { id: cust.id, oId: order.id })
 ----
@@ -164,7 +164,7 @@ local orders = [
     { orderId: 10311, customerId: 93, date: '2021-05-03' }
 ];
 
-tro.objects.leftJoin(customers, orders
+xtr.objects.leftJoin(customers, orders
     function(cust) cust.id, function(order) order.customerId)
 ----
 .Result
@@ -198,7 +198,7 @@ local orders = [
     { orderId: 10311, customerId: 93, date: '2021-05-03' }
 ];
 
-tro.objects.leftJoin(customers, orders
+xtr.objects.leftJoin(customers, orders
     function(cust) cust.id, function(order) order.customerId,
     function(cust, order) { id: cust.id, oId: order?.id })
 ----
@@ -230,7 +230,7 @@ local orders = [
     { orderId: 10311, customerId: 93, date: '2021-05-03' }
 ];
 
-tro.objects.fullJoin(customers, orders
+xtr.objects.fullJoin(customers, orders
     function(cust) cust.id, function(order) order.customerId)
 ----
 .Result
@@ -265,7 +265,7 @@ local orders = [
     { orderId: 10311, customerId: 93, date: '2021-05-03' }
 ];
 
-tro.objects.fullJoin(customers, orders
+xtr.objects.fullJoin(customers, orders
     function(cust) cust.id, function(order) order.customerId,
     function(cust, order) { id: cust.?id, oId: order?.id })
 ----

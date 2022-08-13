@@ -1,4 +1,4 @@
-= `tro.duration`
+= `xtr.duration`
 
 The duration module is based on the ISO-8601 duration format.
 
@@ -21,7 +21,7 @@ local parts = {
     hours: 12, minutes: 30, seconds: 45
 };
 
-tro.duration.of(parts)
+xtr.duration.of(parts)
 ----
 .Result
 ----
@@ -40,7 +40,7 @@ Returns the constituent parts of the given `duration`, as an `Object` of the for
 
 .Example
 ----
-tro.duration.toParts('P20Y3M1DT12H30M45S')
+xtr.duration.toParts('P20Y3M1DT12H30M45S')
 ----
 .Result
 ----

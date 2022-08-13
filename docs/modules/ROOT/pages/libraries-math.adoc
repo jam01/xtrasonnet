@@ -1,11 +1,11 @@
-= `tro.math`
+= `xtr.math`
 
 == `abs(num: Number): Number`
 Returns the absolute value of `num`.
 
 .Example
 ----
-tro.math.abs(-1)
+xtr.math.abs(-1)
 ----
 .Result
 ----
@@ -17,7 +17,7 @@ Returns the arc cosine of the given `num`.
 
 .Example
 ----
-tro.math.acos(1)
+xtr.math.acos(1)
 ----
 .Result
 ----
@@ -29,7 +29,7 @@ Returns the arc sine of the given `num`.
 
 .Example
 ----
-tro.math.asin(1)
+xtr.math.asin(1)
 ----
 .Result
 ----
@@ -41,7 +41,7 @@ Returns the arc tangent of the given `num`.
 
 .Example
 ----
-tro.math.atan(1)
+xtr.math.atan(1)
 ----
 .Result
 ----
@@ -53,7 +53,7 @@ Returns the average of the numbers in `arr`.
 
 .Example
 ----
-tro.math.avg([1,2,3])
+xtr.math.avg([1,2,3])
 ----
 .Result
 ----
@@ -65,7 +65,7 @@ Returns the ceiling (aka round up) of the given `num`.
 
 .Example
 ----
-tro.math.ceil(1.01)
+xtr.math.ceil(1.01)
 ----
 .Result
 ----
@@ -77,7 +77,7 @@ Returns `num` if it exists between `min` and `max`, otherwise the one that is cl
 
 .Example
 ----
-tro.math.clamp(100, 0, 10)
+xtr.math.clamp(100, 0, 10)
 ----
 .Result
 ----
@@ -89,7 +89,7 @@ Returns the cosine of the give `num`.
 
 .Example
 ----
-tro.math.cos(0)
+xtr.math.cos(0)
 ----
 .Result
 ----
@@ -101,7 +101,7 @@ Returns Euler's number e, to the power of `num`.
 
 .Example
 ----
-tro.math.exp(2)
+xtr.math.exp(2)
 ----
 .Result
 ----
@@ -113,7 +113,7 @@ Returns the exponent portion of the double-precision binary floating-point repre
 
 .Example
 ----
-tro.math.exponent(2)
+xtr.math.exponent(2)
 ----
 .Result
 ----
@@ -125,7 +125,7 @@ Returns the floor (aka round down) of the given `num`.
 
 .Example
 ----
-tro.math.floor(4.99)
+xtr.math.floor(4.99)
 ----
 .Result
 ----
@@ -137,7 +137,7 @@ Returns the natural logarithm of the given `num`.
 
 .Example
 ----
-tro.math.log(2)
+xtr.math.log(2)
 ----
 .Result
 ----
@@ -149,7 +149,7 @@ Returns the fraction portion (aka significand) of the double-precision binary fl
 
 .Example
 ----
-tro.math.mantissa(2)
+xtr.math.mantissa(2)
 ----
 .Result
 ----
@@ -161,7 +161,7 @@ Returns the value of `num1` raised to the power of `num2`.
 
 .Example
 ----
-tro.math.pow(2, 2)
+xtr.math.pow(2, 2)
 ----
 .Result
 ----
@@ -173,7 +173,7 @@ Returns a pseudo-random double-precision floating-point number between `0` and `
 
 .Example
 ----
-tro.math.random
+xtr.math.random
 ----
 .Result
 ----
@@ -185,7 +185,7 @@ Returns a pseudo-random integer between 0 (inclusive) and the give `num` (exclus
 
 .Example
 ----
-tro.math.randomInt(500)
+xtr.math.randomInt(500)
 ----
 .Result
 ----
@@ -197,7 +197,7 @@ Rounds `num` to the nearest whole number.
 
 .Example
 ----
-tro.math.round(2.5)
+xtr.math.round(2.5)
 ----
 .Result
 ----
@@ -209,7 +209,7 @@ Returns the sine of the given `num`.
 
 .Example
 ----
-tro.math.sin(1)
+xtr.math.sin(1)
 ----
 .Result
 ----
@@ -221,7 +221,7 @@ Returns the square root of the given `num`.
 
 .Example
 ----
-tro.math.sqrt(4)
+xtr.math.sqrt(4)
 ----
 .Result
 ----
@@ -233,7 +233,7 @@ Returns the sum of all numbers in `arr`.
 
 .Example
 ----
-tro.math.sum([10, 20, 30])
+xtr.math.sum([10, 20, 30])
 ----
 .Result
 ----
@@ -245,7 +245,7 @@ Returns the tangent of the given `num`.
 
 .Example
 ----
-tro.math.tan(1)
+xtr.math.tan(1)
 ----
 .Result
 ----

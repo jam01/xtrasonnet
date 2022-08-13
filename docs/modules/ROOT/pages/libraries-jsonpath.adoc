@@ -1,4 +1,4 @@
-= `tro.jsonpath`
+= `xtr.jsonpath`
 
 == `eval(value: Any, expr: String): Any`
 Returns the result of evaluating the specified JsonPath expression `expr` on the given `value`.
@@ -48,6 +48,6 @@ ds.jsonpath.select(store, '$..book[-2:]..author')
 ]
 ----
 
-> Note: Trobador leverages the https://github.com/json-path/JsonPath[Jayway JsonPath library] which fully supports the https://goessner.net/articles/JsonPath/[JsonPath specification].
+> Note: xtrasonnet leverages the https://github.com/json-path/JsonPath[Jayway JsonPath library] which fully supports the https://goessner.net/articles/JsonPath/[JsonPath specification].
 
 > Note: The JsonPath functionality requires serialization and de-serialization of the given values.

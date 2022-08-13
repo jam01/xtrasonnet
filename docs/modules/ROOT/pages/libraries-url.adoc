@@ -1,11 +1,11 @@
-= `tro.url`
+= `xtr.url`
 
 == `decode(data: String): String`
 Returns the URL-decoded `data`.
 
 .Example
 ----
-tro.url.decode('Hello+World')
+xtr.url.decode('Hello+World')
 ----
 .Result
 ----
@@ -17,7 +17,7 @@ Returns the URL-encoded `data`.
 
 .Example
 ----
-tro.url.encode('Hello World')
+xtr.url.encode('Hello World')
 ----
 .Result
 ----

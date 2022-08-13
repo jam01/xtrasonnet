@@ -1,4 +1,4 @@
-= `tro.datetime`
+= `xtr.datetime`
 
 The datetime module is based on the ISO-8601 extended offset date-time format, and the ISO-8601 duration format. The ISO-8601 format is the recommendation of the IETF through RFC 3339: _Date and Time on the Internet_.
 
@@ -10,7 +10,7 @@ Returns the given `datetime` at midnight.
 
 .Example
 ----
-tro.datetime.atBeginningOfDay('2020-12-31T23:19:35Z')
+xtr.datetime.atBeginningOfDay('2020-12-31T23:19:35Z')
 ----
 .Result
 ----
@@ -22,7 +22,7 @@ Returns the given `datetime` with the minutes and seconds set to zero.
 
 .Example
 ----
-tro.datetime.atBeginningOfHour('2020-12-31T23:19:35Z')
+xtr.datetime.atBeginningOfHour('2020-12-31T23:19:35Z')
 ----
 .Result
 ----
@@ -34,7 +34,7 @@ Returns the given `datetime` with the day set to first of the month, and the tim
 
 .Example
 ----
-tro.datetime.atBeginningOfMonth('2020-12-31T23:19:35Z')
+xtr.datetime.atBeginningOfMonth('2020-12-31T23:19:35Z')
 ----
 .Result
 ----
@@ -46,7 +46,7 @@ Returns the given `datetime` with the day set to first of the current week, and 
 
 .Example
 ----
-tro.datetime.atBeginningOfWeek('2020-12-31T23:19:35Z')
+xtr.datetime.atBeginningOfWeek('2020-12-31T23:19:35Z')
 ----
 .Result
 ----
@@ -58,7 +58,7 @@ Returns the given `datetime` with the day/month set to January 1st, and the time
 
 .Example
 ----
-tro.datetime.atBeginningOfYear('2020-12-31T23:19:35Z')
+xtr.datetime.atBeginningOfYear('2020-12-31T23:19:35Z')
 ----
 .Result
 ----
@@ -70,7 +70,7 @@ Returns the given `datetime` in the given timezone `offset`, changing the date a
 
 .Example
 ----
-tro.datetime.inOffset('2020-12-31T23:19:35Z', '-08:00')
+xtr.datetime.inOffset('2020-12-31T23:19:35Z', '-08:00')
 ----
 .Result
 ----
@@ -88,7 +88,7 @@ Returns:
 
 .Example
 ----
-tro.datetime.compare('2020-12-31T23:19:35Z','2020-01-01T00:00:00Z')
+xtr.datetime.compare('2020-12-31T23:19:35Z','2020-01-01T00:00:00Z')
 ----
 .Result
 ----
@@ -115,7 +115,7 @@ local parts = {
     'timezone': '-08:00'
 };
 
-tro.datetime.of(parts)
+xtr.datetime.of(parts)
 ----
 .Result
 ----
@@ -130,7 +130,7 @@ Returns the ISO-8601 duration between `datetime1` and `datetime2`.
 local date1 = '2019-09-20T18:53:41.425Z';
 local date2 = '2019-09-14T18:53:41.425Z';
 
-tro.datetime.between(date1, date2)
+xtr.datetime.between(date1, date2)
 ----
 .Result
 ----
@@ -142,7 +142,7 @@ Returns the given `datetime` formatted in the requested `format`.
 
 .Example
 ----
-tro.datetime.format('2019-09-20T18:53:41.425Z', 'yyyy/MM/dd')
+xtr.datetime.format('2019-09-20T18:53:41.425Z', 'yyyy/MM/dd')
 ----
 .Result
 ----
@@ -154,7 +154,7 @@ Returns a `true` if `datetime` is a leap year, otherwise `false`.
 
 .Example
 ----
-tro.datetime.isLeapYear('2019-09-14T18:53:41.425Z')
+xtr.datetime.isLeapYear('2019-09-14T18:53:41.425Z')
 ----
 .Result
 ----
@@ -166,7 +166,7 @@ Returns the result of subtracting the specified ISO-8601 `duration` from the giv
 
 .Example
 ----
-tro.datetime.minus('2019-09-20T18:53:41Z', 'P2D')
+xtr.datetime.minus('2019-09-20T18:53:41Z', 'P2D')
 ----
 .Result
 ----
@@ -178,7 +178,7 @@ Returns the current datetime.
 
 .Example
 ----
-tro.datetime.now()
+xtr.datetime.now()
 ----
 .Result
 ----
@@ -192,7 +192,7 @@ you can use `'epoch'` or `'timestamp'` as the inputFormat
 
 .Example
 ----
-tro.datetime.parse('12/31/1990 10:10:10', 'MM/dd/yyyy HH:mm:ss')
+xtr.datetime.parse('12/31/1990 10:10:10', 'MM/dd/yyyy HH:mm:ss')
 ----
 .Result
 ----
@@ -204,7 +204,7 @@ Returns the result of adding the specified ISO-8601 `duration` to the given `dat
 
 .Example
 ----
-tro.datetime.plus('2019-09-18T18:53:41Z', 'P2D')
+xtr.datetime.plus('2019-09-18T18:53:41Z', 'P2D')
 ----
 .Result
 ----
@@ -216,7 +216,7 @@ Returns the given `datetime` without time or offset.
 
 .Example
 ----
-tro.datetime.toLocalDate('2019-07-04T18:53:41Z')
+xtr.datetime.toLocalDate('2019-07-04T18:53:41Z')
 ----
 .Result
 ----
@@ -228,7 +228,7 @@ Returns the given `datetime` without an offset.
 
 .Example
 ----
-tro.datetime.toLocalDateTime('2019-07-04T21:00:00Z')
+xtr.datetime.toLocalDateTime('2019-07-04T21:00:00Z')
 ----
 .Result
 ----
@@ -240,7 +240,7 @@ Returns the given `datetime` without date or offset.
 
 .Example
 ----
-tro.datetime.toLocalTime('2019-07-04T21:00:00Z')
+xtr.datetime.toLocalTime('2019-07-04T21:00:00Z')
 ----
 .Result
 ----
@@ -260,7 +260,7 @@ Returns the constituent parts of the given `datetime`, as an `Object` of the for
 
 .Example
 ----
-tro.datetime.toParts('2019-07-04T21:00:00Z')
+xtr.datetime.toParts('2019-07-04T21:00:00Z')
 ----
 .Result
 ----
@@ -276,7 +276,7 @@ Returns the current day at midnight.
 
 .Example
 ----
-tro.datetime.today
+xtr.datetime.today
 ----
 
 .Result
@@ -289,7 +289,7 @@ Returns the next day at midnight.
 
 .Example
 ----
-tro.datetime.tomorrow
+xtr.datetime.tomorrow
 ----
 
 .Result
@@ -302,7 +302,7 @@ Returns the previous day at midnight.
 
 .Example
 ----
-tro.datetime.yesterday
+xtr.datetime.yesterday
 ----
 
 .Result

@@ -1,11 +1,11 @@
-= `tro.base64`
+= `xtr.base64`
 
 == `decode(data: String): String`
 Returns the Base64-decoded `data`.
 
 .Example
 ----
-tro.url.decode('SGVsbG8gV29ybGQ=')
+xtr.url.decode('SGVsbG8gV29ybGQ=')
 ----
 .Result
 ----
@@ -17,7 +17,7 @@ Returns the Base64-encoded `data`.
 
 .Example
 ----
-tro.url.encode('Hello World')
+xtr.url.encode('Hello World')
 ----
 .Result
 ----

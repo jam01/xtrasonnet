@@ -1,4 +1,4 @@
-= `tro`
+= `xtr`
 
 Also called core or root functions.
 
@@ -7,7 +7,7 @@ Returns `true` if `arr` contains the given `value`, otherwise `false`.
 
 .Example
 ----
-tro.contains([1, 2, 3], 1)
+xtr.contains([1, 2, 3], 1)
 ----
 .Result
 ----
@@ -19,7 +19,7 @@ Returns `true` if `obj` contains the given `value`, otherwise `false`.
 
 .Example
 ----
-tro.contains({ scala: '3.1.3' }, 'scala')
+xtr.contains({ scala: '3.1.3' }, 'scala')
 ----
 .Result
 ----
@@ -31,7 +31,7 @@ Returns `true` if `str1` contains `str2`, otherwise `false`.
 
 .Example
 ----
-tro.contains('Lorem ipsum', 'Lorem')
+xtr.contains('Lorem ipsum', 'Lorem')
 ----
 .Result
 ----
@@ -43,7 +43,7 @@ Returns `true` if `str1` ends with `str2`, otherwise `false`.
 
 .Example
 ----
-tro.endsWith('Lorem ipsum', 'ipsum')
+xtr.endsWith('Lorem ipsum', 'ipsum')
 ----
 .Result
 ----
@@ -55,7 +55,7 @@ Returns an `Array[Object[String|A]]` with one `Object[String|A]` for every entry
 
 .Example
 ----
-tro.entriesOf({ scala: '3.1.3', java: '19' })
+xtr.entriesOf({ scala: '3.1.3', java: '19' })
 ----
 .Result
 ----
@@ -76,7 +76,7 @@ Returns a new `Array[A]` containing the elements of `arr` that satisfy the given
 
 .Example
 ----
-tro.filter([1, 2, 3, 4], function(item) item < 3)
+xtr.filter([1, 2, 3, 4], function(item) item < 3)
 ----
 .Result
 ----
@@ -88,7 +88,7 @@ Returns a new `Array[A]` containing the elements of `arr` that satisfy the given
 
 .Example
 ----
-tro.filter([1, 2, 3, 4], function(item, idx) idx > 2)
+xtr.filter([1, 2, 3, 4], function(item, idx) idx > 2)
 ----
 .Result
 ----
@@ -100,7 +100,7 @@ Returns a new `Array[A]` containing the elements of `arr` that are not equal to 
 
 .Example
 ----
-tro.filterNotEq([1, 2, 3, 4, 3, 4], 3)
+xtr.filterNotEq([1, 2, 3, 4, 3, 4], 3)
 ----
 .Result
 ----
@@ -112,7 +112,7 @@ Returns a new `Array[A]` containing the elements of `arr1` that are not in the g
 
 .Example
 ----
-tro.filterNotIn([1, 2, 3, 4, 3, 4], [3, 4])
+xtr.filterNotIn([1, 2, 3, 4, 3, 4], [3, 4])
 ----
 .Result
 ----
@@ -130,7 +130,7 @@ local languages = {
     python: { version: '3.10.4', isJvm: false }
 };
 
-tro.filterObject(languages, function(lang) lang.isJvm)
+xtr.filterObject(languages, function(lang) lang.isJvm)
 ----
 .Result
 ----
@@ -151,7 +151,7 @@ local languages = {
     python: { version: '3.10.4', isJvm: false }
 };
 
-tro.filterObject(languages, function(lang, name) !lang.isJvm || name == 'scala')
+xtr.filterObject(languages, function(lang, name) !lang.isJvm || name == 'scala')
 ----
 .Result
 ----
@@ -172,7 +172,7 @@ local languages = {
     python: { version: '3.10.4', isJvm: false }
 };
 
-tro.filterObject(languages, function(lang, name, idx) idx == 0 || name == 'python')
+xtr.filterObject(languages, function(lang, name, idx) idx == 0 || name == 'python')
 ----
 .Result
 ----
@@ -187,7 +187,7 @@ Returns a new `Array[B]` containing the elements of every `Array[B]` obtained by
 
 .Example
 ----
-tro.flatMap([1, 3, 5], function(item) [item, item * item])
+xtr.flatMap([1, 3, 5], function(item) [item, item * item])
 ----
 .Result
 ----
@@ -199,7 +199,7 @@ Returns a new `Array[B]` containing the elements of every `Array[B]` obtained by
 
 .Example
 ----
-tro.flatMap([1, 3, 5], function(item, idx) [item, item * idx])
+xtr.flatMap([1, 3, 5], function(item, idx) [item, item * idx])
 ----
 .Result
 ----
@@ -222,7 +222,7 @@ local reqsWeight(req) = {
     [if req.skillsType == 'ops' then 'jenkins']: 4
 };
 
-tro.flatMapObject(candidateReqs, reqsWeight)
+xtr.flatMapObject(candidateReqs, reqsWeight)
 ----
 .Result
 ----
@@ -252,7 +252,7 @@ local reqsWeight(req, type) = {
     [if type == 'ops' then 'jenkins']: 4
 };
 
-tro.flatMapObject(candidateReqs, reqsWeight)
+xtr.flatMapObject(candidateReqs, reqsWeight)
 ----
 .Result
 ----
@@ -282,7 +282,7 @@ local reqsWeight(req, type, idx) = {
     [if type == 'ops' then 'jenkins']: if idx == 0 then 4 else 2
 };
 
-tro.flatMapObject(candidateReqs, reqsWeight)
+xtr.flatMapObject(candidateReqs, reqsWeight)
 ----
 .Result
 ----
@@ -301,7 +301,7 @@ Returns a new `Array[A]` containing the elements of every `Array[A]` in `arr`.
 
 .Example
 ----
-tro.flatten([[1, 2], [3]])
+xtr.flatten([[1, 2], [3]])
 ----
 .Result
 ----
@@ -318,7 +318,7 @@ fold functions usually mutate the "accumulator" value on each invocation, thus "
 
 .Example
 ----
-tro.foldLeft([1, 2, 3], 0, function(item, acc) item + acc)
+xtr.foldLeft([1, 2, 3], 0, function(item, acc) item + acc)
 ----
 .Result
 ----
@@ -335,7 +335,7 @@ fold functions usually mutate the "accumulator" value on each invocation, thus "
 
 .Example
 ----
-tro.foldRight(['Lorem', 'ipsum', 'dolor'], '', function(item, acc) acc + ' ' + item)
+xtr.foldRight(['Lorem', 'ipsum', 'dolor'], '', function(item, acc) acc + ' ' + item)
 ----
 .Result
 ----
@@ -353,7 +353,7 @@ local languages = [
     { name: 'python', version: '3.10.4', isJvm: false }
 ];
 
-tro.groupBy(languages, function(lang) if lang.isJvm then 'jvmLangs' else 'others')
+xtr.groupBy(languages, function(lang) if lang.isJvm then 'jvmLangs' else 'others')
 ----
 .Result
 ----
@@ -380,7 +380,7 @@ local langFunc(lang, idx) = if idx == 0 then 'preferred'
     else if lang.isJvm then 'jvmLangs'
     else 'others';
 
-tro.groupBy(languages, langFunc)
+xtr.groupBy(languages, langFunc)
 ----
 .Result
 ----
@@ -402,7 +402,7 @@ local languages = {
     python: { version: '3.10.4', isJvm: false, project: 'python.org' }
 };
 
-tro.groupBy(languages, function(lang) if lang.isJvm then 'jvmLangs' else 'others')
+xtr.groupBy(languages, function(lang) if lang.isJvm then 'jvmLangs' else 'others')
 ----
 .Result
 ----
@@ -429,7 +429,7 @@ local langFunc(lang, name) = if name == 'scala' then 'preferred'
     else if lang.isJvm then 'jvmLangs'
     else 'others';
 
-tro.groupBy(languages, langFunc)
+xtr.groupBy(languages, langFunc)
 ----
 .Result
 ----
@@ -445,7 +445,7 @@ Returns an `Array[Number]` with the indices of the elements in `arr` that equal 
 
 .Example
 ----
-tro.indicesOf([1, 7, 3, 4, 7], 7)
+xtr.indicesOf([1, 7, 3, 4, 7], 7)
 ----
 .Result
 ----
@@ -457,7 +457,7 @@ Returns an `Array[Number]` with the indices of the substrings in `str1` that equ
 
 .Example
 ----
-tro.indicesOf('lorem ipsum dolor', 'lo')
+xtr.indicesOf('lorem ipsum dolor', 'lo')
 ----
 .Result
 ----
@@ -469,7 +469,7 @@ Returns `true` if `value` is an `Array`, otherwise `false`.
 
 .Example
 ----
-tro.isArray([1, 2])
+xtr.isArray([1, 2])
 ----
 .Result
 ----
@@ -481,7 +481,7 @@ Returns `true` if `str` is empty or contains whitespace characters only, otherwi
 
 .Example
 ----
-tro.isBlank('   ')
+xtr.isBlank('   ')
 ----
 .Result
 ----
@@ -493,7 +493,7 @@ Returns `true` if `value` is a `Boolean`, otherwise `false`.
 
 .Example
 ----
-tro.isBoolean(false)
+xtr.isBoolean(false)
 ----
 .Result
 ----
@@ -505,7 +505,7 @@ Returns `true` if `num` is a decimal, otherwise `false`.
 
 .Example
 ----
-tro.isDecimal(2.5)
+xtr.isDecimal(2.5)
 ----
 .Result
 ----
@@ -517,7 +517,7 @@ Returns `true` if `arr` is empty, otherwise `false`.
 
 .Example
 ----
-tro.isEmpty([])
+xtr.isEmpty([])
 ----
 .Result
 ----
@@ -529,7 +529,7 @@ Returns `true` if `obj` is empty, otherwise `false`.
 
 .Example
 ----
-tro.isEmpty({})
+xtr.isEmpty({})
 ----
 .Result
 ----
@@ -541,7 +541,7 @@ Returns `true` if `str` is empty, otherwise `false`.
 
 .Example
 ----
-tro.isEmpty('')
+xtr.isEmpty('')
 ----
 .Result
 ----
@@ -553,7 +553,7 @@ Returns `true` if `num` is even, otherwise `false`.
 
 .Example
 ----
-tro.isEven(2)
+xtr.isEven(2)
 ----
 .Result
 ----
@@ -567,7 +567,7 @@ Returns `true` if `value` is a `Function`, otherwise `false`.
 ----
 local increment(item) = item + 1;
 
-tro.isFunction(increment)
+xtr.isFunction(increment)
 ----
 .Result
 ----
@@ -579,7 +579,7 @@ Returns `true` if `num` is an integer, otherwise `false`.
 
 .Example
 ----
-tro.isInteger(2)
+xtr.isInteger(2)
 ----
 .Result
 ----
@@ -591,7 +591,7 @@ Returns `true` if `value` is a `Number`, otherwise `false`.
 
 .Example
 ----
-tro.isNumber(2)
+xtr.isNumber(2)
 ----
 .Result
 ----
@@ -603,7 +603,7 @@ Returns `true` if `value` is an `Object`, otherwise `false`.
 
 .Example
 ----
-tro.isObject({})
+xtr.isObject({})
 ----
 .Result
 ----
@@ -615,7 +615,7 @@ Returns `true` if `num` is odd, otherwise `false`.
 
 .Example
 ----
-tro.isOdd(1)
+xtr.isOdd(1)
 ----
 .Result
 ----
@@ -627,7 +627,7 @@ Returns `true` if `value` is a `String`, otherwise `false`.
 
 .Example
 ----
-tro.isString('Lorem')
+xtr.isString('Lorem')
 ----
 .Result
 ----
@@ -639,7 +639,7 @@ Returns a new `String` composed of all the elements in `arr` separated by the `s
 
 .Example
 ----
-tro.join([0, 1, 1, 2, 3, 5, 8], ', ')
+xtr.join([0, 1, 1, 2, 3, 5, 8], ', ')
 ----
 .Result
 ----
@@ -651,7 +651,7 @@ Returns a new `String` composed of all the elements in `arr` separated by the `s
 
 .Example
 ----
-tro.join(['hello', 'world', '!'], ' ')
+xtr.join(['hello', 'world', '!'], ' ')
 ----
 .Result
 ----
@@ -663,7 +663,7 @@ Returns an `Array[String]` containing all the keys in `obj`.
 
 .Example
 ----
-tro.keysOf({ scala: '3.1.3', java: '19' })
+xtr.keysOf({ scala: '3.1.3', java: '19' })
 ----
 .Result
 ----
@@ -675,7 +675,7 @@ Returns the lowercase representation of `str`.
 
 .Example
 ----
-tro.lower('Hello World!')
+xtr.lower('Hello World!')
 ----
 .Result
 ----
@@ -687,7 +687,7 @@ Returns a new `Array[B]` with the results of applying `function` to all elements
 
 .Example
 ----
-tro.map([1, 2, 3, 4], function(item) item * item)
+xtr.map([1, 2, 3, 4], function(item) item * item)
 ----
 .Result
 ----
@@ -699,7 +699,7 @@ Returns a new `Array[B]` with the results of applying `function` to all elements
 
 .Example
 ----
-tro.map([1, 2, 3, 4], function(item, idx) item * idx)
+xtr.map([1, 2, 3, 4], function(item, idx) item * idx)
 ----
 .Result
 ----
@@ -717,7 +717,7 @@ local languages = {
     python: { version: '3.10.4', isJvm: false, project: 'python.org' }
 };
 
-tro.mapEntries(languages, function(lang) lang.project)
+xtr.mapEntries(languages, function(lang) lang.project)
 ----
 .Result
 ----
@@ -734,7 +734,7 @@ local languages = {
     java: { version: '19', isJvm: true, project: 'jdk.java.net' }
 };
 
-tro.mapEntries(languages, function(lang, name) {
+xtr.mapEntries(languages, function(lang, name) {
     name: name,
     version: lang.version
 })
@@ -761,7 +761,7 @@ local langFunc(lang, name, idx) = {
     [if idx == 0 then 'preferred']: true
 };
 
-tro.mapEntries(languages, langFunc)
+xtr.mapEntries(languages, langFunc)
 ----
 .Result
 ----
@@ -782,7 +782,7 @@ Returns the max `Boolean` in `arr`, with `true` being "bigger" than `false`.
 
 .Example
 ----
-tro.max([false, false, true])
+xtr.max([false, false, true])
 ----
 .Result
 ----
@@ -794,7 +794,7 @@ Returns the max `Number` in `arr`.
 
 .Example
 ----
-tro.max([0, 8, 2, 100])
+xtr.max([0, 8, 2, 100])
 ----
 .Result
 ----
@@ -806,7 +806,7 @@ Returns the max `String` in `arr`.
 
 .Example
 ----
-tro.max(['Lorem', 'zzz', 'ipsum', 'dolor'])
+xtr.max(['Lorem', 'zzz', 'ipsum', 'dolor'])
 ----
 .Result
 ----
@@ -824,7 +824,7 @@ local languages = [
     { name: 'scala', version: '3.1.3', isPreferred: true },
 ];
 
-tro.maxBy(languages, function(lang) lang.isPreferred)
+xtr.maxBy(languages, function(lang) lang.isPreferred)
 ----
 .Result
 ----
@@ -842,7 +842,7 @@ local languages = [
     { name: 'scala', version: '3.1.3', weight: 4 },
 ];
 
-tro.maxBy(languages, function(lang) lang.weight)
+xtr.maxBy(languages, function(lang) lang.weight)
 ----
 .Result
 ----
@@ -860,7 +860,7 @@ local languages = [
     { name: 'scala', version: '3.1.3', code: 'S' }
 ];
 
-tro.maxBy(languages, function(lang) lang.code)
+xtr.maxBy(languages, function(lang) lang.code)
 ----
 .Result
 ----
@@ -872,7 +872,7 @@ Returns the min `Boolean` in `arr`, with `false` being "smaller" than `true`.
 
 .Example
 ----
-tro.min([false, false, true])
+xtr.min([false, false, true])
 ----
 .Result
 ----
@@ -884,7 +884,7 @@ Returns the min `Number` in `arr`.
 
 .Example
 ----
-tro.min([0, 8, 2, 100])
+xtr.min([0, 8, 2, 100])
 ----
 .Result
 ----
@@ -896,7 +896,7 @@ Returns the min `String` in `arr`.
 
 .Example
 ----
-tro.min(['Lorem', 'AAA', 'ipsum', 'dolor'])
+xtr.min(['Lorem', 'AAA', 'ipsum', 'dolor'])
 ----
 .Result
 ----
@@ -914,7 +914,7 @@ local languages = [
     { name: 'scala', version: '3.1.3', isPreferred: true }
 ];
 
-tro.minBy(languages, function(lang) lang.isPreferred)
+xtr.minBy(languages, function(lang) lang.isPreferred)
 ----
 .Result
 ----
@@ -932,7 +932,7 @@ local languages = [
     { name: 'scala', version: '3.1.3', weight: 4 }
 ];
 
-tro.minBy(languages, function(lang) lang.weight)
+xtr.minBy(languages, function(lang) lang.weight)
 ----
 .Result
 ----
@@ -950,7 +950,7 @@ local languages = [
     { name: 'scala', version: '3.1.3', code: 'S' }
 ];
 
-tro.minBy(languages, function(lang) lang.code)
+xtr.minBy(languages, function(lang) lang.code)
 ----
 .Result
 ----
@@ -986,7 +986,7 @@ local languages = [
     { name: 'python', version: '3.1.14', isPreferred: false }
 ];
 
-tro.minBy(languages, function(lang) lang.isPreferred)
+xtr.minBy(languages, function(lang) lang.isPreferred)
 ----
 .Result
 ----
@@ -1008,7 +1008,7 @@ local languages = [
     { name: 'python', version: '3.1.14', weight: 2 }
 ];
 
-tro.orderBy(languages, function(lang) lang.weight)
+xtr.orderBy(languages, function(lang) lang.weight)
 ----
 .Result
 ----
@@ -1030,7 +1030,7 @@ local languages = [
     { name: 'python', version: '3.1.14', code: 'B' }
 ];
 
-tro.orderBy(languages, function(lang) lang.code)
+xtr.orderBy(languages, function(lang) lang.code)
 ----
 .Result
 ----
@@ -1046,7 +1046,7 @@ Returns an `Array[Number]` containing numbers from `first` to `last`.
 
 .Example
 ----
-tro.range(1, 5)
+xtr.range(1, 5)
 ----
 .Result
 ----
@@ -1058,7 +1058,7 @@ Parses the `data` as the given `mediaType`.
 
 .Example
 ----
-tro.read('<hello>world!</hello>', 'application/xml')
+xtr.read('<hello>world!</hello>', 'application/xml')
 ----
 .Result
 ----
@@ -1072,7 +1072,7 @@ Parses the `data` as the given `mediaType` with `params` options.
 
 .Example
 ----
-tro.read('<hello>world!</hello>', 'application/xml', { textvaluekey: '_txt' })
+xtr.read('<hello>world!</hello>', 'application/xml', { textvaluekey: '_txt' })
 ----
 .Result
 ----
@@ -1088,7 +1088,7 @@ Asumming `example.com` returns `<hello>world!</hello>`:
 
 .Example
 ----
-tro.readUrl('example.com/data', 'application/xml')
+xtr.readUrl('example.com/data', 'application/xml')
 ----
 .Result
 ----
@@ -1104,7 +1104,7 @@ Asumming `example.com` returns `<hello>world!</hello>`:
 
 .Example
 ----
-tro.readUrl('example.com', 'application/xml', { textvaluekey: '_txt' })
+xtr.readUrl('example.com', 'application/xml', { textvaluekey: '_txt' })
 ----
 .Result
 ----
@@ -1118,7 +1118,7 @@ Returns a new `Object[A]` containing the entries of `obj` minus the entry for th
 
 .Example
 ----
-tro.rmKey({ scala: '3.1.3', java: '19' }, 'java')
+xtr.rmKey({ scala: '3.1.3', java: '19' }, 'java')
 ----
 .Result
 ----
@@ -1130,7 +1130,7 @@ Returns a new `Object[A]` containing the entries of `obj` minus the entries whos
 
 .Example
 ----
-tro.rmKeyIn({ scala: '3.1.3', java: '19' }, ['java', 'scala'])
+xtr.rmKeyIn({ scala: '3.1.3', java: '19' }, ['java', 'scala'])
 ----
 .Result
 ----
@@ -1142,7 +1142,7 @@ Returns a new `String` with the contents of `str1`, with occurrences of `str2` r
 
 .Example
 ----
-tro.replace('hello, world!', 'world', 'everyone')
+xtr.replace('hello, world!', 'world', 'everyone')
 ----
 .Result
 ----
@@ -1154,7 +1154,7 @@ Returns a new `Array` with the elements of `arr` in reversed order.
 
 .Example
 ----
-tro.reverse([1, 2, 3])
+xtr.reverse([1, 2, 3])
 ----
 .Result
 ----
@@ -1166,7 +1166,7 @@ Returns a new `Object` with the entries of `obj` in reversed order.
 
 .Example
 ----
-tro.reverse({ key1: 'value1', key2: 'value2' })
+xtr.reverse({ key1: 'value1', key2: 'value2' })
 ----
 .Result
 ----
@@ -1178,7 +1178,7 @@ Returns a new `String` with the characters of `str` in reversed order.
 
 .Example
 ----
-tro.reverse('rolod muspi meroL')
+xtr.reverse('rolod muspi meroL')
 ----
 .Result
 ----
@@ -1190,7 +1190,7 @@ Returns the size of `arr`.
 
 .Example
 ----
-tro.sizeOf([1, 2, 3])
+xtr.sizeOf([1, 2, 3])
 ----
 .Result
 ----
@@ -1204,7 +1204,7 @@ Returns the number of `func` parameters.
 ----
 local add(item, item2) = item + item2;
 
-tro.sizeOf(add)
+xtr.sizeOf(add)
 ----
 .Result
 ----
@@ -1216,7 +1216,7 @@ Returns the number of entries in `obj`.
 
 .Example
 ----
-tro.sizeOf({ key: 'value' })
+xtr.sizeOf({ key: 'value' })
 ----
 .Result
 ----
@@ -1228,7 +1228,7 @@ Returns the number of characters in `str`.
 
 .Example
 ----
-tro.sizeOf('hello, world!')
+xtr.sizeOf('hello, world!')
 ----
 .Result
 ----
@@ -1240,7 +1240,7 @@ Returns an `Array[String]` containing the chunks of `str1` split by the contents
 
 .Example
 ----
-tro.split('hello, world!', 'o')
+xtr.split('hello, world!', 'o')
 ----
 .Result
 ----
@@ -1252,7 +1252,7 @@ Returns `true` if `str1` starts with `str2`.
 
 .Example
 ----
-tro.startsWith('hello, world!', 'hello')
+xtr.startsWith('hello, world!', 'hello')
 ----
 .Result
 ----
@@ -1265,9 +1265,9 @@ Returns the `String` representation of `value`.
 .Example
 ----
 {
-    bool: tro.stringOf(true),
-    num: tro.stringOf(365),
-    nil: tro.stringOf(null)
+    bool: xtr.stringOf(true),
+    num: xtr.stringOf(365),
+    nil: xtr.stringOf(null)
 }
 ----
 .Result
@@ -1284,7 +1284,7 @@ Returns a new `String` with the contents of `str` removed of leading and trailin
 
 .Example
 ----
-tro.trim('  hello, world!   ')
+xtr.trim('  hello, world!   ')
 ----
 .Result
 ----
@@ -1299,12 +1299,12 @@ Returns the `String` name of the type of `value`.
 local func(it) = it;
 
 {
-    bool: tro.typeOf(true),
-    num: tro.typeOf(365),
-    nil: tro.typeOf(null),
-    arr: tro.typeOf([]),
-    obj: tro.typeOf({}),
-    func: tro.typeOf(func)
+    bool: xtr.typeOf(true),
+    num: xtr.typeOf(365),
+    nil: xtr.typeOf(null),
+    arr: xtr.typeOf([]),
+    obj: xtr.typeOf({}),
+    func: xtr.typeOf(func)
 }
 ----
 .Result
@@ -1324,7 +1324,7 @@ Returns the uppercase representation of `str`.
 
 .Example
 ----
-tro.upper('Hello World!')
+xtr.upper('Hello World!')
 ----
 .Result
 ----
@@ -1336,7 +1336,7 @@ Generates a new random UUID v4 `String`.
 
 .Example
 ----
-tro.uuid()
+xtr.uuid()
 ----
 .Result
 ----
@@ -1348,7 +1348,7 @@ Returns an `Array[String]` containing all the values in `obj`.
 
 .Example
 ----
-tro.valuesOf({ scala: '3.1.3', java: '19' })
+xtr.valuesOf({ scala: '3.1.3', java: '19' })
 ----
 .Result
 ----
@@ -1360,7 +1360,7 @@ Writes the `data` as the given `mediaType`
 
 .Example
 ----
-tro.write({ hello: 'world', arr: [], nil: null }, 'application/json')
+xtr.write({ hello: 'world', arr: [], nil: null }, 'application/json')
 ----
 .Result
 ----
@@ -1372,7 +1372,7 @@ Writes the `data` as the given `mediaType` with `params` options.
 
 .Example
 ----
-tro.write({ hello: 'world', arr: [] }, 'application/json', { indent: true })
+xtr.write({ hello: 'world', arr: [] }, 'application/json', { indent: true })
 ----
 .Result
 ----

@@ -1,11 +1,11 @@
-= `tro.arrays`
+= `xtr.arrays`
 
 == `all`(arr: Array[A], predicate: Func[(A) => Boolean]): Boolean`
 Returns `true` if all elements in `arr` satisfy the given `predicate`, otherwise `false`. `predicate` must accept an `A`.
 
 .Example
 ----
-tro.arrays.all([1, 2, 3], function(item) item > 0)
+xtr.arrays.all([1, 2, 3], function(item) item > 0)
 ----
 .Result
 ----
@@ -17,7 +17,7 @@ Returns `true` if any element in `arr` satisfies the given `predicate`, otherwis
 
 .Example
 ----
-tro.arrays.any([1, 2, 3], function(item) item > 1)
+xtr.arrays.any([1, 2, 3], function(item) item > 1)
 ----
 .Result
 ----
@@ -29,7 +29,7 @@ Returns a `Number` count of all the elements in `array` that satisfy the given `
 
 .Example
 ----
-tro.arrays.countBy([1, 2, 3], function(item) item > 2)
+xtr.arrays.countBy([1, 2, 3], function(item) item > 2)
 ----
 .Result
 ----
@@ -41,7 +41,7 @@ Returns a new single level `Array` with the contents of all `Array` in `arr`, re
 
 .Example
 ----
-tro.arrays.deepFlatten([[1, 2], '3', [4, {}, [5, 6]]])
+xtr.arrays.deepFlatten([[1, 2], '3', [4, {}, [5, 6]]])
 ----
 .Result
 ----
@@ -53,7 +53,7 @@ Returns a new `Array` with the distinct elements in `arr` using the given `ident
 
 .Example
 ----
-tro.arrays.distinctBy([1, 2, 3, 4, 5, 6], function(item) item % 3)
+xtr.arrays.distinctBy([1, 2, 3, 4, 5, 6], function(item) item % 3)
 ----
 .Result
 ----
@@ -67,7 +67,7 @@ Returns a new `Array` with the distinct elements in `arr` using the given `ident
 
 .Example
 ----
-tro.arrays.distinctBy([1, 2, 3, 4, 5, 6], function(item, idx) item % (3 * idx))
+xtr.arrays.distinctBy([1, 2, 3, 4, 5, 6], function(item, idx) item % (3 * idx))
 ----
 .Result
 ----
@@ -81,7 +81,7 @@ Returns a new `Array` with the elements in `arr`, from `n`-th element to last.
 
 .Example
 ----
-tro.arrays.drop([1, 2, 3, 4, 5], 3)
+xtr.arrays.drop([1, 2, 3, 4, 5], 3)
 ----
 .Result
 ----
@@ -93,7 +93,7 @@ Returns a new `Array` with the elements in `arr`, from the first element to not 
 
 .Example
 ----
-tro.arrays.dropWhile([1, 2, 3, 4, 5], function(item) item * 3 < 10)
+xtr.arrays.dropWhile([1, 2, 3, 4, 5], function(item) item * 3 < 10)
 ----
 .Result
 ----
@@ -105,7 +105,7 @@ Returns a new `Array` with any element in `arr` that is duplicated.
 
 .Example
 ----
-tro.arrays.duplicates([1, 2, 3, 1, 2])
+xtr.arrays.duplicates([1, 2, 3, 1, 2])
 ----
 .Result
 ----
@@ -117,7 +117,7 @@ Returns a single element `Array` with the first `A` that satisfies the given `pr
 
 .Example
 ----
-tro.arrays.find([1, 2, 3, 4, 5], function(item) item * 3 > 10)
+xtr.arrays.find([1, 2, 3, 4, 5], function(item) item * 3 > 10)
 ----
 .Result
 ----
@@ -129,7 +129,7 @@ Returns a single element `Array` with the first `A` that satisfies the given `pr
 
 .Example
 ----
-tro.arrays.find([1, 2, 3, 4, 5], function(item, idx) item * (3 + idx) > 10)
+xtr.arrays.find([1, 2, 3, 4, 5], function(item, idx) item * (3 + idx) > 10)
 ----
 .Result
 ----
@@ -141,7 +141,7 @@ Returns the `Number` index of the first element that satisfies the given `predic
 
 .Example
 ----
-tro.arrays.indexWhere([1, 2, 3, 4, 5], function(item) item * 3 < 10)
+xtr.arrays.indexWhere([1, 2, 3, 4, 5], function(item) item * 3 < 10)
 ----
 .Result
 ----
@@ -153,7 +153,7 @@ Returns an `Array[Number]` with the indices of elements that satisfy the given `
 
 .Example
 ----
-tro.arrays.indicesWhere([1, 2, 3, 4, 5], function(item) item * 3 < 10)
+xtr.arrays.indicesWhere([1, 2, 3, 4, 5], function(item) item * 3 < 10)
 ----
 .Result
 ----
@@ -165,7 +165,7 @@ Returns the `Number` index of the last element in `arr` that satisfies the given
 
 .Example
 ----
-tro.arrays.lastIndexWhere([1, 2, 3, 4, 5], function(item) item * 3 < 10)
+xtr.arrays.lastIndexWhere([1, 2, 3, 4, 5], function(item) item * 3 < 10)
 ----
 .Result
 ----
@@ -177,7 +177,7 @@ Returns an `Object` with an entry for each unique identity of elements in `arr`.
 
 .Example
 ----
-tro.arrays.occurrencesBy([1, 2, 3, 4, 5], function(item) if (item) < 4 then 'under4' else 'over4')
+xtr.arrays.occurrencesBy([1, 2, 3, 4, 5], function(item) if (item) < 4 then 'under4' else 'over4')
 ----
 .Result
 ----
@@ -192,7 +192,7 @@ Returns an `Object` with two entries:
 
 .Example
 ----
-tro.arrays.partition([1, 2, 3, 4, 5], function(item) item < 4)
+xtr.arrays.partition([1, 2, 3, 4, 5], function(item) item < 4)
 ----
 .Result
 ----
@@ -207,7 +207,7 @@ Returns an `Object[A]` with two entries:
 
 .Example
 ----
-tro.arrays.splitAt([1, 2, 3, 4, 5], 3)
+xtr.arrays.splitAt([1, 2, 3, 4, 5], 3)
 ----
 .Result
 ----
@@ -219,7 +219,7 @@ Returns a new `Array` of `Array[A]`, with every element containing the next `siz
 
 .Example
 ----
-tro.arrays.splitEvery([1, 2, 3, 4, 5], 2)
+xtr.arrays.splitEvery([1, 2, 3, 4, 5], 2)
 ----
 .Result
 ----
@@ -234,7 +234,7 @@ Returns an `Object` with two entries:
 
 .Example
 ----
-tro.arrays.splitWhere([1, 2, 3, 4, 5], function(item) item % 2 == 0)
+xtr.arrays.splitWhere([1, 2, 3, 4, 5], function(item) item % 2 == 0)
 ----
 .Result
 ----
@@ -250,7 +250,7 @@ Returns a new `Array` with the elements in `arr`, from first to the `n`-th eleme
 
 .Example
 ----
-tro.arrays.take([1, 2, 3, 4, 5], 3)
+xtr.arrays.take([1, 2, 3, 4, 5], 3)
 ----
 .Result
 ----
@@ -262,7 +262,7 @@ Returns a new `Array` with the elements in `arr`, from the first element until t
 
 .Example
 ----
-tro.arrays.takeWhile([1, 2, 3, 4, 5], function(item) item * 2 < 9)
+xtr.arrays.takeWhile([1, 2, 3, 4, 5], function(item) item * 2 < 9)
 ----
 .Result
 ----
@@ -276,7 +276,7 @@ Returns a new `Array` of equal size to the shortest array in `arr`. Every n-th e
 
 .Example
 ----
-tro.arrays.unzip([[1, 'x'], [2, 'y'], [3, 'z']])
+xtr.arrays.unzip([[1, 'x'], [2, 'y'], [3, 'z']])
 ----
 .Result
 ----
@@ -290,7 +290,7 @@ Returns a new `Array` of equal size to the longest array in `arr`. Every n-th el
 
 .Example
 ----
-tro.arrays.unzipAll([[1, 'x'], [2], [3, 'z']], 'NA')
+xtr.arrays.unzipAll([[1, 'x'], [2], [3, 'z']], 'NA')
 ----
 .Result
 ----
@@ -304,7 +304,7 @@ Returns a new `Array` of equal size to the shortest array in `arr`. Every n-th e
 
 .Example
 ----
-tro.arrays.zip([[1, 2, 3], ['x', 'y', 'z']])
+xtr.arrays.zip([[1, 2, 3], ['x', 'y', 'z']])
 ----
 .Result
 ----
@@ -318,7 +318,7 @@ Returns a new `Array` of equal size to the longest array in `arr`. Every n-th el
 
 .Example
 ----
-tro.arrays.zipAll([[1, 2, 3], ['x', 'y']], 'NA')
+xtr.arrays.zipAll([[1, 2, 3], ['x', 'y']], 'NA')
 ----
 .Result
 ----

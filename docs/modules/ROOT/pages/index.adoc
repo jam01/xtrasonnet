@@ -1,14 +1,14 @@
-= Trobador
+= xtrasonnet
 
 _A template-based, data transformation engine_
 
 == Introduction
 
-Welcome to the documentation for https://github.io/jam01/trobador[Trobador].
+Welcome to the documentation for https://github.io/jam01/xtrasonnet[xtrasonnet].
 
-Trobador is a source-available data transformation tool. At its core is JSonnet, a highly portable programming language for manipulating data, originally designed for creating configurations.
+xtrasonnet is a source-available data transformation tool. At its core is JSonnet, a highly portable programming language for manipulating data, originally designed for creating configurations.
 
-Trobador repurposes JSonnet for data transformation by providing:
+xtrasonnet repurposes JSonnet for data transformation by providing:
 
 - extensive additional functions for data transformations
 - support for XML, CSV, and Java binding

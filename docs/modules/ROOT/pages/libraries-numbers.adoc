@@ -1,11 +1,11 @@
-= `tro.numbers`
+= `xtr.numbers`
 
 == `fromBinary(binary: String | Number): Number`
 Returns the `Number` representation for the given `binary`.
 
 .Example
 ----
-tro.numbers.fromBinary(1100100)
+xtr.numbers.fromBinary(1100100)
 ----
 .Result
 ----
@@ -17,7 +17,7 @@ Returns the `Number` representation for the given `hexadecimal`.
 
 .Example
 ----
-tro.numbers.fromHex('F')
+xtr.numbers.fromHex('F')
 ----
 .Result
 ----
@@ -29,7 +29,7 @@ Returns the `Number` representation for the given `octal`.
 
 .Example
 ----
-tro.numbers.fromOctal(107136)
+xtr.numbers.fromOctal(107136)
 ----
 .Result
 ----
@@ -41,7 +41,7 @@ Returns the `Number` representation for the given Base-`n` `value`
 
 .Example
 ----
-tro.numbers.fromRadixNumber('10', 3)
+xtr.numbers.fromRadixNumber('10', 3)
 ----
 .Result
 ----
@@ -53,7 +53,7 @@ Returns the binary representation for the given `number`.
 
 .Example
 ----
-tro.numbers.toBinary(100)
+xtr.numbers.toBinary(100)
 ----
 .Result
 ----
@@ -65,7 +65,7 @@ Returns the hexadecimal representation for the given `number`.
 
 .Example
 ----
-tro.numbers.toHex(15)
+xtr.numbers.toHex(15)
 ----
 .Result
 ----
@@ -77,7 +77,7 @@ Returns the octal representation for the given `number`.
 
 .Example
 ----
-tro.numbers.toOctal(36446)
+xtr.numbers.toOctal(36446)
 ----
 .Result
 ----
@@ -89,7 +89,7 @@ Returns the Base-`n` representation for the given `value` as a `String`.
 
 .Example
 ----
-tro.numbers.toRadix('3', 3)
+xtr.numbers.toRadix('3', 3)
 ----
 .Result
 ----

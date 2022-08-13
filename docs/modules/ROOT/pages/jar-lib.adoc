@@ -1,19 +1,19 @@
-= Using Trobador Programmatically
+= Using xtrasonnet Programmatically
 :toc:
 :toclevels: 1
 
-Trobador is distributed as a JAR which contains all necessary classes and dependencies to use Trobador programmatically embedded in your projects. Use the following Maven snippet to add Trobador as a dependency to your `pom.xml`:
+xtrasonnet is distributed as a JAR which contains all necessary classes and dependencies to use xtrasonnet programmatically embedded in your projects. Use the following Maven snippet to add xtrasonnet as a dependency to your `pom.xml`:
 
 [source,xml]
 ----------
 <dependency>
-    <groupId>com.trobador</groupId>
-    <artifactId>trobador-mapper</artifactId>
-    <version>${trobador.version}</version>
+    <groupId>com.xtrasonnet</groupId>
+    <artifactId>xtrasonnet-mapper</artifactId>
+    <version>${xtrasonnet.version}</version>
 </dependency>
 ----------
 
-where `${trobador.version}` is the latest released version (currently 1.0.4).
+where `${xtrasonnet.version}` is the latest released version (currently 1.0.4).
 
 The simplest scenario is mapping from JSON to JSON with no additional variables:
 
@@ -21,7 +21,7 @@ The simplest scenario is mapping from JSON to JSON with no additional variables:
 ------
 String json = ...; //JSON object as string
 
-Mapper mapper = new Mapper(trobadorScript);
+Mapper mapper = new Mapper(xtrasonnetScript);
 String transformedJson = mapper.transform(json)
 ------
 
@@ -40,21 +40,21 @@ variables.put("varJson", new StringDocument(jsonVar, "application/json"));
 variables.put("varXml", new StringDocument(xmlVar, "application/xml"));
 variables.put("varTxt", new StringDocument(textVar, "text/plain"));
 
-Mapper mapper = new Mapper(trobadorScript, variables.keySet());
+Mapper mapper = new Mapper(xtrasonnetScript, variables.keySet());
 Document transformedResult = mapper.transform(new StringDocument(jsonData, "application/json"), variables, "application/json");
 String jsonResult = transformedResult.getContentsAsString();
 ------
 
 The `Mapper` constructor accepts the following arguments:
 
-- `trobadorScript` - the `String` which contains the mapping code;
+- `xtrasonnetScript` - the `String` which contains the mapping code;
 - `argumentNames` - the `java.util.Set` which contains the names of the additional variables
 
 The `transform` method accepts the following arguments:
 
-- payload - the instance of the `com.trobador.Document` which contains the data and the mime type;
-- variables - the instance of the `Map<String, com.trobador.Document>` which contains the additional variables.
+- payload - the instance of the `com.xtrasonnet.Document` which contains the data and the mime type;
+- variables - the instance of the `Map<String, com.xtrasonnet.Document>` which contains the additional variables.
 
-The result of the `transform` method invocation is the instance of the `com.trobador.Document` object which contains the result of the mapping and its mime type.
+The result of the `transform` method invocation is the instance of the `com.xtrasonnet.Document` object which contains the result of the mapping and its mime type.
 
-There are overloaded `transform` methods which accept different sets of parameters; see the Trobador source code and documentation for details.
+There are overloaded `transform` methods which accept different sets of parameters; see the xtrasonnet source code and documentation for details.

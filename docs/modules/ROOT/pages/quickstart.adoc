@@ -8,7 +8,7 @@ You can download the Community Edition, which is free, at https://www.jetbrains.
 
 === Creating a playground project
 
-You can use the Trobador IntelliJ Plugin in any IntelliJ project, but you'll set one up just for this tutorial.
+You can use the xtrasonnet IntelliJ Plugin in any IntelliJ project, but you'll set one up just for this tutorial.
 
 . Create a new project.
 If you've just installed IntelliJ, you may have a Create New Project option.
@@ -32,7 +32,7 @@ Now, follow the directions for installing the plugin at xref:intellij:ROOT:index
 
 === Creating your working files
 
-Now that the basic project is created and the plugin is installed, you'll create the first Trobador transformation and scenario for experimentation.
+Now that the basic project is created and the plugin is installed, you'll create the first xtrasonnet transformation and scenario for experimentation.
 On the left side of IntelliJ is a pane representing the structure of your project.
 If you named the project `tutorial`, it has a folder icon with the word `tutorial` in bold.
 
@@ -57,15 +57,15 @@ This is the data that will be used for the tutorial.
 include::example$quickstart-payload.json[]
 ----
 
-== Trobador Basics
+== xtrasonnet Basics
 
 Currently your rightmost pane under `transformation.ds`, which says "Preview", probably has an error message in it.
-To fix that, you need to update your Trobador file, which is the currently empty middle pane.
+To fix that, you need to update your xtrasonnet file, which is the currently empty middle pane.
 
 === The minimal transformation
 
 In the empty middle pane, put two curly brackets `{}`.
-This is a minimal Trobador transformation, though it does not use the input data at all.
+This is a minimal xtrasonnet transformation, though it does not use the input data at all.
 
 It returns itself as a value, so you should see the Preview change to also have `{}`.
 If you don't, hit the second icon down directly to the left of the Preview area, the red refresh icon.
@@ -105,7 +105,7 @@ include::example$include-value-alternate.ds[]
 
 === Transforming an array of items
 
-The main way to transform arrays in Trobador is called an array comprehension.
+The main way to transform arrays in xtrasonnet is called an array comprehension.
 To create a new array derived from the `items` in the input, update the transformation to
 
 [source,javascript]
@@ -155,13 +155,13 @@ Problem executing map: sjsonnet.Error: Field does not exist: remainingQuantiy
     at line 3 column 54 of the transformation
 ----
 
-Trobador is much stricter about issues like this than Javascript.
+xtrasonnet is much stricter about issues like this than Javascript.
 This means it tends to fail if unusual data arrives rather than produce unexpected output, a crucial feature for data transformations.
 Use realistic testing data and you can be confident that the transformation in production will either work correctly or fail if the data does not match your expectations.
 
 === Using a local variable to reuse a transformation
 
-So far the Trobador transformation is a single expression with a number of parts, but accomplishing complex transformations requires the ability to break down code into smaller pieces.
+So far the xtrasonnet transformation is a single expression with a number of parts, but accomplishing complex transformations requires the ability to break down code into smaller pieces.
 Update the transformation to
 
 [source,javascript]
@@ -207,7 +207,7 @@ The output object now has an additional field indicating the total number of ite
 
 In data transformations, parts of the input data are often reproduced in the output.
 Even when that is not the case, it's often useful to build objects in layers.
-Trobador makes that easy by supporting object combination.
+xtrasonnet makes that easy by supporting object combination.
 Update the transformation to
 
 [source,javascript]
@@ -230,8 +230,8 @@ Using two colons instead of one for a field makes it a hidden field, and it won'
 Since the value isn't used in this transformation, I assigned it to null, but even if it had a non-null value it would not show up.
 
 
-Combining objects like this is useful but limited, with fields replacing other fieltro.
-Trobador supports much more powerful operations when combining objects.
+Combining objects like this is useful but limited, with fields replacing other fielxtr.
+xtrasonnet supports much more powerful operations when combining objects.
 Update the transformation to
 
 [source,javascript]
@@ -246,7 +246,7 @@ When combined with each item in the array comprehension, the combination is dyna
 
 == Further reading
 
-The JSonnet language Trobador uses includes many more powerful capabilities.
+The JSonnet language xtrasonnet uses includes many more powerful capabilities.
 You can learn more of them in https://jsonnet.org/learning/tutorial.html[the tutorial on the JSonnet website], though it is more focused on generating configurations.
 
 

@@ -1,11 +1,11 @@
-= `tro.strings`
+= `xtr.strings`
 
 == `appendIfMissing(str: String, suffix: String): String`
 Returns `str`, appended with `suffix` if it does not already end with `suffix`.
 
 .Example
 ----
-tro.strings.appendIfMissing('Hello', ' World')
+xtr.strings.appendIfMissing('Hello', ' World')
 ----
 .Result
 ----
@@ -17,7 +17,7 @@ Returns the camelized version of `str`, by removing all spaces and underscores, 
 
 .Example
 ----
-tro.strings.camelize('Hello to_everyone')
+xtr.strings.camelize('Hello to_everyone')
 ----
 .Result
 ----
@@ -29,7 +29,7 @@ Returns the capitalized version of `str`, by capitalizing the first letter of ev
 
 .Example
 ----
-tro.strings.capitalize('hello world')
+xtr.strings.capitalize('hello world')
 ----
 .Result
 ----
@@ -41,7 +41,7 @@ Returns the character-code for the given `char`.
 
 .Example
 ----
-tro.strings.charCode('*')
+xtr.strings.charCode('*')
 ----
 .Result
 ----
@@ -53,7 +53,7 @@ Returns the character-code for the character at the given `index` in `str`.
 
 .Example
 ----
-tro.strings.charCodeAt('_*_', 1)
+xtr.strings.charCodeAt('_*_', 1)
 ----
 .Result
 ----
@@ -65,7 +65,7 @@ Returns the dasherized version of `str`, by changing alphabetic characters to lo
 
 .Example
 ----
-tro.strings.dasherize('Hello World_X')
+xtr.strings.dasherize('Hello World_X')
 ----
 .Result
 ----
@@ -77,7 +77,7 @@ Returns the character for the given character-code.
 
 .Example
 ----
-tro.strings.ofCharCode(42)
+xtr.strings.ofCharCode(42)
 ----
 .Result
 ----
@@ -89,7 +89,7 @@ Returns `true` if the given `str` contains only alphabetic characters, otherwise
 
 .Example
 ----
-tro.strings.isAlpha('abcde')
+xtr.strings.isAlpha('abcde')
 ----
 .Result
 ----
@@ -101,7 +101,7 @@ Returns `true` if the given `str` contains only alphanumeric characters, otherwi
 
 .Example
 ----
-tro.strings.isAlphanumeric('a1b2cd3e4')
+xtr.strings.isAlphanumeric('a1b2cd3e4')
 ----
 .Result
 ----
@@ -113,7 +113,7 @@ Returns `true` if the alphabetic characters in the given `str` are all lowercase
 
 .Example
 ----
-tro.strings.isLowerCase('hello')
+xtr.strings.isLowerCase('hello')
 ----
 .Result
 ----
@@ -125,7 +125,7 @@ Returns `true` if the given `str` contains only numeric characters.
 
 .Example
 ----
-tro.strings.isNumeric('34634')
+xtr.strings.isNumeric('34634')
 ----
 .Result
 ----
@@ -137,7 +137,7 @@ Returns `true` if the alphabetic characters in the given `str` are all uppercse,
 
 .Example
 ----
-tro.strings.isUpperCase('HELLO')
+xtr.strings.isUpperCase('HELLO')
 ----
 .Result
 ----
@@ -149,7 +149,7 @@ Returns `true` if the given `str` contains only whitespaces.
 
 .Example
 ----
-tro.strings.isWhitespace('      ')
+xtr.strings.isWhitespace('      ')
 ----
 .Result
 ----
@@ -161,7 +161,7 @@ Returns `str` prepended with enough repetitions of `char` required to meet the g
 
 .Example
 ----
-tro.strings.leftPad('Hello', 10, ' ')
+xtr.strings.leftPad('Hello', 10, ' ')
 ----
 .Result
 ----
@@ -174,7 +174,7 @@ Returns the ordinal name for the given `num`.
 
 .Example
 ----
-tro.strings.ordinalOf(1)
+xtr.strings.ordinalOf(1)
 ----
 .Result
 ----
@@ -187,7 +187,7 @@ Returns the plural of the given `word`.
 
 .Example
 ----
-tro.strings.pluralize('car')
+xtr.strings.pluralize('car')
 ----
 .Result
 ----
@@ -199,7 +199,7 @@ Returns `str`, prepended with `suffix` if it does not already start with `prefix
 
 .Example
 ----
-tro.strings.prependIfMissing('World', 'Hello ')
+xtr.strings.prependIfMissing('World', 'Hello ')
 ----
 .Result
 ----
@@ -211,7 +211,7 @@ Returns a new `String` with `str` repeated `n` times.
 
 .Example
 ----
-tro.strings.repeat('hey ', 2)
+xtr.strings.repeat('hey ', 2)
 ----
 .Result
 ----
@@ -223,7 +223,7 @@ Returns `str` prepended with enough repetitions of `char` required to meet the g
 
 .Example
 ----
-tro.strings.rightPad('Hello', 10, ' ')
+xtr.strings.rightPad('Hello', 10, ' ')
 ----
 .Result
 ----
@@ -236,7 +236,7 @@ Returns the singular of the given `word`.
 
 .Example
 ----
-tro.strings.singularize('cars')
+xtr.strings.singularize('cars')
 ----
 .Result
 ----
@@ -248,7 +248,7 @@ Returns the contents of `str1` after the first occurrence of `str2`, otherwise r
 
 .Example
 ----
-tro.strings.substringAfter('!XHelloXWorldXAfter', 'X')
+xtr.strings.substringAfter('!XHelloXWorldXAfter', 'X')
 ----
 .Result
 ----
@@ -260,7 +260,7 @@ Returns the contents of `str1` after the last occurrence of `str2`, otherwise re
 
 .Example
 ----
-tro.strings.substringAfterLast('!XHelloXWorldXAfter', 'X')
+xtr.strings.substringAfterLast('!XHelloXWorldXAfter', 'X')
 ----
 .Result
 ----
@@ -272,7 +272,7 @@ Returns the contents of `str1` before the first occurrence of `str2`, otherwise 
 
 .Example
 ----
-tro.strings.substringBefore('!XHelloXWorldXAfter', 'X')
+xtr.strings.substringBefore('!XHelloXWorldXAfter', 'X')
 ----
 .Result
 ----
@@ -284,7 +284,7 @@ Returns the contents of `str1` before the last occurrence of `str2`, otherwise r
 
 .Example
 ----
-tro.strings.substringBeforeLast('!XHelloXWorldXAfter', 'X')
+xtr.strings.substringBeforeLast('!XHelloXWorldXAfter', 'X')
 ----
 .Result
 ----
@@ -296,7 +296,7 @@ Returns the underscored version (aka snake case) of the given `str`, by changing
 
 .Example
 ----
-tro.strings.underscore('Hello WorldX')
+xtr.strings.underscore('Hello WorldX')
 ----
 .Result
 ----
@@ -308,7 +308,7 @@ Returns `str` without the given `wrap` as prefix and suffix, if found.
 
 .Example
 ----
-tro.strings.unwrap('_Hello, world!_', '_')
+xtr.strings.unwrap('_Hello, world!_', '_')
 ----
 .Result
 ----
@@ -320,7 +320,7 @@ Returns `str` truncated by the given `size`.
 
 .Example
 ----
-tro.strings.truncate('Hello, world!', 5)
+xtr.strings.truncate('Hello, world!', 5)
 ----
 .Result
 ----
@@ -332,7 +332,7 @@ Returns `str`, prepended and appended with `wrap`, if not found.
 
 .Example
 ----
-tro.strings.wrapIfMissing('_Hello, world!', '_')
+xtr.strings.wrapIfMissing('_Hello, world!', '_')
 ----
 .Result
 ----
@@ -344,7 +344,7 @@ Returns `str`, prepended and appended with `wrap`.
 
 .Example
 ----
-tro.strings.wrapIfMissing('_Hello, world!', '_')
+xtr.strings.wrapIfMissing('_Hello, world!', '_')
 ----
 .Result
 ----

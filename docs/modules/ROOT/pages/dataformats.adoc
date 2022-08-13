@@ -4,7 +4,7 @@
 
 == Generic Read and Write Functions
 
-The `Formats` library contains `read`, and `write` functions for serializing and deserializing data in other formats, e.g. XML or CSV. The XML and CSV plugins are built into the standard Trobador distributions while other formats can be supported by implementing `DataFormatPlugin` interface.
+The `Formats` library contains `read`, and `write` functions for serializing and deserializing data in other formats, e.g. XML or CSV. The XML and CSV plugins are built into the standard xtrasonnet distributions while other formats can be supported by implementing `DataFormatPlugin` interface.
 
 These functions can be used if the data contains embedded data in other formats, for example:
 
@@ -14,7 +14,7 @@ These functions can be used if the data contains embedded data in other formats,
 }
 -----------------------
 
-If the payload or variable itself is in the format other than JSON, it will be automatically detected by the Trobador, therefore using the `read` will cause an error. The input and output of payload and variables is controlled by xref:headers.adoc[the headers].
+If the payload or variable itself is in the format other than JSON, it will be automatically detected by the xtrasonnet, therefore using the `read` will cause an error. The input and output of payload and variables is controlled by xref:headers.adoc[the headers].
 
 === `read(string input, string inputMimeType, object params={})`
 
@@ -22,20 +22,20 @@ Reads input data in the specified mime type and accepts additional parameters wh
 
 *Example*
 ------------------------
-tro.read(payload.embeddedXMLValue, "application/xml")
+xtr.read(payload.embeddedXMLValue, "application/xml")
 ------------------------
 *Example*
 ------------------------
 local params = {
     "NamespaceDeclarations" : {
-        "trobador" : "http://www.modusbox.com"
+        "xtrasonnet" : "http://www.modusbox.com"
     },
     "NamespaceSeparator": "%",
     "TextValueKey": "__text",
     "AttributeCharacter": "*"
 };
 
-tro.read(payload.embeddedXMLValue, "application/xml", params);
+xtr.read(payload.embeddedXMLValue, "application/xml", params);
 ------------------------
 
 === `write(string output, string outputMimeType, object params={})`
@@ -44,14 +44,14 @@ Outputs the data into specified data format and accepts additional parameters wh
 
 *Example*
 ------------------------
-tro.write(payload.embeddedXMLValue, "application/xml")
+xtr.write(payload.embeddedXMLValue, "application/xml")
 ------------------------
 
 *Example*
 ------------------------
 local params = {
     "NamespaceDeclarations" : {
-        "trobador" : "http://www.modusbox.com"
+        "xtrasonnet" : "http://www.modusbox.com"
     },
     "NamespaceSeparator": "%",
     "TextValueKey": "__text",
@@ -60,7 +60,7 @@ local params = {
     "AutoEmptyElements": false
 };
 
-tro.write(payload.someObj, "application/xml", params);
+xtr.write(payload.someObj, "application/xml", params);
 ------------------------
 
 == XML Format
@@ -91,12 +91,12 @@ Converts input XML string to a JSON object using http://wiki.open311.org/JSON_an
 ------------------------
 <?xml version="1.0" encoding="UTF-8"?>
 <test:root xmlns:test="http://www.modusbox.com">
-    <test:trobador version="1.0">Hello World</test:trobador>
+    <test:xtrasonnet version="1.0">Hello World</test:xtrasonnet>
 </test:root>
 ------------------------
-.Trobador map:
+.xtrasonnet map:
 ------------------------
-tro.read(payload.embeddedXMLValue, "application/xml")
+xtr.read(payload.embeddedXMLValue, "application/xml")
 ------------------------
 .Result
 ------------------------
@@ -105,7 +105,7 @@ tro.read(payload.embeddedXMLValue, "application/xml")
         "@xmlns": {
             "test":"http://www.modusbox.com"
         },
-        "test:trobador": {
+        "test:xtrasonnet": {
             "@version": "1.0",
             "$": "Hello World"
         }
@@ -142,7 +142,7 @@ Providing an optional `params` object allows for additional control over JSON ge
 
 ```
 "NamespaceDeclarations" : {
-    "trobador" : "http://www.trobador.com",
+    "xtrasonnet" : "http://www.xtrasonnet.com",
     "test" : "urn:com.foo.bar",
     "": "http://www.modusbox.com"
 }
@@ -160,30 +160,30 @@ Providing an optional `params` object allows for additional control over JSON ge
 ------------------------
 <?xml version="1.0" encoding="UTF-8"?>
 <test:root xmlns:test="http://www.modusbox.com">
-    <test:trobador version="1.0">Hello World</test:trobador>
+    <test:xtrasonnet version="1.0">Hello World</test:xtrasonnet>
 </test:root>
 ------------------------
-.Trobador map:
+.xtrasonnet map:
 ------------------------
 local params = {
     "NamespaceDeclarations" : {
-        "trobador": "http://www.modusbox.com"
+        "xtrasonnet": "http://www.modusbox.com"
     },
     "NamespaceSeparator": "%",
     "TextValueKey": "__text",
     "AttributeCharacter": "*"
 };
 
-tro.read(payload.embeddedXMLValue, "application/xml", params);
+xtr.read(payload.embeddedXMLValue, "application/xml", params);
 ------------------------
 .Result
 ------------------------
 {
-    "trobador%root": {
+    "xtrasonnet%root": {
         "*xmlns": {
-            "trobador": "http://www.modusbox.com"
+            "xtrasonnet": "http://www.modusbox.com"
         },
-        "trobador%trobador": {
+        "xtrasonnet%xtrasonnet": {
             "*version": "1.0",
             "__text": "Hello World"
         }
@@ -206,7 +206,7 @@ The input JSON must have a single key which will be mapped to the root element o
   *"person"*: {
     "firstName": "John",
     "lastName": "Doe",
-    "title": "Rookie Trobador mapper"
+    "title": "Rookie xtrasonnet mapper"
   }
 }
 ------------------
@@ -216,7 +216,7 @@ The input JSON must have a single key which will be mapped to the root element o
 {
   "firstName": "John",
   "lastName": "Doe",
-  "title": "Rookie Trobador mapper"
+  "title": "Rookie xtrasonnet mapper"
 }
 ------------------
 .Incorrect:
@@ -225,7 +225,7 @@ The input JSON must have a single key which will be mapped to the root element o
   "person": {
     "firstName": "John",
     "lastName": "Doe",
-    "title": "Rookie Trobador mapper"
+    "title": "Rookie xtrasonnet mapper"
   },
   "anotherKey": "anotherValue"
 }
@@ -241,23 +241,23 @@ The input JSON must have a single key which will be mapped to the root element o
         "@xmlns": {
             "test":"http://www.modusbox.com"
         },
-        "test:trobador": {
+        "test:xtrasonnet": {
             "@version": "1.0",
             "$": "Hello World"
         }
     }
 }
 ------------------------
-.Trobador map:
+.xtrasonnet map:
 ------------------------
 {
-    embeddedXMLValue: tro.write(payload, "application/xml")
+    embeddedXMLValue: xtr.write(payload, "application/xml")
 }
 ------------------------
 .Result
 ------------------------
 {
-    "embeddedXMLValue": "<?xml version=\"1.0\" encoding=\"UTF-8\"?> <test:root xmlns:test=\"http://www.modusbox.com\"> <test:trobador version=\"1.0\">Hello World</test:trobador> </test:root>"
+    "embeddedXMLValue": "<?xml version=\"1.0\" encoding=\"UTF-8\"?> <test:root xmlns:test=\"http://www.modusbox.com\"> <test:xtrasonnet version=\"1.0\">Hello World</test:xtrasonnet> </test:root>"
 }
 ------------------------
 
@@ -298,7 +298,7 @@ Providing a `params` object allows for more control over generated XML. In addit
         "*xmlns": {
             "test":"http://www.modusbox.com"
         },
-        "test%trobador": {
+        "test%xtrasonnet": {
             "*version": "1.0",
             "__text": "Hello World"
         },
@@ -306,11 +306,11 @@ Providing a `params` object allows for more control over generated XML. In addit
     }
 }
 ------------------------
-.Trobador map:
+.xtrasonnet map:
 ------------------------
 local params = {
     "NamespaceDeclarations" : {
-        "trobador" : "http://www.modusbox.com"
+        "xtrasonnet" : "http://www.modusbox.com"
     },
     "NamespaceSeparator": "%",
     "TextValueKey": "__text",
@@ -320,13 +320,13 @@ local params = {
 };
 
 {
-    embeddedXMLValue: tro.write(payload, "application/xml")
+    embeddedXMLValue: xtr.write(payload, "application/xml")
 }
 ------------------------
 .Result
 ------------------------
 {
-    "embeddedXMLValue": "<?xml version=\"1.1\" encoding=\"UTF-8\"?> <trobador:root xmlns:test=\"http://www.modusbox.com\"> <trobador:trobador version=\"1.0\">Hello World</trobador:trobador> <trobador:empty/> </trobador:root>"
+    "embeddedXMLValue": "<?xml version=\"1.1\" encoding=\"UTF-8\"?> <xtrasonnet:root xmlns:test=\"http://www.modusbox.com\"> <xtrasonnet:xtrasonnet version=\"1.0\">Hello World</xtrasonnet:xtrasonnet> <xtrasonnet:empty/> </xtrasonnet:root>"
 ------------------------
 
 == CSV Format
@@ -348,10 +348,10 @@ Parses the CSV and converts it to a JSON array of objects. It expects the CSV in
 William,Shakespeare,"(123)456-7890"
 Christopher,Marlow,"(987)654-3210"
 ------------------------
-.Trobador map:
+.xtrasonnet map:
 ------------------------
 {
-    local csvInput = tro.read(payload.embeddedCSVValue, "application/csv");
+    local csvInput = xtr.read(payload.embeddedCSVValue, "application/csv");
 
     {
         name: csvInput[0]["First Name"] + " " + csvInput[0]["Last Name"]
@@ -401,7 +401,7 @@ Providing an optional `params` object allows more control over the format of the
 'William'|'Shakespeare'|'(123)456-7890'
 'Christopher'|'Marlow'|'(987)654-3210'
 ------------------------
-.Trobador map:
+.xtrasonnet map:
 ------------------------
 local params = {
     "UseHeader": false,
@@ -411,7 +411,7 @@ local params = {
     "NewLine": "\n"
 };
 
-local csvInput = tro.read(payload.embeddedCSVValue, "application/csv", params);
+local csvInput = xtr.read(payload.embeddedCSVValue, "application/csv", params);
 
 {
     name: csvInput[0][0] + " " + csvInput[0][1]
@@ -445,10 +445,10 @@ Creates a CSV out of an array of JSON objects, using default quote, separator, e
   }
 ]
 ------------------------
-.Trobador map:
+.xtrasonnet map:
 ------------------------
 {
-    embeddedCSVValue: tro.write(payload, "application/csv")
+    embeddedCSVValue: xtr.write(payload, "application/csv")
 }
 ------------------------
 .Result
@@ -494,7 +494,7 @@ Providing an optional `params` object allows for more control over the format of
   ]
 ]
 ------------------------
-.Trobador map:
+.xtrasonnet map:
 ------------------------
 local params = {
     "UseHeader": false,
@@ -504,7 +504,7 @@ local params = {
 };
 
 {
-    embeddedCSVValue: tro.write(payload, "application/csv", params)
+    embeddedCSVValue: xtr.write(payload, "application/csv", params)
 }
 ------------------------
 .Result
@@ -534,7 +534,7 @@ The following read parameters are supported:
 |`yyyy-MM-dd'T'HH:mm:ss.SSSZ`
 
 |`FailOnEmptyBeans`
-|If set to `true`, an exception is thrown if no serializer is found for a Java type. Setting it to `false` instructs Trobador to ignore the field that cannot be serialized. See https://github.com/FasterXML/jackson-databind/wiki/Serialization-Features[Jackson Serialization Features] for details.
+|If set to `true`, an exception is thrown if no serializer is found for a Java type. Setting it to `false` instructs xtrasonnet to ignore the field that cannot be serialized. See https://github.com/FasterXML/jackson-databind/wiki/Serialization-Features[Jackson Serialization Features] for details.
 |`true`
 
 |===
@@ -566,7 +566,7 @@ The following write parameters are supported:
 
 |
 |`MixIns`
-|Adds a map of classes and their mix-ins to customize the Trobador / Jackson deserialization behavior. See the example below for the
+|Adds a map of classes and their mix-ins to customize the xtrasonnet / Jackson deserialization behavior. See the example below for the
 example of polymorphic deserialization.
 |
 
@@ -588,7 +588,7 @@ When serializing or deserializing Java object with fields of type `JAXBElement`,
 -------------
 @XmlRootElement(name = "WsdlGeneratedObj")
 public class WsdlGeneratedObj {
-    @XmlElementRef(name = "testField", namespace = "http://com.trobador.test", type = JAXBElement.class, required = true)
+    @XmlElementRef(name = "testField", namespace = "http://com.xtrasonnet.test", type = JAXBElement.class, required = true)
     protected JAXBElement<TestField> testField;
 ...
 }
@@ -597,14 +597,14 @@ public class WsdlGeneratedObj {
 Mapping from JSON to the `WsdlGeneratedObj` is:
 
 -------------
-/** Trobador
+/** xtrasonnet
 version=1.0
-output.application/java.type=com.trobador.javatest.WsdlGeneratedObj
+output.application/java.type=com.xtrasonnet.javatest.WsdlGeneratedObj
 */
 {
     "testField": {
-        "name": "{http://com.trobador.test}testField",
-        "declaredType": "com.trobador.test.TestField",
+        "name": "{http://com.xtrasonnet.test}testField",
+        "declaredType": "com.xtrasonnet.test.TestField",
         "value": {
             test: "Hello World"
         }
@@ -614,9 +614,9 @@ output.application/java.type=com.trobador.javatest.WsdlGeneratedObj
 
 === Polymorphic deserialization
 
-In a situation where the property of the deserialized Java class is of an abstract type with multiple extending classes, it is necessary to provide an additional information so that Trobador can instantiate correct class. Consider the following mapping:
+In a situation where the property of the deserialized Java class is of an abstract type with multiple extending classes, it is necessary to provide an additional information so that xtrasonnet can instantiate correct class. Consider the following mapping:
 --------------
-/** Trobador
+/** xtrasonnet
 version=2.0
 output application/x-java-object; dateformat=yyyy-MM-dd; type=com.foo.bar.Household;
 */
@@ -661,7 +661,7 @@ public class Child extends Person {
     String school;
 }
 --------------
-This mapping will fail, because Trobador doesn't know which classes it should instantiate for the elements of the `family` list.
+This mapping will fail, because xtrasonnet doesn't know which classes it should instantiate for the elements of the `family` list.
 To fix this, first we need to create a mixin class, e.g.:
 
 --------------
@@ -684,7 +684,7 @@ This class maps the value of the property `@type` in a JSON object to the class 
 
 Now change the mapping to the following:
 --------------
-/** Trobador
+/** xtrasonnet
 version=2.0
 output application/x-java-object; dateformat=yyyy-MM-dd; type=com.foo.bar.Household; mixins="{"com.foo.bar.Person":"com.foo.bar.PersonMixIn"}"
 */
@@ -705,10 +705,10 @@ output application/x-java-object; dateformat=yyyy-MM-dd; type=com.foo.bar.Househ
 --------------
 The value of the property `@type` will be matched to one of the annotations in the mix-in class.
 
-For the typical use case of an abstract class with concrete subtypes, where the type names are in a property on the JSON objects, you do not need to write your own Mixin, Trobador can handle it for you. In this case, the `PolymorphicTypes` header must be set, and optionally the `PolymorphicTypeIdProperty`, e.g.:
+For the typical use case of an abstract class with concrete subtypes, where the type names are in a property on the JSON objects, you do not need to write your own Mixin, xtrasonnet can handle it for you. In this case, the `PolymorphicTypes` header must be set, and optionally the `PolymorphicTypeIdProperty`, e.g.:
 
 --------------
-/** Trobador
+/** xtrasonnet
 version=2.0
 output application/x-java-object; dateformat=yyyy-MM-dd; type=com.foo.bar.Household; polymorphictypes=com.foo.bar.Person
 */
@@ -728,7 +728,7 @@ output application/x-java-object; dateformat=yyyy-MM-dd; type=com.foo.bar.Househ
 }
 --------------
 --------------
-/** Trobador
+/** xtrasonnet
 version=2.0
 output application/x-java-object; dateformat=yyyy-MM-dd; type=com.foo.bar.Household; polymorphictypes=com.foo.bar.Person; polymorphictypeidproperty=__clazz
 */
