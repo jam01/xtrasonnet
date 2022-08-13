@@ -1,799 +1,326 @@
-## arrays
+= `tro.arrays`
 
-### `countBy(array arr, function func)`
-Returns the number of items in `arr` that passes the condition of `func`.
+== `all`(arr: Array[A], predicate: Func[(A) => Boolean]): Boolean`
+Returns `true` if all elements in `arr` satisfy the given `predicate`, otherwise `false`. `predicate` must accept an `A`.
 
-The function `func` is expected to take the value as the first parameter (required).
-
-*Example*
-
-.Payload
-----------
-[
-    1,
-    2,
-    3,
-    4,
-    5
-]
-----------
-.DataSonnet map:
-------------------------
-ds.arrays.countBy(payload, function(item) item > 2)
-------------------------
+.Example
+----
+tro.arrays.all([1, 2, 3], function(item) item > 0)
+----
 .Result
-------------------------
-3
-------------------------
-
-### `deepFlatten(array arr)`
-Given `arr`, which contains one level and multi level arrays, returns a flat array.
-
-*Example*
-
-.Payload
-----------
-[
-  [
-    1,
-    2
-  ],
-  [
-    3,
-    4,
-    [
-      5,
-      6
-    ]
-  ]
-]
-----------
-.DataSonnet map:
-------------------------
-ds.arrays.deepFlatten(payload)
-------------------------
-.Result
-------------------------
-[
-  1,
-  2,
-  3,
-  4,
-  5,
-  6
-]
-------------------------
-
-### `divideBy(array arr, number size)`
-Divides a single array `arr` into multiple arrays, limiting each one to `size`.
-
-*Example*
-
-.Payload
-----------
-[
-  1,
-  2,
-  3,
-  4,
-  5
-]
-----------
-.DataSonnet map:
-------------------------
-ds.arrays.divideBy(payload, 2)
-------------------------
-.Result
-------------------------
-[
-  [
-    1,
-    2
-  ],
-  [
-    3,
-    4
-  ],
-  [
-    5
-  ]
-]
-------------------------
-
-### `drop(array arr, number index)`
-Removes every item in `arr` until the specified `index` is reached.
-
-*Example*
-
-.Payload
-----------
-[
-  1,
-  2,
-  3,
-  4,
-  5
-]
-----------
-.DataSonnet map:
-------------------------
-ds.arrays.drop(payload, 3)
-------------------------
-.Result
-------------------------
-[
-  4,
-  5
-]
-------------------------
-
-### `dropWhile(array arr, function func)`
-Removes every item in `arr` until `func` returns a false result, then stops.
-
-The function `func` is expected to take the item as the first parameter (required).
-
-*Example*
-
-.Payload
-----------
-[
-  1,
-  2,
-  3,
-  4,
-  5
-]
-----------
-.DataSonnet map:
-------------------------
-ds.arrays.dropWhile(payload, function(item) item < 3)
-------------------------
-.Result
-------------------------
-[
-  3,
-  4,
-  5
-]
-------------------------
-
-### `duplicates(array arr)`
-Returns the values that exist more than once in `arr`.
-
-*Example*
-
-.Payload
-----------
-[
-  1,
-  1,
-  2
-]
-----------
-.DataSonnet map:
-------------------------
-ds.arrays.duplicates(payload)
-------------------------
-.Result
-------------------------
-[
-  1
-]
-------------------------
-
-### `every(array arr, function func)`
-Returns true if every value `arr` returns true in `func`.
-
-The function `func` is expected to take the item as the first parameter (required).
-
-*Example*
-
-.Payload
-----------
-[
-  1,
-  2,
-  3,
-  4,
-  5
-]
-----------
-.DataSonnet map:
-------------------------
-ds.arrays.every(payload, function(item) item > 0)
-------------------------
-.Result
-------------------------
+----
 true
-------------------------
+----
 
-### `firstWith(array arr, function func)`
-Returns the first value that passes the condition of `func` then stops.
+== `any(arr: Array[A], function: Func[(A) => Boolean]): Boolean`
+Returns `true` if any element in `arr` satisfies the given `predicate`, otherwise `false`. `predicate` must accept an `A`.
 
-The function `func` is expected to take the value as the first parameter (required) and the index as the second (optional).
-
-*Example*
-
-.Payload
-----------
-[
-  1,
-  2,
-  3,
-  4,
-  5
-]
-----------
-.DataSonnet map:
-------------------------
-ds.arrays.firstWith(payload, function(item,index) item == index + 1)
-------------------------
+.Example
+----
+tro.arrays.any([1, 2, 3], function(item) item > 1)
+----
 .Result
-------------------------
+----
+true
+----
+
+== `countBy(arr: Array[A], function: Func[(A) => Boolean]): Number`
+Returns a `Number` count of all the elements in `array` that satisfy the given `predicate`, which must accept and `A`.
+
+.Example
+----
+tro.arrays.countBy([1, 2, 3], function(item) item > 2)
+----
+.Result
+----
 1
-------------------------
+----
 
-### `indexOf(array arr, any value)`
-Returns the current index of the matching `value` in `arr`.
+== `deepFlatten(arr: Array[Array[A]]): Array[Any]`
+Returns a new single level `Array` with the contents of all `Array` in `arr`, recursively flattening each `Array` element found.
 
-*Example*
-
-.Payload
-----------
-[
-  1,
-  2,
-  3,
-  4,
-  5
-]
-----------
-.DataSonnet map:
-------------------------
-ds.arrays.indexOf(payload, 3)
-------------------------
+.Example
+----
+tro.arrays.deepFlatten([[1, 2], '3', [4, {}, [5, 6]]])
+----
 .Result
-------------------------
-2
-------------------------
+----
+[1, 2, '3', 4, {}, 5, 6]
+----
 
-### `indexWhere(array arr, function func)`
-Returns the first index where the condition of `func` passes.
+== `distinctBy(arr: Array[A], identity: Func[(A) => B]): Array[A]`
+Returns a new `Array` with the distinct elements in `arr` using the given `identity` function for comparison. `identity` must accept an `A`.
 
-The function `func` is expected to take the item as the first parameter (required).
-
-*Example*
-
-.Payload
-----------
-[
-  1,
-  2,
-  3,
-  4,
-  5
-]
-----------
-.DataSonnet map:
-------------------------
-ds.arrays.indexWhere(payload, function(item) item == 3)
-------------------------
+.Example
+----
+tro.arrays.distinctBy([1, 2, 3, 4, 5, 6], function(item) item % 3)
+----
 .Result
-------------------------
-2
-------------------------
+----
+[1, 2, 3]
+----
 
-### `join(array arrL, array arrR, function funcL, function funcR)`
-Joins two arrays together, returns the items of `arrL` with the items that match from `arrR`.
+The modulo operation on the elements yields `[1, 2, 0, 1, 2, 0]` meaning `1` and `4` share the same identity, therefore `1` is kept and `4` discarded. Same is true for `2` and `3` with `5` and `6`, respectively.
 
-Both functions `funcL` and `funcR` are expected to take the item as the first parameter (required).
+== `distinctBy(arr: Array[A], identity: Func[(A, Number) => B]): Array[A]`
+Returns a new `Array` with the distinct elements in `arr` using the given `identity` function for comparison. `identity` must accept an `A`.
 
-*Example*
-
-.Payload
-----------
-{
-    "countries": [
-      {
-        "id": 1,
-        "name":"Spain"
-      },
-      {
-        "id": 2,
-        "name":"France"
-      },
-      {
-        "id": 3,
-        "name":"Germany"
-      }
-    ],
-    "languages": [
-      {
-        "countryId": 1,
-        "name":"Spanish"
-      },
-      {
-        "countryId": 2,
-        "name":"French"
-      },
-      {
-        "countryId": 4,
-        "name":"Danish"
-      }
-    ]
-}
-----------
-.DataSonnet map:
-------------------------
-ds.arrays.join(
-    payload.countries,
-    payload.languages,
-    function(item) item.id,
-    function(item) item.countryId
-)
-------------------------
+.Example
+----
+tro.arrays.distinctBy([1, 2, 3, 4, 5, 6], function(item, idx) item % (3 * idx))
+----
 .Result
-------------------------
-[
-  {
-    "r": {
-      "countryId": 1,
-      "name": "Spanish"
-    },
-    "l": {
-      "id": 1,
-      "name": "Spain"
-    }
-  },
-  {
-    "r": {
-      "countryId": 2,
-      "name": "French"
-    },
-    "l": {
-      "id": 2,
-      "name": "France"
-    }
-  }
-]
-------------------------
+----
+[1, 2, 3, 4, 5, 6]
+----
 
-### `leftJoin(array arrL, array arrR, function funcL, function funcR)`
-Joins two arrays together, returns all of the items of `arrL`, with the items that match from `arrR`.
+The modulo operation on the elements yields `[0, 2, 3, 4, 5, 6]` where all are distinct, so all elements are kept.
 
-Both functions `funcL` and `funcR` are expected to take the item as the first parameter (required).
+== `drop(arr: Array[A], n: Number): Array[A]`
+Returns a new `Array` with the elements in `arr`, from `n`-th element to last.
 
-*Example*
-
-.Payload
-----------
-{
-    "countries": [
-      {
-        "id": 1,
-        "name":"Spain"
-      },
-      {
-        "id": 2,
-        "name":"France"
-      },
-      {
-        "id": 3,
-        "name":"Germany"
-      }
-    ],
-    "languages": [
-      {
-        "countryId": 1,
-        "name":"Spanish"
-      },
-      {
-        "countryId": 2,
-        "name":"French"
-      },
-      {
-        "countryId": 4,
-        "name":"Danish"
-      }
-    ]
-}
-----------
-.DataSonnet map:
-------------------------
-ds.arrays.leftJoin(
-    payload.countries,
-    payload.languages,
-    function(item) item.id,
-    function(item) item.countryId
-)
-------------------------
+.Example
+----
+tro.arrays.drop([1, 2, 3, 4, 5], 3)
+----
 .Result
-------------------------
-[
-  {
-    "r": {
-      "countryId": 1,
-      "name": "Spanish"
-    },
-    "l": {
-      "id": 1,
-      "name": "Spain"
-    }
-  },
-  {
-    "r": {
-      "countryId": 2,
-      "name": "French"
-    },
-    "l": {
-      "id": 2,
-      "name": "France"
-    }
-  },
-  {
-    "l": {
-      "id": 3,
-      "name": "Germany"
-    }
-  }
-]
-------------------------
+----
+[4, 5]
+----
 
-### `outerJoin(array arrL, array arrR, function funcL, function funcR)`
-Joins two arrays together, returns the items of `arrL` with the items that match from `arrR`, the items from `arrL` that don't have matches, and items from `arrR` that don't have matches.
+== `dropWhile(arr: Array[A], predicate: Func[(A) => Boolean]): Array[A]`
+Returns a new `Array` with the elements in `arr`, from the first element to not satisfy `predicate` to last. `predicate` must accept an `A`.
 
-Both functions `funcL` and `funcR` are expected to take the item as the first parameter (required).
-
-*Example*
-
-.Payload
-----------
-{
-    "countries": [
-      {
-        "id": 1,
-        "name":"Spain"
-      },
-      {
-        "id": 2,
-        "name":"France"
-      },
-      {
-        "id": 3,
-        "name":"Germany"
-      }
-    ],
-    "languages": [
-      {
-        "countryId": 1,
-        "name":"Spanish"
-      },
-      {
-        "countryId": 2,
-        "name":"French"
-      },
-      {
-        "countryId": 4,
-        "name":"Danish"
-      }
-    ]
-}
-----------
-.DataSonnet map:
-------------------------
-ds.arrays.outerJoin(
-    payload.countries,
-    payload.languages,
-    function(item) item.id,
-    function(item) item.countryId
-)
-------------------------
+.Example
+----
+tro.arrays.dropWhile([1, 2, 3, 4, 5], function(item) item * 3 < 10)
+----
 .Result
-------------------------
-[
-  {
-    "r": {
-      "countryId": 1,
-      "name": "Spanish"
-    },
-    "l": {
-      "id": 1,
-      "name": "Spain"
-    }
-  },
-  {
-    "r": {
-      "countryId": 2,
-      "name": "French"
-    },
-    "l": {
-      "id": 2,
-      "name": "France"
-    }
-  },
-  {
-    "l": {
-      "id": 3,
-      "name": "Germany"
-    }
-  },
-  {
-    "r": {
-      "countryId": 4,
-      "name": "Danish"
-    }
-  }
-]
-------------------------
+----
+[4, 5]
+----
 
-### `occurrences(array arr, function func)`
-Returns an object where the keys of the object are the result of `func` and the values of the object indicate how many times the key occurs in `arr`.
+== `duplicates(arr: Array[A]): Array[A]`
+Returns a new `Array` with any element in `arr` that is duplicated.
 
-The function `func` is expected to take the value as the first parameter (required).
-
-*Example*
-
-.Payload
-----------
-[
-  "a",
-  "a",
-  "b",
-  "b",
-  "b",
-  "c"
-]
-----------
-.DataSonnet map:
-------------------------
-ds.arrays.occurrences(payload, function(item) item)
-------------------------
+.Example
+----
+tro.arrays.duplicates([1, 2, 3, 1, 2])
+----
 .Result
-------------------------
-{
-  "a": 2,
-  "b": 3,
-  "c": 1
-}
-------------------------
+----
+[1, 2]
+----
 
-### `partition(array arr, function func)`
-Splits `arr` into two arrays of successes and failures from the results of `func`.
+== `find(arr: Array[A], predicate: Func[(A) => Boolean]): [A]`
+Returns a single element `Array` with the first `A` that satisfies the given `predicate`, which must accept an `A`.
 
-The function `func` is expected to take the value as the first parameter (required).
-
-*Example*
-
-.Payload
-----------
-[
-  1,
-  2,
-  3,
-  4,
-  5
-]
-----------
-.DataSonnet map:
-------------------------
-ds.arrays.partition(payload, function(item) item > 3)
-------------------------
+.Example
+----
+tro.arrays.find([1, 2, 3, 4, 5], function(item) item * 3 > 10)
+----
 .Result
-------------------------
-{
-  "success": [
-    4,
-    5
-  ],
-  "failure": [
-    1,
-    2,
-    3
-  ]
-}
-------------------------
+----
+[4]
+----
 
-### `slice(array arr, number start, number end)`
-Returns a subset of `arr` between the indexes of `start` and `end`.
+== `find(arr: Array[A], predicate: Func[(A, Number) => Boolean]): [A]`
+Returns a single element `Array` with the first `A` that satisfies the given `predicate`, which must accept an `A` and its `Number` index.
 
-*Example*
-
-.Payload
-----------
-[
-  1,
-  2,
-  3,
-  4,
-  5
-]
-----------
-.DataSonnet map:
-------------------------
-ds.arrays.slice(payload, 2, 4)
-------------------------
+.Example
+----
+tro.arrays.find([1, 2, 3, 4, 5], function(item, idx) item * (3 + idx) > 10)
+----
 .Result
-------------------------
-[
-  3,
-  4
-]
-------------------------
+----
+[3]
+----
 
-### `some(array arr, function func)`
-Returns true if at least one item in `arr` passes the condition in `func`.
+== `indexWhere(arr: Array[A], predicate: Func[(A) => Boolean]): Number`
+Returns the `Number` index of the first element that satisfies the given `predicate`, otherwise `-1`. `predicate` which must accept an `A`.
 
-The function `func` is expected to take the item as the first parameter (required).
-
-*Example*
-
-.Payload
-----------
-[
-  1,
-  2,
-  3,
-  4,
-  5
-]
-----------
-.DataSonnet map:
-------------------------
-ds.arrays.some(payload, function(item) item > 2)
-------------------------
+.Example
+----
+tro.arrays.indexWhere([1, 2, 3, 4, 5], function(item) item * 3 < 10)
+----
 .Result
-------------------------
-true
-------------------------
+----
+0
+----
 
-### `splitAt(array arr, number index)`
-Splits `arr` into a left and right array based on the `index`.
+== `indicesWhere(arr: Array[A], function: Func[(A) => Boolean]): Array[Number]`
+Returns an `Array[Number]` with the indices of elements that satisfy the given `predicate`, which must accept an `A`.
 
-*Example*
-
-.Payload
-----------
-[
-  1,
-  2,
-  3,
-  4,
-  5
-]
-----------
-.DataSonnet map:
-------------------------
-ds.arrays.splitAt(payload, 3)
-------------------------
+.Example
+----
+tro.arrays.indicesWhere([1, 2, 3, 4, 5], function(item) item * 3 < 10)
+----
 .Result
-------------------------
-{
-  "r": [
-    4,
-    5
-  ],
-  "l": [
-    1,
-    2,
-    3
-  ]
-}
-------------------------
+----
+[1, 2, 3]
+----
 
-### `splitWhere(array arr, function func)`
-Splits `arr` into a left and right array based on the first index that returns true for `func`.
+== `lastIndexWhere(arr: Array[A], predicate: Func[(A) => Boolean]): Number`
+Returns the `Number` index of the last element in `arr` that satisfies the given `predicate`, otherwise `-1`. `predicate` which must accept an `A`.
 
-The function `func` is expected to take the item as the first parameter (required).
-
-*Example*
-
-.Payload
-----------
-[
-  1,
-  2,
-  3,
-  4,
-  5
-]
-----------
-.DataSonnet map:
-------------------------
-ds.arrays.splitWhere(payload, function(item) item > 3)
-------------------------
+.Example
+----
+tro.arrays.lastIndexWhere([1, 2, 3, 4, 5], function(item) item * 3 < 10)
+----
 .Result
-------------------------
-{
-  "r": [
-    4,
-    5
-  ],
-  "l": [
-    1,
-    2,
-    3
-  ]
-}
-------------------------
+----
+3
+----
 
-### `sumBy(array arr, function func)`
-Calculates the sum of `arr` by the function provided value.
+== `occurrencesBy(arr: Array[A], identity: Func[(A) => String]): Object[Number]`
+Returns an `Object` with an entry for each unique identity of elements in `arr`. The value of each entry is the `Number` of elements in `arr` that produced such identity, using `identity`. `identity` must take an `A`.
 
-The function `func` is expected to take the item as the first parameter (required).
-
-*Example*
-
-.Payload
-----------
-[
-  1,
-  2,
-  3,
-  4,
-  5
-]
-----------
-.DataSonnet map:
-------------------------
-ds.arrays.sumBy(payload, function(item) item)
-------------------------
+.Example
+----
+tro.arrays.occurrencesBy([1, 2, 3, 4, 5], function(item) if (item) < 4 then 'under4' else 'over4')
+----
 .Result
-------------------------
-15
-------------------------
+----
+{ 'under4': 3, 'over4': 2 }
+----
 
-### `take(array arr, number index)`
-Returns all values from `arr` up to the `index`.
+== `partition(arr: Array[A], predicate: Func[(A) => Boolean]): Object[A]`
+Returns an `Object` with two entries:
 
-*Example*
+- `success` key with an `Array[A]` of the subset of elements in `arr` that satisfy the given `predicate`, which must take an `A`.
+- `fail` key with an `Array[A]` of the subset of elements in `arr` that fail the given `predicate`, which must take an `A`.
 
-.Payload
-----------
-[
-  1,
-  2,
-  3,
-  4
-]
-----------
-.DataSonnet map:
-------------------------
-ds.arrays.take(payload, 3)
-------------------------
+.Example
+----
+tro.arrays.partition([1, 2, 3, 4, 5], function(item) item < 4)
+----
 .Result
-------------------------
-[
-  1,
-  2,
-  3
-]
-------------------------
+----
+{ success: [1, 2, 3], failure: [4, 5] }
+----
 
-### `takeWhile(array arr, function func)`
-Takes all items from the array while `func` is true. Stops at the first false value.
+== `splitAt(arr: Array[A], n: Number): Object[A]`
+Returns an `Object[A]` with two entries:
 
-The function `func` is expected to take the value as the first parameter (required).
+- `l` key with an `Array[A]` of the first `n` elements of `arr`.
+- `r` key with an `Array[A]` of the remaining elements of `arr`.
 
-*Example*
-
-.Payload
-----------
-[
-  1,
-  2,
-  3,
-  4,
-  5
-]
-----------
-.DataSonnet map:
-------------------------
-ds.arrays.takeWhile(payload, function(item) item < 3)
-------------------------
+.Example
+----
+tro.arrays.splitAt([1, 2, 3, 4, 5], 3)
+----
 .Result
-------------------------
-[
-  1,
-  2
-]
-------------------------
+----
+{ l: [1, 2, 3], r: [4, 5] }
+----
+
+== `splitEvery(arr: Array[A], size: Number): Array[Array[A]]`
+Returns a new `Array` of `Array[A]`, with every element containing the next `size` elements in `arr`.
+
+.Example
+----
+tro.arrays.splitEvery([1, 2, 3, 4, 5], 2)
+----
+.Result
+----
+[[1, 2], [3, 4], [5]]
+----
+
+== `splitWhere(arr: Array[A], predicate: Func[(A) => Boolean]): Object[Array[A]]`
+Returns an `Object` with two entries:
+
+- `l` key with an `Array[A]` of the subsets of elements of `arr` before the first element to satisfy the given `predicate`.
+- `r` key with an `Array[A]` of the remaining elements of `arr`.
+
+.Example
+----
+tro.arrays.splitWhere([1, 2, 3, 4, 5], function(item) item % 2 == 0)
+----
+.Result
+----
+{ l: [1], r: [2, 3, 4, 5] }
+----
+
+// todo: keep?
+== `sumBy(arr: Array[A], function: Func[(A) => Number]): Number`
+Returns the sum of the numbers in `arr`.
+
+== `take(arr: Array[A], n: Number): Array[A]`
+Returns a new `Array` with the elements in `arr`, from first to the `n`-th element.
+
+.Example
+----
+tro.arrays.take([1, 2, 3, 4, 5], 3)
+----
+.Result
+----
+[1, 2, 3]
+----
+
+== `takeWhile(arr: Array[A], predicate: Func[(A) => Boolean]): Array[A]`
+Returns a new `Array` with the elements in `arr`, from the first element until the first element to not satisfy the given `predicate`, which must accept an A.
+
+.Example
+----
+tro.arrays.takeWhile([1, 2, 3, 4, 5], function(item) item * 2 < 9)
+----
+.Result
+----
+[1, 2, 3, 4]
+----
+
+== `unzip(arr: Array[Array[A]]): Array[Array[A]]`
+Create n-number of `Arrays`, each containing the n-th element of every array in `arr`.
+
+Returns a new `Array` of equal size to the shortest array in `arr`. Every n-th element in the result is an `Array` containing the n-th element the arrays in `arr`.
+
+.Example
+----
+tro.arrays.unzip([[1, 'x'], [2, 'y'], [3, 'z']])
+----
+.Result
+----
+[[1, 2, 3], ['x', 'y', 'z']]
+----
+
+== `unzipAll(arr: Array[Array[A]], fill: B): Array[Array[A|B]]`
+Create n-number of `Arrays`, each containing the n-th element of every array in `arr`, using a `fill` value for missing n-th elements.
+
+Returns a new `Array` of equal size to the longest array in `arr`. Every n-th element in the result is an `Array` containing the n-th element the arrays in `arr` that have such element or `fill` for short arrays.
+
+.Example
+----
+tro.arrays.unzipAll([[1, 'x'], [2], [3, 'z']], 'NA')
+----
+.Result
+----
+[[1, 2, 3], ['x', 'NA', 'z']]
+----
+
+== `zip(arr: Array[Array[A]]): Array[Array[A]]`
+Combines corresponding elements of the arrays in `arr`.
+
+Returns a new `Array` of equal size to the shortest array in `arr`. Every n-th element in the result is an `Array` containing the n-th element of the arrays in `arr`.
+
+.Example
+----
+tro.arrays.zip([[1, 2, 3], ['x', 'y', 'z']])
+----
+.Result
+----
+[[1, 'x'], [2, 'y'], [3, 'z']]
+----
+
+== `zipAll(arr: Array[Array[A]], fill: B): Array[Array[A|B]]`
+Combines corresponding elements of the arrays in `arr`, using a `fill` value for short arrays.
+
+Returns a new `Array` of equal size to the longest array in `arr`. Every n-th element in the result is an `Array` containing the n-th element of the arrays in `arr` that have such element or `fill` for short arrays.
+
+.Example
+----
+tro.arrays.zipAll([[1, 2, 3], ['x', 'y']], 'NA')
+----
+.Result
+----
+[[1, 'x'], [2, 'y'], [3, 'NA']]
+----

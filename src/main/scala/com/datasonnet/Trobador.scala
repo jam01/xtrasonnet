@@ -1235,7 +1235,7 @@ object Trobador extends Library {
 
       builtin("duplicates", "array") {
         (pos, ev, array: Val.Arr) =>
-          val out = mutable.Buffer.empty[Lazy]
+          val out = mutable.ArrayBuffer[Lazy]()
           array.asLazyArray.collect({
             case item if array.asLazyArray.count(lzy => ev.equal(lzy.force, item.force)) >= 2 &&
               !out.exists(lzy => ev.equal(lzy.force, item.force)) => out.append(item)
@@ -1252,17 +1252,17 @@ object Trobador extends Library {
           val pos = func.pos
           val args = func.params.names.length
 
-          if (args == 2)
-            arr.asLazyArray.zipWithIndex
+          if (args == 2) {
+            val found = arr.asLazyArray.zipWithIndex
               .find(item => func.apply2(item._1, Val.Num(pos, item._2), pos.noOffset)(ev).isInstanceOf[Val.True])
               .map(_._1)
-              .getOrElse(Val.Null(pos))
-              .asInstanceOf[Val]
-          else if (args == 1)
-            arr.asLazyArray.find(func.apply1(_, pos.noOffset)(ev).isInstanceOf[Val.True])
-              .getOrElse(Val.Null(pos))
-              .asInstanceOf[Val]
-          else {
+            if (found.nonEmpty) new Val.Arr(pos, Array(found.get))
+            else new Val.Arr(pos, Array.empty)
+          } else if (args == 1) {
+            val found = arr.asLazyArray.find(func.apply1(_, pos.noOffset)(ev).isInstanceOf[Val.True])
+            if (found.nonEmpty) new Val.Arr(pos, Array(found.get))
+            else new Val.Arr(pos, Array.empty)
+          } else {
             Error.fail("Expected embedded function to have 1 or 2 parameters, received: " + args)
           }
       },
@@ -1270,15 +1270,6 @@ object Trobador extends Library {
       builtin("deepFlatten", "arr") {
         (pos, ev, arr: Val.Arr) =>
           new Val.Arr(pos, deepFlatten(arr.asLazyArray))
-      },
-
-      builtin("indexOf", "container", "value") {
-        (pos, ev, container: Val, value: Val) =>
-          container match {
-            case str: Val.Str => str.value.indexOf(value.cast[Val.Str].value)
-            case array: Val.Arr => array.asLazyArray.indexWhere(lzy => ev.equal(lzy.force, value))
-            case x => Error.fail("Expected String or Array, got: " + x.prettyName)
-          }
       },
 
       builtin("indexWhere", "arr", "func") {
@@ -1305,22 +1296,13 @@ object Trobador extends Library {
           new Val.Arr(pos, out.toArray)
       },
 
-      builtin("lastIndexOf", "container", "value") {
-        (pos, ev, container: Val, value: Val) =>
-          container match {
-            case str: Val.Str => str.value.lastIndexOf(value.cast[Val.Str].value)
-            case array: Val.Arr => array.asLazyArray.lastIndexWhere(lzy => ev.equal(lzy.force, value))
-            case x => Error.fail("Expected String or Array, got: " + x.prettyName)
-          }
-      },
-
       builtin4("leftJoin", "arrL", "arryR", "funcL", "funcR") {
         (pos, ev, arrL: Val.Arr, arrR: Val.Arr, funcL: Val.Func, funcR: Val.Func) =>
           //make backup array for leftovers
           var leftoversL = arrL.asLazyArray
           val out = new ArrayBuffer[Lazy]
 
-          arrL.asLazyArray.foreach({
+          arrL.foreach({
             valueL =>
               val compareL = funcL.apply1(valueL, pos.noOffset)(ev)
               //append all that match the condition
@@ -1343,12 +1325,12 @@ object Trobador extends Library {
           new Val.Arr(pos, out.toArray)
       },
 
-      builtin("occurrences", "arr", "func") {
+      builtin("occurrencesBy", "arr", "func") {
         (pos, ev, array: Val.Arr, func: Val.Func) =>
           // no idea why, but this sorts the result in the correct order
           val ordered = mutable.Map.from(
             array.asLazyArray
-              .groupBy(item => stringValueOf(func.apply1(item, pos.noOffset)(ev)))
+              .groupBy(item => keyFrom(func.apply1(item, pos.noOffset)(ev)))
               .map(item => item._1 -> memberOf(Val.Num(pos, item._2.length)))
           )
 
@@ -1399,14 +1381,6 @@ object Trobador extends Library {
           new Val.Obj(pos, out, false, null, null)
       },
 
-      builtin("slice", "arr", "start", "end") {
-        (pos, ev, array: Val.Arr, start: Int, end: Int) =>
-          new Val.Arr(pos, array.asLazyArray.zipWithIndex.filter({
-            case (_, index) => (index >= start) && (index < end)
-          }).map(_._1)
-          )
-      },
-
       builtin("any", "value", "func") {
         (pos, ev, array: Val.Arr, func: Val.Func) => array.asLazyArray.exists(item => func.apply1(item, pos.noOffset)(ev).isInstanceOf[Val.True])
       },
@@ -1444,59 +1418,11 @@ object Trobador extends Library {
       builtin("takeWhile", "array", "func") {
         (pos, ev, array: Val.Arr, func: Val.Func) =>
           new Val.Arr(pos, array.asLazyArray.takeWhile(item => func.apply1(item, pos.noOffset)(ev).isInstanceOf[Val.True]))
-      }
-    ),
-
-    "binaries" -> moduleFrom(
-      builtin("fromBase64", "value") {
-        (pos, ev, value: Val) =>
-          value match {
-            case x: Val.Num => new String(Base64.getDecoder.decode(x.value.toString))
-            case x: Val.Str => new String(Base64.getDecoder.decode(x.value))
-            case x => Error.fail("Expected String, got: " + x.prettyName)
-          }
       },
 
-      builtin("fromHex", "value") {
-        (pos, ev, str: String) =>
-          str.toSeq
-            .sliding(2, 2)
-            .map(byte => Integer.parseInt(byte.unwrap, 16).toChar)
-            .mkString
-      },
-
-      builtin("readLinesWith", "value", "encoding") {
-        (pos, ev, value: String, enc: String) =>
-          new Val.Arr(pos, new String(value.getBytes(), enc).split('\n').toIndexedSeq.collect({
-            case str => Val.Str(pos, str)
-          }).toArray
-          )
-      },
-
-      builtin("toBase64", "value") {
-        (pos, ev, value: Val) =>
-          value match {
-            case x: Val.Num =>
-              if (x.value % 1 == 0) new String(Base64.getEncoder.encode(x.value.toInt.toString.getBytes()))
-              else new String(Base64.getEncoder.encode(x.value.toString.getBytes()))
-            case x: Val.Str => new String(Base64.getEncoder.encode(x.value.getBytes()))
-            case x => Error.fail("Expected String, got: " + x.prettyName)
-          }
-      },
-
-      builtin("toHex", "value") {
-        (pos, ev, value: Val) =>
-          value match {
-            case x: Val.Num => Integer.toString(x.value.toInt, 16).toUpperCase()
-            case x: Val.Str => x.value.getBytes().map(_.toHexString).mkString.toUpperCase()
-            case x => Error.fail("Expected String, got: " + x.prettyName)
-          }
-      },
-
-      builtin("writeLinesWith", "value", "encoding") {
-        (pos, ev, value: Val.Arr, enc: String) =>
-          val str = value.asLazyArray.map(item => item.force.asInstanceOf[Val.Str].value).mkString("\n") + "\n"
-          new String(str.getBytes, enc)
+      builtin("distinctBy", "container", "func") {
+        (_, ev, arr: Val.Arr, func: Val.Func) =>
+          distinctBy(arr.asLazyArray, func, ev)
       }
     ),
 
