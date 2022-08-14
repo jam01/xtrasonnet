@@ -47,18 +47,16 @@ package com.github.jam01.xtrasonnet
  *
  * Changed:
  * - d19a57dfcf4382669d55ac4427916c8440c1bac3: fixes orderBy comparison
- * - c8ee3b88d01c29c499921f3a8e5edd30e674e9dd: fixes zoneddatetime tests
- *      Use ISO_OFFSET_DATE_TIME instead of ISO_DATE_TIME in all datetime functions
- * - rename join to innerJoin, outerJoin to rightJoin, toString to stringOf,
- *      changed remove to rm and rmAll to rmKey and rmKeyIn
+ * - changed remove to rm and rmAll to rmKey and rmKeyIn
  * - removed null support from most functions, including those adopted
  * - refactored datetime to use OffsetDateTime and changed Period functionality for ISO8601 Duration
  */
 
-import com.github.jam01.xtrasonnet.document.{DefaultDocument, MediaType}
+import com.github.jam01.xtrasonnet.document.Document.BasicDocument
+import com.github.jam01.xtrasonnet.document.MediaType
 import com.github.jam01.xtrasonnet.header.Header
 import com.github.jam01.xtrasonnet.modules.{Crypto, JsonPath}
-import com.github.jam01.xtrasonnet.spi.{DataFormatService, Library}
+import com.github.jam01.xtrasonnet.spi.Library
 import com.github.jam01.xtrasonnet.spi.Library.{emptyObj, memberOf}
 import sjsonnet.Expr.Member.Visibility
 import sjsonnet.ReadWriter.{ArrRead, ObjRead, ValRead}
@@ -406,7 +404,7 @@ object XTR extends Library {
       (pos, ev, str1: String, str2: String) => str1.toUpperCase().startsWith(str2.toUpperCase());
     },
 
-    builtin("stringOf", "value") {
+    builtin("toString", "value") {
       (pos, ev, value: Val) => Materializer.stringify(value)(ev)
     },
 
@@ -690,11 +688,11 @@ object XTR extends Library {
               case _ => Error.fail("Expected datetime to be a string or number, got: " + datetime.prettyName)
             }
             datetimeObj = OffsetDateTime.ofInstant(inst, ZoneOffset.UTC)
-          case _ => datetimeObj = try { //will catch any errors if zone data is missing and default to Z
-            OffsetDateTime.parse(datetime.asString, DateTimeFormatter.ofPattern(inputFormat))
+          case _ => datetimeObj = try {
+            OffsetDateTime.parse(datetime.asString, DateTimeFormatter.ofPattern(inputFormat)) // parse will throw if there's no zone offset
           } catch {
             case _: DateTimeException =>
-              LocalDateTime.parse(datetime.asString, DateTimeFormatter.ofPattern(inputFormat)).atOffset(ZoneOffset.UTC)
+              LocalDateTime.parse(datetime.asString, DateTimeFormatter.ofPattern(inputFormat)).atOffset(ZoneOffset.UTC) // default to UTC
           }
         }
         datetimeObj.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
@@ -1839,7 +1837,7 @@ object XTR extends Library {
         case Null => "null"
       })
     }).asJava
-    val doc = new DefaultDocument(data, MediaType.parseMediaType(mimeType).withParameters(paramsAsJava))
+    val doc = new BasicDocument(data, MediaType.parseMediaType(mimeType).withParameters(paramsAsJava))
 
     val plugin = dataFormats.thatCanRead(doc)
       .orElseThrow(() => Error.fail("No suitable plugin found for mime type: " + mimeType))

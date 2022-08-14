@@ -7,12 +7,13 @@ package com.github.jam01.xtrasonnet.plugins
  * compliance with the Elastic License 2.0.
  */
 
+import com.github.jam01.xtrasonnet.document.Document.BasicDocument
 import java.io._
 import java.net.URL
 import java.nio.charset.Charset
-import com.github.jam01.xtrasonnet.document.{DefaultDocument, Document, MediaType, MediaTypes}
+import com.github.jam01.xtrasonnet.document.{Document, MediaType, MediaTypes}
 import com.github.jam01.xtrasonnet.plugins.xml.XML
-import com.github.jam01.xtrasonnet.spi.{AbstractDataFormatPlugin, PluginException}
+import com.github.jam01.xtrasonnet.spi.{BasePlugin, PluginException}
 import ujson.Value
 
 import scala.collection.mutable
@@ -21,7 +22,7 @@ import scala.jdk.CollectionConverters.MapHasAsScala
 // See: http://wiki.open311.org/JSON_and_XML_Conversion/#the-badgerfish-convention
 // http://www.sklar.com/badgerfish/
 // http://dropbox.ashlock.us/open311/json-xml/
-object DefaultXMLFormatPlugin extends AbstractDataFormatPlugin {
+object DefaultXMLPlugin extends BasePlugin {
   private val XMLNS_KEY = "xmlns"
   val DEFAULT_NS_KEY = "$"
   private val DEFAULT_DS_NS_SEPARATOR = ":"
@@ -53,7 +54,7 @@ object DefaultXMLFormatPlugin extends AbstractDataFormatPlugin {
   supportedTypes.add(MediaTypes.TEXT_XML)
   supportedTypes.add(new MediaType("application", "*+xml"))
 
-  writerParams.add(AbstractDataFormatPlugin.DS_PARAM_INDENT)
+  writerParams.add(BasePlugin.PARAM_FORMAT)
   writerParams.add(DS_NS_SEPARATOR)
   writerParams.add(DS_ATTRIBUTE_KEY_PREFIX)
   writerParams.add(DS_TEXT_KEY_PREFIX)
@@ -124,14 +125,14 @@ object DefaultXMLFormatPlugin extends AbstractDataFormatPlugin {
       val writer = new StringWriter()
       XML.writeXML(writer, inputAsObj.head.asInstanceOf[(String, ujson.Obj)], effectiveParams)
 
-      new DefaultDocument(writer.toString, MediaTypes.APPLICATION_XML).asInstanceOf[Document[T]]
+      new BasicDocument(writer.toString, MediaTypes.APPLICATION_XML).asInstanceOf[Document[T]]
     }
 
     else if (targetType.isAssignableFrom(classOf[OutputStream])) {
       val out = new BufferedOutputStream(new ByteArrayOutputStream)
       XML.writeXML(new OutputStreamWriter(out, charset), inputAsObj.head.asInstanceOf[(String, ujson.Obj)], effectiveParams)
 
-      new DefaultDocument(out, MediaTypes.APPLICATION_XML).asInstanceOf[Document[T]]
+      new BasicDocument(out, MediaTypes.APPLICATION_XML).asInstanceOf[Document[T]]
     }
 
     else {

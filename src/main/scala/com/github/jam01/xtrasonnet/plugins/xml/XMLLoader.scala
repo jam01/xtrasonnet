@@ -10,7 +10,7 @@ package com.github.jam01.xtrasonnet.plugins.xml
 import java.io._
 import java.net.URL
 
-import com.github.jam01.xtrasonnet.plugins.DefaultXMLFormatPlugin.EffectiveParams
+import com.github.jam01.xtrasonnet.plugins.DefaultXMLPlugin.EffectiveParams
 import Source.{fromFile, fromInputStream, fromString}
 import javax.xml.parsers.{SAXParser, SAXParserFactory}
 import org.xml.sax.InputSource

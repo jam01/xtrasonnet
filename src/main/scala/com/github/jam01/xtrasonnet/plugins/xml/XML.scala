@@ -10,7 +10,7 @@ package com.github.jam01.xtrasonnet.plugins.xml
 import java.io.{File, FileInputStream, InputStream, Reader, StringReader}
 import java.nio.charset.Charset
 
-import com.github.jam01.xtrasonnet.plugins.DefaultXMLFormatPlugin.EffectiveParams
+import com.github.jam01.xtrasonnet.plugins.DefaultXMLPlugin.EffectiveParams
 import javax.xml.parsers.SAXParser
 import org.xml.sax.InputSource
 

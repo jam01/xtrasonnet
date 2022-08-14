@@ -31,9 +31,9 @@ package com.github.jam01.xtrasonnet.plugins.xml
  * - 1570c045ab8e750305e1d86206f4cddeadabfedd: conformed badgerfish ordering behavior
  */
 
-import com.github.jam01.xtrasonnet.plugins.DefaultXMLFormatPlugin.{BadgerFishMode, EffectiveParams}
-import com.github.jam01.xtrasonnet.plugins.DefaultXMLFormatPlugin.{BadgerFishMode, EffectiveParams}
-import com.github.jam01.xtrasonnet.plugins.DefaultXMLFormatPlugin.{BadgerFishMode, EffectiveParams}
+import com.github.jam01.xtrasonnet.plugins.DefaultXMLPlugin.{BadgerFishMode, EffectiveParams}
+import com.github.jam01.xtrasonnet.plugins.DefaultXMLPlugin.{BadgerFishMode, EffectiveParams}
+import com.github.jam01.xtrasonnet.plugins.DefaultXMLPlugin.{BadgerFishMode, EffectiveParams}
 import org.xml.sax.helpers.NamespaceSupport
 import ujson.{Num, Str, Value}
 

@@ -31,15 +31,9 @@ package com.github.jam01.xtrasonnet.plugins;
  * - 695eba21d86ca7ab9b1812ce7689af41db4c83a4: fix up lost disablequotes support for CSVs
  */
 
-import com.github.jam01.xtrasonnet.document.DefaultDocument;
 import com.github.jam01.xtrasonnet.document.Document;
 import com.github.jam01.xtrasonnet.document.MediaType;
 import com.github.jam01.xtrasonnet.document.MediaTypes;
-import com.github.jam01.xtrasonnet.document.DefaultDocument;
-import com.github.jam01.xtrasonnet.document.Document;
-import com.github.jam01.xtrasonnet.document.MediaType;
-import com.github.jam01.xtrasonnet.document.MediaTypes;
-import com.github.jam01.xtrasonnet.spi.PluginException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectReader;
@@ -47,10 +41,8 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvParser;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
-import com.github.jam01.xtrasonnet.document.DefaultDocument;
-import com.github.jam01.xtrasonnet.document.Document;
-import com.github.jam01.xtrasonnet.document.MediaType;
-import com.github.jam01.xtrasonnet.document.MediaTypes;
+import com.github.jam01.xtrasonnet.spi.PluginException;
+import ujson.Null$;
 import ujson.Value;
 
 import java.io.BufferedOutputStream;
@@ -58,12 +50,13 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class DefaultCSVFormatPlugin extends BaseJacksonDataFormatPlugin {
+public class DefaultCSVPlugin extends BaseJacksonPlugin {
     public static final String DS_PARAM_QUOTE_CHAR = "qchar";
     public static final String DS_PARAM_SEPARATOR_CHAR = "sep";
     public static final String DS_PARAM_ESCAPE_CHAR = "esc";
@@ -76,7 +69,7 @@ public class DefaultCSVFormatPlugin extends BaseJacksonDataFormatPlugin {
         CSV_MAPPER.enable(CsvParser.Feature.WRAP_AS_ARRAY);
     }
 
-    public DefaultCSVFormatPlugin() {
+    public DefaultCSVPlugin() {
         supportedTypes.add(MediaTypes.APPLICATION_CSV);
         supportedTypes.add(MediaType.parseMediaType("text/csv"));
 
@@ -99,7 +92,7 @@ public class DefaultCSVFormatPlugin extends BaseJacksonDataFormatPlugin {
     @Override
     public Value read(Document<?> doc) throws PluginException {
         if (doc.getContent() == null) {
-            return ujson.Null$.MODULE$;
+            return Null$.MODULE$;
         }
 
         ObjectReader reader = READER_CACHE.computeIfAbsent(doc.getMediaType().getParameters(), (p) -> {
@@ -146,14 +139,14 @@ public class DefaultCSVFormatPlugin extends BaseJacksonDataFormatPlugin {
     @Override
     public <T> Document<T> write(Value input, MediaType mediaType, Class<T> targetType) throws PluginException {
         JsonNode node = jsonNodeOf(input);
-        assertArrayNode(node);
+        assertArrayNode(node, "Writing CSV requires an Array, found: " + node.getNodeType().name());
         JsonNode first = node.elements().next();
 
         ObjectWriter writer;
         CsvSchema.Builder builder = baseBuilderFor(mediaType);
         if (first.isObject() && paramAbsent(mediaType, DS_PARAM_HEADERS)) { // no header param, use first Obj for headers
             builder.setUseHeader(true);
-            assertObjectNode(first);
+            assertObjectNode(first, "The combination of parameters given requires an Object, found: " + node.getNodeType().name());
             first.fieldNames().forEachRemaining(builder::addColumn);
             writer = CSV_MAPPER.writerFor(JsonNode.class).with(builder.build());
         } else if (first.isObject() && paramEq(mediaType, DS_PARAM_HEADERS, "false")) { // skip headers, but still need columns - user first Obj
@@ -179,18 +172,18 @@ public class DefaultCSVFormatPlugin extends BaseJacksonDataFormatPlugin {
 
         try {
             if (targetType.isAssignableFrom(String.class)) {
-                return (Document<T>) new DefaultDocument<>(writer.writeValueAsString(node),
+                return (Document<T>) new Document.BasicDocument<>(writer.writeValueAsString(node),
                         MediaTypes.APPLICATION_CSV);
             }
 
             if (targetType.isAssignableFrom(OutputStream.class)) {
                 OutputStream out = new BufferedOutputStream(new ByteArrayOutputStream());
                 writer.writeValue(out, node);
-                return (Document<T>) new DefaultDocument<>(out, MediaTypes.APPLICATION_CSV);
+                return (Document<T>) new Document.BasicDocument<>(out, MediaTypes.APPLICATION_CSV);
             }
 
             if (targetType.isAssignableFrom(byte[].class)) {
-                return (Document<T>) new DefaultDocument<>(writer.writeValueAsBytes(node),
+                return (Document<T>) new Document.BasicDocument<>(writer.writeValueAsBytes(node),
                         MediaTypes.APPLICATION_CSV);
             }
             throw new PluginException(new IllegalArgumentException("Unsupported document content class, use the test method canWrite before invoking write"));
@@ -216,5 +209,27 @@ public class DefaultCSVFormatPlugin extends BaseJacksonDataFormatPlugin {
         builder.setEscapeChar(paramAsChar(type, DS_PARAM_ESCAPE_CHAR, '\\'));
 
         return builder;
+    }
+
+    private boolean paramPresent(MediaType type, String name) {
+        return type.getParameters().containsKey(name);
+    }
+
+    private boolean paramAbsent(MediaType type, String name) {
+        return !type.getParameters().containsKey(name);
+    }
+    private boolean paramEq(MediaType type, String name, String expected) {
+        if (!type.getParameters().containsKey(name)) return false;
+        return expected.equals(type.getParameters().get(name));
+    }
+
+    private char paramAsChar(MediaType type, String name, char defaault) {
+        if (!type.getParameters().containsKey(name)) return defaault;
+        return type.getParameters().get(name).charAt(0);
+    }
+
+    private List<String> paramAsList(MediaType type, String name, List<String> defaault) {
+        if (!type.getParameters().containsKey(name)) return defaault;
+        return Arrays.asList(type.getParameters().get(name).split(","));
     }
 }

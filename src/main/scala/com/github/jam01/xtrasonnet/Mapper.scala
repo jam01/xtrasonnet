@@ -10,7 +10,7 @@ package com.github.jam01.xtrasonnet
 import Mapper.{ERROR_LINE_REGEX, handleException, main}
 import com.github.jam01.xtrasonnet.document.{DefaultDocument, Document, MediaType, MediaTypes}
 import com.github.jam01.xtrasonnet.header.Header
-import com.github.jam01.xtrasonnet.spi.{DataFormatService, Library}
+import com.github.jam01.xtrasonnet.spi.Library
 import Library.{dummyPosition, memberOf}
 import sjsonnet.Expr.Params
 import sjsonnet.ScopedExprTransform.{Scope, ScopedVal, emptyScope}

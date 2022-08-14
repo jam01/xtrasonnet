@@ -7,16 +7,15 @@ package com.github.jam01.xtrasonnet.plugins;
  * compliance with the Elastic License 2.0.
  */
 
-import com.github.jam01.xtrasonnet.document.DefaultDocument;
 import com.github.jam01.xtrasonnet.document.Document;
 import com.github.jam01.xtrasonnet.document.MediaType;
 import com.github.jam01.xtrasonnet.document.MediaTypes;
-import com.github.jam01.xtrasonnet.spi.PluginException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.databind.util.StdDateFormat;
+import com.github.jam01.xtrasonnet.spi.PluginException;
 import com.github.jam01.xtrasonnet.spi.ujsonUtils;
 import ujson.Value;
 
@@ -24,18 +23,18 @@ import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
 
-public class DefaultJavaFormatPlugin extends BaseJacksonDataFormatPlugin {
+public class DefaultJavaPlugin extends BaseJacksonPlugin {
     private final JsonMapper mapper;
     public static final String DS_PARAM_DATE_FORMAT = "dateformat";
     public static final String DS_PARAM_TYPE = "type";
 
     private static final Map<Map<String, String>, ObjectMapper> MAPPER_CACHE = new HashMap<>();
 
-    public DefaultJavaFormatPlugin() {
+    public DefaultJavaPlugin() {
         this(null);
     }
 
-    public DefaultJavaFormatPlugin(JsonMapper mapper) {
+    public DefaultJavaPlugin(JsonMapper mapper) {
         if (mapper == null) {
             mapper = JsonMapper.builder()
                     .enable(MapperFeature.BLOCK_UNSAFE_POLYMORPHIC_BASE_TYPES)
@@ -80,7 +79,7 @@ public class DefaultJavaFormatPlugin extends BaseJacksonDataFormatPlugin {
     public <T> Document<T> write(Value input, MediaType mediaType, Class<T> targetType) throws PluginException {
         // TODO: 8/11/22 should throw instead? null a valid result when requesting anything?
         if (input == ujson.Null$.MODULE$) {
-            return (Document<T>) DefaultDocument.NULL_INSTANCE;
+            return (Document<T>) Document.BasicDocument.NULL_INSTANCE;
         }
 
         ObjectMapper mapper = mapperFor(mediaType);
@@ -97,7 +96,7 @@ public class DefaultJavaFormatPlugin extends BaseJacksonDataFormatPlugin {
             throw new PluginException("Unable to convert to target type", e);
         }
 
-        return new DefaultDocument<>(converted, mediaType.withParameter(DS_PARAM_TYPE, targetType.getName()));
+        return new Document.BasicDocument<>(converted, mediaType.withParameter(DS_PARAM_TYPE, targetType.getName()));
     }
 
     private ObjectMapper mapperFor(MediaType mediaType) throws PluginException {

@@ -29,6 +29,7 @@ package com.github.jam01.xtrasonnet.spi
  */
 
 import Library.{dummyPosition, memberOf}
+import com.github.jam01.xtrasonnet.DataFormatService
 import com.github.jam01.xtrasonnet.header.Header
 import sjsonnet.Expr.Member.Visibility
 import sjsonnet.Expr.Params

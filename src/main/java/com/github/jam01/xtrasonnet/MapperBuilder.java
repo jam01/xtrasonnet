@@ -10,7 +10,6 @@ package com.github.jam01.xtrasonnet;
 import com.github.jam01.xtrasonnet.document.MediaType;
 import com.github.jam01.xtrasonnet.document.MediaTypes;
 import com.github.jam01.xtrasonnet.spi.DataFormatPlugin;
-import com.github.jam01.xtrasonnet.spi.DataFormatService;
 import com.github.jam01.xtrasonnet.spi.Library;
 
 import java.util.ArrayList;

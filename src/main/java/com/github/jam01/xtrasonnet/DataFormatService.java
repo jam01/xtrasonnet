@@ -1,4 +1,4 @@
-package com.github.jam01.xtrasonnet.spi;
+package com.github.jam01.xtrasonnet;
 
 /*-
  * Copyright 2022 Jose Montoya.
@@ -9,11 +9,13 @@ package com.github.jam01.xtrasonnet.spi;
 
 import com.github.jam01.xtrasonnet.document.Document;
 import com.github.jam01.xtrasonnet.document.MediaType;
-import com.github.jam01.xtrasonnet.plugins.DefaultCSVFormatPlugin;
-import com.github.jam01.xtrasonnet.plugins.DefaultJSONFormatPlugin;
-import com.github.jam01.xtrasonnet.plugins.DefaultJavaFormatPlugin;
-import com.github.jam01.xtrasonnet.plugins.DefaultPlainTextFormatPlugin;
-import com.github.jam01.xtrasonnet.plugins.DefaultXMLFormatPlugin$;
+import com.github.jam01.xtrasonnet.plugins.DefaultCSVPlugin;
+import com.github.jam01.xtrasonnet.plugins.DefaultJSONPlugin;
+import com.github.jam01.xtrasonnet.plugins.DefaultJavaPlugin;
+import com.github.jam01.xtrasonnet.plugins.DefaultPlainTextPlugin;
+import com.github.jam01.xtrasonnet.plugins.DefaultXMLPlugin$;
+import com.github.jam01.xtrasonnet.spi.DataFormatPlugin;
+import com.github.jam01.xtrasonnet.spi.PluginException;
 import ujson.Value;
 
 import java.util.Arrays;
@@ -24,12 +26,8 @@ import java.util.Optional;
 public class DataFormatService {
     private final List<DataFormatPlugin> plugins;
     public static final DataFormatService DEFAULT =
-            new DataFormatService(Arrays.asList(
-                    new DefaultJSONFormatPlugin(),
-                    new DefaultJavaFormatPlugin(),
-                    DefaultXMLFormatPlugin$.MODULE$,
-                    new DefaultCSVFormatPlugin(),
-                    new DefaultPlainTextFormatPlugin()));
+            new DataFormatService(Arrays.asList(new DefaultJSONPlugin(), new DefaultJavaPlugin(), DefaultXMLPlugin$.MODULE$,
+                    new DefaultCSVPlugin(), new DefaultPlainTextPlugin()));
 
     public DataFormatService(List<DataFormatPlugin> plugins) {
         this.plugins = plugins;

@@ -10,21 +10,13 @@ package com.github.jam01.xtrasonnet.spi;
 import com.github.jam01.xtrasonnet.document.Document;
 import com.github.jam01.xtrasonnet.document.MediaType;
 import com.github.jam01.xtrasonnet.document.MediaTypes;
-import com.github.jam01.xtrasonnet.document.Document;
-import com.github.jam01.xtrasonnet.document.MediaType;
-import com.github.jam01.xtrasonnet.document.MediaTypes;
-import com.github.jam01.xtrasonnet.document.Document;
-import com.github.jam01.xtrasonnet.document.MediaType;
-import com.github.jam01.xtrasonnet.document.MediaTypes;
 import ujson.Value;
 
-import java.util.Arrays;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
 
-public abstract class AbstractDataFormatPlugin implements DataFormatPlugin {
-    public static final String DS_PARAM_INDENT = "indent";
+public abstract class BasePlugin implements DataFormatPlugin {
+    public static final String PARAM_FORMAT = "fmt";
 
     protected final Set<MediaType> supportedTypes = new LinkedHashSet<>();
     protected final Set<String> readerParams = new LinkedHashSet<>();
@@ -105,27 +97,5 @@ public abstract class AbstractDataFormatPlugin implements DataFormatPlugin {
         }
 
         return true;
-    }
-
-    protected boolean paramPresent(MediaType type, String name) {
-        return type.getParameters().containsKey(name);
-    }
-
-    protected boolean paramAbsent(MediaType type, String name) {
-        return !type.getParameters().containsKey(name);
-    }
-    protected boolean paramEq(MediaType type, String name, String expected) {
-        if (!type.getParameters().containsKey(name)) return false;
-        return expected.equals(type.getParameters().get(name));
-    }
-
-    protected char paramAsChar(MediaType type, String name, char defaault) {
-        if (!type.getParameters().containsKey(name)) return defaault;
-        return type.getParameters().get(name).charAt(0);
-    }
-
-    protected List<String> paramAsList(MediaType type, String name, List<String> defaault) {
-        if (!type.getParameters().containsKey(name)) return defaault;
-        return Arrays.asList(type.getParameters().get(name).split(","));
     }
 }

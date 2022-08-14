@@ -7,17 +7,16 @@ package com.github.jam01.xtrasonnet.plugins;
  * compliance with the Elastic License 2.0.
  */
 
-import com.github.jam01.xtrasonnet.document.DefaultDocument;
 import com.github.jam01.xtrasonnet.document.Document;
 import com.github.jam01.xtrasonnet.document.MediaType;
 import com.github.jam01.xtrasonnet.document.MediaTypes;
-import com.github.jam01.xtrasonnet.spi.AbstractDataFormatPlugin;
+import com.github.jam01.xtrasonnet.spi.BasePlugin;
 import com.github.jam01.xtrasonnet.spi.PluginException;
 import com.github.jam01.xtrasonnet.spi.ujsonUtils;
 import ujson.Value;
 
-public class DefaultPlainTextFormatPlugin extends AbstractDataFormatPlugin {
-    public DefaultPlainTextFormatPlugin() {
+public class DefaultPlainTextPlugin extends BasePlugin {
+    public DefaultPlainTextPlugin() {
         supportedTypes.add(MediaTypes.TEXT_PLAIN);
 
         readerSupportedClasses.add(String.class);
@@ -40,7 +39,7 @@ public class DefaultPlainTextFormatPlugin extends AbstractDataFormatPlugin {
     @Override
     public <T> Document<T> write(Value input, MediaType mediaType, Class<T> targetType) throws PluginException {
         if (targetType.isAssignableFrom(String.class)) {
-            return (Document<T>) new DefaultDocument<>(ujsonUtils.stringValueOf(input), MediaTypes.TEXT_PLAIN);
+            return (Document<T>) new Document.BasicDocument<>(ujsonUtils.stringValueOf(input), MediaTypes.TEXT_PLAIN);
         } else {
             throw new IllegalArgumentException("Only strings can be written as plain text.");
         }

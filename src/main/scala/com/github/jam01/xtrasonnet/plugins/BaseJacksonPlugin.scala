@@ -7,19 +7,21 @@ package com.github.jam01.xtrasonnet.plugins
  * compliance with the Elastic License 2.0.
  */
 
-import BaseJacksonDataFormatPlugin.OBJECT_MAPPER
 import com.fasterxml.jackson.databind.node._
 import com.fasterxml.jackson.databind.{JsonNode, ObjectMapper}
-import com.github.jam01.xtrasonnet.spi.AbstractDataFormatPlugin
+import com.github.jam01.xtrasonnet.plugins.BaseJacksonPlugin.OBJECT_MAPPER
+import com.github.jam01.xtrasonnet.spi.BasePlugin
 import ujson._
 
 import scala.jdk.CollectionConverters.{IteratorHasAsScala, MapHasAsJava, SeqHasAsJava}
 
-object BaseJacksonDataFormatPlugin {
-  protected val OBJECT_MAPPER = new ObjectMapper
+object BaseJacksonPlugin {
+  private val OBJECT_MAPPER = new ObjectMapper
 }
 
-abstract class BaseJacksonDataFormatPlugin extends AbstractDataFormatPlugin {
+abstract class BaseJacksonPlugin extends BasePlugin {
+  protected def OBJECT_MAPPER(): ObjectMapper = BaseJacksonPlugin.OBJECT_MAPPER
+
   protected def ujsonFrom(jsonNode: JsonNode): Value = jsonNode match {
     case b: BooleanNode => ujson.Bool(b.booleanValue())
     case n: NumericNode => ujson.Num(n.numberValue().doubleValue())
@@ -32,18 +34,18 @@ abstract class BaseJacksonDataFormatPlugin extends AbstractDataFormatPlugin {
 
   protected def jsonNodeOf(value: Value): JsonNode = value match {
     case Str(value) => new TextNode(value);
-    case Obj(value) => new ObjectNode(OBJECT_MAPPER.getNodeFactory, value.map{case (k, v) => (k, jsonNodeOf(v))}.asJava)
+    case Obj(value) => new ObjectNode(OBJECT_MAPPER.getNodeFactory, value.map { case (k, v) => (k, jsonNodeOf(v)) }.asJava)
     case Arr(value) => new ArrayNode(OBJECT_MAPPER.getNodeFactory, value.map(jsonNodeOf).asJava)
     case Num(value) => new DoubleNode(value);
     case bool: Bool => BooleanNode.valueOf(value.bool);
     case Null => NullNode.getInstance();
   }
 
-  protected def assertObjectNode(firstObject: JsonNode): Unit = {
-    if (!firstObject.isObject) throw new IllegalArgumentException("The combination of parameters given requires a JSON Object, found: " + firstObject.getNodeType.name)
+  protected def assertObjectNode(node: JsonNode, msg: String): Unit = {
+    if (!node.isObject) throw new IllegalArgumentException(msg)
   }
 
-  protected def assertArrayNode(firstObject: JsonNode): Unit = {
-    if (!firstObject.isArray) throw new IllegalArgumentException("The combination of parameters given requires a JSON Array, found: " + firstObject.getNodeType.name)
+  protected def assertArrayNode(node: JsonNode, msg: String): Unit = {
+    if (!node.isArray) throw new IllegalArgumentException(msg)
   }
 }

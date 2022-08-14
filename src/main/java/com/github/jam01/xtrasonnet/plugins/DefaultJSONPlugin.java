@@ -7,11 +7,10 @@ package com.github.jam01.xtrasonnet.plugins;
  * compliance with the Elastic License 2.0.
  */
 
-import com.github.jam01.xtrasonnet.document.DefaultDocument;
 import com.github.jam01.xtrasonnet.document.Document;
 import com.github.jam01.xtrasonnet.document.MediaType;
 import com.github.jam01.xtrasonnet.document.MediaTypes;
-import com.github.jam01.xtrasonnet.spi.AbstractDataFormatPlugin;
+import com.github.jam01.xtrasonnet.spi.BasePlugin;
 import com.github.jam01.xtrasonnet.spi.PluginException;
 import com.github.jam01.xtrasonnet.spi.ujsonUtils;
 import ujson.Value;
@@ -25,12 +24,12 @@ import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 
-public class DefaultJSONFormatPlugin extends AbstractDataFormatPlugin {
-    public DefaultJSONFormatPlugin() {
+public class DefaultJSONPlugin extends BasePlugin {
+    public DefaultJSONPlugin() {
         supportedTypes.add(MediaTypes.APPLICATION_JSON);
         supportedTypes.add(new MediaType("application", "*+json"));
 
-        writerParams.add(DS_PARAM_INDENT);
+        writerParams.add(PARAM_FORMAT);
 
         readerSupportedClasses.add(java.lang.String.class);
         readerSupportedClasses.add(java.lang.CharSequence.class);
@@ -89,29 +88,29 @@ public class DefaultJSONFormatPlugin extends AbstractDataFormatPlugin {
             charset = Charset.defaultCharset();
         }
 
-        int indent = mediaType.getParameters().containsKey(DS_PARAM_INDENT) ? 4 : -1;
+        int indent = mediaType.getParameters().containsKey(PARAM_FORMAT) ? 4 : -1;
 
         if (targetType.isAssignableFrom(String.class)) {
-            return new DefaultDocument<>((T) ujsonUtils.write(input, indent, false), MediaTypes.APPLICATION_JSON);
+            return new Document.BasicDocument<>((T) ujsonUtils.write(input, indent, false), MediaTypes.APPLICATION_JSON);
         }
 
         if (targetType.isAssignableFrom(CharSequence.class)) {
-            return new DefaultDocument<>((T) ujsonUtils.write(input, indent, false), MediaTypes.APPLICATION_JSON);
+            return new Document.BasicDocument<>((T) ujsonUtils.write(input, indent, false), MediaTypes.APPLICATION_JSON);
         }
 
         if (targetType.isAssignableFrom(OutputStream.class)) {
             BufferedOutputStream out = new BufferedOutputStream(new ByteArrayOutputStream());
             ujsonUtils.writeTo(input, new OutputStreamWriter(out, charset), indent, false);
 
-            return new DefaultDocument<>((T) out, MediaTypes.APPLICATION_JSON);
+            return new Document.BasicDocument<>((T) out, MediaTypes.APPLICATION_JSON);
         }
 
         if (targetType.isAssignableFrom(ByteBuffer.class)) {
-            return new DefaultDocument<>((T) ByteBuffer.wrap(ujsonUtils.write(input, indent, false).getBytes(charset)), MediaTypes.APPLICATION_JSON);
+            return new Document.BasicDocument<>((T) ByteBuffer.wrap(ujsonUtils.write(input, indent, false).getBytes(charset)), MediaTypes.APPLICATION_JSON);
         }
 
         if (targetType.isAssignableFrom(byte[].class)) {
-            return new DefaultDocument<>((T) ujsonUtils.write(input, indent, false).getBytes(charset), MediaTypes.APPLICATION_JSON);
+            return new Document.BasicDocument<>((T) ujsonUtils.write(input, indent, false).getBytes(charset), MediaTypes.APPLICATION_JSON);
         }
 
         throw new PluginException(new IllegalArgumentException("Unsupported document content class, use the test method canRead before invoking read"));
