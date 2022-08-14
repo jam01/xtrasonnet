@@ -7,7 +7,6 @@ package com.github.jam01.xtrasonnet;
  * compliance with the Elastic License 2.0.
  */
 
-import com.github.jam01.xtrasonnet.document.DefaultDocument;
 import com.github.jam01.xtrasonnet.document.Document;
 import com.github.jam01.xtrasonnet.document.MediaTypes;
 import org.junit.Assert;
@@ -25,14 +24,14 @@ public class NestedDocumentsTest {
         String json = "{ \"hello\": \"world!\" }";
 
         Map<String, Document<String>> nested = new HashMap<>(2);
-        nested.put("xml", new DefaultDocument<>(xml, MediaTypes.APPLICATION_XML));
-        nested.put("json", new DefaultDocument<>(json, MediaTypes.APPLICATION_JSON));
+        nested.put("xml", new Document.BasicDocument<>(xml, MediaTypes.APPLICATION_XML));
+        nested.put("json", new Document.BasicDocument<>(json, MediaTypes.APPLICATION_JSON));
 
-        Map<String, Document<?>> inputs = Collections.singletonMap("nested", new DefaultDocument<>(nested, MediaTypes.APPLICATION_JAVA));
+        Map<String, Document<?>> inputs = Collections.singletonMap("nested", new Document.BasicDocument<>(nested, MediaTypes.APPLICATION_JAVA));
         String result = new MapperBuilder("nested")
                 .withInputNames("nested")
                 .build()
-                .transform(DefaultDocument.NULL_INSTANCE, inputs, MediaTypes.APPLICATION_JSON)
+                .transform(Document.BasicDocument.NULL_INSTANCE, inputs, MediaTypes.APPLICATION_JSON)
                 .getContent();
         Assert.assertEquals("{\"json\":{\"hello\":\"world!\"},\"xml\":{\"root\":{\"~\":1}}}", result);
     }

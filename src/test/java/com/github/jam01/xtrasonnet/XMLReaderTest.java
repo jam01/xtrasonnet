@@ -24,7 +24,7 @@ package com.github.jam01.xtrasonnet;
  * limitations under the License.
  */
 
-import com.github.jam01.xtrasonnet.document.DefaultDocument;
+import com.github.jam01.xtrasonnet.document.Document;
 import com.github.jam01.xtrasonnet.document.MediaTypes;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
@@ -56,7 +56,7 @@ public class XMLReaderTest {
         Mapper mapper = new Mapper(jsonnet);
 
 
-        String mapped = mapper.transform(new DefaultDocument<>(xml, MediaTypes.APPLICATION_XML), Collections.emptyMap(), MediaTypes.APPLICATION_JSON).getContent();
+        String mapped = mapper.transform(new Document.BasicDocument<>(xml, MediaTypes.APPLICATION_XML), Collections.emptyMap(), MediaTypes.APPLICATION_JSON).getContent();
 
         // the b namespace must have been remapped
         assertThat(mapped, not(containsString("b:b")));
@@ -77,7 +77,7 @@ public class XMLReaderTest {
         Mapper mapper = new Mapper(jsonnet);
 
 
-        String mappedJson = mapper.transform(new DefaultDocument<>(xmlData, MediaTypes.APPLICATION_XML.withParameter("badgerfish", "extended")), Collections.emptyMap(), MediaTypes.APPLICATION_JSON).getContent();
+        String mappedJson = mapper.transform(new Document.BasicDocument<>(xmlData, MediaTypes.APPLICATION_XML.withParameter("badgerfish", "extended")), Collections.emptyMap(), MediaTypes.APPLICATION_JSON).getContent();
 
         JSONAssert.assertEquals(expectedJson, mappedJson, true);
     }
@@ -108,7 +108,7 @@ public class XMLReaderTest {
 
         Mapper mapper = new Mapper("payload");
 
-        String mappedJson = mapper.transform(new DefaultDocument<>(xmlData, MediaTypes.APPLICATION_XML.withParameter("badgerfish", "extended")), Collections.emptyMap(), MediaTypes.APPLICATION_JSON).getContent();
+        String mappedJson = mapper.transform(new Document.BasicDocument<>(xmlData, MediaTypes.APPLICATION_XML.withParameter("badgerfish", "extended")), Collections.emptyMap(), MediaTypes.APPLICATION_JSON).getContent();
         JSONAssert.assertEquals(expectedJson, mappedJson, true);
     }
 

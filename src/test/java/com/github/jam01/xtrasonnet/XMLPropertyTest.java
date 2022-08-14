@@ -26,8 +26,6 @@ package com.github.jam01.xtrasonnet;
 
 
 import com.github.jam01.xtrasonnet.document.MediaTypes;
-import com.github.jam01.xtrasonnet.document.DefaultDocument;
-import com.github.jam01.xtrasonnet.document.MediaTypes;
 import com.github.jam01.xtrasonnet.fuzzutil.Dictionary;
 import com.github.jam01.xtrasonnet.fuzzutil.XMLDocumentUtils;
 import com.github.jam01.xtrasonnet.fuzzutil.XmlDocumentGenerator;
@@ -35,7 +33,6 @@ import com.github.jam01.xtrasonnet.fuzzutil.XMLJsonGenerator;
 import com.pholser.junit.quickcheck.From;
 import com.pholser.junit.quickcheck.Property;
 import com.pholser.junit.quickcheck.runner.JUnitQuickcheck;
-import com.github.jam01.xtrasonnet.document.MediaTypes;
 import org.junit.runner.RunWith;
 import org.w3c.dom.Document;
 
@@ -58,7 +55,7 @@ public class XMLPropertyTest {
         // the round trip is performed by the use of the XML mime types
         Mapper mapper = new Mapper("payload");
 
-        DefaultDocument<String> payload = new DefaultDocument<>(xml, MediaTypes.APPLICATION_XML.withParameter("badgerfish", "extended"));
+        com.github.jam01.xtrasonnet.document.Document.BasicDocument<String> payload = new com.github.jam01.xtrasonnet.document.Document.BasicDocument<>(xml, MediaTypes.APPLICATION_XML.withParameter("badgerfish", "extended"));
         String output = mapper.transform(payload, Collections.emptyMap(), MediaTypes.APPLICATION_XML.withParameter("badgerfish", "extended")).getContent();
 
         DocumentBuilder db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
@@ -73,7 +70,7 @@ public class XMLPropertyTest {
     public void jsonSerializes(@From(XMLJsonGenerator.class) @Dictionary("xml/xml.dict") String json) throws Exception {
         Mapper mapper = new Mapper("payload");
         try {
-            String xml = mapper.transform(new DefaultDocument<String>(json, MediaTypes.APPLICATION_JSON), Collections.emptyMap(), MediaTypes.APPLICATION_XML).getContent();
+            String xml = mapper.transform(new com.github.jam01.xtrasonnet.document.Document.BasicDocument<String>(json, MediaTypes.APPLICATION_JSON), Collections.emptyMap(), MediaTypes.APPLICATION_XML).getContent();
         } catch(Throwable t) {
             t.printStackTrace();
             fail("Unable to convert to xml: " + json);

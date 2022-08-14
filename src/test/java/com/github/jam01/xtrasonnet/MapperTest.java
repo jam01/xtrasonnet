@@ -24,7 +24,6 @@ package com.github.jam01.xtrasonnet;
  * limitations under the License.
  */
 
-import com.github.jam01.xtrasonnet.document.DefaultDocument;
 import com.github.jam01.xtrasonnet.document.Document;
 import com.github.jam01.xtrasonnet.document.MediaTypes;
 import org.junit.jupiter.api.Disabled;
@@ -47,7 +46,7 @@ public class MapperTest {
     @MethodSource("simpleProvider")
     void simple(String jsonnet, String json, String expected) {
         Mapper mapper = new Mapper(jsonnet);
-        assertEquals(expected, mapper.transform(new DefaultDocument<>(json, MediaTypes.APPLICATION_JSON)).getContent());
+        assertEquals(expected, mapper.transform(new Document.BasicDocument<>(json, MediaTypes.APPLICATION_JSON)).getContent());
     }
 
     static Stream<String[]> simpleProvider() {
@@ -61,9 +60,9 @@ public class MapperTest {
     @ParameterizedTest
     @MethodSource("variableProvider")
     void variables(String jsonnet, String json, String variable, String value, String expected) {
-        Map<String, Document<?>> variables = Collections.singletonMap(variable, new DefaultDocument<>(value, MediaTypes.APPLICATION_JSON));
+        Map<String, Document<?>> variables = Collections.singletonMap(variable, new Document.BasicDocument<>(value, MediaTypes.APPLICATION_JSON));
         Mapper mapper = new Mapper(jsonnet, variables.keySet());
-        assertEquals(expected, mapper.transform(new DefaultDocument<String>(json, MediaTypes.APPLICATION_JSON), variables, MediaTypes.APPLICATION_JSON).getContent());
+        assertEquals(expected, mapper.transform(new Document.BasicDocument<String>(json, MediaTypes.APPLICATION_JSON), variables, MediaTypes.APPLICATION_JSON).getContent());
     }
 
     static Stream<String[]> variableProvider() {
@@ -140,7 +139,7 @@ public class MapperTest {
 
     Map<String, Document> stringArgument(String key, String value) {
         return new HashMap<String, Document>() {{
-            put(key, new DefaultDocument<String>(value, MediaTypes.TEXT_PLAIN));
+            put(key, new Document.BasicDocument<String>(value, MediaTypes.TEXT_PLAIN));
         }};
     }
 
@@ -149,9 +148,9 @@ public class MapperTest {
         Mapper mapper = new Mapper("argument", Arrays.asList("argument"));
 
 
-        Map<String, Document<?>> map = Collections.singletonMap("argument", new DefaultDocument<>("value", MediaTypes.TEXT_PLAIN));
+        Map<String, Document<?>> map = Collections.singletonMap("argument", new Document.BasicDocument<>("value", MediaTypes.TEXT_PLAIN));
 
-        Document<String> mapped = mapper.transform(new DefaultDocument<String>("{}", MediaTypes.APPLICATION_JSON), map, MediaTypes.TEXT_PLAIN);
+        Document<String> mapped = mapper.transform(new Document.BasicDocument<String>("{}", MediaTypes.APPLICATION_JSON), map, MediaTypes.TEXT_PLAIN);
 
         //assertEquals(new DefaultDocument<String>("value", MediaTypes.TEXT_PLAIN), mapped);
         assertEquals("value", mapped.getContent());
@@ -175,13 +174,13 @@ public class MapperTest {
         String datasonnet = TestUtils.resourceAsString("fieldOrder.ds");
 
         Map<String, Document<?>> variables = new HashMap<>();
-        variables.put("v2", new DefaultDocument<>("v2value", MediaTypes.TEXT_PLAIN));
-        variables.put("v1", new DefaultDocument<>("v1value", MediaTypes.TEXT_PLAIN));
+        variables.put("v2", new Document.BasicDocument<>("v2value", MediaTypes.TEXT_PLAIN));
+        variables.put("v1", new Document.BasicDocument<>("v1value", MediaTypes.TEXT_PLAIN));
 
         Mapper mapper = new Mapper(datasonnet, variables.keySet());
 
 
-        String mapped = mapper.transform(new DefaultDocument<String>(jsonData, MediaTypes.APPLICATION_JSON), variables, MediaTypes.APPLICATION_JSON).getContent();
+        String mapped = mapper.transform(new Document.BasicDocument<String>(jsonData, MediaTypes.APPLICATION_JSON), variables, MediaTypes.APPLICATION_JSON).getContent();
 
         assertEquals("{\"z\":\"z\",\"a\":\"a\",\"v2\":\"v2value\",\"v1\":\"v1value\",\"y\":\"y\",\"t\":\"t\"}", mapped.trim());
 
@@ -192,7 +191,7 @@ public class MapperTest {
         mapper = new Mapper(datasonnet, variables.keySet());
 
 
-        mapped = mapper.transform(new DefaultDocument<String>(jsonData, MediaTypes.APPLICATION_JSON), variables, MediaTypes.APPLICATION_JSON).getContent();
+        mapped = mapper.transform(new Document.BasicDocument<String>(jsonData, MediaTypes.APPLICATION_JSON), variables, MediaTypes.APPLICATION_JSON).getContent();
 
         assertEquals("{\"a\":\"a\",\"t\":\"t\",\"v1\":\"v1value\",\"v2\":\"v2value\",\"y\":\"y\",\"z\":\"z\"}", mapped.trim());
     }

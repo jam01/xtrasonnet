@@ -8,13 +8,7 @@ package com.github.jam01.xtrasonnet.plugins;
  */
 
 import com.github.jam01.xtrasonnet.Mapper;
-import com.github.jam01.xtrasonnet.document.DefaultDocument;
-import com.github.jam01.xtrasonnet.document.MediaTypes;
-import com.github.jam01.xtrasonnet.Mapper;
-import com.github.jam01.xtrasonnet.document.DefaultDocument;
-import com.github.jam01.xtrasonnet.document.MediaTypes;
-import com.github.jam01.xtrasonnet.Mapper;
-import com.github.jam01.xtrasonnet.document.DefaultDocument;
+import com.github.jam01.xtrasonnet.document.Document;
 import com.github.jam01.xtrasonnet.document.MediaTypes;
 import org.json.JSONException;
 import org.junit.jupiter.api.Assertions;
@@ -35,7 +29,7 @@ public class JavaPluginTest {
 
     @Test
     public void read_simple() throws JSONException {
-        var doc = new Mapper("payload").transform(new DefaultDocument<>(carMap));
+        var doc = new Mapper("payload").transform(new Document.BasicDocument<>(carMap));
 
         JSONAssert.assertEquals(carJson, doc.getContent(), true);
         Assertions.assertEquals(MediaTypes.APPLICATION_JSON, doc.getMediaType());
@@ -43,7 +37,7 @@ public class JavaPluginTest {
 
     @Test
     public void read_object() throws JSONException {
-        var doc = new Mapper("payload").transform(new DefaultDocument<>(car));
+        var doc = new Mapper("payload").transform(new Document.BasicDocument<>(car));
 
         JSONAssert.assertEquals(carJson, doc.getContent(), true);
         assertEquals(MediaTypes.APPLICATION_JSON, doc.getMediaType());
@@ -51,7 +45,7 @@ public class JavaPluginTest {
 
     @Test
     public void read_null() throws JSONException {
-        var doc = new Mapper("payload").transform(DefaultDocument.NULL_INSTANCE);
+        var doc = new Mapper("payload").transform(Document.BasicDocument.NULL_INSTANCE);
 
         assertEquals("null", doc.getContent()); // "null" is a valid JSON doc
         assertEquals(MediaTypes.APPLICATION_JSON, doc.getMediaType());
@@ -60,7 +54,7 @@ public class JavaPluginTest {
     @Test
     public void write_simple() {
         var doc = new Mapper("{ color: 'blue', type: 'bus' }")
-                .transform(DefaultDocument.NULL_INSTANCE, Collections.emptyMap(), MediaTypes.APPLICATION_JAVA, Map.class);
+                .transform(Document.BasicDocument.NULL_INSTANCE, Collections.emptyMap(), MediaTypes.APPLICATION_JAVA, Map.class);
 
         assertEquals(carMap, doc.getContent());
         assertEquals("application/x-java-object;type=java.util.Map", doc.getMediaType().toString());
@@ -69,7 +63,7 @@ public class JavaPluginTest {
     @Test
     public void write_object() {
         var doc = new Mapper("{ color: 'blue', type: 'bus' }")
-                .transform(DefaultDocument.NULL_INSTANCE, Collections.emptyMap(), MediaTypes.APPLICATION_JAVA, Car.class);
+                .transform(Document.BasicDocument.NULL_INSTANCE, Collections.emptyMap(), MediaTypes.APPLICATION_JAVA, Car.class);
 
         assertEquals(car, doc.getContent());
         assertEquals("application/x-java-object;type=com.github.jam01.xtrasonnet.plugins.JavaPluginTest$Car", doc.getMediaType().toString());
@@ -78,7 +72,7 @@ public class JavaPluginTest {
     @Test
     public void write_null() throws JSONException {
         var doc = new Mapper("null")
-                .transform(DefaultDocument.NULL_INSTANCE, Collections.emptyMap(), MediaTypes.APPLICATION_JAVA);
+                .transform(Document.BasicDocument.NULL_INSTANCE, Collections.emptyMap(), MediaTypes.APPLICATION_JAVA);
 
         JSONAssert.assertEquals(null, doc.getContent(), true);
         assertEquals(MediaTypes.APPLICATION_JAVA, doc.getMediaType());

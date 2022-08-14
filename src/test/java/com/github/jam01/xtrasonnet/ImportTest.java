@@ -24,11 +24,10 @@ package com.github.jam01.xtrasonnet;
  * limitations under the License.
  */
 
-import com.github.jam01.xtrasonnet.document.DefaultDocument;
+import com.github.jam01.xtrasonnet.document.Document;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 
 import static com.github.jam01.xtrasonnet.TestUtils.resourceAsString;
@@ -41,7 +40,7 @@ public class ImportTest {
     @Test
     void import_simple() {
         var result = new Mapper("import 'output.json'", Collections.emptyList(),
-                Collections.singletonMap("output.json", "{\"a\": 5}")).transform(DefaultDocument.NULL_INSTANCE);
+                Collections.singletonMap("output.json", "{\"a\": 5}")).transform(Document.BasicDocument.NULL_INSTANCE);
         assertEquals("{\"a\":5}", result.getContent());
     }
 
@@ -49,7 +48,7 @@ public class ImportTest {
     void import_parse_error_states_linenumber() {
         try {
             new Mapper("import 'output.json'", Collections.emptyList(),
-                    Collections.singletonMap("output.json", "a b")).transform(DefaultDocument.NULL_INSTANCE);
+                    Collections.singletonMap("output.json", "a b")).transform(Document.BasicDocument.NULL_INSTANCE);
             fail("Import should fail");
         } catch (IllegalArgumentException e) {
             String stacktrace = stacktraceFrom(e);
@@ -63,7 +62,7 @@ public class ImportTest {
     void import_eval_error_states_linenumber() {
         try {
             new Mapper("import 'output.json'", Collections.emptyList(),
-                    Collections.singletonMap("output.json", "a.b")).transform(DefaultDocument.NULL_INSTANCE);
+                    Collections.singletonMap("output.json", "a.b")).transform(Document.BasicDocument.NULL_INSTANCE);
             fail("Execution should fail");
         } catch (IllegalArgumentException e) {
             String stacktrace = stacktraceFrom(e);
@@ -90,7 +89,7 @@ public class ImportTest {
         try {
             var libErr = resourceAsString("importTestFail.libsonnet");
             new Mapper("local testlib = import 'importTestFail.libsonnet'; { greeting: testlib.sayHello('World') }",
-                    Collections.emptyList(), Collections.singletonMap("importTestFail.libsonnet", libErr)).transform(DefaultDocument.NULL_INSTANCE);
+                    Collections.emptyList(), Collections.singletonMap("importTestFail.libsonnet", libErr)).transform(Document.BasicDocument.NULL_INSTANCE);
             fail("This test should fail");
         } catch (IllegalArgumentException e) {
             String stacktrace = stacktraceFrom(e);

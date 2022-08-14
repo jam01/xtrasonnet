@@ -23,7 +23,6 @@ package com.github.jam01.xtrasonnet;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import com.github.jam01.xtrasonnet.document.DefaultDocument;
 import com.github.jam01.xtrasonnet.document.Document;
 import com.github.jam01.xtrasonnet.document.MediaTypes;
 import org.junit.jupiter.api.Test;
@@ -48,7 +47,7 @@ public class XMLWriterTest {
         Mapper mapper = new Mapper(datasonnet);
 
 
-        String mapped = mapper.transform(new DefaultDocument<>(json, MediaTypes.APPLICATION_JSON), Collections.emptyMap(), MediaTypes.APPLICATION_XML).getContent();
+        String mapped = mapper.transform(new Document.BasicDocument<>(json, MediaTypes.APPLICATION_JSON), Collections.emptyMap(), MediaTypes.APPLICATION_XML).getContent();
 
         // original mapping is gone
         assertThat(mapped, not(containsString("b:a")));
@@ -72,7 +71,7 @@ public class XMLWriterTest {
         Mapper mapper = new Mapper(datasonnet);
 
 
-        String mapped = mapper.transform(new DefaultDocument<>(json, MediaTypes.APPLICATION_JSON), Collections.emptyMap(), MediaTypes.APPLICATION_XML).getContent();
+        String mapped = mapper.transform(new Document.BasicDocument<>(json, MediaTypes.APPLICATION_JSON), Collections.emptyMap(), MediaTypes.APPLICATION_XML).getContent();
 
 
         // original mapping is gone
@@ -95,7 +94,7 @@ public class XMLWriterTest {
 
         Mapper mapper = new Mapper(datasonnet);
 
-        Document<String> mappedXml = mapper.transform(new DefaultDocument<>(jsonData, MediaTypes.APPLICATION_JSON), Collections.emptyMap(), MediaTypes.APPLICATION_XML);
+        Document<String> mappedXml = mapper.transform(new Document.BasicDocument<>(jsonData, MediaTypes.APPLICATION_JSON), Collections.emptyMap(), MediaTypes.APPLICATION_XML);
         assertEquals(MediaTypes.APPLICATION_XML, mappedXml.getMediaType());
         assertThat(mappedXml.getContent(), CompareMatcher.isSimilarTo(expectedXml).ignoreWhitespace());
     }
@@ -108,7 +107,7 @@ public class XMLWriterTest {
 
         Mapper mapper = new Mapper(datasonnet);
 
-        String mappedXml = mapper.transform(new DefaultDocument<>(jsonData, MediaTypes.APPLICATION_JSON), Collections.emptyMap(), MediaTypes.APPLICATION_XML).getContent();
+        String mappedXml = mapper.transform(new Document.BasicDocument<>(jsonData, MediaTypes.APPLICATION_JSON), Collections.emptyMap(), MediaTypes.APPLICATION_XML).getContent();
 
         assertThat(mappedXml, CompareMatcher.isSimilarTo(expectedXml).ignoreWhitespace());
     }
@@ -124,7 +123,7 @@ public class XMLWriterTest {
         String expectedXml = resourceAsString("xml/writeXMLEscapedTest.xml");
 
         Mapper mapper = new Mapper(datasonnet);
-        String mappedXml = mapper.transform(DefaultDocument.NULL_INSTANCE, Collections.emptyMap(), MediaTypes.APPLICATION_XML.withParameter("badgerfish", "extended"), String.class).getContent();
+        String mappedXml = mapper.transform(Document.BasicDocument.NULL_INSTANCE, Collections.emptyMap(), MediaTypes.APPLICATION_XML.withParameter("badgerfish", "extended"), String.class).getContent();
 
         assertThat(mappedXml, CompareMatcher.isSimilarTo(expectedXml).ignoreWhitespace());
     }
@@ -137,7 +136,7 @@ public class XMLWriterTest {
 
         Mapper mapper = new Mapper(datasonnet);
 
-        String mappedXml = mapper.transform(new DefaultDocument<>(jsonData, MediaTypes.APPLICATION_JSON), Collections.emptyMap(), MediaTypes.APPLICATION_XML.withParameter("badgerfish", "simple")).getContent();
+        String mappedXml = mapper.transform(new Document.BasicDocument<>(jsonData, MediaTypes.APPLICATION_JSON), Collections.emptyMap(), MediaTypes.APPLICATION_XML.withParameter("badgerfish", "simple")).getContent();
 
         assertEquals(expectedXml, mappedXml);
 
@@ -153,7 +152,7 @@ public class XMLWriterTest {
 
         Mapper mapper = new Mapper(datasonnet);
 
-        String mappedXml = mapper.transform(new DefaultDocument<String>(jsonData, MediaTypes.APPLICATION_JSON), Collections.emptyMap(), MediaTypes.APPLICATION_XML).getContent();
+        String mappedXml = mapper.transform(new Document.BasicDocument<String>(jsonData, MediaTypes.APPLICATION_JSON), Collections.emptyMap(), MediaTypes.APPLICATION_XML).getContent();
 
         assertThat(mappedXml, CompareMatcher.isSimilarTo(expectedXml).ignoreWhitespace());
     }
@@ -169,7 +168,7 @@ public class XMLWriterTest {
                 "};xtr.write(payload, \"application/xml\", params)");
 
 
-        String mappedXml = mapper.transform(new DefaultDocument<>(jsonData, MediaTypes.APPLICATION_JSON), Collections.emptyMap(), MediaTypes.TEXT_PLAIN).getContent();
+        String mappedXml = mapper.transform(new Document.BasicDocument<>(jsonData, MediaTypes.APPLICATION_JSON), Collections.emptyMap(), MediaTypes.TEXT_PLAIN).getContent();
 
         assertThat(mappedXml, CompareMatcher.isSimilarTo(expectedXml).ignoreWhitespace());
     }
@@ -182,7 +181,7 @@ public class XMLWriterTest {
 
         Mapper mapper = new Mapper(datasonnet);
 
-        String mappedXml = mapper.transform(new DefaultDocument<>(jsonData, MediaTypes.APPLICATION_JSON), Collections.emptyMap(), MediaTypes.APPLICATION_XML).getContent();
+        String mappedXml = mapper.transform(new Document.BasicDocument<>(jsonData, MediaTypes.APPLICATION_JSON), Collections.emptyMap(), MediaTypes.APPLICATION_XML).getContent();
 
         assertThat(mappedXml, CompareMatcher.isSimilarTo(expectedXml).ignoreWhitespace());
 
@@ -192,7 +191,7 @@ public class XMLWriterTest {
         mapper = new Mapper(datasonnet);
 
 
-        mappedXml = mapper.transform(new DefaultDocument<>(jsonData, MediaTypes.APPLICATION_JSON), Collections.emptyMap(), MediaTypes.APPLICATION_XML).getContent();
+        mappedXml = mapper.transform(new Document.BasicDocument<>(jsonData, MediaTypes.APPLICATION_JSON), Collections.emptyMap(), MediaTypes.APPLICATION_XML).getContent();
 
         assertThat(mappedXml, CompareMatcher.isSimilarTo(expectedXml).ignoreWhitespace());
     }
@@ -207,7 +206,7 @@ public class XMLWriterTest {
                 "*/\n" +
                 "payload");
 
-        String mappedXml = mapper.transform(new DefaultDocument<>(jsonData, MediaTypes.APPLICATION_JSON), Collections.emptyMap(), MediaTypes.APPLICATION_XML).getContent();
+        String mappedXml = mapper.transform(new Document.BasicDocument<>(jsonData, MediaTypes.APPLICATION_JSON), Collections.emptyMap(), MediaTypes.APPLICATION_XML).getContent();
 
         assertFalse(mappedXml.contains("<?xml"));
 
@@ -217,7 +216,7 @@ public class XMLWriterTest {
                 "*/\n" +
                 "payload");
 
-        mappedXml = mapper.transform(new DefaultDocument<>(jsonData, MediaTypes.APPLICATION_JSON), Collections.emptyMap(), MediaTypes.APPLICATION_XML).getContent();
+        mappedXml = mapper.transform(new Document.BasicDocument<>(jsonData, MediaTypes.APPLICATION_JSON), Collections.emptyMap(), MediaTypes.APPLICATION_XML).getContent();
 
         assertTrue(mappedXml.startsWith("<?xml"));
     }
@@ -228,7 +227,7 @@ public class XMLWriterTest {
         Mapper mapper = new Mapper("xtr.write(payload, \"application/xml\")");
 
         try {
-            String mappedXml = mapper.transform(new DefaultDocument<>(jsonData, MediaTypes.APPLICATION_JSON), Collections.emptyMap(), MediaTypes.APPLICATION_XML).getContent();
+            String mappedXml = mapper.transform(new Document.BasicDocument<>(jsonData, MediaTypes.APPLICATION_JSON), Collections.emptyMap(), MediaTypes.APPLICATION_XML).getContent();
             fail("Must fail to transform");
         } catch (IllegalArgumentException e) {
             String stacktrace = stacktraceFrom(e);
@@ -243,7 +242,7 @@ public class XMLWriterTest {
                 "payload");
 
         try {
-            String mappedXml = mapper.transform(new DefaultDocument<>(jsonData, MediaTypes.APPLICATION_JSON), Collections.emptyMap(), MediaTypes.APPLICATION_XML).getContent();
+            String mappedXml = mapper.transform(new Document.BasicDocument<>(jsonData, MediaTypes.APPLICATION_JSON), Collections.emptyMap(), MediaTypes.APPLICATION_XML).getContent();
         } catch (IllegalArgumentException e) {
             fail("This transformation should not fail");
         }
@@ -256,7 +255,7 @@ public class XMLWriterTest {
 
         Mapper mapper = new Mapper("payload");
 
-        String mappedXml = mapper.transform(new DefaultDocument<String>(jsonData, MediaTypes.APPLICATION_JSON), Collections.emptyMap(), MediaTypes.APPLICATION_XML.withParameter("badgerfish", "extended")).getContent();
+        String mappedXml = mapper.transform(new Document.BasicDocument<String>(jsonData, MediaTypes.APPLICATION_JSON), Collections.emptyMap(), MediaTypes.APPLICATION_XML.withParameter("badgerfish", "extended")).getContent();
         assertThat(mappedXml, CompareMatcher.isSimilarTo(expectedXml).ignoreWhitespace());
     }
 
@@ -265,7 +264,7 @@ public class XMLWriterTest {
         Mapper mapper = new Mapper("null");
 
         try {
-            mapper.transform(DefaultDocument.NULL_INSTANCE, Collections.emptyMap(), MediaTypes.APPLICATION_XML);
+            mapper.transform(Document.BasicDocument.NULL_INSTANCE, Collections.emptyMap(), MediaTypes.APPLICATION_XML);
             fail("Should not succeed");
         } catch (Exception e) {
             assertTrue(e.getMessage().contains("Input for XML writer must be an Object"), "Failed with wrong message: " + e.getMessage());

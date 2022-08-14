@@ -8,10 +8,11 @@ package com.github.jam01.xtrasonnet
  */
 
 import Mapper.{ERROR_LINE_REGEX, handleException, main}
-import com.github.jam01.xtrasonnet.document.{DefaultDocument, Document, MediaType, MediaTypes}
+import com.github.jam01.xtrasonnet.document.{Document, MediaType, MediaTypes}
 import com.github.jam01.xtrasonnet.header.Header
 import com.github.jam01.xtrasonnet.spi.Library
 import Library.{dummyPosition, memberOf}
+import com.github.jam01.xtrasonnet.document.Document.BasicDocument
 import sjsonnet.Expr.Params
 import sjsonnet.ScopedExprTransform.{Scope, ScopedVal, emptyScope}
 import sjsonnet.{CachedResolver, DefaultParseCache, Error, EvalScope, Evaluator, Expr, FileScope, Importer, Materializer, ParseError, Path, Position, Settings, StaticOptimizer, Val, ValScope}
@@ -252,7 +253,7 @@ class Mapper(var script: String,
   }
 
   def transform(payload: String): String = {
-    transform(new DefaultDocument[String](payload)).getContent
+    transform(new BasicDocument[String](payload)).getContent
   }
 
   def transform(payload: Document[_]): Document[String] = {
