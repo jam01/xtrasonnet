@@ -85,10 +85,6 @@
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-csv</artifactId>
         </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.dataformat</groupId>
-            <artifactId>jackson-dataformat-properties</artifactId>
-        </dependency>
         <!-- plugin deps: end -->
 
         <dependency>
@@ -98,28 +94,10 @@
         </dependency>
 
         <!-- crypto deps: start -->
-        <!-- pgp -->
-        <dependency>
-            <groupId>org.bouncycastle</groupId>
-            <artifactId>bcpg-jdk18on</artifactId>
-            <version>1.71</version>
-        </dependency>
         <!-- jce -->
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcprov-jdk18on</artifactId>
-            <version>1.71</version>
-        </dependency>
-        <!-- jce extended -->
-        <dependency>
-            <groupId>org.bouncycastle</groupId>
-            <artifactId>bcprov-ext-jdk18on</artifactId>
-            <version>1.71</version>
-        </dependency>
-        <!-- certs -->
-        <dependency>
-            <groupId>org.bouncycastle</groupId>
-            <artifactId>bcpkix-jdk18on</artifactId>
             <version>1.71</version>
         </dependency>
         <!-- crypto deps: end -->
@@ -227,6 +205,8 @@
                                 <exclude>docs/**</exclude>
                                 <exclude>src/test/resources/**</exclude>
                                 <exclude>**/target/**</exclude>
+                                <!-- files unchanged from spring-framework -->
+                                <exclude>src/main/java/**/InvalidMediaTypeException.java</exclude>
                                 <!-- files unchanged from datasonnet-mapper -->
                                 <exclude>src/main/java/**/JsonPath.java</exclude>
                                 <exclude>src/main/java/**/RecentsMap.java</exclude>
