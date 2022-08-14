@@ -23,6 +23,17 @@ package com.github.jam01.xtrasonnet.document;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/*
+ * Changed:
+ * - Combined MimeType and MediaType into single class
+ * - Added null check to isQuotedString
+ * - Replace escape chars from parameter values in unquote
+ * - Made static checkParameters and support methods
+ * - Renamed checkParameters to checkParametersParsed
+ * - Created checkParameters version which doesn't validate param values
+ * - Changed parameters validation in constructor to use new checkParameters
+ * - Quote each param value in toString if necessary
+ */
 
 import com.github.jam01.xtrasonnet.Utils;
 import org.jetbrains.annotations.Nullable;
@@ -48,30 +59,15 @@ import static com.github.jam01.xtrasonnet.document.MediaTypes.PARAM_QUALITY_FACT
 /**
  * Represents a MediaType as defined in the HTTP Specification.
  *
- * <p>
- * This file is a derived work of org.springframework.util.MimeType and org.springframework.http.MediaType classes from
- * Spring Framework v5.3.0-M1. Modifications made to the original work include:
- * <li>Combining both classes into a single file, removing references to MimeType</li>
- * <li>Added null check to isQuotedString</li>
- * <li>Replace escape chars from parameter values in unquote</li>
- * <li>Made checkParameters and support methods static</li>
- * <li>Renamed checkParameters to checkParametersParsed</li>
- * <li>Created checkParameters version which doesn't validate param values</li>
- * <li>Changed parameters validation in constructor to use new checkParameters</li>
- * <li>Quote each param value in toString if necessary</li>
- * </p>
- *
- * @author Arjen Poutsma (2002-2020)
- * @author Juergen Hoeller (2002-2020)
- * @author Rossen Stoyanchev (2002-2020)
- * @author Sebastien Deleuze (2002-2020)
- * @author Kazuki Shimizu (2002-2020)
- * @author Sam Brannen (2002-2020)
- * @author Jose Montoya
+ * @author Arjen Poutsma
+ * @author Juergen Hoeller
+ * @author Rossen Stoyanchev
+ * @author Sebastien Deleuze
+ * @author Kazuki Shimizu
+ * @author Sam Brannen
  * @see MediaTypeUtils
  * @see MediaTypes
  * @see <a href="https://tools.ietf.org/html/rfc7231#section-3.1.1.1">HTTP 1.1: Semantics and Content, section 3.1.1.1</a>
- * @since 0.3.0
  */
 public class MediaType implements Comparable<MediaType>, Serializable {
     private static final long serialVersionUID = 2069937152339670231L;
@@ -178,7 +174,6 @@ public class MediaType implements Comparable<MediaType>, Serializable {
      * @param other   the other media type
      * @param charset the character set
      * @throws IllegalArgumentException if any of the parameters contain illegal characters
-     * @since 0.3.0
      */
     public MediaType(MediaType other, Charset charset) {
         this(other.getType(), other.getSubtype(), addCharsetParameter(charset, other.getParameters()));
@@ -236,7 +231,6 @@ public class MediaType implements Comparable<MediaType>, Serializable {
      *
      * @param other the MIME type
      * @throws IllegalArgumentException if any of the parameters contain illegal characters
-     * @since 0.3.0
      */
     public MediaType(MediaType other) {
         this.type = other.type;
@@ -338,7 +332,6 @@ public class MediaType implements Comparable<MediaType>, Serializable {
      * Return the character set, as indicated by a {@code charset} parameter, if any.
      *
      * @return the character set, or {@code null} if not available
-     * @since 0.3.0
      */
     @Nullable
     public Charset getCharset() {
@@ -372,7 +365,6 @@ public class MediaType implements Comparable<MediaType>, Serializable {
      *
      * @param other the other mime type to compare to
      * @return whether the two mime types have the same type and subtype
-     * @since 0.3.0
      */
     public boolean equalsTypeAndSubtype(@Nullable MediaType other) {
         if (other == null) {
@@ -388,7 +380,6 @@ public class MediaType implements Comparable<MediaType>, Serializable {
      *
      * @param mimeTypes the list of mime types to perform the check against
      * @return whether the list contains the given mime type
-     * @since 0.3.0
      */
     public boolean isPresentIn(Collection<? extends MediaType> mimeTypes) {
         for (MediaType mimeType : mimeTypes) {
@@ -417,8 +408,6 @@ public class MediaType implements Comparable<MediaType>, Serializable {
      * Determine if the parameters in this {@code MimeType} and the supplied
      * {@code MimeType} are equal, performing case-insensitive comparisons
      * for {@link Charset Charsets}.
-     *
-     * @since 0.3.0
      */
     private boolean parametersAreEqual(MediaType other) {
         if (this.parameters.size() != other.parameters.size()) {
@@ -849,7 +838,6 @@ public class MediaType implements Comparable<MediaType>, Serializable {
      * @param mediaTypes the string to parse
      * @return the list of media types
      * @throws InvalidMediaTypeException if the media type value cannot be parsed
-     * @since 0.3.0
      */
     public static List<MediaType> parseMediaTypes(@Nullable List<String> mediaTypes) {
         if (mediaTypes == null || mediaTypes.isEmpty()) {

@@ -23,30 +23,30 @@ package com.github.jam01.xtrasonnet;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/*
+ * Changed:
+ * - Combined hasText and nullSafeEquals from StringUtils and ObjectUtils
+ * - Removed support for arrays in nullSafeEquals
+ */
 
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Miscellaneous collection of utility methods.
- *
- * <p>
- * This file is a derived work of org.springframework.util.StringUtils and org.springframework.util.ObjectUtils classes from
- * Spring Framework v5.3.0-M1. Modifications made to the original work include:
- * <li>Removed support for arrays in nullSafeEquals</li>
- * </p>
- *
- * <p>Thanks to Alex Ruiz for contributing several enhancements to this class!</p>
- *
- * @author Juergen Hoeller (2002-2020)
- * @author Keith Donald (2002-2020)
- * @author Rod Johnson (2002-2020)
- * @author Rob Harrop (2002-2020)
- * @author Chris Beams (2002-2020)
- * @author Sam Brannen (2002-2020)
- * @author Jose Montoya
- * @since 0.3.0
+ * Miscellaneous collection of utility methods. Mainly for internal use within the framework.
  */
 public class Utils {
+    /*
+     * StringUtils: start
+     *
+     * @author Rod Johnson
+     * @author Juergen Hoeller
+     * @author Keith Donald
+     * @author Rob Harrop
+     * @author Rick Evans
+     * @author Arjen Poutsma
+     * @author Sam Brannen
+     * @author Brian Clozel
+     */
     /**
      * Check whether the given {@code String} contains actual <em>text</em>.
      * <p>More specifically, this method returns {@code true} if the
@@ -73,7 +73,20 @@ public class Utils {
         }
         return false;
     }
+    /* StringUtils: end */
 
+    /*
+     * ObjectUtils: start
+     *
+     * <p>Thanks to Alex Ruiz for contributing several enhancements to this class!
+     *
+     * @author Juergen Hoeller
+     * @author Keith Donald
+     * @author Rod Johnson
+     * @author Rob Harrop
+     * @author Chris Beams
+     * @author Sam Brannen
+     */
     /**
      * Determine if the given objects are equal, returning {@code true} if
      * both are {@code null} or {@code false} if only one is {@code null}.
@@ -92,5 +105,5 @@ public class Utils {
         }
         return o1.equals(o2);
     }
-    // ObjectUtils: end
+    /* ObjectUtils: end */
 }

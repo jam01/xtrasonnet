@@ -23,6 +23,13 @@ package com.github.jam01.xtrasonnet.document;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/*
+ * Changed:
+ * - Handle escape chars when parsing params in parseMediaTypeInternal
+ * - Unquote param values after parsing
+ * - Check parameter validity when parsing params in parseMediaTypeInternal using MediaType.checkParametersParsed
+ * - Removed generateMultipartBoundary and related methods
+ */
 
 import com.github.jam01.xtrasonnet.Utils;
 import org.jetbrains.annotations.Nullable;
@@ -47,25 +54,14 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static com.github.jam01.xtrasonnet.document.MediaType.unquote;
-
 /**
  * Miscellaneous {@link MediaType} utility methods.
  *
- * <p>
- * This file is a derived work of org.springframework.util.MimeTypeUtils class from
- * Spring Framework v5.3.0-M1. Modifications made to the original work include:
- * <li>Handle escape chars when parsing params in parseMediaTypeInternal</li>
- * <li>Check parameter validity when parsing params in parseMediaTypeInternal using MediaType.checkParametersParsed</li>
- * </p>
- *
- * @author Arjen Poutsma (2002-2020)
- * @author Rossen Stoyanchev (2002-2020)
- * @author Dimitrios Liapis (2002-2020)
- * @author Brian Clozel (2002-2020)
- * @author Sam Brannen (2002-2020)
- * @author Jose Montoya
- * @since 0.3.0
+ * @author Arjen Poutsma
+ * @author Rossen Stoyanchev
+ * @author Dimitrios Liapis
+ * @author Brian Clozel
+ * @author Sam Brannen
  */
 public abstract class MediaTypeUtils {
 
@@ -82,9 +78,6 @@ public abstract class MediaTypeUtils {
 
     private static final ConcurrentLruCache<String, MediaType> cachedMimeTypes =
             new ConcurrentLruCache<>(64, MediaTypeUtils::parseMediaTypeInternal);
-
-    @Nullable
-    private static volatile Random random;
 
     /**
      * Parse the given String into a single {@code MimeType}.
@@ -209,7 +202,6 @@ public abstract class MediaTypeUtils {
      *
      * @param mediaTypes the string to tokenize
      * @return the list of tokens
-     * @since 0.3.0
      */
     public static List<String> tokenize(String mediaTypes) {
         if (mediaTypes == null || mediaTypes.isEmpty()) {
@@ -291,43 +283,6 @@ public abstract class MediaTypeUtils {
             mimeTypes.sort(SPECIFICITY_COMPARATOR);
         }
     }
-
-    /**
-     * Lazily initialize the {@link SecureRandom} for {@link #generateMultipartBoundary()}.
-     */
-    private static Random initRandom() {
-        Random randomToUse = random;
-        if (randomToUse == null) {
-            synchronized (MediaTypeUtils.class) {
-                randomToUse = random;
-                if (randomToUse == null) {
-                    randomToUse = new SecureRandom();
-                    random = randomToUse;
-                }
-            }
-        }
-        return randomToUse;
-    }
-
-    /**
-     * Generate a random MIME boundary as bytes, often used in multipart mime types.
-     */
-    public static byte[] generateMultipartBoundary() {
-        Random randomToUse = initRandom();
-        byte[] boundary = new byte[randomToUse.nextInt(11) + 30];
-        for (int i = 0; i < boundary.length; i++) {
-            boundary[i] = BOUNDARY_CHARS[randomToUse.nextInt(BOUNDARY_CHARS.length)];
-        }
-        return boundary;
-    }
-
-    /**
-     * Generate a random MIME boundary as String, often used in multipart mime types.
-     */
-    public static String generateMultipartBoundaryString() {
-        return new String(generateMultipartBoundary(), StandardCharsets.US_ASCII);
-    }
-
 
     /**
      * Simple Least Recently Used cache, bounded by the maximum size given
