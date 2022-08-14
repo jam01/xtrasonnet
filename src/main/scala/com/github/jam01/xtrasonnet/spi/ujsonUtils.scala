@@ -23,8 +23,9 @@ package com.github.jam01.xtrasonnet.spi
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// TODO: state changes
 
-import ujson._
+import ujson.{Arr, Bool, Null, Num, Obj, Readable, Str, Value}
 
 import scala.jdk.CollectionConverters.{MapHasAsJava, SeqHasAsJava}
 import scala.util.control.TailCalls.{TailRec, done, tailcall}
