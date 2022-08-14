@@ -113,7 +113,7 @@ public class MapperTest {
             fail("Muspayload.foot fail to execute");
         } catch(IllegalArgumentException e) {
             String stacktrace = stacktraceFrom(e);
-            assertTrue(e.getMessage().contains("Error evaluating DataSonnet transformation"), "Found message: " + e.getMessage());
+            assertTrue(e.getMessage().contains("Error evaluating xtrasonnet transformation"), "Found message: " + e.getMessage());
             assertTrue(e.getCause().getMessage().contains("attempted to index a string with string foo"), "Found message: " + e.getCause().getMessage());
             assertTrue(stacktrace.contains("(main):1:26"), "Stacktrace does not indicate the issue");
         }
