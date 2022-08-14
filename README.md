@@ -1,19 +1,166 @@
-# DataSonnet
+# xtrasonnet
 
-## Build and Versioning notes
+#### _extensible jsonnet transformations_ 
+For detailed information see the [xtrasonnet docs](https://josemontoya.io/xtrasonnet).
 
-The version in the POM should always be a SNAPSHOT version. That is the version that will be published
-on every push to the main branch (currently `master`).
+xtrasonnet is an extensible, template-based, data transformation engine for Java or any JVM-based language. It is an extension of databricks' [sjsonnet](https://github.com/databricks/sjsonnet) project, a Scala implementation of Google's [jsonnet](https://github.com/google/jsonnet).
 
-All other branches will be versioned by the current POM version (without `-SNAPSHOT`) followed by their name (with slashes replaced by hyphens) followed by `-SNAPSHOT`.
+xtrasonnet extends sjsonnet by enabling extensibility, adding support for data formats other than JSON, and offering data transformation facilities through the `xtr` library and a few additions to the jsonnet language itself.
 
-Builds triggered on individual commits will have the version `${POM VERSION}-commit-{HASH}-SNAPSHOT`.
+```java
+String output = new Mapper(xtrasonnet).transform(someJson);
+```
 
-Tags that start with `v` will be published with whatever the exact tag is (without the v).
+<table>
+<thead><tr><td>Input</td><td>xtrasonnet</td><td>Output</td></tr></thead>
+<tbody>
+<tr><td>
 
-To make a release where the POM SNAPSHOT version is `X.Y.Z-SNAPSHOT`
-    - tag the commit being released with `vX.Y.Z` and push.
-    - update the POM version to the next SNAPSHOT release by ticking one of the version numbers and make a PR into the main branch.
+```
+{ 
+    "message": "Hello World" 
+}
+```
 
-If a build fails, make a new push, which will trigger the new build with the necessary version information. If a
-tagged build fails, tick the patch version into a new tag and push that to trigger the new build.
+</td>
+<td>
+
+```
+/** xtrasonnet
+output application/xml
+input payload application/json
+*/
+{
+    root: {
+        msg: payload.message,
+        at: xtr.datetime.now()
+    }
+}
+```
+
+</td>
+<td>
+
+```
+<?xml version='1.0' encoding='UTF-8'?>
+<root>
+	<msg>Hello World</msg>
+	<at>2022-08-14T00:19:35.731362Z</at>
+</root>
+```
+
+</td></tr>
+</tbody>
+</table>
+
+## How extensible?
+xtrasonnet has two points of extensibility:
+* _Custom functions_: users can write native (e.g.: Java or Scala) functions as a `Library` and utilize them from their transformation code. 
+* _Any* data format_: users can write a custom `DataFormatPlugin` and transform from/to a given data format. 
+
+\* Any format that can be expressed as jsonnet elements.
+
+## What formats are supported?
+xtrasonnet includes a `DataFormatPlugin` for each of the following: 
+* JSON (application/json)
+* XML (application/xml)
+* CSV (application/csv)
+* Java (application/x-java-object)
+* text/plain
+
+## What kind of additions to the jsonnet language?
+There are two main additions motivated to facilitate data transformation applications:
+
+### Null-safe select `?.`
+This allows developers to select, and chain, properties arbitrarily without testing existence.
+
+<table>
+<thead><tr><td>xtrasonnet</td><td>Output</td></tr></thead>
+<tbody>
+<tr><td>
+
+```jsonnet
+local myObj = {
+    keyA: { first: { second: 'value' } },
+    keyB: { first: { } }
+};
+
+{
+    a: myObj?.keyA?.first?.second,
+    b: myObj?.keyB?.first?.second,
+    c: myObj?.keyC?.first?.second
+}
+```
+
+</td>
+<td>
+
+```jsonnet
+{
+    a: 'value',
+    b: null,
+    c: null
+}
+```
+
+</td></tr>
+</tbody>
+</table>
+
+
+### Null coalescing operator `??`
+This allows developers to tersely test for `null` and provide a default value. For example
+
+<table>
+<thead><tr><td>xtrasonnet</td><td>Output</td></tr></thead>
+<tbody>
+<tr><td>
+
+```jsonnet
+local myObj = {
+    keyA: { first: { second: 'value' } },
+    keyB: { first: { } }
+};
+
+{
+    a: myObj?.keyA?.first?.second,
+    b: myObj?.keyB?.first?.second ?? 'defaultB',
+    c: myObj?.keyC?.first?.second ?? 'defaultC'
+}
+```
+
+</td>
+<td>
+
+```jsonnet
+{
+    a: 'value',
+    b: 'defaultB',
+    c: 'defaultC'
+}
+```
+
+</td></tr>
+</tbody>
+</table>
+
+### What kind of functions are available?
+
+For a full reference of `xtr` see the [docs](https://josemontoya.io/xtrasonnet/datasonnet/latest/index.html).
+
+The `xtr` library is written natively (vs written as jsonnet code) and provides an extensive set of functions.
+
+Included are slight variations of the general purpose functions found in the jsonnet's `std` library, like `map`, `filter`, and `flatpMap` plus some additional ones like `groupBy`. More specific functions are also included like `objectFrom[Array]` to facilitates composing an `Object` from an `Array`, and `orderBy` to sort elements.
+
+**but wait, there's more!**
+
+Developers will also find functions grouped by following set of modules, accessed in the form of `xtr.[module].[function]`:
+* `datetime`: operations on date and time values
+* `crypto`: encrypt, decrypt, or hash data
+* `arrays`: extended set of array operations
+* `objects`: extended set of object operations
+* `strings`: operations on strings like `truncate` or `wrapIfMissing`
+* `base64`: encode and decode data in base64
+* `url`: encode and decode data for URLs
+
+and a few more.

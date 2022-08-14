@@ -1,7 +1,7 @@
 site:
-  title: Trobador Transformation Engine
-  url: https://jam01.github.io/trobador
-  start_page: datasonnet::index.adoc
+  title: xtrasonet
+  url: https://josemontoya.io/xtrasonnet
+  start_page: xtrasonnet::index.adoc
 content:
   sources:
   - url: .

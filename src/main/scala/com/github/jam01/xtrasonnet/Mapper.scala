@@ -138,7 +138,7 @@ class Mapper(var script: String,
     case Left(error) => error match {
       case pErr: ParseError => throw new IllegalArgumentException("Could not parse transformation script...", processError(pErr))
       case err: Error if err.getMessage.contains("Internal Error") => throw new IllegalArgumentException("Unexpected internal error while evaluating the transformation script, " +
-        "contact the DataSonnet developers", processError(err))
+        "consider opening an issue with the xtrasonnet project.", processError(err))
       case err: Error => throw new IllegalArgumentException("Could not evaluate transformation script... ", err)
     }
   }
@@ -293,7 +293,7 @@ class Mapper(var script: String,
       case Left(err) => err match {
         case pErr: ParseError => throw new IllegalArgumentException("Could not parse transformation script...", processError(pErr))
         case err: Error =>
-          throw new IllegalArgumentException("Error evaluating DataSonnet transformation...", processError(err))
+          throw new IllegalArgumentException("Error evaluating xtrasonnet transformation...", processError(err))
       }
     }
 

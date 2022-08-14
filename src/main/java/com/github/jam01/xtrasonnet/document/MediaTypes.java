@@ -342,9 +342,9 @@ public class MediaTypes {
 
     // See Null Object pattern
     /**
-     * Public constant media type for representing an unknown content type. This is meant to used to signal to Datasonnet
-     * that the content type of a given input is unknown at design time. Datasonnet may, for example, look in the header
-     * or default to a particular MediaType. Using this MediaType should be avoided outside of interactions with Datasonnet
+     * Public constant media type for representing an unknown content type. This is meant to used to signal to xtrasonnet
+     * that the content type of a given input is unknown at design time. xtrasonnet may, for example, look in the header
+     * or default to a particular MediaType. Using this MediaType should be avoided outside of interactions with xtrasonnet
      */
     public static final MediaType UNKNOWN;
 
