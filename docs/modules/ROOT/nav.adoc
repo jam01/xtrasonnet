@@ -2,7 +2,7 @@
 * xref:quickstart.adoc[Quick Start]
 * xref:headers.adoc[xtrasonnet Header]
 * xtrasonnet Modules
-** xref:libraries-core.adoc[Core]
+** xref:libraries-root.adoc[Core]
 ** xref:libraries-arrays.adoc[Arrays]
 ** xref:libraries-base64.adoc[Url]
 ** xref:libraries-crypto.adoc[Crypto]

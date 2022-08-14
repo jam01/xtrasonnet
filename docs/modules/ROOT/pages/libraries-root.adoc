@@ -1259,15 +1259,15 @@ xtr.startsWith('hello, world!', 'hello')
 true
 ----
 
-== `stringOf(value: String|Number|Boolean|Null): String`
+== `toString(value: String|Number|Boolean|Null): String`
 Returns the `String` representation of `value`.
 
 .Example
 ----
 {
-    bool: xtr.stringOf(true),
-    num: xtr.stringOf(365),
-    nil: xtr.stringOf(null)
+    bool: xtr.toString(true),
+    num: xtr.toString(365),
+    nil: xtr.toString(null)
 }
 ----
 .Result
