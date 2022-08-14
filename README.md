@@ -150,16 +150,16 @@ For a full reference see the [`xtr` docs](https://josemontoya.io/xtrasonnet/data
 
 The `xtr` library is written natively (vs written as jsonnet code) and provides an extensive set of functions.
 
-Included are slight variations of the general purpose functions found in the jsonnet's `std` library, like `map`, `filter`, and `flatpMap` plus some additional ones like `groupBy`. More specific functions are also included like `objectFrom[Array]` to facilitate composing an `Object` from an `Array`, and `orderBy` to sort elements.
+Included are slight variations of the general purpose functions found in the jsonnet's `std` library, such as `map`, `filter`, and `flatpMap` plus some additional ones like `groupBy`. More specific functions are also included like `objectFrom[Array]` to facilitate composing an `Object` from an `Array`, and `orderBy` to sort elements.
 
 **but wait, there's more!**
 
 Developers will also find functions grouped by following set of modules, accessed in the form of `xtr.[module].[function]`:
-* `datetime`: operations on date and time values
+* `datetime`: operations on date and time values, like `compare` and `plus(duration)`
 * `crypto`: encrypt, decrypt, or hash data
-* `arrays`: extended set of array operations
-* `objects`: extended set of object operations
-* `strings`: operations on strings like `truncate` or `wrapIfMissing`
+* `arrays`: extended set of array operations, like `distinctBy` and `partition`
+* `objects`: extended set of object operations, like `leftJoin`
+* `strings`: operations on strings, like `truncate` and `wrapIfMissing`
 * `base64`: encode and decode data in base64
 * `url`: encode and decode data for URLs
 
