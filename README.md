@@ -146,11 +146,11 @@ local myObj = {
 
 ### What kind of functions are available?
 
-For a full reference of `xtr` see the [docs](https://josemontoya.io/xtrasonnet/datasonnet/latest/index.html).
+For a full reference see the [`xtr` docs](https://josemontoya.io/xtrasonnet/datasonnet/latest/index.html).
 
 The `xtr` library is written natively (vs written as jsonnet code) and provides an extensive set of functions.
 
-Included are slight variations of the general purpose functions found in the jsonnet's `std` library, like `map`, `filter`, and `flatpMap` plus some additional ones like `groupBy`. More specific functions are also included like `objectFrom[Array]` to facilitates composing an `Object` from an `Array`, and `orderBy` to sort elements.
+Included are slight variations of the general purpose functions found in the jsonnet's `std` library, like `map`, `filter`, and `flatpMap` plus some additional ones like `groupBy`. More specific functions are also included like `objectFrom[Array]` to facilitate composing an `Object` from an `Array`, and `orderBy` to sort elements.
 
 **but wait, there's more!**
 
