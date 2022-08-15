@@ -15,7 +15,7 @@ import scala.util.Using
 
 object ClasspathPath {
   val root = new ClasspathPath("")
-  val resolver = new Importer {
+  val importer = new Importer {
     override def resolve(docBase: Path, importName: String): Option[Path] = docBase match {
       case ClasspathPath("") => Some(ClasspathPath(importName))
       case ClasspathPath(_) => Some(docBase / importName)

@@ -51,7 +51,7 @@ class Transformer(private var script: String,
                   defaultOut: MediaType = MediaTypes.APPLICATION_JSON,
                   wd: Path = ClasspathPath.root,
                   parseCache: ParseCache = new DefaultParseCache,
-                  importer: Importer = ClasspathPath.resolver,
+                  importer: Importer = ClasspathPath.importer,
                   private var settings: Settings = null) {
 
   def this(script: String,
