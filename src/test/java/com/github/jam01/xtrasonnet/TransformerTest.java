@@ -35,18 +35,20 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static com.github.jam01.xtrasonnet.TestUtils.stacktraceFrom;
+import static com.github.jam01.xtrasonnet.TestUtils.transform;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class MapperTest {
+public class TransformerTest {
 
     @ParameterizedTest
     @MethodSource("simpleProvider")
     void simple(String jsonnet, String json, String expected) {
-        Mapper mapper = new Mapper(jsonnet);
-        assertEquals(expected, mapper.transform(new Document.BasicDocument<>(json, MediaTypes.APPLICATION_JSON)).getContent());
+        Transformer transformer = new Transformer(jsonnet);
+        assertEquals(expected, transformer.transform(Document.of(json, MediaTypes.APPLICATION_JSON)).getContent());
     }
 
     static Stream<String[]> simpleProvider() {
@@ -60,9 +62,9 @@ public class MapperTest {
     @ParameterizedTest
     @MethodSource("variableProvider")
     void variables(String jsonnet, String json, String variable, String value, String expected) {
-        Map<String, Document<?>> variables = Collections.singletonMap(variable, new Document.BasicDocument<>(value, MediaTypes.APPLICATION_JSON));
-        Mapper mapper = new Mapper(jsonnet, variables.keySet());
-        assertEquals(expected, mapper.transform(new Document.BasicDocument<String>(json, MediaTypes.APPLICATION_JSON), variables, MediaTypes.APPLICATION_JSON).getContent());
+        Map<String, Document<?>> variables = Collections.singletonMap(variable, Document.of(value, MediaTypes.APPLICATION_JSON));
+        Transformer transformer = new Transformer(jsonnet, variables.keySet());
+        assertEquals(expected, transformer.transform(Document.of(json, MediaTypes.APPLICATION_JSON), variables, MediaTypes.APPLICATION_JSON).getContent());
     }
 
     static Stream<String[]> variableProvider() {
@@ -73,21 +75,9 @@ public class MapperTest {
     }
 
     @Test
-    void parseErrorLineNumber() {
-        try {
-            Mapper mapper = new Mapper("function(payload) xtr.time.now() a", Collections.emptyList(), Collections.emptyMap(), false);
-            fail("Must fail to parse");
-        } catch(IllegalArgumentException e) {
-            String stacktrace = stacktraceFrom(e);
-            assertTrue(e.getMessage().contains("Could not parse transformation script"), "Found message: " + e.getMessage());
-            assertTrue(stacktrace.contains("Expected end-of-input:1:34"), "Stacktrace does not indicate the issue");
-        }
-    }
-
-    @Test
     void parseErrorLineNumberWhenWrapped() {
         try {
-            Mapper mapper = new Mapper("xtr.time.now() a", Collections.emptyList());
+            Transformer transformer = new Transformer("xtr.time.now() a");
             fail("Must fail to parse");
         } catch(IllegalArgumentException e) {
             assertTrue(e.getCause().getMessage().contains("Expected end-of-input:1:16"), "Found message: " + e.getCause().getMessage());
@@ -95,34 +85,10 @@ public class MapperTest {
     }
 
     @Test
-    void noTopLevelFunction() {
-        try {
-            Mapper mapper = new Mapper("{}", Collections.emptyList(), Collections.emptyMap(), false);
-            fail("Must fail to execute");
-        } catch(IllegalArgumentException e) {
-            assertTrue(e.getMessage().contains("Top Level Function"), "Found message: " + e.getMessage());
-        }
-    }
-
-    @Test
-    void executeErrorLineNumber() {
-        try {
-            Mapper mapper = new Mapper("function(payload) payload.foo", Collections.emptyList(), Collections.emptyMap(), false);
-            mapper.transform("{}");
-            fail("Muspayload.foot fail to execute");
-        } catch(IllegalArgumentException e) {
-            String stacktrace = stacktraceFrom(e);
-            assertTrue(e.getMessage().contains("Error evaluating xtrasonnet transformation"), "Found message: " + e.getMessage());
-            assertTrue(e.getCause().getMessage().contains("attempted to index a string with string foo"), "Found message: " + e.getCause().getMessage());
-            assertTrue(stacktrace.contains("(main):1:26"), "Stacktrace does not indicate the issue");
-        }
-    }
-
-    @Test
     void executeErrorLineNumberWhenWrapped() {
         try {
-            Mapper mapper = new Mapper("payload.foo", Collections.emptyList());
-            mapper.transform("{}");
+            Transformer transformer = new Transformer("payload.foo");
+            transformer.transform("{}");
             fail("Must fail to execute");
         } catch (IllegalArgumentException e) {
             assertTrue(e.getCause().getMessage().contains("attempted to index a string with string foo"), "Found message: " + e.getCause().getMessage());
@@ -133,24 +99,24 @@ public class MapperTest {
     @Disabled
     @Test
     void includedJsonnetLibraryWorks() {
-        Mapper mapper = new Mapper("xtr.Util.select({a: {b: 5}}, 'a.b')", Collections.emptyList());
-        assertEquals("5", mapper.transform("{}"));
+        Transformer transformer = new Transformer("xtr.Util.select({a: {b: 5}}, 'a.b')");
+        assertEquals("5", transformer.transform("{}"));
     }
 
     Map<String, Document> stringArgument(String key, String value) {
         return new HashMap<String, Document>() {{
-            put(key, new Document.BasicDocument<String>(value, MediaTypes.TEXT_PLAIN));
+            put(key, Document.of(value, MediaTypes.TEXT_PLAIN));
         }};
     }
 
     @Test
     void nonJsonArguments() {
-        Mapper mapper = new Mapper("argument", Arrays.asList("argument"));
+        Transformer transformer = new Transformer("argument", Set.of("argument"));
 
 
-        Map<String, Document<?>> map = Collections.singletonMap("argument", new Document.BasicDocument<>("value", MediaTypes.TEXT_PLAIN));
+        Map<String, Document<?>> map = Collections.singletonMap("argument", Document.of("value", MediaTypes.TEXT_PLAIN));
 
-        Document<String> mapped = mapper.transform(new Document.BasicDocument<String>("{}", MediaTypes.APPLICATION_JSON), map, MediaTypes.TEXT_PLAIN);
+        Document<String> mapped = transformer.transform(Document.of("{}", MediaTypes.APPLICATION_JSON), map, MediaTypes.TEXT_PLAIN);
 
         //assertEquals(new DefaultDocument<String>("value", MediaTypes.TEXT_PLAIN), mapped);
         assertEquals("value", mapped.getContent());
@@ -159,28 +125,18 @@ public class MapperTest {
     }
 
     @Test
-    void noTopLevelFunctionArgs() {
-        try {
-            Mapper mapper = new Mapper("function() { test: \'HelloWorld\' } ", Collections.emptyList(), Collections.emptyMap(), false);
-            fail("Must fail to execute");
-        } catch(IllegalArgumentException e) {
-            assertTrue(e.getMessage().contains("Top Level Function must have at least one argument"), "Found message: " + e.getMessage());
-        }
-    }
-
-    @Test
     void testFieldsOrder() throws Exception {
         String jsonData = TestUtils.resourceAsString("fieldOrder.json");
         String datasonnet = TestUtils.resourceAsString("fieldOrder.ds");
 
         Map<String, Document<?>> variables = new HashMap<>();
-        variables.put("v2", new Document.BasicDocument<>("v2value", MediaTypes.TEXT_PLAIN));
-        variables.put("v1", new Document.BasicDocument<>("v1value", MediaTypes.TEXT_PLAIN));
+        variables.put("v2", Document.of("v2value", MediaTypes.TEXT_PLAIN));
+        variables.put("v1", Document.of("v1value", MediaTypes.TEXT_PLAIN));
 
-        Mapper mapper = new Mapper(datasonnet, variables.keySet());
+        Transformer transformer = new Transformer(datasonnet, variables.keySet());
 
 
-        String mapped = mapper.transform(new Document.BasicDocument<String>(jsonData, MediaTypes.APPLICATION_JSON), variables, MediaTypes.APPLICATION_JSON).getContent();
+        String mapped = transformer.transform(Document.of(jsonData, MediaTypes.APPLICATION_JSON), variables, MediaTypes.APPLICATION_JSON).getContent();
 
         assertEquals("{\"z\":\"z\",\"a\":\"a\",\"v2\":\"v2value\",\"v1\":\"v1value\",\"y\":\"y\",\"t\":\"t\"}", mapped.trim());
 
@@ -188,10 +144,10 @@ public class MapperTest {
                      "version=2.0\n" +
                      "preserveOrder=false\n*/\n" + datasonnet;
 
-        mapper = new Mapper(datasonnet, variables.keySet());
+        transformer = new Transformer(datasonnet, variables.keySet());
 
 
-        mapped = mapper.transform(new Document.BasicDocument<String>(jsonData, MediaTypes.APPLICATION_JSON), variables, MediaTypes.APPLICATION_JSON).getContent();
+        mapped = transformer.transform(Document.of(jsonData, MediaTypes.APPLICATION_JSON), variables, MediaTypes.APPLICATION_JSON).getContent();
 
         assertEquals("{\"a\":\"a\",\"t\":\"t\",\"v1\":\"v1value\",\"v2\":\"v2value\",\"y\":\"y\",\"z\":\"z\"}", mapped.trim());
     }

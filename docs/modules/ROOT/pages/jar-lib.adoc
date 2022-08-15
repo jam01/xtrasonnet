@@ -45,7 +45,7 @@ Document transformedResult = mapper.transform(new StringDocument(jsonData, "appl
 String jsonResult = transformedResult.getContentsAsString();
 ------
 
-The `Mapper` constructor accepts the following arguments:
+The `Transformer` constructor accepts the following arguments:
 
 - `xtrasonnetScript` - the `String` which contains the mapping code;
 - `argumentNames` - the `java.util.Set` which contains the names of the additional variables

@@ -7,28 +7,26 @@ package com.github.jam01.xtrasonnet
  * compliance with the Elastic License 2.0.
  */
 
-import Mapper.{ERROR_LINE_REGEX, handleException, main}
+import com.github.jam01.xtrasonnet.Transformer.{ERROR_LINE_REGEX, handleException, main}
+import com.github.jam01.xtrasonnet.document.Document.BasicDocument
 import com.github.jam01.xtrasonnet.document.{Document, MediaType, MediaTypes}
 import com.github.jam01.xtrasonnet.header.Header
 import com.github.jam01.xtrasonnet.spi.Library
-import Library.{dummyPosition, memberOf}
-import com.github.jam01.xtrasonnet.document.Document.BasicDocument
+import com.github.jam01.xtrasonnet.spi.Library.{dummyPosition, memberOf}
 import sjsonnet.Expr.Params
 import sjsonnet.ScopedExprTransform.{Scope, ScopedVal, emptyScope}
-import sjsonnet.{CachedResolver, DefaultParseCache, Error, EvalScope, Evaluator, Expr, FileScope, Importer, Materializer, ParseError, Path, Position, Settings, StaticOptimizer, Val, ValScope}
+import sjsonnet.{CachedResolver, DefaultParseCache, Error, EvalScope, Evaluator, Expr, FileScope, Importer, Materializer, ParseCache, ParseError, Path, Position, Settings, StaticOptimizer, Val, ValScope}
 
 import java.util.Collections
 import scala.collection.{Seq, immutable, mutable}
-import scala.io.Source
 import scala.jdk.CollectionConverters.{IterableHasAsScala, MapHasAsScala}
-import scala.util.Using
 import scala.util.control.NonFatal
 
-object Mapper {
+object Transformer {
   private val main = "(main)"
 
-  // We wrap the script as function based on advise from Jsonnet
-  // see the 'Top-level arguments' section in https://jsonnet.org/learning/tutorial.html#parameterize-entire-config
+  // We wrap the script as function in order to pass in payload, and named inputs
+  // see the 'Top-level arguments' section in https:based on//jsonnet.org/learning/tutorial.html#parameterize-entire-config
   private def asFunction(script: String, argumentNames: Iterable[String]) =
     (Seq("payload") ++ argumentNames).mkString("function(", ", ", ")\n") + script
 
@@ -41,41 +39,45 @@ object Mapper {
         Left(new Error("Internal error: " + e.toString, Nil, Some(e)))
     }
   }
+
+  def builder(script: String) = new TransformerBuilder(script)
 }
 
 // Significantly based on {@link sjsonnet.Interpreter Interpreter.class}
-class Mapper(var script: String,
-             inputNames: java.lang.Iterable[String] = Collections.emptySet(),
-             imports: java.util.Map[String, String] = Collections.emptyMap(),
-             asFunction: Boolean = true,
-             additionalLibs: java.util.List[Library] = Collections.emptyList(),
-             dataFormats: DataFormatService = DataFormatService.DEFAULT,
-             defaultOutput: MediaType = MediaTypes.APPLICATION_JSON) {
+class Transformer(private var script: String,
+                  inputNames: java.util.Set[String] = Collections.emptySet(),
+                  libs: java.util.Set[Library] = Collections.emptySet(),
+                  formats: DataFormatService = DataFormatService.DEFAULT,
+                  defaultOut: MediaType = MediaTypes.APPLICATION_JSON,
+                  wd: Path = ClasspathPath.root,
+                  parseCache: ParseCache = new DefaultParseCache,
+                  importer: Importer = ClasspathPath.resolver,
+                  private var settings: Settings = null) {
 
   def this(script: String,
-           inputNames: java.lang.Iterable[String],
-           imports: java.util.Map[String, String],
-           asFunction: Boolean,
-           additionalLibs: java.util.List[Library]) = {
-    this(script, inputNames, imports, asFunction, additionalLibs, DataFormatService.DEFAULT)
+           inputNames: java.util.Set[String],
+           libs: java.util.Set[Library],
+           formats: DataFormatService,
+           defaultOut: MediaType) = {
+    this(script, inputNames, libs, formats, defaultOut, ClasspathPath.root, new DefaultParseCache)
   }
 
   def this(script: String,
-           inputNames: java.lang.Iterable[String],
-           imports: java.util.Map[String, String],
-           asFunction: Boolean) = {
-    this(script, inputNames, imports, asFunction, Collections.emptyList())
+           inputNames: java.util.Set[String],
+           libs: java.util.Set[Library],
+           formats: DataFormatService) = {
+    this(script, inputNames, libs, formats, MediaTypes.APPLICATION_JSON)
   }
 
   def this(script: String,
-           inputNames: java.lang.Iterable[String],
-           imports: java.util.Map[String, String]) = {
-    this(script, inputNames, imports, true, Collections.emptyList())
+           inputNames: java.util.Set[String],
+           libs: java.util.Set[Library]) = {
+    this(script, inputNames, libs, DataFormatService.DEFAULT)
   }
 
   def this(script: String,
-           inputNames: java.lang.Iterable[String]) = {
-    this(script, inputNames, Collections.emptyMap())
+           inputNames: java.util.Set[String]) = {
+    this(script, inputNames, Collections.emptySet())
   }
 
   def this(script: String) = {
@@ -83,43 +85,24 @@ class Mapper(var script: String,
   }
 
   val header: Header = Header.parseHeader(script)
-  if (asFunction) script = Mapper.asFunction(script, inputNames.asScala)
-  private val parseCache = new DefaultParseCache
-  private val settings = new Settings(preserveOrder = header.isPreserveOrder)
-  private val allLibs: IndexedSeq[Library] = IndexedSeq(XTR).appendedAll(additionalLibs.asScala)
+  script = Transformer.asFunction(script, inputNames.asScala)
+  settings = if (settings != null) settings else new Settings(preserveOrder = header.isPreserveOrder)
+  private val allLibs: IndexedSeq[Library] = IndexedSeq(Xtr).appendedAll(libs.asScala)
 
-  // an importer that will resolve scripts from the classpath
-  private val classpathImporter: Importer = new Importer {
-    override def resolve(docBase: Path, importName: String): Option[Path] = docBase match {
-      case ClasspathPath("") => Some(ClasspathPath(importName))
-      case ClasspathPath(_) => Some(docBase / importName)
-      case _ => None
-    }
-
-    override def read(path: Path): Option[String] = {
-      val p = "/" + path.asInstanceOf[ClasspathPath].path
-      getClass.getResource(p) match {
-        case null => Option(imports.get(path.asInstanceOf[ClasspathPath].path))
-        case _ => Using.resource(getClass.getResourceAsStream(p)) { stream =>
-          Some(Source.fromInputStream(stream).mkString)
-        }
-      }
-    }
-  }
-
-  private val resolver: CachedResolver = new CachedResolver(classpathImporter, parseCache) {
+  private val resolver: CachedResolver = new CachedResolver(importer, parseCache) {
     override def process(expr: Expr, fs: FileScope): Either[Error, (Expr, FileScope)] =
       handleException((optimizer.optimize(expr), fs))
   }
-  private val evaluator = new Evaluator(resolver, Map.empty, ClasspathPath(""), settings, null)
-  // reserving indices for DS and additional libraries, the reservations must be exactly the same in ValScope
+
+  private val evaluator = new Evaluator(resolver, Map.empty, wd, settings, null)
+  // reserving indices for Xtr and additional libraries, the reservations must be exactly the same in ValScope
   private val optimizer = new StaticOptimizer(evaluator)
   optimizer.scope = new Scope(immutable.HashMap.from(allLibs
     .map(lib => (lib.namespace(), ScopedVal(Library.emptyObj, emptyScope, -1)))
-    .toMap), additionalLibs.size + 1)
+    .toMap), libs.size + 1)
 
   // reserving indices for DS and additional libraries
-  private val libsScope = ValScope.empty.extendBy(additionalLibs.size + 1)
+  private val libsScope = ValScope.empty.extendBy(libs.size + 1)
   private val libMappingsMap: Map[String, ScopedVal] = allLibs
     .map(composeLib)
     .map { case (k, obj) => (k, ScopedVal(obj, emptyScope, -1)) }
@@ -131,15 +114,12 @@ class Mapper(var script: String,
 
   private val scriptFn: Val.Func = evaluate(script, ClasspathPath(main)) match {
     case Right(value) => value match {
-      case func: Val.Func => if (func.params.names.length < 1)
-        throw new IllegalArgumentException("Top Level Function must have at least one argument.")
-      else func
-      case _ => throw new IllegalArgumentException("Not a valid script. Transformation scripts must have a Top Level Function.")
+      case func: Val.Func => func
+      case _ => throw new IllegalArgumentException("Not a valid script. Transformation scripts must be a Top Level Function.") // shouldn't happen since we're wrapping in Top Level Func
     }
     case Left(error) => error match {
       case pErr: ParseError => throw new IllegalArgumentException("Could not parse transformation script...", processError(pErr))
-      case err: Error if err.getMessage.contains("Internal Error") => throw new IllegalArgumentException("Unexpected internal error while evaluating the transformation script, " +
-        "consider opening an issue with the xtrasonnet project.", processError(err))
+      case err: Error if err.getMessage.contains("Internal Error") => throw new IllegalArgumentException("Unexpected internal error while evaluating the transformation script", processError(err))
       case err: Error => throw new IllegalArgumentException("Could not evaluate transformation script... ", err)
     }
   }
@@ -158,7 +138,7 @@ class Mapper(var script: String,
     if (output.equalsTypeAndSubtype(MediaTypes.ANY)) {
       val fromHeader = header.getDefaultOutput
       if (fromHeader.isPresent && !fromHeader.get.equalsTypeAndSubtype(MediaTypes.ANY)) header.combineOutputParams(fromHeader.get)
-      else header.combineOutputParams(defaultOutput)
+      else header.combineOutputParams(defaultOut)
     } else {
       header.combineOutputParams(output)
     }
@@ -177,33 +157,33 @@ class Mapper(var script: String,
 
   // supports a Map[String, Document] to enable a scenario where documents are grouped into a single input
   private def resolveInput(name: String, input: Document[_]): ujson.Value = {
-    if (!input.getContent.isInstanceOf[java.util.Map[_, _]]) return dataFormats.mandatoryRead(effectiveInput(name, input))
+    if (!input.getContent.isInstanceOf[java.util.Map[_, _]]) return formats.mandatoryRead(effectiveInput(name, input))
 
     val entrySet = input.getContent.asInstanceOf[java.util.Map[_, _]].entrySet()
-    if (entrySet.isEmpty) return dataFormats.mandatoryRead(effectiveInput(name, input))
+    if (entrySet.isEmpty) return formats.mandatoryRead(effectiveInput(name, input))
 
     val it = entrySet.iterator
     val firstEntry = it.next
     if (!firstEntry.getKey.isInstanceOf[String] || !firstEntry.getValue.isInstanceOf[Document[_]])
-      return dataFormats.mandatoryRead(effectiveInput(name, input))
+      return formats.mandatoryRead(effectiveInput(name, input))
 
     val builder = mutable.LinkedHashMap.newBuilder[String, ujson.Value]
     val key = firstEntry.getKey.asInstanceOf[String]
-    builder.addOne((key, dataFormats.mandatoryRead(effectiveInput(name + "." + key, firstEntry.getValue.asInstanceOf[Document[_]]))))
+    builder.addOne((key, formats.mandatoryRead(effectiveInput(name + "." + key, firstEntry.getValue.asInstanceOf[Document[_]]))))
     while (it.hasNext) {
       val entry = it.next
       val key1 = entry.getKey.asInstanceOf[String]
-      builder.addOne((key1, dataFormats.mandatoryRead(effectiveInput(name + "." + key1, entry.getValue.asInstanceOf[Document[_]]))))
+      builder.addOne((key1, formats.mandatoryRead(effectiveInput(name + "." + key1, entry.getValue.asInstanceOf[Document[_]]))))
     }
     ujson.Obj(builder.result)
   }
 
   private def composeLib(lib: Library): (String, Val.Obj) =
     (lib.namespace(), Val.Obj.mk(dummyPosition,
-      lib.functions(dataFormats, header, classpathImporter).asScala.toSeq.map {
+      lib.functions(formats, header, importer).asScala.toSeq.map {
         case (key, value) => (key, memberOf(value))
       }
-        ++ lib.modules(dataFormats, header, classpathImporter).asScala.toSeq.map {
+        ++ lib.modules(formats, header, importer).asScala.toSeq.map {
         case (key, value) => (key, memberOf(value))
       }
         ++ lib.libsonnets().asScala.toSeq.map {
@@ -214,7 +194,7 @@ class Mapper(var script: String,
   private def evalLibsonnet(name: String): Val = {
     val fName = s"$name.libsonnet"
     val path = ClasspathPath(fName)
-    classpathImporter.read(path) match {
+    importer.read(path) match {
       case None => throw new IllegalArgumentException("libsonnet not found: " + fName)
       case Some(txt) => evaluate(txt, path) match {
         case Left(err) => throw new IllegalArgumentException("Error parsing libsonnet", processError(err))
@@ -224,8 +204,6 @@ class Mapper(var script: String,
   }
 
   private def processError(err: Error): Error = {
-    if (!asFunction) return err
-
     val trace = err.getStackTrace
     val msg2 = if (!trace(0).getFileName.contains(main)) err.getMessage
     else {
@@ -270,7 +248,7 @@ class Mapper(var script: String,
                    inputs: java.util.Map[String, Document[_]],
                    output: MediaType,
                    target: Class[T]): Document[T] = {
-    val payloadExpr = Materializer.toExpr(dataFormats.mandatoryRead(effectiveInput("payload", payload)))(evaluator)
+    val payloadExpr = Materializer.toExpr(formats.mandatoryRead(effectiveInput("payload", payload)))(evaluator)
     val inputExprs = inputs.asScala.map { case (name, input) => Materializer.toExpr(resolveInput(name, input))(evaluator) }.toArray
 
     val fnDefaultArgs = scriptFn.params.defaultExprs.clone()
@@ -299,6 +277,6 @@ class Mapper(var script: String,
     }
 
     val effectiveOut = effectiveOutput(output)
-    dataFormats.mandatoryWrite(materialized, effectiveOut, target)
+    formats.mandatoryWrite(materialized, effectiveOut, target)
   }
 }

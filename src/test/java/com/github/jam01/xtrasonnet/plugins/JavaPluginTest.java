@@ -7,7 +7,7 @@ package com.github.jam01.xtrasonnet.plugins;
  * compliance with the Elastic License 2.0.
  */
 
-import com.github.jam01.xtrasonnet.Mapper;
+import com.github.jam01.xtrasonnet.Transformer;
 import com.github.jam01.xtrasonnet.document.Document;
 import com.github.jam01.xtrasonnet.document.MediaTypes;
 import org.json.JSONException;
@@ -29,7 +29,7 @@ public class JavaPluginTest {
 
     @Test
     public void read_simple() throws JSONException {
-        var doc = new Mapper("payload").transform(new Document.BasicDocument<>(carMap));
+        var doc = new Transformer("payload").transform(Document.of(carMap));
 
         JSONAssert.assertEquals(carJson, doc.getContent(), true);
         Assertions.assertEquals(MediaTypes.APPLICATION_JSON, doc.getMediaType());
@@ -37,7 +37,7 @@ public class JavaPluginTest {
 
     @Test
     public void read_object() throws JSONException {
-        var doc = new Mapper("payload").transform(new Document.BasicDocument<>(car));
+        var doc = new Transformer("payload").transform(Document.of(car));
 
         JSONAssert.assertEquals(carJson, doc.getContent(), true);
         assertEquals(MediaTypes.APPLICATION_JSON, doc.getMediaType());
@@ -45,7 +45,7 @@ public class JavaPluginTest {
 
     @Test
     public void read_null() throws JSONException {
-        var doc = new Mapper("payload").transform(Document.BasicDocument.NULL_INSTANCE);
+        var doc = new Transformer("payload").transform(Document.BasicDocument.NULL_INSTANCE);
 
         assertEquals("null", doc.getContent()); // "null" is a valid JSON doc
         assertEquals(MediaTypes.APPLICATION_JSON, doc.getMediaType());
@@ -53,7 +53,7 @@ public class JavaPluginTest {
 
     @Test
     public void write_simple() {
-        var doc = new Mapper("{ color: 'blue', type: 'bus' }")
+        var doc = new Transformer("{ color: 'blue', type: 'bus' }")
                 .transform(Document.BasicDocument.NULL_INSTANCE, Collections.emptyMap(), MediaTypes.APPLICATION_JAVA, Map.class);
 
         assertEquals(carMap, doc.getContent());
@@ -62,7 +62,7 @@ public class JavaPluginTest {
 
     @Test
     public void write_object() {
-        var doc = new Mapper("{ color: 'blue', type: 'bus' }")
+        var doc = new Transformer("{ color: 'blue', type: 'bus' }")
                 .transform(Document.BasicDocument.NULL_INSTANCE, Collections.emptyMap(), MediaTypes.APPLICATION_JAVA, Car.class);
 
         assertEquals(car, doc.getContent());
@@ -71,7 +71,7 @@ public class JavaPluginTest {
 
     @Test
     public void write_null() throws JSONException {
-        var doc = new Mapper("null")
+        var doc = new Transformer("null")
                 .transform(Document.BasicDocument.NULL_INSTANCE, Collections.emptyMap(), MediaTypes.APPLICATION_JAVA);
 
         JSONAssert.assertEquals(null, doc.getContent(), true);

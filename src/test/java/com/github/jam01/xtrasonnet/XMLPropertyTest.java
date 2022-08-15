@@ -53,24 +53,24 @@ public class XMLPropertyTest {
     public void reversible(@From(XmlDocumentGenerator.class) @Dictionary("xml/xml.dict") Document dom) throws Exception {
         String xml = XMLDocumentUtils.documentToString(dom);
         // the round trip is performed by the use of the XML mime types
-        Mapper mapper = new Mapper("payload");
+        Transformer transformer = new Transformer("payload");
 
         com.github.jam01.xtrasonnet.document.Document.BasicDocument<String> payload = new com.github.jam01.xtrasonnet.document.Document.BasicDocument<>(xml, MediaTypes.APPLICATION_XML.withParameter("badgerfish", "extended"));
-        String output = mapper.transform(payload, Collections.emptyMap(), MediaTypes.APPLICATION_XML.withParameter("badgerfish", "extended")).getContent();
+        String output = transformer.transform(payload, Collections.emptyMap(), MediaTypes.APPLICATION_XML.withParameter("badgerfish", "extended")).getContent();
 
         DocumentBuilder db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
         Document parsed = db.parse(new ByteArrayInputStream(output.getBytes(StandardCharsets.UTF_8)));
 
-        String jsonVersion = mapper.transform(payload, Collections.emptyMap(), MediaTypes.APPLICATION_JSON).getContent();
+        String jsonVersion = transformer.transform(payload, Collections.emptyMap(), MediaTypes.APPLICATION_JSON).getContent();
 
         assertTrue("For input " + xml + " found output " + output + ", and JSON in the middle is " + jsonVersion, dom.isEqualNode(parsed));
     }
 
     @Property
     public void jsonSerializes(@From(XMLJsonGenerator.class) @Dictionary("xml/xml.dict") String json) throws Exception {
-        Mapper mapper = new Mapper("payload");
+        Transformer transformer = new Transformer("payload");
         try {
-            String xml = mapper.transform(new com.github.jam01.xtrasonnet.document.Document.BasicDocument<String>(json, MediaTypes.APPLICATION_JSON), Collections.emptyMap(), MediaTypes.APPLICATION_XML).getContent();
+            String xml = transformer.transform(new com.github.jam01.xtrasonnet.document.Document.BasicDocument<String>(json, MediaTypes.APPLICATION_JSON), Collections.emptyMap(), MediaTypes.APPLICATION_XML).getContent();
         } catch(Throwable t) {
             t.printStackTrace();
             fail("Unable to convert to xml: " + json);

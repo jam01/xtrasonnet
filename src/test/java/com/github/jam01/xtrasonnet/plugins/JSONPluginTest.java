@@ -7,7 +7,7 @@ package com.github.jam01.xtrasonnet.plugins;
  * compliance with the Elastic License 2.0.
  */
 
-import com.github.jam01.xtrasonnet.Mapper;
+import com.github.jam01.xtrasonnet.Transformer;
 import com.github.jam01.xtrasonnet.document.Document;
 import com.github.jam01.xtrasonnet.document.MediaTypes;
 import org.json.JSONException;
@@ -26,8 +26,8 @@ public class JSONPluginTest {
 
     @Test
     public void read_simple() throws JSONException {
-        var doc = new Mapper("payload")
-                .transform(new Document.BasicDocument<>(foobar, MediaTypes.APPLICATION_JSON));
+        var doc = new Transformer("payload")
+                .transform(Document.of(foobar, MediaTypes.APPLICATION_JSON));
 
         JSONAssert.assertEquals(foobar, doc.getContent(), true);
         assertEquals(MediaTypes.APPLICATION_JSON, doc.getMediaType());
@@ -35,7 +35,7 @@ public class JSONPluginTest {
 
     @Test
     public void read_null() throws JSONException {
-        var doc = new Mapper("payload")
+        var doc = new Transformer("payload")
                 .transform(Document.BasicDocument.NULL_INSTANCE);
 
         assertEquals("null", doc.getContent());
@@ -44,7 +44,7 @@ public class JSONPluginTest {
 
     @Test
     public void write_simple() throws JSONException {
-        var doc = new Mapper("{ foo: 'bar' }")
+        var doc = new Transformer("{ foo: 'bar' }")
                 .transform(Document.BasicDocument.NULL_INSTANCE);
 
         JSONAssert.assertEquals(foobar, doc.getContent(), true);
@@ -53,7 +53,7 @@ public class JSONPluginTest {
 
     @Test
     public void write_null() {
-        var doc = new Mapper("null")
+        var doc = new Transformer("null")
                 .transform(Document.BasicDocument.NULL_INSTANCE);
 
         assertEquals("null", doc.getContent());
@@ -62,7 +62,7 @@ public class JSONPluginTest {
 
     @Test
     public void write_indent() {
-        var doc = new Mapper("{ foo: 'bar' }")
+        var doc = new Transformer("{ foo: 'bar' }")
                 .transform(Document.BasicDocument.NULL_INSTANCE, Collections.emptyMap(), MediaTypes.APPLICATION_JSON.withParameter(DefaultJSONPlugin.PARAM_FORMAT, "true"));
         assertEquals("""
                 {

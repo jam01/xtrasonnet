@@ -19,6 +19,10 @@ public interface Document<T> {
 
     Document<T> withMediaType(MediaType mediaType);
 
+    static <T> Document<T> of(T value) {
+        return new BasicDocument<>(value);
+    }
+
     static <T> Document<T> of(T value, MediaType mediaType) {
         return new BasicDocument<>(value, mediaType);
     }

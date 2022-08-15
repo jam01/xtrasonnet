@@ -24,11 +24,11 @@ public class NestedDocumentsTest {
         String json = "{ \"hello\": \"world!\" }";
 
         Map<String, Document<String>> nested = new HashMap<>(2);
-        nested.put("xml", new Document.BasicDocument<>(xml, MediaTypes.APPLICATION_XML));
-        nested.put("json", new Document.BasicDocument<>(json, MediaTypes.APPLICATION_JSON));
+        nested.put("xml", Document.of(xml, MediaTypes.APPLICATION_XML));
+        nested.put("json", Document.of(json, MediaTypes.APPLICATION_JSON));
 
-        Map<String, Document<?>> inputs = Collections.singletonMap("nested", new Document.BasicDocument<>(nested, MediaTypes.APPLICATION_JAVA));
-        String result = new MapperBuilder("nested")
+        Map<String, Document<?>> inputs = Collections.singletonMap("nested", Document.of(nested, MediaTypes.APPLICATION_JAVA));
+        String result = Transformer.builder("nested")
                 .withInputNames("nested")
                 .build()
                 .transform(Document.BasicDocument.NULL_INSTANCE, inputs, MediaTypes.APPLICATION_JSON)

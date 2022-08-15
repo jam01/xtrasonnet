@@ -21,7 +21,7 @@ public class TestUtils {
     }
 
     public static String transform(String script, String payload) {
-        return new Mapper(script).transform(payload);
+        return new Transformer(script).transform(payload);
     }
 
     public static String stacktraceFrom(Exception ex) {

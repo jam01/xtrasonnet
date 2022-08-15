@@ -53,10 +53,10 @@ public class XMLReaderTest {
                 "*/\n" +
                 "payload";
 
-        Mapper mapper = new Mapper(jsonnet);
+        Transformer transformer = new Transformer(jsonnet);
 
 
-        String mapped = mapper.transform(new Document.BasicDocument<>(xml, MediaTypes.APPLICATION_XML), Collections.emptyMap(), MediaTypes.APPLICATION_JSON).getContent();
+        String mapped = transformer.transform(Document.of(xml, MediaTypes.APPLICATION_XML), Collections.emptyMap(), MediaTypes.APPLICATION_JSON).getContent();
 
         // the b namespace must have been remapped
         assertThat(mapped, not(containsString("b:b")));
@@ -74,10 +74,10 @@ public class XMLReaderTest {
         String jsonnet = TestUtils.resourceAsString("xml/readXMLExtTest.ds");
         String expectedJson = TestUtils.resourceAsString("xml/readXMLExtTest.json");
 
-        Mapper mapper = new Mapper(jsonnet);
+        Transformer transformer = new Transformer(jsonnet);
 
 
-        String mappedJson = mapper.transform(new Document.BasicDocument<>(xmlData, MediaTypes.APPLICATION_XML.withParameter("badgerfish", "extended")), Collections.emptyMap(), MediaTypes.APPLICATION_JSON).getContent();
+        String mappedJson = transformer.transform(Document.of(xmlData, MediaTypes.APPLICATION_XML.withParameter("badgerfish", "extended")), Collections.emptyMap(), MediaTypes.APPLICATION_JSON).getContent();
 
         JSONAssert.assertEquals(expectedJson, mappedJson, true);
     }
@@ -106,9 +106,9 @@ public class XMLReaderTest {
         String xmlData = TestUtils.resourceAsString(inputFileName);
         String expectedJson = TestUtils.resourceAsString(expectedFileName);
 
-        Mapper mapper = new Mapper("payload");
+        Transformer transformer = new Transformer("payload");
 
-        String mappedJson = mapper.transform(new Document.BasicDocument<>(xmlData, MediaTypes.APPLICATION_XML.withParameter("badgerfish", "extended")), Collections.emptyMap(), MediaTypes.APPLICATION_JSON).getContent();
+        String mappedJson = transformer.transform(Document.of(xmlData, MediaTypes.APPLICATION_XML.withParameter("badgerfish", "extended")), Collections.emptyMap(), MediaTypes.APPLICATION_JSON).getContent();
         JSONAssert.assertEquals(expectedJson, mappedJson, true);
     }
 

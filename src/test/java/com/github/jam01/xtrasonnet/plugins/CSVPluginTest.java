@@ -7,7 +7,7 @@ package com.github.jam01.xtrasonnet.plugins;
  * compliance with the Elastic License 2.0.
  */
 
-import com.github.jam01.xtrasonnet.Mapper;
+import com.github.jam01.xtrasonnet.Transformer;
 import com.github.jam01.xtrasonnet.document.Document;
 import com.github.jam01.xtrasonnet.document.MediaTypes;
 import org.json.JSONException;
@@ -45,8 +45,8 @@ public class CSVPluginTest {
 
     @Test
     public void read_simple() throws JSONException {
-        var doc = new Mapper("payload")
-                .transform(new Document.BasicDocument<>(cars, MediaTypes.APPLICATION_CSV));
+        var doc = new Transformer("payload")
+                .transform(Document.of(cars, MediaTypes.APPLICATION_CSV));
 
         JSONAssert.assertEquals(carsJson, doc.getContent(), true);
         assertEquals(MediaTypes.APPLICATION_JSON, doc.getMediaType());
@@ -54,8 +54,8 @@ public class CSVPluginTest {
 
     @Test
     public void read_noheader() throws JSONException {
-        var doc = new Mapper("payload")
-                .transform(new Document.BasicDocument<>(carsNoheader,
+        var doc = new Transformer("payload")
+                .transform(Document.of(carsNoheader,
                         MediaTypes.APPLICATION_CSV.withParameter(DefaultCSVPlugin.DS_PARAM_HEADERS, "false")));
 
         JSONAssert.assertEquals(carsJsonNoheader, doc.getContent(), true);
@@ -64,8 +64,8 @@ public class CSVPluginTest {
 
     @Test
     public void read_with_headers() throws JSONException {
-        var doc = new Mapper("payload")
-                .transform(new Document.BasicDocument<>(carsNoheader,
+        var doc = new Transformer("payload")
+                .transform(Document.of(carsNoheader,
                         MediaTypes.APPLICATION_CSV.withParameter(DefaultCSVPlugin.DS_PARAM_HEADERS, "color,type")));
 
         JSONAssert.assertEquals(carsJson, doc.getContent(), true);
@@ -74,8 +74,8 @@ public class CSVPluginTest {
 
     @Test
     public void read_qchar() throws JSONException {
-        var doc = new Mapper("payload")
-                .transform(new Document.BasicDocument<>(carsQchar,
+        var doc = new Transformer("payload")
+                .transform(Document.of(carsQchar,
                         MediaTypes.APPLICATION_CSV.withParameter(DefaultCSVPlugin.DS_PARAM_QUOTE_CHAR, "'")));
 
         JSONAssert.assertEquals(carsJson, doc.getContent(), true);
@@ -84,8 +84,8 @@ public class CSVPluginTest {
 
     @Test
     public void read_sep() throws JSONException {
-        var doc = new Mapper("payload")
-                .transform(new Document.BasicDocument<>(carsSep,
+        var doc = new Transformer("payload")
+                .transform(Document.of(carsSep,
                         MediaTypes.APPLICATION_CSV.withParameter(DefaultCSVPlugin.DS_PARAM_SEPARATOR_CHAR, "|")));
 
         JSONAssert.assertEquals(carsJson, doc.getContent(), true);
@@ -94,8 +94,8 @@ public class CSVPluginTest {
 
     @Test
     public void read_esc() throws JSONException {
-        var doc = new Mapper("payload")
-                .transform(new Document.BasicDocument<>(carsSep,
+        var doc = new Transformer("payload")
+                .transform(Document.of(carsSep,
                         MediaTypes.APPLICATION_CSV.withParameter(DefaultCSVPlugin.DS_PARAM_SEPARATOR_CHAR, "|")));
 
         JSONAssert.assertEquals(carsJson, doc.getContent(), true);
@@ -104,7 +104,7 @@ public class CSVPluginTest {
 
     @Test
     public void write_simple() throws JSONException {
-        var doc = new Mapper(carsJson)
+        var doc = new Transformer(carsJson)
                 .transform(Document.BasicDocument.NULL_INSTANCE, Collections.emptyMap(), MediaTypes.APPLICATION_CSV);
 
         assertEquals(cars, doc.getContent());
@@ -113,7 +113,7 @@ public class CSVPluginTest {
 
     @Test
     public void write_object_noheader() throws JSONException {
-        var doc = new Mapper(carsJson)
+        var doc = new Transformer(carsJson)
                 .transform(Document.BasicDocument.NULL_INSTANCE, Collections.emptyMap(),
                         MediaTypes.APPLICATION_CSV.withParameter(DefaultCSVPlugin.DS_PARAM_HEADERS, "false"));
 
@@ -123,7 +123,7 @@ public class CSVPluginTest {
 
     @Test
     public void write_array_noheader() throws JSONException {
-        var doc = new Mapper(carsJsonNoheader)
+        var doc = new Transformer(carsJsonNoheader)
                 .transform(Document.BasicDocument.NULL_INSTANCE, Collections.emptyMap(), MediaTypes.APPLICATION_CSV);
 
         assertEquals(carsNoheader, doc.getContent());
@@ -132,7 +132,7 @@ public class CSVPluginTest {
 
     @Test
     public void write_array_with_header() throws JSONException {
-        var doc = new Mapper(carsJsonNoheader)
+        var doc = new Transformer(carsJsonNoheader)
                 .transform(Document.BasicDocument.NULL_INSTANCE, Collections.emptyMap(),
                         MediaTypes.APPLICATION_CSV.withParameter(DefaultCSVPlugin.DS_PARAM_HEADERS, "color,type"));
 

@@ -7,9 +7,32 @@ package com.github.jam01.xtrasonnet
  * compliance with the Elastic License 2.0.
  */
 
-import sjsonnet.Path
+import sjsonnet.{Importer, Path}
 
 import scala.collection.mutable
+import scala.io.Source
+import scala.util.Using
+
+object ClasspathPath {
+  val root = new ClasspathPath("")
+  val resolver = new Importer {
+    override def resolve(docBase: Path, importName: String): Option[Path] = docBase match {
+      case ClasspathPath("") => Some(ClasspathPath(importName))
+      case ClasspathPath(_) => Some(docBase / importName)
+      case _ => None
+    }
+
+    override def read(path: Path): Option[String] = {
+      val p = "/" + path.asInstanceOf[ClasspathPath].path
+      getClass.getResource(p) match {
+        case null => None
+        case _ => Using.resource(getClass.getResourceAsStream(p)) { stream =>
+          Some(Source.fromInputStream(stream).mkString)
+        }
+      }
+    }
+  }
+}
 
 /**
  * An implementation of sjsonnet.Path that works with the JVM's ClassPath
