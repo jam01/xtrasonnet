@@ -7,9 +7,6 @@ package com.github.jam01.xtrasonnet.modules;
  * compliance with the Elastic License 2.0.
  */
 
-import com.github.jam01.xtrasonnet.TestUtils;
-import com.github.jam01.xtrasonnet.TestUtils;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static com.github.jam01.xtrasonnet.TestUtils.transform;
@@ -19,11 +16,11 @@ public class Base64Test {
 
     @Test
     public void decode() {
-        Assertions.assertEquals(TestUtils.transform("'Hello World'"), TestUtils.transform("xtr.base64.decode('SGVsbG8gV29ybGQ=')"));
+        assertEquals(transform("'Hello World'"), transform("xtr.base64.decode('SGVsbG8gV29ybGQ=')"));
     }
 
     @Test
     public void encode() {
-        Assertions.assertEquals(TestUtils.transform("'SGVsbG8gV29ybGQ='"), TestUtils.transform("xtr.base64.encode('Hello World')"));
+        assertEquals(transform("'SGVsbG8gV29ybGQ='"), transform("xtr.base64.encode('Hello World')"));
     }
 }

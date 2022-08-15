@@ -7,15 +7,8 @@ package com.github.jam01.xtrasonnet.modules;
  * compliance with the Elastic License 2.0.
  */
 
-import com.github.jam01.xtrasonnet.TestUtils;
-import com.github.jam01.xtrasonnet.TestUtils;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-
-import java.time.Duration;
-import java.time.OffsetDateTime;
-import java.time.Period;
 
 import static com.github.jam01.xtrasonnet.TestUtils.transform;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -23,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class DurationTest {
     @Test
     public void of() {
-        Assertions.assertEquals(TestUtils.transform("'P20Y3M1DT12H30M45S'"), TestUtils.transform("""
+        assertEquals(transform("'P20Y3M1DT12H30M45S'"), transform("""
                 local parts = {
                     years: 20, months: 3, days: 1,
                     hours: 12, minutes: 30, seconds: 45
@@ -35,11 +28,11 @@ public class DurationTest {
     @Disabled
     @Test
     public void toParts() {
-        Assertions.assertEquals(TestUtils.transform("""
+        assertEquals(transform("""
                 {
                     years: 20, months: 3, days: 1,
                     hours: 12, minutes: 30, seconds: 45
-                }"""), TestUtils.transform("xtr.duration.toParts('P20Y3M1DT12H30M45S')"));
+                }"""), transform("xtr.duration.toParts('P20Y3M1DT12H30M45S')"));
     }
 //
 //    @Test

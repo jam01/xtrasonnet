@@ -7,8 +7,6 @@ package com.github.jam01.xtrasonnet.modules;
  * compliance with the Elastic License 2.0.
  */
 
-import com.github.jam01.xtrasonnet.TestUtils;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -19,19 +17,19 @@ public class Root {
 
     @Test
     public void contains() {
-        Assertions.assertEquals(TestUtils.transform("true"), TestUtils.transform("xtr.contains([1, 2, 3], 1)"));
-        Assertions.assertEquals(TestUtils.transform("true"), TestUtils.transform("xtr.contains({ scala: '3.1.3' }, 'scala')"));
-        Assertions.assertEquals(TestUtils.transform("true"), TestUtils.transform("xtr.contains('Lorem ipsum', 'Lorem')"));
+        assertEquals(transform("true"), transform("xtr.contains([1, 2, 3], 1)"));
+        assertEquals(transform("true"), transform("xtr.contains({ scala: '3.1.3' }, 'scala')"));
+        assertEquals(transform("true"), transform("xtr.contains('Lorem ipsum', 'Lorem')"));
     }
 
     @Test
     public void endsWith() {
-        Assertions.assertEquals(TestUtils.transform("true"), TestUtils.transform("xtr.endsWith('Lorem ipsum', 'ipsum')"));
+        assertEquals(transform("true"), transform("xtr.endsWith('Lorem ipsum', 'ipsum')"));
     }
 
     @Test
     public void entriesOf() {
-        Assertions.assertEquals(TestUtils.transform("""
+        assertEquals(transform("""
                 [
                   {
                     key: 'scala',
@@ -41,32 +39,32 @@ public class Root {
                     key: 'java',
                     value: '19'
                   }
-                ]"""), TestUtils.transform("xtr.entriesOf({ scala: '3.1.3', java: '19' })"));
+                ]"""), transform("xtr.entriesOf({ scala: '3.1.3', java: '19' })"));
     }
 
     @Test
     public void filter() {
-        Assertions.assertEquals(TestUtils.transform("[1, 2]"), TestUtils.transform("xtr.filter([1, 2, 3, 4], function(item) item < 3)"));
-        Assertions.assertEquals(TestUtils.transform("[4]"), TestUtils.transform("xtr.filter([1, 2, 3, 4], function(item, idx) idx > 2)"));
+        assertEquals(transform("[1, 2]"), transform("xtr.filter([1, 2, 3, 4], function(item) item < 3)"));
+        assertEquals(transform("[4]"), transform("xtr.filter([1, 2, 3, 4], function(item, idx) idx > 2)"));
     }
 
     @Test
     public void filterNotEq() {
-        Assertions.assertEquals(TestUtils.transform("[1, 2, 4, 4]"), TestUtils.transform("xtr.filterNotEq([1, 2, 3, 4, 3, 4], 3)"));
+        assertEquals(transform("[1, 2, 4, 4]"), transform("xtr.filterNotEq([1, 2, 3, 4, 3, 4], 3)"));
     }
 
     @Test
     public void filterNotIn() {
-        Assertions.assertEquals(TestUtils.transform("[1, 2]"), TestUtils.transform("xtr.filterNotIn([1, 2, 3, 4, 3, 4], [3, 4])"));
+        assertEquals(transform("[1, 2]"), transform("xtr.filterNotIn([1, 2, 3, 4, 3, 4], [3, 4])"));
     }
 
     @Test
     public void filterObject() {
-        Assertions.assertEquals(TestUtils.transform("""
+        assertEquals(transform("""
                 {
                     scala: { version: '3.1.3', isJvm: true },
                     java: { version: '19', isJvm: true }
-                }"""), TestUtils.transform("""
+                }"""), transform("""
                 local languages = {
                     scala: { version: '3.1.3', isJvm: true },
                     java: { version: '19', isJvm: true },
@@ -74,11 +72,11 @@ public class Root {
                 };
 
                 xtr.filterObject(languages, function(lang) lang.isJvm)"""));
-        Assertions.assertEquals(TestUtils.transform("""
+        assertEquals(transform("""
                 {
                     scala: { version: '3.1.3', isJvm: true },
                     python: { version: '3.10.4', isJvm: false }
-                }"""), TestUtils.transform("""
+                }"""), transform("""
                 local languages = {
                     scala: { version: '3.1.3', isJvm: true },
                     java: { version: '19', isJvm: true },
@@ -86,11 +84,11 @@ public class Root {
                 };
 
                 xtr.filterObject(languages, function(lang, name) !lang.isJvm || name == 'scala')"""));
-        Assertions.assertEquals(TestUtils.transform("""
+        assertEquals(transform("""
                 {
                     scala: { version: '3.1.3', isJvm: true},
                     python: { version: '3.10.4', isJvm: false}
-                }"""), TestUtils.transform("""
+                }"""), transform("""
                 local languages = {
                     scala: { version: '3.1.3', isJvm: true },
                     java: { version: '19', isJvm: true },
@@ -102,13 +100,13 @@ public class Root {
 
     @Test
     public void flatMap() {
-        Assertions.assertEquals(TestUtils.transform("[1, 1, 3, 9, 5, 25]"), TestUtils.transform("xtr.flatMap([1, 3, 5], function(item) [item, item * item])"));
-        Assertions.assertEquals(TestUtils.transform("[1, 0, 3, 3, 5, 10]"), TestUtils.transform("xtr.flatMap([1, 3, 5], function(item, idx) [item, item * idx])"));
+        assertEquals(transform("[1, 1, 3, 9, 5, 25]"), transform("xtr.flatMap([1, 3, 5], function(item) [item, item * item])"));
+        assertEquals(transform("[1, 0, 3, 3, 5, 10]"), transform("xtr.flatMap([1, 3, 5], function(item, idx) [item, item * idx])"));
     }
 
     @Test
     public void flatMapObject() {
-        Assertions.assertEquals(TestUtils.transform("""
+        assertEquals(transform("""
                 {
                     java: 5,
                     'unit-testing': 2,
@@ -116,7 +114,7 @@ public class Root {
                     containers: 5,
                     kubernetes: 2,
                     jenkins: 4
-                }"""), TestUtils.transform("""
+                }"""), transform("""
                 local candidateReqs = {
                     req1: { skillsType: 'dev', required: ['java'], preferred: ['unit-testing'] },
                     req2: { skillsType: 'ops', required: ['containers'], preferred: ['kubernetes'] }
@@ -129,7 +127,7 @@ public class Root {
                 };
 
                 xtr.flatMapObject(candidateReqs, reqsWeight)"""));
-        Assertions.assertEquals(TestUtils.transform("""
+        assertEquals(transform("""
                 {
                     java: 5,
                     'unit-testing': 2,
@@ -137,7 +135,7 @@ public class Root {
                     containers: 5,
                     kubernetes: 2,
                     jenkins: 4
-                }"""), TestUtils.transform("""
+                }"""), transform("""
                 local candidateReqs = {
                     dev: { required: ['java'], preferred: ['unit-testing'] },
                     ops: { required: ['containers'], preferred: ['kubernetes'] }
@@ -150,7 +148,7 @@ public class Root {
                 };
 
                 xtr.flatMapObject(candidateReqs, reqsWeight)"""));
-        Assertions.assertEquals(TestUtils.transform("""
+        assertEquals(transform("""
                 {
                     java: 5,
                     'unit-testing': 3,
@@ -158,7 +156,7 @@ public class Root {
                     containers: 5,
                     kubernetes: 1,
                     jenkins: 2
-                }"""), TestUtils.transform("""
+                }"""), transform("""
                 local candidateReqs = {
                     dev: { required: ['java'], preferred: ['unit-testing'] },
                     ops: { required: ['containers'], preferred: ['kubernetes'] }
@@ -175,17 +173,17 @@ public class Root {
 
     @Test
     public void groupBy() {
-        Assertions.assertEquals(TestUtils.transform("[1, 2, 3]"), TestUtils.transform("xtr.flatten([[1, 2], [3]])"));
-        Assertions.assertEquals(TestUtils.transform("6"), TestUtils.transform("xtr.foldLeft([1, 2, 3], 0, function(item, acc) item + acc)"));
-        Assertions.assertEquals(TestUtils.transform("' dolor ipsum Lorem'"), TestUtils.transform("xtr.foldRight(['Lorem', 'ipsum', 'dolor'], '', function(item, acc) acc + ' ' + item)"));
-        Assertions.assertEquals(TestUtils.transform("""
+        assertEquals(transform("[1, 2, 3]"), transform("xtr.flatten([[1, 2], [3]])"));
+        assertEquals(transform("6"), transform("xtr.foldLeft([1, 2, 3], 0, function(item, acc) item + acc)"));
+        assertEquals(transform("' dolor ipsum Lorem'"), transform("xtr.foldRight(['Lorem', 'ipsum', 'dolor'], '', function(item, acc) acc + ' ' + item)"));
+        assertEquals(transform("""
                 {
                     jvmLangs: [
                         { name: 'scala', version: '3.1.3', isJvm: true },
                         { name: 'java', version: '19', isJvm: true }
                     ],
                     others: [{ name: 'python', version: '3.10.4', isJvm: false }]
-                }"""), TestUtils.transform("""
+                }"""), transform("""
                 local languages = [
                     { name: 'scala', version: '3.1.3', isJvm: true },
                     { name: 'java', version: '19', isJvm: true },
@@ -193,12 +191,12 @@ public class Root {
                 ];
 
                 xtr.groupBy(languages, function(lang) if lang.isJvm then 'jvmLangs' else 'others')"""));
-        Assertions.assertEquals(TestUtils.transform("""
+        assertEquals(transform("""
                 {
                     preferred: [{ name: 'scala', version: '3.1.3', isJvm: true }],
                     jvmLangs: [{ name: 'java', version: '19', isJvm: true }],
                     others: [{ name: 'python', version: '3.10.4', isJvm: false }]
-                }"""), TestUtils.transform("""
+                }"""), transform("""
                 local languages = [
                     { name: 'scala', version: '3.1.3', isJvm: true },
                     { name: 'java', version: '19', isJvm: true },
@@ -209,14 +207,14 @@ public class Root {
                     else 'others';
 
                 xtr.groupBy(languages, langFunc)"""));
-        Assertions.assertEquals(TestUtils.transform("""
+        assertEquals(transform("""
                 {
                     jvmLangs: {
                         scala: { version: '3.1.3', isJvm: true, project: 'scala-lang.org' },
                         java: { version: '19', isJvm: true, project: 'jdk.java.net' }
                     },
                     others: { python: { version: '3.10.4', isJvm: false, project: 'python.org' }}
-                }"""), TestUtils.transform("""
+                }"""), transform("""
                 local languages = {
                     scala: { version: '3.1.3', isJvm: true, project: 'scala-lang.org' },
                     java: { version: '19', isJvm: true, project: 'jdk.java.net' },
@@ -224,12 +222,12 @@ public class Root {
                 };
 
                 xtr.groupBy(languages, function(lang) if lang.isJvm then 'jvmLangs' else 'others')"""));
-        Assertions.assertEquals(TestUtils.transform("""
+        assertEquals(transform("""
                 {
                     preferred: { scala: { version: '3.1.3', isJvm: true, project: 'scala-lang.org' }},
                     jvmLangs: { java: { version: '19', isJvm: true, project: 'jdk.java.net' }},
                     others: { python: { version: '3.10.4', isJvm: false, project: 'python.org' }}
-                }"""), TestUtils.transform("""
+                }"""), transform("""
                 local languages = {
                     scala: { version: '3.1.3', isJvm: true, project: 'scala-lang.org' },
                     java: { version: '19', isJvm: true, project: 'jdk.java.net' },
@@ -244,63 +242,63 @@ public class Root {
 
     @Test
     public void indicesOf() {
-        Assertions.assertEquals(TestUtils.transform("[1, 4]"), TestUtils.transform("xtr.indicesOf([1, 7, 3, 4, 7], 7)"));
-        Assertions.assertEquals(TestUtils.transform("[0, 14]"), TestUtils.transform("xtr.indicesOf('lorem ipsum dolor', 'lo')"));
+        assertEquals(transform("[1, 4]"), transform("xtr.indicesOf([1, 7, 3, 4, 7], 7)"));
+        assertEquals(transform("[0, 14]"), transform("xtr.indicesOf('lorem ipsum dolor', 'lo')"));
     }
 
     @Test
     public void isType() {
-        Assertions.assertEquals(TestUtils.transform("true"), TestUtils.transform("xtr.isArray([1, 2])"));
-        Assertions.assertEquals(TestUtils.transform("true"), TestUtils.transform("xtr.isBoolean(false)"));
-        Assertions.assertEquals(TestUtils.transform("true"), TestUtils.transform("xtr.isDecimal(2.5)"));
-        Assertions.assertEquals(TestUtils.transform("true"), TestUtils.transform("""
+        assertEquals(transform("true"), transform("xtr.isArray([1, 2])"));
+        assertEquals(transform("true"), transform("xtr.isBoolean(false)"));
+        assertEquals(transform("true"), transform("xtr.isDecimal(2.5)"));
+        assertEquals(transform("true"), transform("""
                 local increment(item) = item + 1;
 
                 xtr.isFunction(increment)"""));
-        Assertions.assertEquals(TestUtils.transform("true"), TestUtils.transform("xtr.isInteger(2)"));
-        Assertions.assertEquals(TestUtils.transform("true"), TestUtils.transform("xtr.isNumber(2)"));
-        Assertions.assertEquals(TestUtils.transform("true"), TestUtils.transform("xtr.isObject({})"));
-        Assertions.assertEquals(TestUtils.transform("true"), TestUtils.transform("xtr.isString('Lorem')"));
+        assertEquals(transform("true"), transform("xtr.isInteger(2)"));
+        assertEquals(transform("true"), transform("xtr.isNumber(2)"));
+        assertEquals(transform("true"), transform("xtr.isObject({})"));
+        assertEquals(transform("true"), transform("xtr.isString('Lorem')"));
     }
 
     @Test
     public void isBlank() {
-        Assertions.assertEquals(TestUtils.transform("true"), TestUtils.transform("xtr.isBlank('   ')"));
+        assertEquals(transform("true"), transform("xtr.isBlank('   ')"));
     }
 
     @Test
     public void isEmpty() {
-        Assertions.assertEquals(TestUtils.transform("true"), TestUtils.transform("xtr.isEmpty([])"));
-        Assertions.assertEquals(TestUtils.transform("true"), TestUtils.transform("xtr.isEmpty({})"));
-        Assertions.assertEquals(TestUtils.transform("true"), TestUtils.transform("xtr.isEmpty('')"));
+        assertEquals(transform("true"), transform("xtr.isEmpty([])"));
+        assertEquals(transform("true"), transform("xtr.isEmpty({})"));
+        assertEquals(transform("true"), transform("xtr.isEmpty('')"));
     }
 
     @Test
     public void numIsCondition() {
-        Assertions.assertEquals(TestUtils.transform("true"), TestUtils.transform("xtr.isEven(2)"));
-        Assertions.assertEquals(TestUtils.transform("true"), TestUtils.transform("xtr.isOdd(1)"));
+        assertEquals(transform("true"), transform("xtr.isEven(2)"));
+        assertEquals(transform("true"), transform("xtr.isOdd(1)"));
     }
 
     @Test
     public void join() {
-        Assertions.assertEquals(TestUtils.transform("'0, 1, 1, 2, 3, 5, 8'"), TestUtils.transform("xtr.join([0, 1, 1, 2, 3, 5, 8], ', ')"));
-        Assertions.assertEquals(TestUtils.transform("'hello world !'"), TestUtils.transform("xtr.join(['hello', 'world', '!'], ' ')"));
+        assertEquals(transform("'0, 1, 1, 2, 3, 5, 8'"), transform("xtr.join([0, 1, 1, 2, 3, 5, 8], ', ')"));
+        assertEquals(transform("'hello world !'"), transform("xtr.join(['hello', 'world', '!'], ' ')"));
     }
 
     @Test
     public void keysOf() {
-        Assertions.assertEquals(TestUtils.transform("['scala', 'java']"), TestUtils.transform("xtr.keysOf({ scala: '3.1.3', java: '19' })"));
+        assertEquals(transform("['scala', 'java']"), transform("xtr.keysOf({ scala: '3.1.3', java: '19' })"));
     }
 
     @Test
     public void lower() {
-        Assertions.assertEquals(TestUtils.transform("'hello world!'"), TestUtils.transform("xtr.lower('Hello World!')"));
+        assertEquals(transform("'hello world!'"), transform("xtr.lower('Hello World!')"));
     }
 
     @Test
     public void map() {
-        Assertions.assertEquals(TestUtils.transform("[1, 4, 9, 16]"), TestUtils.transform("xtr.map([1, 2, 3, 4], function(item) item * item)"));
-        Assertions.assertEquals(TestUtils.transform("[0, 2, 6, 12]"), TestUtils.transform("xtr.map([1, 2, 3, 4], function(item, idx) item * idx)"));
+        assertEquals(transform("[1, 4, 9, 16]"), transform("xtr.map([1, 2, 3, 4], function(item) item * item)"));
+        assertEquals(transform("[0, 2, 6, 12]"), transform("xtr.map([1, 2, 3, 4], function(item, idx) item * idx)"));
     }
 
     @Test
@@ -310,7 +308,7 @@ public class Root {
 
     @Test
     public void mapEntries() {
-        Assertions.assertEquals(TestUtils.transform("['scala-lang.org', 'jdk.java.net', 'python.org']"), TestUtils.transform("""
+        assertEquals(transform("['scala-lang.org', 'jdk.java.net', 'python.org']"), transform("""
                 local languages = {
                     scala: { version: '3.1.3', isJvm: true, project: 'scala-lang.org' },
                     java: { version: '19', isJvm: true, project: 'jdk.java.net' },
@@ -318,11 +316,11 @@ public class Root {
                 };
 
                 xtr.mapEntries(languages, function(lang) lang.project)"""));
-        Assertions.assertEquals(TestUtils.transform("""
+        assertEquals(transform("""
                 [
                     { name: 'scala', version: '3.1.3' },
                     { name: 'java', version: '19' }
-                ]"""), TestUtils.transform("""
+                ]"""), transform("""
                 local languages = {
                     scala: { version: '3.1.3', isJvm: true, project: 'scala-lang.org' },
                     java: { version: '19', isJvm: true, project: 'jdk.java.net' }
@@ -332,7 +330,7 @@ public class Root {
                     name: name,
                     version: lang.version
                 })"""));
-        Assertions.assertEquals(TestUtils.transform("[{ name: 'scala', preferred: true }, { name: 'java' }]"), TestUtils.transform("""
+        assertEquals(transform("[{ name: 'scala', preferred: true }, { name: 'java' }]"), transform("""
                 local languages = {
                     scala: { version: '3.1.3', isJvm: true, project: 'scala-lang.org' },
                     java: { version: '19', isJvm: true, project: 'jdk.java.net' }
@@ -347,10 +345,10 @@ public class Root {
 
     @Test
     public void max() {
-        Assertions.assertEquals(TestUtils.transform("true"), TestUtils.transform("xtr.max([false, false, true])"));
-        Assertions.assertEquals(TestUtils.transform("100"), TestUtils.transform("xtr.max([0, 8, 2, 100])"));
-        Assertions.assertEquals(TestUtils.transform("'zzz'"), TestUtils.transform("xtr.max(['Lorem', 'zzz', 'ipsum', 'dolor'])"));
-        Assertions.assertEquals(TestUtils.transform("{ name: 'scala', version: '3.1.3', isPreferred: true }"), TestUtils.transform("""
+        assertEquals(transform("true"), transform("xtr.max([false, false, true])"));
+        assertEquals(transform("100"), transform("xtr.max([0, 8, 2, 100])"));
+        assertEquals(transform("'zzz'"), transform("xtr.max(['Lorem', 'zzz', 'ipsum', 'dolor'])"));
+        assertEquals(transform("{ name: 'scala', version: '3.1.3', isPreferred: true }"), transform("""
                 local languages = [
                     { name: 'java', version: '19', isPreferred: false },
                     { name: 'python', version: '3.1.14', isPreferred: false }
@@ -362,7 +360,7 @@ public class Root {
 
     @Test
     public void maxBy() {
-        Assertions.assertEquals(TestUtils.transform("{ name: 'scala', version: '3.1.3', weight: 4 }"), TestUtils.transform("""
+        assertEquals(transform("{ name: 'scala', version: '3.1.3', weight: 4 }"), transform("""
                 local languages = [
                     { name: 'java', version: '19', weight: 2 },
                     { name: 'python', version: '3.1.14', weight: 2 }
@@ -370,7 +368,7 @@ public class Root {
                 ];
 
                 xtr.maxBy(languages, function(lang) lang.weight)"""));
-        Assertions.assertEquals(TestUtils.transform("{ name: 'scala', version: '3.1.3', code: 'S' }"), TestUtils.transform("""
+        assertEquals(transform("{ name: 'scala', version: '3.1.3', code: 'S' }"), transform("""
                 local languages = [
                     { name: 'java', version: '19', code: 'B' },
                     { name: 'python', version: '3.1.14', code: 'B' },
@@ -382,14 +380,14 @@ public class Root {
 
     @Test
     public void min() {
-        Assertions.assertEquals(TestUtils.transform("false"), TestUtils.transform("xtr.min([false, false, true])"));
-        Assertions.assertEquals(TestUtils.transform("0"), TestUtils.transform("xtr.min([0, 8, 2, 100])"));
-        Assertions.assertEquals(TestUtils.transform("'AAA'"), TestUtils.transform("xtr.min(['Lorem', 'AAA', 'ipsum', 'dolor'])"));
+        assertEquals(transform("false"), transform("xtr.min([false, false, true])"));
+        assertEquals(transform("0"), transform("xtr.min([0, 8, 2, 100])"));
+        assertEquals(transform("'AAA'"), transform("xtr.min(['Lorem', 'AAA', 'ipsum', 'dolor'])"));
     }
 
     @Test
     public void minBy() {
-        Assertions.assertEquals(TestUtils.transform("{ name: 'java', version: '19', isPreferred: false }"), TestUtils.transform("""
+        assertEquals(transform("{ name: 'java', version: '19', isPreferred: false }"), transform("""
                 local languages = [
                     { name: 'java', version: '19', isPreferred: false },
                     { name: 'python', version: '3.1.14', isPreferred: false },
@@ -397,7 +395,7 @@ public class Root {
                 ];
 
                 xtr.minBy(languages, function(lang) lang.isPreferred)"""));
-        Assertions.assertEquals(TestUtils.transform("{ name: 'java', version: '19', weight: 2 }"), TestUtils.transform("""
+        assertEquals(transform("{ name: 'java', version: '19', weight: 2 }"), transform("""
                 local languages = [
                     { name: 'java', version: '19', weight: 2 },
                     { name: 'python', version: '3.1.14', weight: 2 },
@@ -405,7 +403,7 @@ public class Root {
                 ];
 
                 xtr.minBy(languages, function(lang) lang.weight)"""));
-        Assertions.assertEquals(TestUtils.transform("{ name: 'java', version: '19', code: 'B' }"), TestUtils.transform("""
+        assertEquals(transform("{ name: 'java', version: '19', code: 'B' }"), transform("""
                 local languages = [
                     { name: 'java', version: '19', code: 'B' },
                     { name: 'python', version: '3.1.14', code: 'B' },
@@ -413,7 +411,7 @@ public class Root {
                 ];
 
                 xtr.minBy(languages, function(lang) lang.code)"""));
-        Assertions.assertEquals(TestUtils.transform("{ name: 'java', version: '19', isPreferred: false }"), TestUtils.transform("""
+        assertEquals(transform("{ name: 'java', version: '19', isPreferred: false }"), transform("""
                 local languages = [
                     { name: 'java', version: '19', isPreferred: false },
                     { name: 'scala', version: '3.1.3', isPreferred: true },
@@ -425,17 +423,17 @@ public class Root {
 
     @Test
     public void parseNum() {
-        Assertions.assertEquals(TestUtils.transform("123.45"), TestUtils.transform("xtr.parseNum('123.45')"));
+        assertEquals(transform("123.45"), transform("xtr.parseNum('123.45')"));
     }
 
     @Test
     public void orderBy() {
-        Assertions.assertEquals(TestUtils.transform("""
+        assertEquals(transform("""
                 [
                     { name: 'python', version: '3.1.14', weight: 2 },
                     { name: 'java', version: '19', weight: 3 },
                     { name: 'scala', version: '3.1.3', weight: 4 }
-                ]"""), TestUtils.transform("""
+                ]"""), transform("""
                 local languages = [
                     { name: 'java', version: '19', weight: 3 },
                     { name: 'scala', version: '3.1.3', weight: 4 },
@@ -443,12 +441,12 @@ public class Root {
                 ];
 
                 xtr.orderBy(languages, function(lang) lang.weight)"""));
-        Assertions.assertEquals(TestUtils.transform("""
+        assertEquals(transform("""
                 [
                     { name: 'java', version: '19', code: 'B' },
                     { name: 'python', version: '3.1.14', code: 'B' },
                     { name: 'scala', version: '3.1.3', code: 'S' }
-                ]"""), TestUtils.transform("""
+                ]"""), transform("""
                 local languages = [
                     { name: 'java', version: '19', code: 'B' },
                     { name: 'scala', version: '3.1.3', code: 'S' },
@@ -460,81 +458,81 @@ public class Root {
 
     @Test
     public void range() {
-        Assertions.assertEquals(TestUtils.transform("[1, 2, 3, 4, 5]"), TestUtils.transform("xtr.range(1, 5)"));
+        assertEquals(transform("[1, 2, 3, 4, 5]"), transform("xtr.range(1, 5)"));
     }
 
     @Test
     public void read() {
-        Assertions.assertEquals(TestUtils.transform("""
+        assertEquals(transform("""
                 {
                   hello: { '$': 'world!' }
-                }"""), TestUtils.transform("xtr.read('<hello>world!</hello>', 'application/xml')"));
-        Assertions.assertEquals(TestUtils.transform("""
+                }"""), transform("xtr.read('<hello>world!</hello>', 'application/xml')"));
+        assertEquals(transform("""
                 {
                   hello: { _txt: 'world!' }
-                }"""), TestUtils.transform("xtr.read('<hello>world!</hello>', 'application/xml', { textvaluekey: '_txt' })"));
+                }"""), transform("xtr.read('<hello>world!</hello>', 'application/xml', { textvaluekey: '_txt' })"));
     }
 
     @Disabled
     @Test
     public void readUrl() {
-        Assertions.assertEquals(TestUtils.transform("""
+        assertEquals(transform("""
                 {
                   hello: { '$': 'world!' }
-                }"""), TestUtils.transform("xtr.readUrl('example.com/data', 'application/xml')"));
-        Assertions.assertEquals(TestUtils.transform("""
+                }"""), transform("xtr.readUrl('example.com/data', 'application/xml')"));
+        assertEquals(transform("""
                 {
                   hello: { _txt: 'world!' }
-                }"""), TestUtils.transform("xtr.readUrl('example.com', 'application/xml', { textvaluekey: '_txt' })"));
+                }"""), transform("xtr.readUrl('example.com', 'application/xml', { textvaluekey: '_txt' })"));
     }
 
     @Test
     public void rmKey() {
-        Assertions.assertEquals(TestUtils.transform("{ scala: '3.1.3' }"), TestUtils.transform("xtr.rmKey({ scala: '3.1.3', java: '19' }, 'java')"));
+        assertEquals(transform("{ scala: '3.1.3' }"), transform("xtr.rmKey({ scala: '3.1.3', java: '19' }, 'java')"));
     }
 
     @Test
     public void rmKeyIn() {
-        Assertions.assertEquals(TestUtils.transform("{}"), TestUtils.transform("xtr.rmKeyIn({ scala: '3.1.3', java: '19' }, ['java', 'scala'])"));
+        assertEquals(transform("{}"), transform("xtr.rmKeyIn({ scala: '3.1.3', java: '19' }, ['java', 'scala'])"));
     }
 
     @Test
     public void replace() {
-        Assertions.assertEquals(TestUtils.transform("'hello, everyone!'"), TestUtils.transform("xtr.replace('hello, world!', 'world', 'everyone')"));
+        assertEquals(transform("'hello, everyone!'"), transform("xtr.replace('hello, world!', 'world', 'everyone')"));
     }
 
     @Test
     public void reverse() {
-        Assertions.assertEquals(TestUtils.transform("[3, 2, 1]"), TestUtils.transform("xtr.reverse([1, 2, 3])"));
-        Assertions.assertEquals(TestUtils.transform("{ key2: 'value2', key1: 'value1' }"), TestUtils.transform("xtr.reverse({ key1: 'value1', key2: 'value2' })"));
-        Assertions.assertEquals(TestUtils.transform("'Lorem ipsum dolor'"), TestUtils.transform("xtr.reverse('rolod muspi meroL')"));
+        assertEquals(transform("[3, 2, 1]"), transform("xtr.reverse([1, 2, 3])"));
+        assertEquals(transform("{ key2: 'value2', key1: 'value1' }"), transform("xtr.reverse({ key1: 'value1', key2: 'value2' })"));
+        assertEquals(transform("'Lorem ipsum dolor'"), transform("xtr.reverse('rolod muspi meroL')"));
     }
 
     @Test
     public void sizeOf() {
-        Assertions.assertEquals(TestUtils.transform("3"), TestUtils.transform("xtr.sizeOf([1, 2, 3])"));
-        Assertions.assertEquals(TestUtils.transform("2"), TestUtils.transform("""
+        assertEquals(transform("3"), transform("xtr.sizeOf([1, 2, 3])"));
+        assertEquals(transform("2"), transform("""
                 local add(item, item2) = item + item2;
 
                 xtr.sizeOf(add)"""));
-        Assertions.assertEquals(TestUtils.transform("1"), TestUtils.transform("xtr.sizeOf({ key: 'value' })"));
-        Assertions.assertEquals(TestUtils.transform("13"), TestUtils.transform("xtr.sizeOf('hello, world!')"));
+        assertEquals(transform("1"), transform("xtr.sizeOf({ key: 'value' })"));
+        assertEquals(transform("13"), transform("xtr.sizeOf('hello, world!')"));
     }
 
     @Test
     public void split() {
-        Assertions.assertEquals(TestUtils.transform("['hell', ', w', 'rld!']"), TestUtils.transform("xtr.split('hello, world!', 'o')"));
+        assertEquals(transform("['hell', ', w', 'rld!']"), transform("xtr.split('hello, world!', 'o')"));
     }
 
     @Test
     public void startsWith() {
-        Assertions.assertEquals(TestUtils.transform("true"), TestUtils.transform("xtr.startsWith('hello, world!', 'hello')"));
-        Assertions.assertEquals(TestUtils.transform("""
+        assertEquals(transform("true"), transform("xtr.startsWith('hello, world!', 'hello')"));
+        assertEquals(transform("""
                 {
                     bool: 'true',
                     num: '365',
                     nil: 'null'
-                }"""), TestUtils.transform("""
+                }"""), transform("""
                 {
                     bool: xtr.toString(true),
                     num: xtr.toString(365),
@@ -549,12 +547,12 @@ public class Root {
 
     @Test
     public void trim() {
-        Assertions.assertEquals(TestUtils.transform("'hello, world!'"), TestUtils.transform("xtr.trim('  hello, world!   ')"));
+        assertEquals(transform("'hello, world!'"), transform("xtr.trim('  hello, world!   ')"));
     }
 
     @Test
     public void typeOf() {
-        Assertions.assertEquals(TestUtils.transform("""
+        assertEquals(transform("""
                 {
                     bool: 'boolean',
                     num: 'number',
@@ -562,7 +560,7 @@ public class Root {
                     arr: 'array',
                     obj: 'object',
                     func: 'function'
-                }"""), TestUtils.transform("""
+                }"""), transform("""
                 local func(it) = it;
 
                 {
@@ -577,23 +575,23 @@ public class Root {
 
     @Test
     public void upper() {
-        Assertions.assertEquals(TestUtils.transform("'HELLO WORLD!'"), TestUtils.transform("xtr.upper('Hello World!')"));
+        assertEquals(transform("'HELLO WORLD!'"), transform("xtr.upper('Hello World!')"));
     }
 
     @Disabled
     @Test
     public void uuid() {
-        Assertions.assertEquals(TestUtils.transform("'8eae62af-d2dc-4759-8316-ce6eeca0b61c'"), TestUtils.transform("xtr.uuid()"));
+        assertEquals(transform("'8eae62af-d2dc-4759-8316-ce6eeca0b61c'"), transform("xtr.uuid()"));
     }
 
     @Test
     public void valuesOf() {
-        Assertions.assertEquals(TestUtils.transform("['3.1.3', '19']"), TestUtils.transform("xtr.valuesOf({ scala: '3.1.3', java: '19' })"));
+        assertEquals(transform("['3.1.3', '19']"), transform("xtr.valuesOf({ scala: '3.1.3', java: '19' })"));
     }
 
     @Test
     public void write() {
-        Assertions.assertEquals(TestUtils.transform("'{\"hello\":\"world\",\"arr\":[],\"nil\":null}'"), TestUtils.transform("xtr.write({ hello: 'world', arr: [], nil: null }, 'application/json')"));
-        Assertions.assertEquals(TestUtils.transform("'{\\n    \"hello\": \"world\",\\n    \"arr\": [\\n        \\n    ]\\n}'"), TestUtils.transform("xtr.write({ hello: 'world', arr: [] }, 'application/json', { indent: true })"));
+        assertEquals(transform("'{\"hello\":\"world\",\"arr\":[],\"nil\":null}'"), transform("xtr.write({ hello: 'world', arr: [], nil: null }, 'application/json')"));
+        assertEquals(transform("'{\\n    \"hello\": \"world\",\\n    \"arr\": [\\n        \\n    ]\\n}'"), transform("xtr.write({ hello: 'world', arr: [] }, 'application/json', { indent: true })"));
     }
 }
