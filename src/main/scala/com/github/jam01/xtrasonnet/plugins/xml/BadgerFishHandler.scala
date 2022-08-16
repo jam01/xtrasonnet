@@ -31,9 +31,8 @@ package com.github.jam01.xtrasonnet.plugins.xml
  * - 1570c045ab8e750305e1d86206f4cddeadabfedd: conformed badgerfish ordering behavior
  */
 
-import com.github.jam01.xtrasonnet.plugins.DefaultXMLPlugin.{BadgerFishMode, EffectiveParams}
-import com.github.jam01.xtrasonnet.plugins.DefaultXMLPlugin.{BadgerFishMode, DEFAULT_NS_KEY, EffectiveParams}
-import com.github.jam01.xtrasonnet.plugins.DefaultXMLPlugin.{BadgerFishMode, EffectiveParams}
+import com.github.jam01.xtrasonnet.plugins.DefaultXMLPlugin
+import com.github.jam01.xtrasonnet.plugins.DefaultXMLPlugin.{EffectiveParams, Mode}
 import org.xml.sax.ext.DefaultHandler2
 import org.xml.sax.{Attributes, SAXParseException}
 
@@ -65,7 +64,7 @@ class BadgerFishHandler(params: EffectiveParams) extends DefaultHandler2 {
 
     namespaces.declarePrefix(prefix, uri)
     val newPrefix = namespaces.getPrefix(uri)
-    currentNS.put(if (newPrefix == null) DEFAULT_NS_KEY else newPrefix, ujson.Str(uri))
+    currentNS.put(if (newPrefix == null) DefaultXMLPlugin.DEFAULT_NS_KEY else newPrefix, ujson.Str(uri))
   }
 
   override def startElement(uri: String,
@@ -92,9 +91,9 @@ class BadgerFishHandler(params: EffectiveParams) extends DefaultHandler2 {
         val value = attributes getValue i
         val translated = processName(qname, true)
 
-        attrs.addOne((params.attrKeyPrefix + translated, ujson.Str(value)))
+        attrs.addOne(translated, ujson.Str(value))
       }
-      current.value.addAll(attrs.toList)
+      current.value.addOne(params.attrKey, attrs.toList)
     }
 
     badgerStack.push(BadgerFish(current))
@@ -111,7 +110,7 @@ class BadgerFishHandler(params: EffectiveParams) extends DefaultHandler2 {
   override def endCDATA(): Unit = {
     if (buffer.nonEmpty) {
       val idx = badgerStack.top.nextIdx
-      badgerStack.top.obj.value.addOne(params.cdataKeyPrefix + idx, ujson.Str(buffer.toString))
+      badgerStack.top.obj.value.addOne(params.cdataKey + idx, ujson.Str(buffer.toString))
       badgerStack.top.nextIdx = idx + 1
       badgerStack.top.hasText = true
     }
@@ -123,18 +122,19 @@ class BadgerFishHandler(params: EffectiveParams) extends DefaultHandler2 {
     captureText()
 
     val translated = processName(qname, false)
-    val newName = translated.replaceFirst(":", params.nsSeparator)
+    val newName = translated.replaceFirst(":", params.qnameChar.toString)
     val current = badgerStack.pop
     val parent = badgerStack.top
     val parentObj = parent.obj.value
 
     val pos = parent.nextIdx
-    current.obj.value.addOne(params.orderingKey, ujson.Num(pos))
+    if (params.mode == Mode.extended) current.obj.value.addOne(params.orderKey, ujson.Num(pos)) // only extended supports order
     parent.nextIdx = pos + 1
 
-    if (params.mode == BadgerFishMode.simple && current.hasText) {
-      concatAllText(current)
-      current.obj.value.remove(params.orderingKey)
+    if (params.mode != Mode.extended) { // only extended keeps individual text elements
+      if (current.hasText) {
+        concatAllText(current)
+      }
     }
 
     if (parentObj.contains(newName)) {
@@ -154,13 +154,13 @@ class BadgerFishHandler(params: EffectiveParams) extends DefaultHandler2 {
   private def concatAllText(current: BadgerFish): Unit = {
     val sb = new mutable.StringBuilder()
     for ((name, value) <- current.obj.value) {
-      if (name.startsWith(params.textKeyPrefix) || name.startsWith(params.cdataKeyPrefix)) {
+      if (name.startsWith(params.textKey) || name.startsWith(params.cdataKey)) {
         sb.append(value.str)
         current.obj.value.remove(name)
       }
     }
 
-    current.obj.value.addOne(params.textKeyPrefix, ujson.Str(sb.toString()))
+    current.obj.value.addOne(params.textKey, ujson.Str(sb.toString()))
   }
 
   private def processName(qname: String, isAttribute: Boolean) = {
@@ -176,7 +176,7 @@ class BadgerFishHandler(params: EffectiveParams) extends DefaultHandler2 {
       val string = buffer.toString
       // TODO: change to a isNotBlank func
       if (string.trim.nonEmpty) {
-        badgerStack.top.obj.value.addOne(params.textKeyPrefix + idx, buffer.toString)
+        badgerStack.top.obj.value.addOne(params.textKey + idx, buffer.toString)
         badgerStack.top.nextIdx = idx + 1
         badgerStack.top.hasText = true
       }

@@ -8,6 +8,7 @@ package com.github.jam01.xtrasonnet.plugins
  */
 
 import com.github.jam01.xtrasonnet.document.Document.BasicDocument
+
 import java.io._
 import java.net.URL
 import java.nio.charset.Charset
@@ -16,65 +17,63 @@ import com.github.jam01.xtrasonnet.plugins.xml.XML
 import com.github.jam01.xtrasonnet.spi.{BasePlugin, PluginException}
 import ujson.Value
 
+import java.util.Collections
 import scala.collection.mutable
-import scala.jdk.CollectionConverters.MapHasAsScala
+import scala.jdk.CollectionConverters.{IterableHasAsScala, MapHasAsScala}
 
 // See: http://wiki.open311.org/JSON_and_XML_Conversion/#the-badgerfish-convention
 // http://www.sklar.com/badgerfish/
 // http://dropbox.ashlock.us/open311/json-xml/
 object DefaultXMLPlugin extends BasePlugin {
-  private val XMLNS_KEY = "xmlns"
-  val DEFAULT_NS_KEY = "$"
-  private val DEFAULT_DS_NS_SEPARATOR = ":"
-  private val DEFAULT_DS_ATTRIBUTE_KEY_PREFIX = "@"
-  private val DEFAULT_DS_ORDERING_KEY = "~"
-  private val DEFAULT_DS_TEXT_KEY_PREFIX = "$"
-  private val DEFAULT_DS_VERSION = "1.0"
-  private val DEFAULT_DS_CDATA_KEY_PREFIX = "#"
-  private val DEFAULT_DS_MIXED_CONTENT = "both"
-  private val DEFAULT_DS_BADGERFISH_MODE = "simple"
+  val SIMPLE_MODE = "simple"
+  val BASIC_MODE = "basic"
+  val EXTENDED_MODE = "extended"
+  val DEFAULT_NS_KEY = "def"
+  private val DEFAULT_TEXT_KEY = "_text"
+  private val DEFAULT_ATTRIBUTE_KEY = "_attr"
+  private val DEFAULT_CDATA_KEY = "_cdata"
+  private val DEFAULT_ORDER_KEY = "_idx"
+  private val DEFAULT_XMLNS_KEY = "_xmlns"
+  private val DEFAULT_QNAME_CHAR = ':'
+  private val DEFAULT_XML_VERSION = "1.0"
 
-  val DS_NS_SEPARATOR = "namespaceseparator"
-  val DS_ATTRIBUTE_KEY_PREFIX = "attributecharacter"
-  val DS_ORDERING_KEY = "orderingkey"
-  val DS_TEXT_KEY_PREFIX = "textvaluekey"
-  val DS_CDATA_KEY_PREFIX = "cdatavaluekey"
-  // anything that starts with NamespaceDeclarations.
-  val DS_NAMESPACE_DECLARATIONS = "namespacedeclarations\\..*"
-  val DS_ROOT_ELEMENT = "rootelement"
-  val DS_OMIT_DECLARATION = "omitxmldeclaration"
-
-  val DS_VERSION = "xmlversion"
-  val DS_AUTO_EMPTY = "autoemptyelements"
-
-  val DS_NULL_AS_EMPTY = "nullasemptyelement"
-  val DS_BADGERFISH_MODE = "badgerfish"
+  val PARAM_MODE = "mode"
+  val PARAM_TEXT_KEY = "textkey"
+  val PARAM_ATTRIBUTE_KEY = "attributechar"
+  val PARAM_CDATA_KEY = "cdatakey"
+  val PARAM_ORDER_KEY = "orderkey"
+  val PARAM_XMLNS_KEY = "xmlnskey"
+  val PARAM_QNAME_CHAR = "qnamechar"
+  val PARAM_NAMESPACE_QNAME = "xmlns\\..*"
+  val PARAM_OMIT_XML_DECLARATION = "omitdeclaration"
+  val PARAM_XML_VERSION = "xmlversion"
+  val PARAM_EMPTY_TAGS = "emptytags"
 
   supportedTypes.add(MediaTypes.APPLICATION_XML)
   supportedTypes.add(MediaTypes.TEXT_XML)
   supportedTypes.add(new MediaType("application", "*+xml"))
 
   writerParams.add(BasePlugin.PARAM_FORMAT)
-  writerParams.add(DS_NS_SEPARATOR)
-  writerParams.add(DS_ATTRIBUTE_KEY_PREFIX)
-  writerParams.add(DS_TEXT_KEY_PREFIX)
-  writerParams.add(DS_CDATA_KEY_PREFIX)
-  writerParams.add(DS_ORDERING_KEY)
-  writerParams.add(DS_NAMESPACE_DECLARATIONS)
-  writerParams.add(DS_ROOT_ELEMENT)
-  writerParams.add(DS_OMIT_DECLARATION)
-  writerParams.add(DS_VERSION)
-  writerParams.add(DS_AUTO_EMPTY)
-  writerParams.add(DS_NULL_AS_EMPTY)
-  writerParams.add(DS_BADGERFISH_MODE)
+  writerParams.add(PARAM_MODE)
+  writerParams.add(PARAM_TEXT_KEY)
+  writerParams.add(PARAM_ATTRIBUTE_KEY)
+  writerParams.add(PARAM_CDATA_KEY)
+  writerParams.add(PARAM_ORDER_KEY)
+  writerParams.add(PARAM_XMLNS_KEY)
+  writerParams.add(PARAM_QNAME_CHAR)
+  writerParams.add(PARAM_NAMESPACE_QNAME)
+  writerParams.add(PARAM_OMIT_XML_DECLARATION)
+  writerParams.add(PARAM_XML_VERSION)
+  writerParams.add(PARAM_EMPTY_TAGS)
 
-  readerParams.add(DS_NS_SEPARATOR)
-  readerParams.add(DS_ATTRIBUTE_KEY_PREFIX)
-  readerParams.add(DS_TEXT_KEY_PREFIX)
-  readerParams.add(DS_CDATA_KEY_PREFIX)
-  readerParams.add(DS_ORDERING_KEY)
-  readerParams.add(DS_NAMESPACE_DECLARATIONS)
-  readerParams.add(DS_BADGERFISH_MODE)
+  readerParams.add(PARAM_MODE)
+  readerParams.add(PARAM_TEXT_KEY)
+  readerParams.add(PARAM_ATTRIBUTE_KEY)
+  readerParams.add(PARAM_CDATA_KEY)
+  readerParams.add(PARAM_ORDER_KEY)
+  readerParams.add(PARAM_XMLNS_KEY)
+  readerParams.add(PARAM_QNAME_CHAR)
+  readerParams.add(PARAM_NAMESPACE_QNAME)
 
   readerSupportedClasses.add(classOf[String].asInstanceOf[java.lang.Class[_]])
   readerSupportedClasses.add(classOf[java.net.URL].asInstanceOf[java.lang.Class[_]])
@@ -113,10 +112,6 @@ object DefaultXMLPlugin extends BasePlugin {
 
     var inputAsObj: mutable.Map[String, Value] = input.obj.asInstanceOf[mutable.Map[String, Value]]
 
-    if (mediaType.getParameters.containsKey(DS_ROOT_ELEMENT)) {
-      inputAsObj = mutable.Map((mediaType.getParameter(DS_ROOT_ELEMENT), input))
-    }
-
     if (inputAsObj.keys.size > 1) {
       throw new PluginException("Object must have only one root element")
     }
@@ -140,38 +135,35 @@ object DefaultXMLPlugin extends BasePlugin {
     }
   }
 
-  object BadgerFishMode extends Enumeration {
-    val simple, extended = Value
+  object Mode extends Enumeration {
+    val simple, extended, basic = Value
   }
 
-  case class EffectiveParams(nsSeparator: String, textKeyPrefix: String,
-                             cdataKeyPrefix: String, attrKeyPrefix: String,
-                             orderingKey: String,
-                             omitDeclaration: Boolean, version: String,
-                             xmlnsKey: String, nullAsEmpty: Boolean,
-                             autoEmpty: Boolean, declarations: Map[String, String],
-                             mode: BadgerFishMode.Value)
+  case class EffectiveParams(qnameChar: Char, textKey: String,
+                             cdataKey: String, attrKey: String,
+                             orderKey: String, omitDeclaration: Boolean,
+                             xmlVer: String, xmlnsKey: String, emptyTags: Boolean,
+                             declarations: Map[String, String], mode: Mode.Value)
 
   object EffectiveParams {
     def apply(mediaType: MediaType): EffectiveParams = {
-      val nsSep = Option(mediaType.getParameter(DS_NS_SEPARATOR)).getOrElse(DEFAULT_DS_NS_SEPARATOR)
-      val txtPref = Option(mediaType.getParameter(DS_TEXT_KEY_PREFIX)).getOrElse(DEFAULT_DS_TEXT_KEY_PREFIX)
-      val cdataPref = Option(mediaType.getParameter(DS_CDATA_KEY_PREFIX)).getOrElse(DEFAULT_DS_CDATA_KEY_PREFIX)
-      val attrPref = Option(mediaType.getParameter(DS_ATTRIBUTE_KEY_PREFIX)).getOrElse(DEFAULT_DS_ATTRIBUTE_KEY_PREFIX)
-      val orderingKey = Option(mediaType.getParameter(DS_ORDERING_KEY)).getOrElse(DEFAULT_DS_ORDERING_KEY)
-      val omitDecl = if (mediaType.getParameter(DS_OMIT_DECLARATION) != null) java.lang.Boolean.parseBoolean(mediaType.getParameter(DS_OMIT_DECLARATION)) else false
-      val ver = Option(mediaType.getParameter(DS_VERSION)).getOrElse(DEFAULT_DS_VERSION)
-      val xmlns = Option(mediaType.getParameter(DS_ATTRIBUTE_KEY_PREFIX)).getOrElse(DEFAULT_DS_ATTRIBUTE_KEY_PREFIX) + XMLNS_KEY
-      val nullEmpty = if (mediaType.getParameter(DS_NULL_AS_EMPTY) != null) java.lang.Boolean.parseBoolean(mediaType.getParameter(DS_NULL_AS_EMPTY)) else false
-      val autoEmpty = if (mediaType.getParameter(DS_AUTO_EMPTY) != null) java.lang.Boolean.parseBoolean(mediaType.getParameter(DS_AUTO_EMPTY)) else false
+      val qnameChar = DefaultCSVPlugin.paramAsChar(mediaType, PARAM_QNAME_CHAR, DEFAULT_QNAME_CHAR)
+      val textKey = DefaultCSVPlugin.paramOr(mediaType, PARAM_TEXT_KEY, DEFAULT_TEXT_KEY)
+      val cdataKey = DefaultCSVPlugin.paramOr(mediaType, PARAM_CDATA_KEY, DEFAULT_CDATA_KEY)
+      val attrKey = DefaultCSVPlugin.paramOr(mediaType, PARAM_ATTRIBUTE_KEY, DEFAULT_ATTRIBUTE_KEY)
+      val orderKey = DefaultCSVPlugin.paramOr(mediaType, PARAM_ORDER_KEY, DEFAULT_ORDER_KEY)
+      val omitDeclaration = DefaultCSVPlugin.paramAsBoolean(mediaType, PARAM_OMIT_XML_DECLARATION, false)
+      val xmlVer = DefaultCSVPlugin.paramOr(mediaType, PARAM_XML_VERSION, DEFAULT_XML_VERSION)
+      val xmlnsKey = DefaultCSVPlugin.paramOr(mediaType, PARAM_XMLNS_KEY, DEFAULT_XMLNS_KEY)
+      val emptyTag = DefaultCSVPlugin.paramAsBoolean(mediaType, PARAM_EMPTY_TAGS, false)
       val declarations: Map[String, String] = mediaType.getParameters.asScala.toList
-        .filter(entryVal => entryVal._1.matches(DS_NAMESPACE_DECLARATIONS))
-        .map(entryVal => (entryVal._2, entryVal._1.substring(DS_NAMESPACE_DECLARATIONS.length - 3)))
-        .map(entry => if (entry._2 == "$") (entry._1, "") else entry)
+        .filter(entryVal => entryVal._1.matches(PARAM_NAMESPACE_QNAME))
+        .map(entryVal => (entryVal._2, entryVal._1.substring(PARAM_NAMESPACE_QNAME.length - 3)))
+        .map(entry => if (entry._2 == DEFAULT_NS_KEY) (entry._1, "") else entry)
         .toMap
-      val mode = BadgerFishMode.withName(Option(mediaType.getParameter(DS_BADGERFISH_MODE)).getOrElse(DEFAULT_DS_BADGERFISH_MODE).toLowerCase)
+      val mode = Mode.withName(DefaultCSVPlugin.paramOr(mediaType, PARAM_MODE, SIMPLE_MODE))
 
-      EffectiveParams(nsSep, txtPref, cdataPref, attrPref, orderingKey, omitDecl, ver, xmlns, nullEmpty, autoEmpty, declarations, mode)
+      EffectiveParams(qnameChar, textKey, cdataKey, attrKey, orderKey, omitDeclaration, xmlVer, xmlnsKey, emptyTag, declarations, mode)
     }
   }
 }

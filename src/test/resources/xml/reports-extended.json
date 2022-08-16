@@ -1,0 +1,229 @@
+{
+  "reports": {
+    "_xmlns": {
+      "georss": "http://www.georss.org/georss"
+    },
+    "_attr": {
+      "ns": "http://www.w3.org/2005/Atom"
+    },
+    "entry": [
+      {
+        "id": {
+          "_text1": "tag:open311.sfgov.org,2010-04-15:/dev/V1/reports/637619.xml",
+          "_idx": 1
+        },
+        "title": {
+          "_text1": "A large tree branch is blocking the road",
+          "_idx": 2
+        },
+        "updated": {
+          "_text1": "2010-04-13T18:30:02-05:00",
+          "_idx": 3
+        },
+        "link": {
+          "_attr": {
+            "rel": "self",
+            "href": "http://open311.sfgov.org/dev/V1/reports/637619.xml"
+          },
+          "_idx": 4
+        },
+        "author": {
+          "name": {
+            "_text1": "John Doe",
+            "_idx": 1
+          },
+          "_idx": 5
+        },
+        "georss:point": {
+          "_text1": "40.7111 -73.9565",
+          "_idx": 6
+        },
+        "category": {
+          "_attr": {
+            "label": "Damaged tree",
+            "term": "tree-damage",
+            "scheme": "https://open311.sfgov.org/dev/V1/categories/006.xml"
+          },
+          "_text1": "006",
+          "_idx": 7
+        },
+        "content": {
+          "_attr": {
+            "type": "xml",
+            "ns": "http://open311.org/spec/georeport-v1"
+          },
+          "report_id": {
+            "_text1": "637619",
+            "_idx": 1
+          },
+          "address": {
+            "_text1": "1600 Market St, San Francisco, CA 94103",
+            "_idx": 2
+          },
+          "description": {
+            "_text1": "A large tree branch is blocking the road",
+            "_idx": 3
+          },
+          "status": {
+            "_text1": "created",
+            "_idx": 4
+          },
+          "status_notes": {
+            "_idx": 5
+          },
+          "policy": {
+            "_text1": "The City will inspect and require the responsible party to correct within 24 hours and/or issue a Correction Notice or Notice of Violation of the Public Works Code",
+            "_idx": 6
+          },
+          "_idx": 8
+        },
+        "_idx": 1
+      },
+      {
+        "id": {
+          "_text1": "tag:open311.sfgov.org,2010-04-15:/dev/V1/reports/637620.xml",
+          "_idx": 1
+        },
+        "title": {
+          "_text1": "A large tree branch is blocking the road",
+          "_idx": 2
+        },
+        "updated": {
+          "_text1": "2010-04-13T18:30:02-05:00",
+          "_idx": 3
+        },
+        "link": {
+          "_attr": {
+            "rel": "self",
+            "href": "http://open311.sfgov.org/dev/V1/reports/637620.xml"
+          },
+          "_idx": 4
+        },
+        "author": {
+          "name": {
+            "_text1": "John Doe",
+            "_idx": 1
+          },
+          "_idx": 5
+        },
+        "georss:point": {
+          "_text1": "40.7111 -73.9565",
+          "_idx": 6
+        },
+        "category": {
+          "_attr": {
+            "label": "Damaged tree",
+            "term": "tree-damage",
+            "scheme": "https://open311.sfgov.org/dev/V1/categories/006.xml"
+          },
+          "_text1": "006",
+          "_idx": 7
+        },
+        "content": {
+          "_attr": {
+            "type": "xml",
+            "ns": "http://open311.org/spec/georeport-v1"
+          },
+          "report_id": {
+            "_text1": "637620",
+            "_idx": 1
+          },
+          "address": {
+            "_text1": "56 Market St, San Francisco, CA 94103",
+            "_idx": 2
+          },
+          "description": {
+            "_text1": "A large tree branch is blocking the road",
+            "_idx": 3
+          },
+          "status": {
+            "_text1": "created",
+            "_idx": 4
+          },
+          "status_notes": {
+            "_idx": 5
+          },
+          "policy": {
+            "_cdata1": "The City will inspect and require the responsible party to correct within 24 hours and/or issue a Correction Notice or Notice of Violation of the Public Works Code",
+            "_idx": 6
+          },
+          "_idx": 8
+        },
+        "_idx": 2
+      },
+      {
+        "id": {
+          "_text1": "tag:open311.sfgov.org,2010-04-15:/dev/V1/reports/637621.xml",
+          "_idx": 1
+        },
+        "title": {
+          "_text1": "A large tree branch is blocking the road",
+          "_idx": 2
+        },
+        "updated": {
+          "_text1": "2010-04-13T18:30:02-05:00",
+          "_idx": 3
+        },
+        "link": {
+          "_attr": {
+            "rel": "self",
+            "href": "http://open311.sfgov.org/dev/V1/reports/637621.xml"
+          },
+          "_idx": 4
+        },
+        "author": {
+          "name": {
+            "_text1": "John Doe",
+            "_idx": 1
+          },
+          "_idx": 5
+        },
+        "georss:point": {
+          "_text1": "40.7111 -73.9565",
+          "_idx": 6
+        },
+        "category": {
+          "_attr": {
+            "label": "Damaged tree",
+            "term": "tree-damage",
+            "scheme": "https://open311.sfgov.org/dev/V1/categories/006.xml"
+          },
+          "_text1": "006",
+          "_idx": 7
+        },
+        "content": {
+          "_attr": {
+            "type": "xml",
+            "ns": "http://open311.org/spec/georeport-v1"
+          },
+          "report_id": {
+            "_text1": "637621",
+            "_idx": 1
+          },
+          "address": {
+            "_text1": "1800 Market St, San Francisco, CA 94103",
+            "_idx": 2
+          },
+          "description": {
+            "_text1": "A large tree branch is blocking the road",
+            "_idx": 3
+          },
+          "status": {
+            "_text1": "created",
+            "_idx": 4
+          },
+          "status_notes": {
+            "_idx": 5
+          },
+          "policy": {
+            "_text1": "The City will inspect and require the responsible party to correct within 24 hours and/or issue a Correction Notice or Notice of Violation of the Public Works Code",
+            "_idx": 6
+          },
+          "_idx": 8
+        },
+        "_idx": 3
+      }
+    ],
+    "_idx": 1
+  }
+}

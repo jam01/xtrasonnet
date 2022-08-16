@@ -211,25 +211,35 @@ public class DefaultCSVPlugin extends BaseJacksonPlugin {
         return builder;
     }
 
-    private boolean paramPresent(MediaType type, String name) {
+    public static boolean paramPresent(MediaType type, String name) {
         return type.getParameters().containsKey(name);
     }
 
-    private boolean paramAbsent(MediaType type, String name) {
+    public static boolean paramAbsent(MediaType type, String name) {
         return !type.getParameters().containsKey(name);
     }
-    private boolean paramEq(MediaType type, String name, String expected) {
+    public static boolean paramEq(MediaType type, String name, String expected) {
         if (!type.getParameters().containsKey(name)) return false;
         return expected.equals(type.getParameters().get(name));
     }
 
-    private char paramAsChar(MediaType type, String name, char defaault) {
+    public static char paramAsChar(MediaType type, String name, char defaault) {
         if (!type.getParameters().containsKey(name)) return defaault;
         return type.getParameters().get(name).charAt(0);
     }
 
-    private List<String> paramAsList(MediaType type, String name, List<String> defaault) {
+    public static List<String> paramAsList(MediaType type, String name, List<String> defaault) {
         if (!type.getParameters().containsKey(name)) return defaault;
         return Arrays.asList(type.getParameters().get(name).split(","));
+    }
+
+    public static boolean paramAsBoolean(MediaType type, String name, boolean defaault) {
+        if (!type.getParameters().containsKey(name)) return defaault;
+        return Boolean.parseBoolean(type.getParameter(name));
+    }
+
+    public static String paramOr(MediaType type, String name, String defaault) {
+        if (!type.getParameters().containsKey(name)) return defaault;
+        return type.getParameter(name);
     }
 }

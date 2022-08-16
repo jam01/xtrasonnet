@@ -33,8 +33,12 @@ public class TestUtils {
         }
     }
 
-    public static String resourceAsString(String filePath) throws URISyntaxException, IOException {
-        Path path = Paths.get(TestUtils.class.getClassLoader().getResource(filePath).toURI());
-        return new String(Files.readAllBytes(path));
+    public static String resourceAsString(String filePath) {
+        try {
+            Path path = Paths.get(TestUtils.class.getClassLoader().getResource(filePath).toURI());
+            return new String(Files.readAllBytes(path));
+        } catch (IOException | URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

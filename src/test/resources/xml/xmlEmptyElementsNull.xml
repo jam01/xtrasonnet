@@ -1,9 +1,0 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<root>
-    <emptyElement/>
-    <nullElement/>
-    <valueElement>Test</valueElement>
-    <intElement>1</intElement>
-    <boolElement>true</boolElement>
-    <realElement>realValue</realElement>
-</root>

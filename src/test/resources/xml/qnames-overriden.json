@@ -1,0 +1,30 @@
+{
+  "b1:doc": {
+    "_xmlns": {
+      "b1": "http://example.org/ns/one"
+    },
+    "b1:title": {
+      "_text": "Title"
+    },
+    "b1:div": {
+      "_xmlns": {
+        "b3": "http://example.org/ns/three",
+        "b2": "http://example.org/ns/two"
+      },
+      "b1:title": {
+        "_attr": {
+          "b3:attr": "1"
+        },
+        "_text": "Division Title"
+      },
+      "b2:para": {
+        "_attr": {
+          "b3:a1": "one",
+          "b3:a2": "two",
+          "b3:a3": "three"
+        },
+        "_text": "Text"
+      }
+    }
+  }
+}

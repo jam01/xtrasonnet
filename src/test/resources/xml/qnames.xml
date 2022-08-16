@@ -1,0 +1,8 @@
+<a1:doc xmlns:a1="http://example.org/ns/one">
+    <a1:title>Title</a1:title>
+    <a1:div xmlns:a2="http://example.org/ns/three"
+            xmlns:a3="http://example.org/ns/two">
+        <a1:title a2:attr="1">Division Title</a1:title>
+        <a3:para a2:a1="one" a2:a2="two" a2:a3="three">Text</a3:para>
+    </a1:div>
+</a1:doc>

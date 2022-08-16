@@ -31,13 +31,13 @@ package com.github.jam01.xtrasonnet.plugins.xml
  * - 1570c045ab8e750305e1d86206f4cddeadabfedd: conformed badgerfish ordering behavior
  */
 
-import com.github.jam01.xtrasonnet.plugins.DefaultXMLPlugin.{BadgerFishMode, EffectiveParams}
-import com.github.jam01.xtrasonnet.plugins.DefaultXMLPlugin.{BadgerFishMode, EffectiveParams}
-import com.github.jam01.xtrasonnet.plugins.DefaultXMLPlugin.{BadgerFishMode, EffectiveParams}
+import com.github.jam01.xtrasonnet.plugins.DefaultXMLPlugin
+import com.github.jam01.xtrasonnet.plugins.DefaultXMLPlugin.{DEFAULT_NS_KEY, EffectiveParams, Mode}
 import org.xml.sax.helpers.NamespaceSupport
 import ujson.{Num, Str, Value}
 
 import java.io.{StringWriter, Writer}
+import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
 // See {@link scala.xml.Utility.serialize}
@@ -67,53 +67,61 @@ class BadgerFishWriter(val params: EffectiveParams) {
   val namespaces: NamespaceSupport = new OverridingNamespaceTranslator(params.declarations)
   val namespaceParts = new Array[String](3)  // keep reusing a single array
 
-  def serialize(root: (String, ujson.Obj), sb: Writer = new StringWriter()): Writer = {
+  def serialize(current: (String, ujson.Obj), sb: Writer = new StringWriter()): Writer = {
     // initialize namespaces for use in later writing
     // we have to do this because even the first thing we write,
     // the element name, might have an overridden namespace
     namespaces.pushContext()
-    if (root._2.value.contains(params.xmlnsKey)) {
-      root._2.value(params.xmlnsKey).obj.foreach {
+    val (currKey, currObj) = current
+    
+    if (currObj.value.contains(params.xmlnsKey)) {
+      currObj.value(params.xmlnsKey).obj.foreach {
         case (key, value) =>
-          namespaces.declarePrefix(if (key == "$") "" else key, value.str)
+          namespaces.declarePrefix(if (key == DefaultXMLPlugin.DEFAULT_NS_KEY) "" else key, value.str)
       }
     }
 
     sb.append('<')
-    val qname = processName(root._1, false)
-    val element = qname.replace(params.nsSeparator, ":")
+    val qname = processName(currKey, isAttribute = false)
+    val element = qname.replace(params.qnameChar.toString, ":")
     sb.append(element)
 
-    val (attrs, children) = root._2.value.partition(entry => entry._1.startsWith(params.attrKeyPrefix) && !entry._1.equals(params.xmlnsKey))
+    val children = new mutable.LinkedHashMap[String, Value]()
 
-    attrs.foreach {
-      attr =>
-        val qname = attr._1.substring(params.attrKeyPrefix.size)
-        val translated = namespaces.processName(qname, namespaceParts, true)(2)
-        sb append ' '
-        sb append translated
-        sb append '='
-        // TODO this is likely improperly escaped, but verify with a test
-        appendQuoted(attr._2.str, sb)
-    }
-
-    if (root._2.value.contains(params.xmlnsKey)) {
-      root._2.value(params.xmlnsKey).obj.foreach {
-        case (key, value) =>
-          sb append " xmlns%s=\"%s\"".format(
-            if (key != null) {
-              val newPrefix = namespaces.getPrefix(value.str)
-              // this is the way to check for the root namespace prescribed by the docs
-              if(newPrefix == null && namespaces.getURI("") == value.str) "" else ":" + newPrefix
-            } else {
-              ""  // make clear there's a problem. We should probably throw an exception instead.
-            },
-            if (value.str != null) value.str else ""  // again should likely exception
-          )
+    // append attributes in the order they appear
+    currObj.value.foreach({ case (childKey, childValue) =>
+      if (childKey.equals(params.xmlnsKey)) {
+        childValue.obj.foreach {
+          case (key, value) =>
+            sb append " xmlns%s=\"%s\"".format(
+              if (key != null) {
+                val newPrefix = namespaces.getPrefix(value.str)
+                // this is the way to check for the root namespace prescribed by the docs
+                if (newPrefix == null && namespaces.getURI("") == value.str) "" else ":" + newPrefix
+              } else {
+                "" // make clear there's a problem. We should probably throw an exception instead.
+              },
+              if (value.str != null) {
+                val sb2 = new StringWriter()
+                escape(value.str, sb2).toString
+              } else "" // again should likely exception
+            )
+        }
+      } else if (childKey.equals(params.attrKey)) {
+        childValue.obj.foreach({ case (attrKey, attrVal) =>
+          sb append ' '
+          sb append namespaces.processName(attrKey, namespaceParts, true)(2)
+          sb append '='
+          val sb2 = new StringWriter()
+          escape(attrVal.str, sb2)
+          appendQuoted(sb2.toString, sb)
+        })
+      } else {
+        children.addOne((childKey, childValue))
       }
-    }
+    })
 
-    if (children.isEmpty && params.autoEmpty) {
+    if (children.isEmpty && params.emptyTags) {
       sb append "/>"
     } else {
       // children, so use long form: <xyz ...>...</xyz>
@@ -122,7 +130,7 @@ class BadgerFishWriter(val params: EffectiveParams) {
       children.toSeq
         // selectively flatten arrays
         .foldLeft(new ArrayBuffer[(String, Value)])((acc, value) =>
-          if (!value._1.equals(params.orderingKey)) {
+          if (!value._1.equals(params.orderKey)) {
             value._2 match {
               case ujson.Arr(arr) => acc.addAll(arr.map(it => value._1 -> it))
               case _ => acc.addOne(value)
@@ -131,42 +139,39 @@ class BadgerFishWriter(val params: EffectiveParams) {
         // sort using ordering key in objects, and index substring in text and cdatas
         .sortBy(entry => entry._2 match {
           case ujson.Obj(inner) =>
-            val order = inner.get(params.orderingKey)
-            if (order.isEmpty) -1 else order.get match {
+            val order = inner.get(params.orderKey)
+            if (order.isEmpty) Integer.MAX_VALUE else order.get match {
               case Str(value) => value.toInt
               case Num(value) => value.toInt
               case x => throw new IllegalArgumentException("Invalid ordering key value: " + x.value)
             }
           case _ =>
             if (entry._1.last.isDigit) {
-              if (entry._1.startsWith(params.textKeyPrefix))
-                entry._1.substring(params.textKeyPrefix.length).toInt
-              else if (entry._1.startsWith(params.cdataKeyPrefix))
-                entry._1.substring(params.cdataKeyPrefix.length).toInt
-              else -1
+              if (entry._1.startsWith(params.textKey))
+                entry._1.substring(params.textKey.length).toInt
+              else if (entry._1.startsWith(params.cdataKey))
+                entry._1.substring(params.cdataKey.length).toInt
+              else Integer.MAX_VALUE
             }
-            else -1
+            else Integer.MAX_VALUE
         })(Ordering[Int])
         .foreach {
           child =>
             val (key, value) = child
-            if (key.equals(params.xmlnsKey)) {
-              // no op
-            } else if (key.startsWith(params.textKeyPrefix)) {
-              val hasIdx = key.length > params.textKeyPrefix.length
-              if ((params.mode == BadgerFishMode.simple && !hasIdx) || (params.mode == BadgerFishMode.extended && hasIdx))
+            if (key.startsWith(params.textKey)) {
+              // val hasIdx = key.length > params.textKey.length
+              // if ((params.mode != Mode.extended && !hasIdx) || (params.mode == Mode.extended)) // only extended can have idx, maybe under a 'strict' param
                 escapeText(value.str, sb)
-            } else if (key.startsWith(params.cdataKeyPrefix)) {
-              val hasIdx = key.length > params.cdataKeyPrefix.length
-              if ((params.mode == BadgerFishMode.simple && !hasIdx) || (params.mode == BadgerFishMode.extended && hasIdx))
-              // taken from scala.xml.PCData
-              sb append "<![CDATA[%s]]>".format(value.str.replaceAll("]]>", "]]]]><![CDATA[>"))
+            } else if (key.startsWith(params.cdataKey)) {
+              // val hasIdx = key.length > params.cdataKey.length
+              // if ((params.mode != Mode.extended && !hasIdx) || (params.mode == Mode.extended)) // only extended can have idx, maybe under a 'strict' param
+                sb append "<![CDATA[%s]]>".format(value.str.replaceAll("]]>", "]]]]><![CDATA[>")) // taken from scala.xml.PCData
             } else value match {
               case obj: ujson.Obj => serialize((key, obj), sb)
               case ujson.Arr(arr) => arr.foreach(arrItm => serialize((key, arrItm.obj), sb))
-              case ujson.Null => if (params.nullAsEmpty) serialize((key, ujson.Obj((params.textKeyPrefix, ""))), sb)
-              case num: ujson.Num => serialize((key, ujson.Obj((params.textKeyPrefix, String.valueOf(num)))), sb)
-              case any: ujson.Value => serialize((key, ujson.Obj((params.textKeyPrefix, String.valueOf(any.value)))), sb)
+              case ujson.Null => if (params.emptyTags) serialize((key, ujson.Obj()), sb) // TODO: reuse empty obj
+              case num: ujson.Num => serialize((key, ujson.Obj((params.textKey, String.valueOf(num)))), sb)
+              case any: ujson.Value => serialize((key, ujson.Obj((params.textKey, String.valueOf(any.value)))), sb)
             }
         }
 
@@ -182,11 +187,9 @@ class BadgerFishWriter(val params: EffectiveParams) {
   private def processName(qname: String, isAttribute: Boolean) = {
     val processed = namespaces.processName(qname, namespaceParts, isAttribute)
     if (processed == null) {
-      // some namespace problem. This should likely throw an exception, but for now return the original
-      qname
+      qname // some namespace problem. This should likely throw an exception, but for now return the original
     } else {
-      // success
-      processed(2)
+      processed(2) // success
     }
   }
 

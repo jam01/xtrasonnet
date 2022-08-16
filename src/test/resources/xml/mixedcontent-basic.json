@@ -1,0 +1,19 @@
+{
+  "letter": {
+    "name": [
+      {
+        "_text": "John Smith"
+      },
+      {
+        "_text": "Sam Smith"
+      }
+    ],
+    "orderid": {
+      "_text": "1032"
+    },
+    "shipdate": {
+      "_text": "2001-07-13"
+    },
+    "_text": "\n    Dear Mr. .\n    Your order \n    will be shipped on .\n    PS Happy Holidays!"
+  }
+}
