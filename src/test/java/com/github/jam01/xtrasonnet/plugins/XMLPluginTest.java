@@ -224,7 +224,6 @@ public class XMLPluginTest {
                 .transform(Document.of(escaped,
                         MediaTypes.APPLICATION_XML.withParameter(DefaultXMLPlugin.PARAM_MODE(), DefaultXMLPlugin.BASIC_MODE())));
 
-        System.out.println(doc.getContent());
         JSONAssert.assertEquals(escapedAsJson, doc.getContent(), true);
         assertEquals(MediaTypes.APPLICATION_JSON, doc.getMediaType());
     }
