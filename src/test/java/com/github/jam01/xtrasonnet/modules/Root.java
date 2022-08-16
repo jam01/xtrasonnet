@@ -465,12 +465,12 @@ public class Root {
     public void read() {
         assertEquals(transform("""
                 {
-                  hello: { '$': 'world!' }
+                  hello: { '_text': 'world!' }
                 }"""), transform("xtr.read('<hello>world!</hello>', 'application/xml')"));
         assertEquals(transform("""
                 {
                   hello: { _txt: 'world!' }
-                }"""), transform("xtr.read('<hello>world!</hello>', 'application/xml', { textvaluekey: '_txt' })"));
+                }"""), transform("xtr.read('<hello>world!</hello>', 'application/xml', { textkey: '_txt' })"));
     }
 
     @Disabled
@@ -592,6 +592,6 @@ public class Root {
     @Test
     public void write() {
         assertEquals(transform("'{\"hello\":\"world\",\"arr\":[],\"nil\":null}'"), transform("xtr.write({ hello: 'world', arr: [], nil: null }, 'application/json')"));
-        assertEquals(transform("'{\\n    \"hello\": \"world\",\\n    \"arr\": [\\n        \\n    ]\\n}'"), transform("xtr.write({ hello: 'world', arr: [] }, 'application/json', { indent: true })"));
+        assertEquals(transform("'{\\n    \"hello\": \"world\",\\n    \"arr\": [\\n        \\n    ]\\n}'"), transform("xtr.write({ hello: 'world', arr: [] }, 'application/json', { fmt: true })"));
     }
 }
