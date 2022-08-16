@@ -1,14 +1,10 @@
-Trobador
+xtrasonnet
 Copyright 2022 Jose Montoya
 
 This product is a fork of datasonnet-mapper, therefore it includes software developed by the contributors of that project.
 Copyright 2019-2021 ModusBox, Inc.
           2020-2021 Mountain State Software Solutions, Inc.
 
-The MediaType classes in src/main/java/com/datasonnet/document are derived from MediaType, and MimeType classes of the
-Spring Framework project (https://spring.io/projects/spring-framework).
-Copyright 2002 - 2020 Pivotal, Inc. All Rights Reserved.
-
-The classes in src/test/java/com/datasonnet/fuzzutil are copied, or derived from the JQF and junit-quickcheck projects.
-Copyright (c) 2017-2018 The Regents of the University of California
-Copyright (c) 2010-2021 Paul R. Holser, Jr.
+The MediaType classes in src/main/java/com/github/jam01/xtrasonnet/document are derived from MediaType, and MimeType
+classes of the Spring Framework project (https://spring.io/projects/spring-framework).
+Copyright 2002 - 2020 Pivotal, Inc.
