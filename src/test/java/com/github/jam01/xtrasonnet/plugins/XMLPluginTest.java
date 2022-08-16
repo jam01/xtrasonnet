@@ -260,5 +260,14 @@ public class XMLPluginTest {
         }
     }
 
-    // bump namespaces
+    @Test
+    public void read_override_qnames_should_bump_basic() throws JSONException {
+        var doc = new Transformer("payload")
+                .transform(Document.of(resourceAsString("xml/qnames.xml"),
+                        MediaTypes.APPLICATION_XML.withParameter(DefaultXMLPlugin.PARAM_MODE(), DefaultXMLPlugin.BASIC_MODE())
+                                .withParameter("xmlns.a2", "http://example.org/ns/two")));
+
+        JSONAssert.assertEquals(resourceAsString("xml/qnames-overriden-bumped.json"), doc.getContent(), true);
+        assertEquals(MediaTypes.APPLICATION_JSON, doc.getMediaType());
+    }
 }
