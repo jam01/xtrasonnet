@@ -458,6 +458,7 @@ public class MediaType implements Comparable<MediaType>, Serializable {
         appendTo(this.parameters, builder);
     }
 
+    // per https://www.rfc-editor.org/rfc/rfc7230#section-3.2.6
     private void appendTo(Map<String, String> map, StringBuilder builder) {
         map.forEach((key, val) -> {
             if (val == null) return; // params require values
@@ -471,7 +472,11 @@ public class MediaType implements Comparable<MediaType>, Serializable {
                 builder.append("\"");
             }
 
-            if (val.contains("\"")) {
+            if (val.contains("\\")) { // escape backslashes
+                val = val.replace("\\", "\\\\");
+            }
+
+            if (val.contains("\"")) { // escape quotes
                 val = val.replace("\"", "\\\"");
             }
 

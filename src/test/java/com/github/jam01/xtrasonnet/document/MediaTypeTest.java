@@ -140,4 +140,10 @@ public class MediaTypeTest {
             assertTrue(ex.getMessage().contains("'value' must not be empty"));
         }
     }
+
+    @Test
+    public void serialize_escapes_chars() {
+        var type = new MediaType("type", "subtype", Map.of("attr", "pre\"mid\\post"));
+        assertEquals("type/subtype;attr=\"pre\\\"mid\\\\post\"", type.toString()); // type/subtype;attr="pre\"mid\\post"
+    }
 }
