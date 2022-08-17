@@ -33,9 +33,9 @@ import java.util.List;
 import java.util.Map;
 
 public class DefaultCSVPlugin extends BaseJacksonPlugin {
-    public static final String PARAM_QUOTE_CHAR = "quote";
+    public static final String PARAM_QUOTE_CHAR = "quotechar";
     public static final String PARAM_SEPARATOR_CHAR = "separator";
-    public static final String PARAM_ESCAPE_CHAR = "escape";
+    public static final String PARAM_ESCAPE_CHAR = "escapechar";
     public static final String PARAM_HEADER_LINE = "header";
     public static final String PARAM_COLUMNS = "columns";
 

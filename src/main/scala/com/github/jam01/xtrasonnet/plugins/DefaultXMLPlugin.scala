@@ -17,9 +17,8 @@ import com.github.jam01.xtrasonnet.plugins.xml.XML
 import com.github.jam01.xtrasonnet.spi.{BasePlugin, PluginException}
 import ujson.Value
 
-import java.util.Collections
 import scala.collection.mutable
-import scala.jdk.CollectionConverters.{IterableHasAsScala, MapHasAsScala}
+import scala.jdk.CollectionConverters.MapHasAsScala
 
 // See: http://wiki.open311.org/JSON_and_XML_Conversion/#the-badgerfish-convention
 // http://www.sklar.com/badgerfish/
@@ -39,14 +38,14 @@ object DefaultXMLPlugin extends BasePlugin {
 
   val PARAM_MODE = "mode"
   val PARAM_TEXT_KEY = "textkey"
-  val PARAM_ATTRIBUTE_KEY = "attributechar"
+  val PARAM_ATTRIBUTE_KEY = "attrkey"
   val PARAM_CDATA_KEY = "cdatakey"
   val PARAM_ORDER_KEY = "orderkey"
   val PARAM_XMLNS_KEY = "xmlnskey"
   val PARAM_QNAME_CHAR = "qnamechar"
   val PARAM_NAMESPACE_QNAME = "xmlns\\..*"
   val PARAM_OMIT_XML_DECLARATION = "omitdeclaration"
-  val PARAM_XML_VERSION = "xmlversion"
+  val PARAM_XML_VERSION = "version"
   val PARAM_EMPTY_TAGS = "emptytags"
 
   supportedTypes.add(MediaTypes.APPLICATION_XML)
@@ -110,7 +109,7 @@ object DefaultXMLPlugin extends BasePlugin {
       charset = Charset.defaultCharset
     }
 
-    var inputAsObj: mutable.Map[String, Value] = input.obj.asInstanceOf[mutable.Map[String, Value]]
+    val inputAsObj: mutable.Map[String, Value] = input.obj.asInstanceOf[mutable.Map[String, Value]]
 
     if (inputAsObj.keys.size > 1) {
       throw new PluginException("Object must have only one root element")
