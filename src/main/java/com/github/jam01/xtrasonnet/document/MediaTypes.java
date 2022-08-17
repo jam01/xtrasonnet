@@ -290,9 +290,9 @@ public class MediaTypes {
 
     public static final String APPLICATION_JAVA_VALUE = "application/x-java-object";
 
-    public static final MediaType APPLICATION_CSV;
+    public static final MediaType TEXT_CSV;
 
-    public static final String APPLICATION_CSV_VALUE = "application/csv";
+    public static final String TEXT_CSV_VALUE = "text/csv";
 
     // See Null Object pattern
     /**
@@ -335,7 +335,7 @@ public class MediaTypes {
         TEXT_PLAIN = new MediaType("text", "plain");
         TEXT_XML = new MediaType("text", "xml");
         APPLICATION_JAVA = new MediaType("application", "x-java-object");
-        APPLICATION_CSV = new MediaType("application", "csv");
+        TEXT_CSV = new MediaType("text", "csv");
         UNKNOWN = new MediaType("unknown", "unknown");
     }
 }
