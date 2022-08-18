@@ -29,14 +29,13 @@ package com.github.jam01.xtrasonnet.document;
  * - Unquote param values after parsing
  * - Check parameter validity when parsing params in parseMediaTypeInternal using MediaType.checkParametersParsed
  * - Removed generateMultipartBoundary and related methods
+ * - Refactored parameter parsing to method
+ * - Only parse params if ; in media type
  */
 
 import com.github.jam01.xtrasonnet.Utils;
-import org.jetbrains.annotations.Nullable;
 
-import java.nio.charset.StandardCharsets;
 import java.nio.charset.UnsupportedCharsetException;
-import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -46,7 +45,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -123,6 +121,18 @@ public abstract class MediaTypeUtils {
             throw new InvalidMediaTypeException(mimeType, "wildcard type is legal only in '*/*' (all mime types)");
         }
 
+        Map<String, String> parameters = index == -1 ? null : parseParameters(mimeType, index);
+
+        try {
+            return new MediaType(type, subtype, parameters);
+        } catch (UnsupportedCharsetException ex) {
+            throw new InvalidMediaTypeException(mimeType, "unsupported charset '" + ex.getCharsetName() + "'");
+        } catch (IllegalArgumentException ex) {
+            throw new InvalidMediaTypeException(mimeType, ex.getMessage());
+        }
+    }
+
+    private static Map<String, String> parseParameters(String mimeType, int index) {
         Map<String, String> parameters = null;
         do {
             int nextIndex = index + 1;
@@ -167,14 +177,7 @@ public abstract class MediaTypeUtils {
             index = nextIndex;
         }
         while (index < mimeType.length());
-
-        try {
-            return new MediaType(type, subtype, parameters);
-        } catch (UnsupportedCharsetException ex) {
-            throw new InvalidMediaTypeException(mimeType, "unsupported charset '" + ex.getCharsetName() + "'");
-        } catch (IllegalArgumentException ex) {
-            throw new InvalidMediaTypeException(mimeType, ex.getMessage());
-        }
+        return parameters;
     }
 
     /**
