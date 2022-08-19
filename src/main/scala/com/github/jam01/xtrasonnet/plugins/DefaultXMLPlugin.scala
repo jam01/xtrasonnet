@@ -17,6 +17,7 @@ import com.github.jam01.xtrasonnet.plugins.xml.XML
 import com.github.jam01.xtrasonnet.spi.{BasePlugin, PluginException}
 import ujson.Value
 
+import java.util.Collections
 import scala.collection.mutable
 import scala.jdk.CollectionConverters.MapHasAsScala
 
@@ -24,29 +25,55 @@ import scala.jdk.CollectionConverters.MapHasAsScala
 // http://www.sklar.com/badgerfish/
 // http://dropbox.ashlock.us/open311/json-xml/
 object DefaultXMLPlugin extends BasePlugin {
-  val SIMPLE_MODE = "simple"
-  val BASIC_MODE = "basic"
-  val EXTENDED_MODE = "extended"
-  val DEFAULT_NS_KEY = "def"
-  private val DEFAULT_TEXT_KEY = "_text"
-  private val DEFAULT_ATTRIBUTE_KEY = "_attr"
-  private val DEFAULT_CDATA_KEY = "_cdata"
-  private val DEFAULT_ORDER_KEY = "_idx"
-  private val DEFAULT_XMLNS_KEY = "_xmlns"
-  private val DEFAULT_QNAME_CHAR = ':'
-  private val DEFAULT_XML_VERSION = "1.0"
-
   val PARAM_MODE = "mode"
+  val SIMPLIFIED_MODE_VALUE = "simplified"
+  val BADGER_MODE_VALUE = "badger"
+  val EXTENDED_MODE_VALUE = "extended"
+
+  // convention key and char params
   val PARAM_TEXT_KEY = "textkey"
   val PARAM_ATTRIBUTE_KEY = "attrkey"
   val PARAM_CDATA_KEY = "cdatakey"
   val PARAM_ORDER_KEY = "orderkey"
   val PARAM_XMLNS_KEY = "xmlnskey"
-  val PARAM_QNAME_CHAR = "qnamechar"
-  val PARAM_NAMESPACE_QNAME = "xmlns\\..*"
-  val PARAM_OMIT_XML_DECLARATION = "omitdeclaration"
-  val PARAM_XML_VERSION = "version"
+  val PARAM_QNAME_SEP = "qnamesep"
+
+  // default keys and chars
+  private val DEFAULT_TEXT_KEY = "_text"
+  private val DEFAULT_ATTRIBUTE_KEY = "_attr"
+  private val DEFAULT_CDATA_KEY = "_cdata"
+  private val DEFAULT_ORDER_KEY = "_pos"
+  private val DEFAULT_XMLNS_KEY = "_xmlns"
+  private val DEFAULT_QNAME_SEP = ":"
+  private val DEFAULT_XML_VERSION = "1.0"
+  val DEFAULT_NS_KEY = "_def"
+
+  val PARAM_XMLNS_DECLARATIONS = "xmlns\\..*"
+
+  // parsing / writing instructions
+  val PARAM_NAME_FORM = "nameform"
+  val NAME_FORM_QNAME_VALUE = "qname"
+  val NAME_FORM_LOCAL_VALUE = "local-name"
+
+  val PARAM_EXCLUDE = "exclude"
+  val EXCLUDE_ATTRIBUTES_VALUE = "attrs"
+  val EXCLUDE_XML_DECLARATION_VALUE = "xml-declaration"
+
+  val PARAM_INCLUDE = "include"
+  val INCLUDE_COMMENTS_VALUE = "comments"
+
+  // read only
+  val PARAM_ARR_ELEMENTS = "arrelements"
+  val PARAM_TRIM_TEXT = "trimtext"
+  val PARAM_XMLNS_AWARE = "xmlnsaware"
+
+  // write only
+  val PARAM_XML_VERSION = "xmlversion"
   val PARAM_EMPTY_TAGS = "emptytags"
+
+  val EMPTY_TAGS_NULL_VALUE = "null"
+  val EMPTY_TAGS_STRING_VALUE = "string"
+  val EMPTY_TAGS_OBJECT_VALUE = "object"
 
   supportedTypes.add(MediaTypes.APPLICATION_XML)
   supportedTypes.add(MediaTypes.TEXT_XML)
@@ -59,11 +86,11 @@ object DefaultXMLPlugin extends BasePlugin {
   writerParams.add(PARAM_CDATA_KEY)
   writerParams.add(PARAM_ORDER_KEY)
   writerParams.add(PARAM_XMLNS_KEY)
-  writerParams.add(PARAM_QNAME_CHAR)
-  writerParams.add(PARAM_NAMESPACE_QNAME)
-  writerParams.add(PARAM_OMIT_XML_DECLARATION)
+  writerParams.add(PARAM_QNAME_SEP)
+  writerParams.add(PARAM_XMLNS_DECLARATIONS)
   writerParams.add(PARAM_XML_VERSION)
   writerParams.add(PARAM_EMPTY_TAGS)
+  writerParams.add(PARAM_EXCLUDE)
 
   readerParams.add(PARAM_MODE)
   readerParams.add(PARAM_TEXT_KEY)
@@ -71,8 +98,11 @@ object DefaultXMLPlugin extends BasePlugin {
   readerParams.add(PARAM_CDATA_KEY)
   readerParams.add(PARAM_ORDER_KEY)
   readerParams.add(PARAM_XMLNS_KEY)
-  readerParams.add(PARAM_QNAME_CHAR)
-  readerParams.add(PARAM_NAMESPACE_QNAME)
+  readerParams.add(PARAM_XMLNS_AWARE)
+  readerParams.add(PARAM_QNAME_SEP)
+  readerParams.add(PARAM_XMLNS_DECLARATIONS)
+  readerParams.add(PARAM_TRIM_TEXT)
+  readerParams.add(PARAM_EXCLUDE)
 
   readerSupportedClasses.add(classOf[String].asInstanceOf[java.lang.Class[_]])
   readerSupportedClasses.add(classOf[java.net.URL].asInstanceOf[java.lang.Class[_]])
@@ -117,7 +147,7 @@ object DefaultXMLPlugin extends BasePlugin {
 
     if (targetType.isAssignableFrom(classOf[String])) {
       val writer = new StringWriter()
-      XML.writeXML(writer, inputAsObj.head.asInstanceOf[(String, ujson.Obj)], effectiveParams)
+      XML.writeXML(writer, inputAsObj.head, effectiveParams)
 
       new BasicDocument(writer.toString, MediaTypes.APPLICATION_XML).asInstanceOf[Document[T]]
     }
@@ -135,34 +165,55 @@ object DefaultXMLPlugin extends BasePlugin {
   }
 
   object Mode extends Enumeration {
-    val simple, extended, basic = Value
+    val simplified, extended, badger = Value
   }
 
-  case class EffectiveParams(qnameChar: Char, textKey: String,
-                             cdataKey: String, attrKey: String,
-                             orderKey: String, omitDeclaration: Boolean,
-                             xmlVer: String, xmlnsKey: String, emptyTags: Boolean,
-                             declarations: Map[String, String], mode: Mode.Value)
+  case class EffectiveParams(mode: Mode.Value,
+                             excludeAttrs: Boolean, includeComments: Boolean,
+                             textKey: String, cdataKey: String, attrKey: String, orderKey: String, xmlnsKey: String,
+                             xmlnsAware: Boolean, declarations: Map[String, String], qnameSep: String,
+                             omitDeclaration: Boolean, xmlVer: String,
+                             emptyTagsStr: Boolean, emptyTagsNull: Boolean, emptyTagsObj: Boolean, arrElements: java.util.List[String],
+                             nameform: String, trimText: Boolean)
 
   object EffectiveParams {
     def apply(mediaType: MediaType): EffectiveParams = {
-      val qnameChar = DefaultCSVPlugin.paramAsChar(mediaType, PARAM_QNAME_CHAR, DEFAULT_QNAME_CHAR)
+      val qnameChar = DefaultCSVPlugin.paramOr(mediaType, PARAM_QNAME_SEP, DEFAULT_QNAME_SEP)
       val textKey = DefaultCSVPlugin.paramOr(mediaType, PARAM_TEXT_KEY, DEFAULT_TEXT_KEY)
       val cdataKey = DefaultCSVPlugin.paramOr(mediaType, PARAM_CDATA_KEY, DEFAULT_CDATA_KEY)
       val attrKey = DefaultCSVPlugin.paramOr(mediaType, PARAM_ATTRIBUTE_KEY, DEFAULT_ATTRIBUTE_KEY)
       val orderKey = DefaultCSVPlugin.paramOr(mediaType, PARAM_ORDER_KEY, DEFAULT_ORDER_KEY)
-      val omitDeclaration = DefaultCSVPlugin.paramAsBoolean(mediaType, PARAM_OMIT_XML_DECLARATION, false)
       val xmlVer = DefaultCSVPlugin.paramOr(mediaType, PARAM_XML_VERSION, DEFAULT_XML_VERSION)
       val xmlnsKey = DefaultCSVPlugin.paramOr(mediaType, PARAM_XMLNS_KEY, DEFAULT_XMLNS_KEY)
-      val emptyTag = DefaultCSVPlugin.paramAsBoolean(mediaType, PARAM_EMPTY_TAGS, false)
+      val emptyTags = DefaultCSVPlugin.paramAsList(mediaType, PARAM_EMPTY_TAGS, Collections.emptyList())
       val declarations: Map[String, String] = mediaType.getParameters.asScala.toList
-        .filter(entryVal => entryVal._1.matches(PARAM_NAMESPACE_QNAME))
-        .map(entryVal => (entryVal._2, entryVal._1.substring(PARAM_NAMESPACE_QNAME.length - 3)))
+        .filter(entryVal => entryVal._1.matches(PARAM_XMLNS_DECLARATIONS))
+        .map(entryVal => (entryVal._2, entryVal._1.substring(PARAM_XMLNS_DECLARATIONS.length - 3)))
         .map(entry => if (entry._2 == DEFAULT_NS_KEY) (entry._1, "") else entry)
         .toMap
-      val mode = Mode.withName(DefaultCSVPlugin.paramOr(mediaType, PARAM_MODE, SIMPLE_MODE))
+      val mode = Mode.withName(DefaultCSVPlugin.paramOr(mediaType, PARAM_MODE, BADGER_MODE_VALUE))
+      val xmlnsAware = DefaultCSVPlugin.paramAsBoolean(mediaType, PARAM_XMLNS_AWARE, true)
+      val nameForm = if (DefaultCSVPlugin.paramPresent(mediaType, PARAM_NAME_FORM)) mediaType.getParameter(PARAM_NAME_FORM)
+        else if (mode == Mode.simplified) NAME_FORM_LOCAL_VALUE else NAME_FORM_QNAME_VALUE
 
-      EffectiveParams(qnameChar, textKey, cdataKey, attrKey, orderKey, omitDeclaration, xmlVer, xmlnsKey, emptyTag, declarations, mode)
+      val exclude = DefaultCSVPlugin.paramAsList(mediaType, PARAM_EXCLUDE, Collections.emptyList())
+      val include = DefaultCSVPlugin.paramAsList(mediaType, PARAM_INCLUDE, Collections.emptyList())
+
+      val includeComments = include.contains(INCLUDE_COMMENTS_VALUE) || mode == Mode.extended
+      val excludeAttrs = exclude.contains(EXCLUDE_ATTRIBUTES_VALUE) || mode == Mode.simplified
+      val omitDeclaration = exclude.contains(EXCLUDE_XML_DECLARATION_VALUE)
+
+      val trimText = if (DefaultCSVPlugin.paramPresent(mediaType, PARAM_TRIM_TEXT)) DefaultCSVPlugin.paramAsBoolean(mediaType, PARAM_TRIM_TEXT, true)
+      else if (mode == Mode.extended) false
+      else true
+
+      new EffectiveParams(mode,
+        excludeAttrs, includeComments,
+        textKey, cdataKey, attrKey, orderKey, xmlnsKey,
+        xmlnsAware, declarations, qnameChar,
+        omitDeclaration, xmlVer,
+        emptyTags.contains(EMPTY_TAGS_NULL_VALUE), emptyTags.contains(EMPTY_TAGS_STRING_VALUE), emptyTags.contains(EMPTY_TAGS_OBJECT_VALUE), Collections.emptyList(),
+        nameForm, trimText)
     }
   }
 }

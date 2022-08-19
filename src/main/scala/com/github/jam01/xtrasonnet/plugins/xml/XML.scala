@@ -30,12 +30,12 @@ object XML extends XMLLoader {
   /** Returns an XMLLoader whose load* methods will use the supplied SAXParser. */
   def withSAXParser(p: SAXParser): XMLLoader =
     new XMLLoader {
-      override val parser: SAXParser = p
+      override def parser(params: EffectiveParams): SAXParser = p
     }
 
-  def writeXML(sb: java.io.Writer, root: (String, ujson.Obj), effParams: EffectiveParams): Unit = {
+  def writeXML(sb: java.io.Writer, root: (String, ujson.Value), effParams: EffectiveParams): Unit = {
     // TODO: get charset from params
     if (!effParams.omitDeclaration) sb.append("<?xml version='" + effParams.xmlVer + "' encoding='" + Charset.defaultCharset().displayName() + "'?>")
-    new BadgerFishWriter(effParams).serialize(root, sb).toString
+    new BadgerFishWriter(effParams).serialize(root._1, root._2, sb).toString
   }
 }

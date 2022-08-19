@@ -29,6 +29,7 @@ package com.github.jam01.xtrasonnet.plugins.xml
  *
  * Changed:
  * - 1570c045ab8e750305e1d86206f4cddeadabfedd: conformed badgerfish ordering behavior
+ * - renamed currentNS to declaredXmlns, only start new xmlns context when xmlns found, use new NamespaceDeclarations
  */
 
 import com.github.jam01.xtrasonnet.plugins.DefaultXMLPlugin
@@ -37,66 +38,76 @@ import org.xml.sax.ext.DefaultHandler2
 import org.xml.sax.{Attributes, SAXParseException}
 
 import scala.collection.mutable
+import scala.jdk.CollectionConverters.MapHasAsJava
 
 // See {@link scala.xml.parsing.FactoryAdapter}
 class BadgerFishHandler(params: EffectiveParams) extends DefaultHandler2 {
   def result: ujson.Obj = badgerStack.top.obj
+  private val COLON = ":"
 
   val buffer = new mutable.StringBuilder()
   val badgerStack = new mutable.Stack[BadgerFish]
-  // ignore text until after first element starts
-  var capture: Boolean = false
+  var capture: Boolean = false // ignore text until after first start tag found
 
-  private var needNewContext = true
-  private val namespaceParts = new Array[String](3)  // keep reusing a single array
-  private val namespaces = new OverridingNamespaceTranslator(params.declarations)
-  private var currentNS: mutable.LinkedHashMap[String, ujson.Str] = mutable.LinkedHashMap()
+  private var startContext = true // start a new context at the first xmlns declaration in doc
+  private val overrides = new NamespaceDeclarations(params.declarations.asJava)
+  private var declaredXmlns: mutable.LinkedHashMap[String, ujson.Str] = mutable.LinkedHashMap()
 
   // root
   badgerStack.push(BadgerFish(ujson.Obj()))
 
+  // called before startElement when xmlns attributes are present
   override def startPrefixMapping(prefix: String, uri: String): Unit = {
-    if (needNewContext) {
-      namespaces.pushContext()
-      needNewContext = false
-      if (currentNS.nonEmpty) currentNS = currentNS.empty
+    if (startContext) { // should be true at first xmlns declaration found in doc, or after a new start tag
+      overrides.pushContext() // start new context
+      startContext = false
+      if (declaredXmlns.nonEmpty) declaredXmlns = declaredXmlns.empty // re-use map of xmlns -- tradeoff of speed for memory(clear map values)
     }
 
-    namespaces.declarePrefix(prefix, uri)
-    val newPrefix = namespaces.getPrefix(uri)
-    currentNS.put(if (newPrefix == null) DefaultXMLPlugin.DEFAULT_NS_KEY else newPrefix, ujson.Str(uri))
+    val newPrefix = if (prefix.equals("xmlns")) DefaultXMLPlugin.DEFAULT_NS_KEY else overrides.prefix(prefix, uri)
+    declaredXmlns.put(newPrefix, ujson.Str(uri))
   }
 
   override def startElement(uri: String,
                             _localName: String,
                             qname: String,
                             attributes: Attributes): Unit = {
-    if (needNewContext) namespaces.pushContext()
-    needNewContext = true
+    captureText() // capture text before this start tag for the parent element, no-op if this is the first start tag as capture == false
+    capture = true // enable capture after we see any start tag; only needed for the first one, but less expensive to always set it
+    startContext = true // signal to startPrefixMapping to start a new context
 
-    captureText()
-    capture = true
+    val current = ujson.Obj() // the current Obj to compose for this element
 
-    val current = ujson.Obj()
-    if (currentNS.nonEmpty) {
-      current.value.addOne((params.xmlnsKey, currentNS))
-      currentNS = currentNS.empty
+    if (declaredXmlns.nonEmpty) {
+      current.value.addOne((params.xmlnsKey, declaredXmlns))
+      declaredXmlns = declaredXmlns.empty
     }
 
-    if (attributes.getLength > 0) {
+    // add attributes
+    if (attributes.getLength > 0 && !params.excludeAttrs) {
       val attrs = mutable.ListBuffer[(String, ujson.Str)]()
 
+      // TODO: optimize with while-loop
       for (i <- 0 until attributes.getLength) {
-        val qname = attributes getQName i
-        val value = attributes getValue i
-        val translated = processName(qname, true)
+        var attrName = attributes.getQName(i)
+        val value = attributes.getValue(i)
 
-        attrs.addOne(translated, ujson.Str(value))
+        if (params.nameform.equalsIgnoreCase(DefaultXMLPlugin.NAME_FORM_LOCAL_VALUE)) {
+          attrName = if (params.xmlnsAware) _localName else {
+            val colonidx = attrName.indexOf(COLON)
+            attrName.substring(colonidx + 1)
+          }
+        } else {
+          val translated = if (params.xmlnsAware) overrides.name(attrName, true) else attrName
+          attrName = if (params.qnameSep != ":") translated.replaceFirst(COLON, params.qnameSep) else translated
+        }
+
+        attrs.addOne(attrName, ujson.Str(value))
       }
       current.value.addOne(params.attrKey, attrs.toList)
     }
 
-    badgerStack.push(BadgerFish(current))
+    badgerStack.push(BadgerFish(current)) // the current Obj to use in other parser events
   }
 
   override def characters(ch: Array[Char], offset: Int, length: Int): Unit = {
@@ -104,14 +115,19 @@ class BadgerFishHandler(params: EffectiveParams) extends DefaultHandler2 {
   }
 
   override def startCDATA(): Unit = {
-    captureText()
+    captureText() // capture text before this cdata node
   }
 
-  override def endCDATA(): Unit = {
+  override def endCDATA(): Unit = { // like captureText, but uses cdata key
     if (buffer.nonEmpty) {
-      val idx = badgerStack.top.nextIdx
-      badgerStack.top.obj.value.addOne(params.cdataKey + idx, ujson.Str(buffer.toString))
-      badgerStack.top.nextIdx = idx + 1
+      val idx = badgerStack.top.nextPos
+      if (params.mode == Mode.extended) { // only extended keeps individual text elements
+        badgerStack.top.obj.value.addOne(params.cdataKey + idx, ujson.Str(buffer.toString))
+        badgerStack.top.nextPos = idx + 1
+      } else {
+        val text = badgerStack.top.obj.value.get(params.textKey)
+        badgerStack.top.obj.value.addOne(params.textKey, if (text.isEmpty) buffer.toString else text.get.str + buffer.toString)
+      }
       badgerStack.top.hasText = true
     }
 
@@ -119,65 +135,64 @@ class BadgerFishHandler(params: EffectiveParams) extends DefaultHandler2 {
   }
 
   override def endElement(uri: String, _localName: String, qname: String): Unit = {
-    captureText()
+    captureText() // capture text for the ending element
 
-    val translated = processName(qname, false)
-    val newName = translated.replaceFirst(":", params.qnameChar.toString)
+    var currName = qname
+    if (params.nameform.equalsIgnoreCase(DefaultXMLPlugin.NAME_FORM_LOCAL_VALUE)) {
+      currName = if (params.xmlnsAware) _localName else {
+        val colonidx = qname.indexOf(COLON)
+        qname.substring(colonidx + 1)
+      }
+    } else {
+      val translated = if (params.xmlnsAware) overrides.name(qname, false) else qname
+      currName = if (params.qnameSep != ':') translated.replaceFirst(COLON, params.qnameSep.toString) else translated
+    }
+
     val current = badgerStack.pop
+    var currVal: ujson.Value = current.obj
+    if (Mode.simplified == params.mode) {
+      if (current.obj.value.isEmpty) currVal = ujson.Null
+      else if (current.obj.value.size == 1 && current.hasText) currVal = current.obj.value.get(params.textKey).get
+      else current.obj.value.remove(params.textKey)
+    }
+
     val parent = badgerStack.top
     val parentObj = parent.obj.value
 
-    val pos = parent.nextIdx
-    if (params.mode == Mode.extended) current.obj.value.addOne(params.orderKey, ujson.Num(pos)) // only extended supports order
-    parent.nextIdx = pos + 1
+    val pos = parent.nextPos
+    if (params.mode == Mode.extended) current.obj.value.addOne(params.orderKey, ujson.Num(pos)) // only extended supports positions
+    parent.nextPos = pos + 1
 
-    if (params.mode != Mode.extended) { // only extended keeps individual text elements
-      if (current.hasText) {
-        concatAllText(current)
-      }
-    }
-
-    if (parentObj.contains(newName)) {
-      (parentObj(newName): @unchecked) match {
+    if (parentObj.contains(currName)) {
+      (parentObj(currName): @unchecked) match {
         // added @unchecked to suppress non-exhaustive match warning, we will only see Arrs or Objs
-        case ujson.Arr(arr) => arr.addOne(current.obj)
-        case ujson.Obj(existing) => parentObj.addOne(newName, ujson.Arr(existing, current.obj))
+        case ujson.Arr(arr) => arr.addOne(currVal)
+        case ujson.Obj(existing) => parentObj.addOne(currName, ujson.Arr(existing, currVal))
       }
     } else {
-      parentObj.addOne(newName, current.obj)
+      parentObj.addOne(currName, currVal)
     }
 
-    capture = badgerStack.size != 1 // root level
-    namespaces.popContext()
-  }
-
-  private def concatAllText(current: BadgerFish): Unit = {
-    val sb = new mutable.StringBuilder()
-    for ((name, value) <- current.obj.value) {
-      if (name.startsWith(params.textKey) || name.startsWith(params.cdataKey)) {
-        sb.append(value.str)
-        current.obj.value.remove(name)
-      }
+    capture = badgerStack.size != 1 // stop capturing at root level
+    if (declaredXmlns.nonEmpty) { // some xmlns were found
+      overrides.popContext()
     }
-
-    current.obj.value.addOne(params.textKey, ujson.Str(sb.toString()))
-  }
-
-  private def processName(qname: String, isAttribute: Boolean) = {
-    // while processName can return null here, it will only do so if the XML
-    // namespace processing is written incorrectly, so if you see this line in a stack trace,
-    // go verifying what namespace-related calls have been made
-    namespaces.processName(qname, namespaceParts, isAttribute)(2)
   }
 
   def captureText(): Unit = {
     if (capture && buffer.nonEmpty) {
-      val idx = badgerStack.top.nextIdx
-      val string = buffer.toString
-      // TODO: change to a isNotBlank func
-      if (string.trim.nonEmpty) {
-        badgerStack.top.obj.value.addOne(params.textKey + idx, buffer.toString)
-        badgerStack.top.nextIdx = idx + 1
+      val idx = badgerStack.top.nextPos
+      var string = buffer.toString
+      val trimmed = string.trim
+      if (trimmed.nonEmpty) {
+        string = if (params.trimText) trimmed else string
+        if (params.mode == Mode.extended) { // only extended keeps individual text elements
+          badgerStack.top.obj.value.addOne(params.textKey + idx, string)
+          badgerStack.top.nextPos = idx + 1
+        } else {
+          val text = badgerStack.top.obj.value.get(params.textKey)
+          badgerStack.top.obj.value.addOne(params.textKey, if (text.isEmpty) string else text.get.str + string)
+        }
         badgerStack.top.hasText = true
       }
     }
@@ -191,13 +206,14 @@ class BadgerFishHandler(params: EffectiveParams) extends DefaultHandler2 {
 
   override def fatalError(ex: SAXParseException): Unit = printError("Fatal Error", ex)
 
+  // TODO: use slf4j
   protected def printError(errtype: String, ex: SAXParseException): Unit =
     Console.withOut(Console.err) {
-      val s = "[%s]:%d:%d: %s".format(
+      val s = "[%s]" + COLON + "%d" + COLON + "%d" + COLON + " %s".format(
         errtype, ex.getLineNumber, ex.getColumnNumber, ex.getMessage)
       Console.println(s)
       Console.flush()
     }
 }
 
-case class BadgerFish(obj: ujson.Obj, var nextIdx: Int = 1, var hasText: Boolean = false)
+case class BadgerFish(obj: ujson.Obj, var hasText: Boolean = false, var nextPos: Int = 1)

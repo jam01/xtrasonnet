@@ -8,20 +8,20 @@
     },
     "a1:div": {
       "_xmlns": {
-        "a21": "http://example.org/ns/three",
+        "a2_1": "http://example.org/ns/three",
         "a2": "http://example.org/ns/two"
       },
       "a1:title": {
         "_attr": {
-          "a21:attr": "1"
+          "a2_1:attr": "1"
         },
         "_text": "Division Title"
       },
       "a2:para": {
         "_attr": {
-          "a21:a1": "one",
-          "a21:a2": "two",
-          "a21:a3": "three"
+          "a2_1:a1": "one",
+          "a2_1:a2": "two",
+          "a2_1:a3": "three"
         },
         "_text": "Text"
       }

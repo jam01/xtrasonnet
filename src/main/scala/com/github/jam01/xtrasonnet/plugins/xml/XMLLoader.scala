@@ -18,9 +18,9 @@ import org.xml.sax.InputSource
 // See {@link scala.xml.factory.XMLLoader}
 trait XMLLoader {
   /* Override this to use a different SAXParser. */
-  def parser: SAXParser = {
+  def parser(params: EffectiveParams): SAXParser = {
     val factory = SAXParserFactory.newInstance
-    factory.setNamespaceAware(true)
+    factory.setNamespaceAware(params.xmlnsAware)
 
     // Safer parsing settings to avoid certain class of XML attacks
     // See https://github.com/scala/scala-xml/issues/17
@@ -45,13 +45,13 @@ trait XMLLoader {
   }
 
   /** Loads XML from the given file, file descriptor, or filename. */
-  def loadFile(file: File, params: EffectiveParams): ujson.Obj = loadXML(fromFile(file), parser, params)
+  def loadFile(file: File, params: EffectiveParams): ujson.Obj = loadXML(fromFile(file), parser(params), params)
 
   /** loads XML from given InputStream, Reader, sysID, InputSource, or URL. */
-  def load(is: InputStream, params: EffectiveParams): ujson.Obj = loadXML(fromInputStream(is), parser, params)
+  def load(is: InputStream, params: EffectiveParams): ujson.Obj = loadXML(fromInputStream(is), parser(params), params)
 
-  def load(url: URL, params: EffectiveParams): ujson.Obj = loadXML(fromInputStream(url.openStream()), parser, params)
+  def load(url: URL, params: EffectiveParams): ujson.Obj = loadXML(fromInputStream(url.openStream()), parser(params), params)
 
   /** Loads XML from the given String. */
-  def loadString(string: String, params: EffectiveParams): ujson.Obj = loadXML(fromString(string), parser, params)
+  def loadString(string: String, params: EffectiveParams): ujson.Obj = loadXML(fromString(string), parser(params), params)
 }

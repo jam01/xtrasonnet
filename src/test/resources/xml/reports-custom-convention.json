@@ -10,33 +10,33 @@
       {
         "id": {
           "_text_1": "tag:open311.sfgov.org,2010-04-15:/dev/V1/reports/637619.xml",
-          "_idx_": 1
+          "_pos_": 1
         },
         "title": {
           "_text_1": "A large tree branch is blocking the road",
-          "_idx_": 2
+          "_pos_": 2
         },
         "updated": {
           "_text_1": "2010-04-13T18:30:02-05:00",
-          "_idx_": 3
+          "_pos_": 3
         },
         "link": {
           "_attr_": {
             "rel": "self",
             "href": "http://open311.sfgov.org/dev/V1/reports/637619.xml"
           },
-          "_idx_": 4
+          "_pos_": 4
         },
         "author": {
           "name": {
             "_text_1": "John Doe",
-            "_idx_": 1
+            "_pos_": 1
           },
-          "_idx_": 5
+          "_pos_": 5
         },
         "georss#point": {
           "_text_1": "40.7111 -73.9565",
-          "_idx_": 6
+          "_pos_": 6
         },
         "category": {
           "_attr_": {
@@ -45,7 +45,7 @@
             "scheme": "https://open311.sfgov.org/dev/V1/categories/006.xml"
           },
           "_text_1": "006",
-          "_idx_": 7
+          "_pos_": 7
         },
         "content": {
           "_attr_": {
@@ -54,61 +54,61 @@
           },
           "report_id": {
             "_text_1": "637619",
-            "_idx_": 1
+            "_pos_": 1
           },
           "address": {
             "_text_1": "1600 Market St, San Francisco, CA 94103",
-            "_idx_": 2
+            "_pos_": 2
           },
           "description": {
             "_text_1": "A large tree branch is blocking the road",
-            "_idx_": 3
+            "_pos_": 3
           },
           "status": {
             "_text_1": "created",
-            "_idx_": 4
+            "_pos_": 4
           },
           "status_notes": {
-            "_idx_": 5
+            "_pos_": 5
           },
           "policy": {
             "_text_1": "The City will inspect and require the responsible party to correct within 24 hours and/or issue a Correction Notice or Notice of Violation of the Public Works Code",
-            "_idx_": 6
+            "_pos_": 6
           },
-          "_idx_": 8
+          "_pos_": 8
         },
-        "_idx_": 1
+        "_pos_": 1
       },
       {
         "id": {
           "_text_1": "tag:open311.sfgov.org,2010-04-15:/dev/V1/reports/637620.xml",
-          "_idx_": 1
+          "_pos_": 1
         },
         "title": {
           "_text_1": "A large tree branch is blocking the road",
-          "_idx_": 2
+          "_pos_": 2
         },
         "updated": {
           "_text_1": "2010-04-13T18:30:02-05:00",
-          "_idx_": 3
+          "_pos_": 3
         },
         "link": {
           "_attr_": {
             "rel": "self",
             "href": "http://open311.sfgov.org/dev/V1/reports/637620.xml"
           },
-          "_idx_": 4
+          "_pos_": 4
         },
         "author": {
           "name": {
             "_text_1": "John Doe",
-            "_idx_": 1
+            "_pos_": 1
           },
-          "_idx_": 5
+          "_pos_": 5
         },
         "georss#point": {
           "_text_1": "40.7111 -73.9565",
-          "_idx_": 6
+          "_pos_": 6
         },
         "category": {
           "_attr_": {
@@ -117,7 +117,7 @@
             "scheme": "https://open311.sfgov.org/dev/V1/categories/006.xml"
           },
           "_text_1": "006",
-          "_idx_": 7
+          "_pos_": 7
         },
         "content": {
           "_attr_": {
@@ -126,61 +126,61 @@
           },
           "report_id": {
             "_text_1": "637620",
-            "_idx_": 1
+            "_pos_": 1
           },
           "address": {
             "_text_1": "56 Market St, San Francisco, CA 94103",
-            "_idx_": 2
+            "_pos_": 2
           },
           "description": {
             "_text_1": "A large tree branch is blocking the road",
-            "_idx_": 3
+            "_pos_": 3
           },
           "status": {
             "_text_1": "created",
-            "_idx_": 4
+            "_pos_": 4
           },
           "status_notes": {
-            "_idx_": 5
+            "_pos_": 5
           },
           "policy": {
             "_cdata_1": "The City will inspect and require the responsible party to correct within 24 hours and/or issue a Correction Notice or Notice of Violation of the Public Works Code",
-            "_idx_": 6
+            "_pos_": 6
           },
-          "_idx_": 8
+          "_pos_": 8
         },
-        "_idx_": 2
+        "_pos_": 2
       },
       {
         "id": {
           "_text_1": "tag:open311.sfgov.org,2010-04-15:/dev/V1/reports/637621.xml",
-          "_idx_": 1
+          "_pos_": 1
         },
         "title": {
           "_text_1": "A large tree branch is blocking the road",
-          "_idx_": 2
+          "_pos_": 2
         },
         "updated": {
           "_text_1": "2010-04-13T18:30:02-05:00",
-          "_idx_": 3
+          "_pos_": 3
         },
         "link": {
           "_attr_": {
             "rel": "self",
             "href": "http://open311.sfgov.org/dev/V1/reports/637621.xml"
           },
-          "_idx_": 4
+          "_pos_": 4
         },
         "author": {
           "name": {
             "_text_1": "John Doe",
-            "_idx_": 1
+            "_pos_": 1
           },
-          "_idx_": 5
+          "_pos_": 5
         },
         "georss#point": {
           "_text_1": "40.7111 -73.9565",
-          "_idx_": 6
+          "_pos_": 6
         },
         "category": {
           "_attr_": {
@@ -189,7 +189,7 @@
             "scheme": "https://open311.sfgov.org/dev/V1/categories/006.xml"
           },
           "_text_1": "006",
-          "_idx_": 7
+          "_pos_": 7
         },
         "content": {
           "_attr_": {
@@ -198,32 +198,32 @@
           },
           "report_id": {
             "_text_1": "637621",
-            "_idx_": 1
+            "_pos_": 1
           },
           "address": {
             "_text_1": "1800 Market St, San Francisco, CA 94103",
-            "_idx_": 2
+            "_pos_": 2
           },
           "description": {
             "_text_1": "A large tree branch is blocking the road",
-            "_idx_": 3
+            "_pos_": 3
           },
           "status": {
             "_text_1": "created",
-            "_idx_": 4
+            "_pos_": 4
           },
           "status_notes": {
-            "_idx_": 5
+            "_pos_": 5
           },
           "policy": {
             "_text_1": "The City will inspect and require the responsible party to correct within 24 hours and/or issue a Correction Notice or Notice of Violation of the Public Works Code",
-            "_idx_": 6
+            "_pos_": 6
           },
-          "_idx_": 8
+          "_pos_": 8
         },
-        "_idx_": 3
+        "_pos_": 3
       }
     ],
-    "_idx_": 1
+    "_pos_": 1
   }
 }

@@ -4,25 +4,25 @@
     "name": [
       {
         "_text1": "John Smith",
-        "_idx": 2
+        "_pos": 2
       },
       {
         "_text1": "Sam Smith",
-        "_idx": 9
+        "_pos": 9
       }
     ],
     "_text3": ".\n    Your order ",
     "orderid": {
       "_text1": "1032",
-      "_idx": 4
+      "_pos": 4
     },
     "_text5": "\n    will be shipped on ",
     "shipdate": {
       "_text1": "2001-07-13",
-      "_idx": 6
+      "_pos": 6
     },
     "_text7": ".\n    ",
     "_cdata8": "PS Happy Holidays!",
-    "_idx": 1
+    "_pos": 1
   }
 }

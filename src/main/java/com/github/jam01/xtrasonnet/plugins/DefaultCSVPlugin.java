@@ -86,7 +86,8 @@ public class DefaultCSVPlugin extends BaseJacksonPlugin {
                 return CSV_MAPPER.readerFor(Map.class).with(builder.build());
             } else {
                 builder.setUseHeader(false);
-                List<String> columns = paramAsList(doc.getMediaType(), PARAM_COLUMNS, Collections.emptyList());
+                char separator = paramAsChar(doc.getMediaType(), PARAM_SEPARATOR_CHAR, CsvSchema.DEFAULT_COLUMN_SEPARATOR);
+                List<String> columns = paramAsList(doc.getMediaType(), PARAM_COLUMNS, separator, Collections.emptyList());
                 if (columns.size() > 0) { // columns found in param, return Obj with param columns
                     for (String column : columns) {
                         builder.addColumn(column);
@@ -128,7 +129,8 @@ public class DefaultCSVPlugin extends BaseJacksonPlugin {
 
         // assume header line present unless explicitly a value other than "present"
         boolean headerln = paramAbsent(mediaType, PARAM_HEADER_LINE) || paramAsBoolean(mediaType, PARAM_HEADER_LINE, HEADER_LN_PRESENT_VALUE);
-        List<String> paramColumns = paramAsList(mediaType, PARAM_COLUMNS, Collections.emptyList());
+        char separator = paramAsChar(mediaType, PARAM_SEPARATOR_CHAR, CsvSchema.DEFAULT_COLUMN_SEPARATOR);
+        List<String> paramColumns = paramAsList(mediaType, PARAM_COLUMNS, separator, Collections.emptyList());
 
         if (first.isObject() && headerln) { // no header param, use first Obj for headers
             builder.setUseHeader(true);
@@ -214,7 +216,12 @@ public class DefaultCSVPlugin extends BaseJacksonPlugin {
 
     public static List<String> paramAsList(MediaType type, String name, List<String> defaault) {
         if (!type.getParameters().containsKey(name)) return defaault;
-        return Arrays.asList(type.getParameters().get(name).split(","));
+        return Arrays.asList(type.getParameters().get(name).split(" "));
+    }
+
+    public static List<String> paramAsList(MediaType type, String name, char separator, List<String> defaault) {
+        if (!type.getParameters().containsKey(name)) return defaault;
+        return Arrays.asList(type.getParameters().get(name).split(String.valueOf(separator)));
     }
 
     public static boolean paramAsBoolean(MediaType type, String name, boolean defaault) {
