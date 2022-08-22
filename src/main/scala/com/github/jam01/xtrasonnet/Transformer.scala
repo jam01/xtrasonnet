@@ -135,24 +135,30 @@ class Transformer(private var script: String,
 
   // If the requested type is ANY then look in the header, default to JSON
   private def effectiveOutput(output: MediaType): MediaType = {
-    if (output.equalsTypeAndSubtype(MediaTypes.ANY)) {
-      val fromHeader = header.getDefaultOutput
-      if (fromHeader.isPresent && !fromHeader.get.equalsTypeAndSubtype(MediaTypes.ANY)) header.combineOutputParams(fromHeader.get)
-      else header.combineOutputParams(defaultOut)
-    } else {
-      header.combineOutputParams(output)
+    if (!output.equalsTypeAndSubtype(MediaTypes.ANY)) {
+      return output
     }
+
+    val fromHeader = header.getOutput
+    if (fromHeader.isPresent && !fromHeader.get.equalsTypeAndSubtype(MediaTypes.ANY)) {
+      return fromHeader.get()
+    }
+
+    defaultOut
   }
 
   // If the input type is UNKNOWN then look in the header, default to JAVA
   private def effectiveInput[T](name: String, input: Document[T]): Document[T] = {
-    if (input.getMediaType.equalsTypeAndSubtype(MediaTypes.UNKNOWN)) {
-      val fromHeader = header.getDefaultNamedInput(name)
-      if (fromHeader.isPresent) header.combineInputParams(name, input.withMediaType(fromHeader.get))
-      else header.combineInputParams(name, input.withMediaType(MediaTypes.APPLICATION_JAVA))
-    } else {
-      header.combineInputParams(name, input)
+    if (!input.getMediaType.equalsTypeAndSubtype(MediaTypes.UNKNOWN)) {
+      return input
     }
+
+    val fromHeader = header.getInput(name)
+    if (fromHeader.isPresent) {
+      return input.withMediaType(fromHeader.get())
+    }
+
+    input.withMediaType(MediaTypes.APPLICATION_JAVA)
   }
 
   // supports a Map[String, Document] to enable a scenario where documents are grouped into a single input
