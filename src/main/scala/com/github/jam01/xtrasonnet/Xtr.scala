@@ -425,33 +425,6 @@ object Xtr extends Library {
         }
     },
 
-    builtin("unzip", "array") {
-      (pos, _, array: Val.Arr) =>
-        val lazyArr = array.asLazyArray
-        val out = new ArrayBuffer[Lazy]
-        val maxSize = lazyArr.map(
-          _.force match {
-            case arr: Val.Arr => arr.asLazyArray.length
-            case x => Error.fail("Expected Array of Arrays, got inner: " + x.prettyName)
-          })
-          .max
-
-        var i = 0
-        while (i < maxSize) {
-          val current = new ArrayBuffer[Lazy]
-          var j = 0
-          while (j < lazyArr.length) {
-            // TODO: append null if current smaller than max
-            current.append(lazyArr(j).force.asArr.asLazyArray(i))
-            j = j + 1
-          }
-          out.append(new Val.Arr(pos, current.toArray))
-          i = i + 1
-        }
-
-        new Val.Arr(pos, out.toArray)
-    },
-
     builtin("upper", "str") {
       (pos, ev, str: String) =>
         str.toUpperCase()
@@ -475,27 +448,6 @@ object Xtr extends Library {
       val mimeType = args(1).cast[Val.Str].value
       val params = args(2).cast[Val.Obj]
       write(dataFormats, data, mimeType, params, ev)
-    },
-
-    builtin("zip", "array1", "array2") {
-      (pos, ev, array1: Val.Arr, array2: Val.Arr) =>
-
-        val smallArray = if (array1.asLazyArray.length <= array2.asLazyArray.length) array1 else array2
-        val bigArray = (if (smallArray == array1) array2 else array1).asLazyArray
-        val out = new ArrayBuffer[Lazy]
-        for ((v, i) <- smallArray.asLazyArray.zipWithIndex) {
-          val current = new ArrayBuffer[Lazy]
-          if (smallArray == array1) {
-            current.append(v)
-            current.append(bigArray(i))
-          }
-          else {
-            current.append(bigArray(i))
-            current.append(v)
-          }
-          out.append(new Val.Arr(pos, current.toArray))
-        }
-        new Val.Arr(pos, out.toArray)
     },
 
     // funcs below taken from Std
@@ -1439,6 +1391,66 @@ object Xtr extends Library {
       builtin("distinctBy", "container", "func") {
         (_, ev, arr: Val.Arr, func: Val.Func) =>
           distinctBy(arr.asLazyArray, func, ev)
+      },
+
+      builtin("unzip", "array") {
+        (pos, _, array: Val.Arr) =>
+          val lazyArr = array.asLazyArray
+          val out = new ArrayBuffer[Lazy]
+          val maxSize = lazyArr.map(
+            _.force match {
+              case arr: Val.Arr => arr.asLazyArray.length
+              case x => Error.fail("Expected Array of Arrays, got inner: " + x.prettyName)
+            })
+            .max
+
+          var i = 0
+          while (i < maxSize) {
+            val current = new ArrayBuffer[Lazy]
+            var j = 0
+            while (j < lazyArr.length) {
+              current.append(lazyArr(j).force.asArr.asLazyArray(i))
+              j = j + 1
+            }
+            out.append(new Val.Arr(pos, current.toArray))
+            i = i + 1
+          }
+
+          new Val.Arr(pos, out.toArray)
+      },
+
+      builtinWithDefaults("zip",
+        "arr1" -> null,
+        "arr2" -> null,
+        "arr3" -> Val.False(dummyPosition),
+        "arr4" -> Val.False(dummyPosition),
+        "arr5" -> Val.False(dummyPosition)) { (args, pos, ev) =>
+        val lazyArr = args.filter {
+          case _: Val.Arr => true
+          case _: Val.False => false
+          case x => Error.fail("Expected Array, got: " + x.prettyName) // give param index?
+        }
+        val out = new ArrayBuffer[Lazy]
+        val maxSize = lazyArr.map(
+          _.force match {
+            case arr: Val.Arr => arr.asLazyArray.length
+            case x => Error.fail("Expected Array of Arrays, got inner: " + x.prettyName)
+          })
+          .max
+
+        var i = 0
+        while (i < maxSize) {
+          val current = new ArrayBuffer[Lazy]
+          var j = 0
+          while (j < lazyArr.length) {
+            current.append(lazyArr(j).force.asArr.asLazyArray(i))
+            j = j + 1
+          }
+          out.append(new Val.Arr(pos, current.toArray))
+          i = i + 1
+        }
+
+        new Val.Arr(pos, out.toArray)
       }
     ),
 

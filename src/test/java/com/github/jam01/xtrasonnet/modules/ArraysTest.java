@@ -111,27 +111,25 @@ public class ArraysTest {
         assertEquals(transform("[1, 2, 3, 4]"), transform("xtr.arrays.takeWhile([1, 2, 3, 4, 5], function(item) item * 2 < 9)"));
     }
 
-    @Disabled
     @Test
     public void unzip() {
         assertEquals(transform("[[1, 2, 3], ['x', 'y', 'z']]"), transform("xtr.arrays.unzip([[1, 'x'], [2, 'y'], [3, 'z']])"));
     }
 
-    @Disabled
-    @Test
-    public void unzipAll() {
-        assertEquals(transform("[[1, 2, 3], ['x', 'NA', 'z']]"), transform("xtr.arrays.unzipAll([[1, 'x'], [2], [3, 'z']], 'NA')"));
-    }
+//    @Disabled
+//    @Test
+//    public void unzipAll() {
+//        assertEquals(transform("[[1, 2, 3], ['x', 'NA', 'z']]"), transform("xtr.arrays.unzipAll([[1, 'x'], [2], [3, 'z']], 'NA')"));
+//    }
 
-    @Disabled
     @Test
     public void zip() {
-        assertEquals(transform("[[1, 'x'], [2, 'y'], [3, 'z']]"), transform("xtr.arrays.zip([[1, 2, 3], ['x', 'y', 'z']])"));
+        assertEquals(transform("[[1, 'x'], [2, 'y'], [3, 'z']]"), transform("xtr.arrays.zip([1, 2, 3], ['x', 'y', 'z'])"));
     }
 
-    @Disabled
-    @Test
-    public void zipAll() {
-        assertEquals(transform("[[1, 'x'], [2, 'y'], [3, 'NA']]"), transform("txtr.arrays.zipAll([[1, 2, 3], ['x', 'y']], 'NA')"));
-    }
+//    @Disabled
+//    @Test
+//    public void zipAll() {
+//        assertEquals(transform("[[1, 'x'], [2, 'y'], [3, 'NA']]"), transform("txtr.arrays.zipAll([[1, 2, 3], ['x', 'y']], 'NA')"));
+//    }
 }

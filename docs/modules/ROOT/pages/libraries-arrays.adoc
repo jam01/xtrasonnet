@@ -283,44 +283,44 @@ xtr.arrays.unzip([[1, 'x'], [2, 'y'], [3, 'z']])
 [[1, 2, 3], ['x', 'y', 'z']]
 ----
 
-== `unzipAll(arr: Array[Array[A]], fill: B): Array[Array[A|B]]`
-Create n-number of `Arrays`, each containing the n-th element of every array in `arr`, using a `fill` value for missing n-th elements.
+//== `unzipAll(arr: Array[Array[A]], fill: B): Array[Array[A|B]]`
+//Create n-number of `Arrays`, each containing the n-th element of every array in `arr`, using a `fill` value for missing n-th elements.
+//
+//Returns a new `Array` of equal size to the longest array in `arr`. Every n-th element in the result is an `Array` containing the n-th element the arrays in `arr` that have such element or `fill` for short arrays.
+//
+//.Example
+//----
+//xtr.arrays.unzipAll([[1, 'x'], [2], [3, 'z']], 'NA')
+//----
+//.Result
+//----
+//[[1, 2, 3], ['x', 'NA', 'z']]
+//----
 
-Returns a new `Array` of equal size to the longest array in `arr`. Every n-th element in the result is an `Array` containing the n-th element the arrays in `arr` that have such element or `fill` for short arrays.
+== `zip(arr1: Array[A], arr2: Array[B], arrN: Array[C]*): Array[Array[A|B|C]]`
+Combines corresponding elements of the given arrays.
+
+Returns a new `Array` of equal size to the shortest array given. Every n-th element in the result is an `Array` containing the n-th element of the given arrays.
 
 .Example
 ----
-xtr.arrays.unzipAll([[1, 'x'], [2], [3, 'z']], 'NA')
-----
-.Result
-----
-[[1, 2, 3], ['x', 'NA', 'z']]
-----
-
-== `zip(arr: Array[Array[A]]): Array[Array[A]]`
-Combines corresponding elements of the arrays in `arr`.
-
-Returns a new `Array` of equal size to the shortest array in `arr`. Every n-th element in the result is an `Array` containing the n-th element of the arrays in `arr`.
-
-.Example
-----
-xtr.arrays.zip([[1, 2, 3], ['x', 'y', 'z']])
+xtr.arrays.zip([1, 2, 3], ['x', 'y', 'z'])
 ----
 .Result
 ----
 [[1, 'x'], [2, 'y'], [3, 'z']]
 ----
 
-== `zipAll(arr: Array[Array[A]], fill: B): Array[Array[A|B]]`
-Combines corresponding elements of the arrays in `arr`, using a `fill` value for short arrays.
-
-Returns a new `Array` of equal size to the longest array in `arr`. Every n-th element in the result is an `Array` containing the n-th element of the arrays in `arr` that have such element or `fill` for short arrays.
-
-.Example
-----
-xtr.arrays.zipAll([[1, 2, 3], ['x', 'y']], 'NA')
-----
-.Result
-----
-[[1, 'x'], [2, 'y'], [3, 'NA']]
-----
+//== `zipAll(arr: Array[Array[A]], fill: B): Array[Array[A|B]]`
+//Combines corresponding elements of the arrays in `arr`, using a `fill` value for short arrays.
+//
+//Returns a new `Array` of equal size to the longest array in `arr`. Every n-th element in the result is an `Array` containing the n-th element of the arrays in `arr` that have such element or `fill` for short arrays.
+//
+//.Example
+//----
+//xtr.arrays.zipAll([[1, 2, 3], ['x', 'y']], 'NA')
+//----
+//.Result
+//----
+//[[1, 'x'], [2, 'y'], [3, 'NA']]
+//----
