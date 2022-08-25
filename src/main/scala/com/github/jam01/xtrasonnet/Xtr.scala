@@ -1207,7 +1207,7 @@ object Xtr extends Library {
           total
       },
 
-      builtin("splitEvery", "array", "size") {
+      builtin("splitEvery", "array", "size") { // TODO: better name?
         (pos, ev, array: Val.Arr, size: Int) =>
           new Val.Arr(pos, array.asLazyArray.sliding(size, size).map(item => new Val.Arr(pos, item)).toArray)
       },
@@ -1264,6 +1264,33 @@ object Xtr extends Library {
       builtin("indexWhere", "arr", "func") {
         (pos, ev, array: Val.Arr, func: Val.Func) =>
           array.asLazyArray.indexWhere(func.apply1(_, pos.noOffset)(ev).isInstanceOf[Val.True])
+      },
+
+      builtin("lastIndexWhere", "arr", "func") {
+        (pos, ev, array: Val.Arr, func: Val.Func) =>
+          array.asLazyArray.lastIndexWhere(func.apply1(_, pos.noOffset)(ev).isInstanceOf[Val.True])
+      },
+
+      builtin("indicesWhere", "arr", "func") {
+        (pos, ev, array: Val.Arr, func: Val.Func) =>
+          val pos = func.pos
+          val args = func.params.names.length
+          val out = new ArrayBuffer[Val.Num]()
+          val lazyArr = array.asLazyArray
+
+          var i = 0
+          if (args == 1) { // 1 arg
+            while (i < array.length) {
+              val test = func.apply1(lazyArr(i), pos.noOffset)(ev)
+              if (test.asBoolean.booleanValue()) {
+                out.append(Val.Num(pos, i))
+              }
+              i = i + 1
+            }
+          } else {
+            Error.fail("Expected embedded function to have 1 parameters, received: " + args)
+          }
+          new Val.Arr(pos, out.toArray)
       },
 
       builtin4("innerJoin", "arrL", "arryR", "funcL", "funcR") {

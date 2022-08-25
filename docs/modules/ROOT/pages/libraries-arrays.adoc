@@ -157,7 +157,7 @@ xtr.arrays.indicesWhere([1, 2, 3, 4, 5], function(item) item * 3 < 10)
 ----
 .Result
 ----
-[1, 2, 3]
+[0, 1, 2]
 ----
 
 == `lastIndexWhere(arr: Array[A], predicate: Func[(A) => Boolean]): Number`
@@ -169,7 +169,7 @@ xtr.arrays.lastIndexWhere([1, 2, 3, 4, 5], function(item) item * 3 < 10)
 ----
 .Result
 ----
-3
+2
 ----
 
 == `occurrencesBy(arr: Array[A], identity: Func[(A) => String]): Object[Number]`

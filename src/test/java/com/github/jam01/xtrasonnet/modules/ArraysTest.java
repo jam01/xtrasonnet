@@ -66,16 +66,14 @@ public class ArraysTest {
         assertEquals(transform("0"), transform("xtr.arrays.indexWhere([1, 2, 3, 4, 5], function(item) item * 3 < 10)"));
     }
 
-    @Disabled
     @Test
     public void indicesWhere() {
-        assertEquals(transform("[1, 2, 3]"), transform("xtr.arrays.indicesWhere([1, 2, 3, 4, 5], function(item) item * 3 < 10)"));
+        assertEquals(transform("[0, 1, 2]"), transform("xtr.arrays.indicesWhere([1, 2, 3, 4, 5], function(item) item * 3 < 10)"));
     }
 
-    @Disabled
     @Test
     public void lastIndexWhere() {
-        assertEquals(transform("3"), transform("xtr.arrays.lastIndexWhere([1, 2, 3, 4, 5], function(item) item * 3 < 10)"));
+        assertEquals(transform("2"), transform("xtr.arrays.lastIndexWhere([1, 2, 3, 4, 5], function(item) item * 3 < 10)"));
     }
 
     @Test
