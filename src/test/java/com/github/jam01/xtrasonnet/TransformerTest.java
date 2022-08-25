@@ -96,19 +96,6 @@ public class TransformerTest {
         }
     }
 
-    @Disabled
-    @Test
-    void includedJsonnetLibraryWorks() {
-        Transformer transformer = new Transformer("xtr.Util.select({a: {b: 5}}, 'a.b')");
-        assertEquals("5", transformer.transform("{}"));
-    }
-
-    Map<String, Document> stringArgument(String key, String value) {
-        return new HashMap<String, Document>() {{
-            put(key, Document.of(value, MediaTypes.TEXT_PLAIN));
-        }};
-    }
-
     @Test
     void nonJsonArguments() {
         Transformer transformer = new Transformer("argument", Set.of("argument"));

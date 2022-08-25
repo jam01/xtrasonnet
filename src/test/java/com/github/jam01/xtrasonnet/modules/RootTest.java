@@ -541,11 +541,6 @@ public class RootTest {
     }
 
     @Test
-    public void test() {
-        System.out.println(transform("xtr.toString({foo:'bar'})"));
-    }
-
-    @Test
     public void trim() {
         assertEquals(transform("'hello, world!'"), transform("xtr.trim('  hello, world!   ')"));
     }
