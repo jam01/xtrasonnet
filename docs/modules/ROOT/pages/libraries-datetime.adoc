@@ -253,7 +253,7 @@ Returns the constituent parts of the given `datetime`, as an `Object` of the for
 ----
 {
     year: Number, month: Number, day: Number,
-    hour: Number, minute: Number, second: Number,
+    hour: Number, minute: Number, second: Number, nanosecond: Number,
     offset: String
 }
 ----
@@ -266,7 +266,7 @@ xtr.datetime.toParts('2019-07-04T21:00:00Z')
 ----
 {
     year: 2019, month: 7, day: 4,
-    hour: 21, minute: 0, second: 0,
+    hour: 21, minute: 0, second: 0, nanosecond: 0,
     offset: 'Z'
 }
 ----

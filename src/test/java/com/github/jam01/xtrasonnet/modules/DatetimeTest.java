@@ -71,7 +71,7 @@ public class DatetimeTest {
         assertEquals(transform("'2021-01-01T00:00:00-08:00'"), transform("""
                 local parts = {
                     'year': 2021,
-                    'timezone': '-08:00'
+                    'offset': '-08:00'
                 };
                 xtr.datetime.of(parts)"""));
     }
@@ -96,14 +96,13 @@ public class DatetimeTest {
         assertEquals(transform("'21:00:00'"), transform("xtr.datetime.toLocalTime('2019-07-04T21:00:00Z')"));
     }
 
-    @Disabled
     @Test
     public void toParts() {
         assertEquals(transform("""
                 {
                     year: 2019, month: 7, day: 4,
-                    hour: 21, minute: 0, second: 0,
-                    timezone: 'Z'
+                    hour: 21, minute: 0, second: 0, nanosecond: 0,
+                    offset: 'Z'
                 }"""), transform("xtr.datetime.toParts('2019-07-04T21:00:00Z')"));
     }
 }

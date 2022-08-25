@@ -870,7 +870,7 @@ object Xtr extends Library {
             out.getOrElse("minute", Val.Num(pos, 0)).asInt,
             out.getOrElse("second", Val.Num(pos, 0)).asInt,
             out.getOrElse("nanosecond", Val.Num(pos, 0)).asInt,
-            ZoneOffset.of(out.getOrElse("timezone", Val.Str(pos, "Z")).cast[Val.Str].value)
+            ZoneOffset.of(out.getOrElse("offset", Val.Str(pos, "Z")).cast[Val.Str].value)
           ).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
       },
 
@@ -902,6 +902,22 @@ object Xtr extends Library {
             .minusSeconds(date.getSecond)
             .minusNanos(date.getNano).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
       },
+
+      builtin("toParts", "datetime") {
+        (pos, ev, datetime: String) =>
+          val date = OffsetDateTime.parse(datetime)
+          val out = new util.LinkedHashMap[String, Val.Obj.Member]
+          out.put("year", memberOf(Val.Num(pos, date.getYear)))
+          out.put("month", memberOf(Val.Num(pos, date.getMonthValue)))
+          out.put("day", memberOf(Val.Num(pos, date.getDayOfWeek.getValue)))
+          out.put("hour", memberOf(Val.Num(pos, date.getHour)))
+          out.put("minute", memberOf(Val.Num(pos, date.getMinute)))
+          out.put("second", memberOf(Val.Num(pos, date.getSecond)))
+          out.put("nanosecond", memberOf(Val.Num(pos, date.getNano)))
+          out.put("offset", memberOf(Val.Str(pos, date.getOffset.getId)))
+
+          new Val.Obj(pos, out, false, null, null)
+      }
     ),
 
     "duration" -> moduleFrom(
