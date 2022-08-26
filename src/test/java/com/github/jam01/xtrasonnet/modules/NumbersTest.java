@@ -15,11 +15,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class NumbersTest {
 
     @Test
-    public void from() {
-        assertEquals(transform("100"), transform("xtr.numbers.fromBinary(1100100)"));
-        assertEquals(transform("15"), transform("xtr.numbers.fromHex('F')"));
-        assertEquals(transform("36446"), transform("xtr.numbers.fromOctal(107136)"));
-        assertEquals(transform("3"), transform("xtr.numbers.fromRadix('10', 3)"));
+    public void of() {
+        assertEquals(transform("100"), transform("xtr.numbers.ofBinary(1100100)"));
+        assertEquals(transform("15"), transform("xtr.numbers.ofHex('F')"));
+        assertEquals(transform("36446"), transform("xtr.numbers.ofOctal(107136)"));
+        assertEquals(transform("3"), transform("xtr.numbers.ofRadix('10', 3)"));
     }
 
     @Test

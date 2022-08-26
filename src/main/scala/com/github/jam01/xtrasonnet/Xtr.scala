@@ -1474,7 +1474,7 @@ object Xtr extends Library {
     ),
 
     "numbers" -> moduleFrom(
-      builtin("fromBinary", "value") {
+      builtin("ofBinary", "value") {
         (pos, ev, value: Val) =>
           value match {
             case x: Val.Num =>
@@ -1487,7 +1487,7 @@ object Xtr extends Library {
           }
       },
 
-      builtin("fromHex", "value") {
+      builtin("ofHex", "value") {
         (pos, ev, value: Val) =>
           value match {
             case x: Val.Num =>
@@ -1500,7 +1500,7 @@ object Xtr extends Library {
           }
       },
 
-      builtin("fromRadix", "value", "num") {
+      builtin("ofRadix", "value", "num") {
         (pos, ev, value: Val, num: Int) =>
           value match {
             case x: Val.Num => BigInt.apply(x.value.toLong.toString, num).bigInteger.doubleValue
@@ -1550,7 +1550,7 @@ object Xtr extends Library {
           }
       },
 
-      builtin("fromOctal", "str") { (pos, ev, num: Val) =>
+      builtin("ofOctal", "str") { (pos, ev, num: Val) =>
         num match {
           case str: Val.Str => Integer.parseInt(str.asString, 8)
           case n: Val.Num => Integer.parseInt(n.asInt.toString, 8)
@@ -1559,6 +1559,7 @@ object Xtr extends Library {
       }
     ),
 
+    // TODO: review regexs
     "strings" -> moduleFrom(
       builtin("appendIfMissing", "str1", "str2") {
         (pos, ev, str: String, append: String) =>

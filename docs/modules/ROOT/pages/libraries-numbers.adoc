@@ -1,47 +1,47 @@
 = `xtr.numbers`
 
-== `fromBinary(binary: String | Number): Number`
+== `ofBinary(binary: String | Number): Number`
 Returns the `Number` representation for the given `binary`.
 
 .Example
 ----
-xtr.numbers.fromBinary(1100100)
+xtr.numbers.ofBinary(1100100)
 ----
 .Result
 ----
 100
 ----
 
-== `fromHex(hexadecimal: String): Number`
+== `ofHex(hexadecimal: String): Number`
 Returns the `Number` representation for the given `hexadecimal`.
 
 .Example
 ----
-xtr.numbers.fromHex('F')
+xtr.numbers.ofHex('F')
 ----
 .Result
 ----
 15
 ----
 
-== `fromOctal(octal: String | Number): Number`
+== `ofOctal(octal: String | Number): Number`
 Returns the `Number` representation for the given `octal`.
 
 .Example
 ----
-xtr.numbers.fromOctal(107136)
+xtr.numbers.ofOctal(107136)
 ----
 .Result
 ----
 36446
 ----
 
-== `fromRadix(value: String | Number, n: Number): Number`
+== `ofRadix(value: String | Number, n: Number): Number`
 Returns the `Number` representation for the given Base-`n` `value`
 
 .Example
 ----
-xtr.numbers.fromRadixNumber('10', 3)
+xtr.numbers.ofRadixNumber('10', 3)
 ----
 .Result
 ----
