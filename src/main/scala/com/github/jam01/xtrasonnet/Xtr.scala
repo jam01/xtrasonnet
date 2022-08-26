@@ -26,12 +26,11 @@ package com.github.jam01.xtrasonnet
 /*-
  * Changed:
  * - d74e8ff8838292274aa0c386d39fece6db16916d: Encapsulates Library logic
- *      Reimplemented DS under the new Library interface, while keeping some function under ZonedDateTime,
- *      Formats, Crypto, JsonPath, and URL
+ *      Reimplemented DS under the new Library interface, while keeping some function under Crypto, JsonPath, and URL
  *
  * Adopted:
  * - 6b92da38753b0f8d00f12dc5859c644027d92cd1: Added operations for concatentation and removal
- *      Functions: combine, remove, removeMatch
+ *      Functions: remove, removeMatch
  * - 5666b472de694383231b043c8c7861833831db96: Fixed numbers module to allow long values
  * - 386223447f864492ca4703a4d9eaa49eea9b64a3: Converted util functions to scala
  *      Functions: duplicates, deepFlatten, occurrences
@@ -47,8 +46,8 @@ package com.github.jam01.xtrasonnet
  *
  * Changed:
  * - d19a57dfcf4382669d55ac4427916c8440c1bac3: fixes orderBy comparison
- * - changed remove to rm and rmAll to rmKey and rmKeyIn
- * - removed null support from most functions, including those adopted
+ * - 2662d96cdfbd613d766830420a0b2a6920d07b52: changed remove to rmKey and filterNotEq, and removeMatch to rmKeyIn and filterNotIn
+ * - d37ba4c860723b42cecfe20e381c302eef75b49e - 2213fec224b8cbd1302f0b15542d1699308d3d08: removed null support from adopted functions
  * - refactored datetime to use OffsetDateTime and changed Period functionality for ISO8601 Duration
  */
 

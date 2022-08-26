@@ -29,7 +29,8 @@ package com.github.jam01.xtrasonnet.plugins.xml
  *
  * Changed:
  * - 1570c045ab8e750305e1d86206f4cddeadabfedd: conformed badgerfish ordering behavior
- * - renamed currentNS to declaredXmlns, only start new xmlns context when xmlns found, use new NamespaceDeclarations
+ * - de7029978b65a012dfdb8dd32b598e99a9c7708a: renamed currentNS to declaredXmlns, only start new xmlns context when
+ *    xmlns found, use new NamespaceDeclarations
  */
 
 import com.github.jam01.xtrasonnet.plugins.DefaultXMLPlugin
