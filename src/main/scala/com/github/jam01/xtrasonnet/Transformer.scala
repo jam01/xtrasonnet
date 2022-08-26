@@ -17,13 +17,14 @@ import sjsonnet.Expr.Params
 import sjsonnet.ScopedExprTransform.{Scope, ScopedVal, emptyScope}
 import sjsonnet.{CachedResolver, DefaultParseCache, Error, EvalScope, Evaluator, Expr, FileScope, Importer, Materializer, ParseCache, ParseError, Path, Position, Settings, StaticOptimizer, Val, ValScope}
 
+import java.net.URI
 import java.util.Collections
 import scala.collection.{Seq, immutable, mutable}
 import scala.jdk.CollectionConverters.{IterableHasAsScala, MapHasAsScala}
 import scala.util.control.NonFatal
 
 object Transformer {
-  private val main = "(main)"
+  val main = "(main)"
 
   // We wrap the script as function in order to pass in payload, and named inputs
   // see the 'Top-level arguments' section in https:based on//jsonnet.org/learning/tutorial.html#parameterize-entire-config
@@ -49,9 +50,9 @@ class Transformer(private var script: String,
                   libs: java.util.Set[Library] = Collections.emptySet(),
                   formats: DataFormatService = DataFormatService.DEFAULT,
                   defaultOut: MediaType = MediaTypes.APPLICATION_JSON,
-                  wd: Path = ClasspathPath.root,
+                  wd: Path = ResourcePath.root,
                   parseCache: ParseCache = new DefaultParseCache,
-                  importer: Importer = ClasspathPath.importer,
+                  importer: Importer = ResourcePath.importer,
                   private var settings: Settings = null) {
 
   def this(script: String,
@@ -59,7 +60,7 @@ class Transformer(private var script: String,
            libs: java.util.Set[Library],
            formats: DataFormatService,
            defaultOut: MediaType) = {
-    this(script, inputNames, libs, formats, defaultOut, ClasspathPath.root, new DefaultParseCache)
+    this(script, inputNames, libs, formats, defaultOut, ResourcePath.root, new DefaultParseCache)
   }
 
   def this(script: String,
@@ -112,7 +113,7 @@ class Transformer(private var script: String,
   // see StaticOptimizer#transform{case e @ Id(pos, name)}
   optimizer.scope = new Scope(immutable.HashMap.from(optimizer.scope.mappings).concat(libMappingsMap), optimizer.scope.size)
 
-  private val scriptFn: Val.Func = evaluate(script, ClasspathPath(main)) match {
+  private val scriptFn: Val.Func = evaluate(script, ResourcePath(main)) match {
     case Right(value) => value match {
       case func: Val.Func => func
       case _ => throw new IllegalArgumentException("Not a valid script. Transformation scripts must be a Top Level Function.") // shouldn't happen since we're wrapping in Top Level Func
@@ -199,7 +200,7 @@ class Transformer(private var script: String,
 
   private def evalLibsonnet(name: String): Val = {
     val fName = s"$name.libsonnet"
-    val path = ClasspathPath(fName)
+    val path = ResourcePath(fName)
     importer.read(path) match {
       case None => throw new IllegalArgumentException("libsonnet not found: " + fName)
       case Some(txt) => evaluate(txt, path) match {

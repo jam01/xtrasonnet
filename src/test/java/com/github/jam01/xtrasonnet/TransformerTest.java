@@ -26,11 +26,30 @@ package com.github.jam01.xtrasonnet;
 
 import com.github.jam01.xtrasonnet.document.Document;
 import com.github.jam01.xtrasonnet.document.MediaTypes;
+import com.github.tomakehurst.wiremock.WireMockServer;
+import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
+import com.github.tomakehurst.wiremock.client.WireMock;
+import com.github.tomakehurst.wiremock.http.ssl.SSLContextBuilder;
+import com.github.tomakehurst.wiremock.http.ssl.TrustEverythingStrategy;
+import com.github.tomakehurst.wiremock.matching.RequestPattern;
+import com.github.tomakehurst.wiremock.stubbing.StubMapping;
+import org.json.JSONException;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.skyscreamer.jsonassert.JSONAssert;
 
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -38,8 +57,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import static com.github.jam01.xtrasonnet.TestUtils.resourceAsString;
 import static com.github.jam01.xtrasonnet.TestUtils.stacktraceFrom;
 import static com.github.jam01.xtrasonnet.TestUtils.transform;
+import static com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder.okForEmptyJson;
+import static com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder.okForJson;
+import static com.github.tomakehurst.wiremock.client.WireMock.ok;
+import static com.github.tomakehurst.wiremock.client.WireMock.okForContentType;
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class TransformerTest {
@@ -136,5 +161,66 @@ public class TransformerTest {
         mapped = transformer.transform(Document.of(jsonData, MediaTypes.APPLICATION_JSON), variables, MediaTypes.APPLICATION_JSON).getContent();
 
         assertEquals("{\"a\":\"a\",\"t\":\"t\",\"v1\":\"v1value\",\"v2\":\"v2value\",\"y\":\"y\",\"z\":\"z\"}", mapped.trim());
+    }
+
+    @Test
+    public void imports() throws JSONException {
+        var imports = """
+                local martinis = import 'imports/martinis.libsonnet';
+                                
+                {
+                  'Vodka Martini': martinis['Vodka Martini'],
+                  Manhattan: {
+                    ingredients: [
+                      { kind: 'Rye', qty: 2.5 },
+                      { kind: 'Sweet Red Vermouth', qty: 1 },
+                      { kind: 'Angostura', qty: 'dash' },
+                    ],
+                    garnish: importstr 'imports/garnish.txt',
+                    served: 'Straight Up',
+                  },
+                }""";
+
+        var res = transform(imports);
+        JSONAssert.assertEquals(resourceAsString("imports/output.json"), res, true);
+    }
+
+    @Test
+    public void http_import() throws JSONException {
+        var srv = new WireMockServer(options().port(8080));
+        srv.start();
+        srv.addStubMapping(WireMock.get("/imports/garnish.txt")
+                .willReturn(okForContentType("text/plain", "Maraschino Cherry")).build());
+
+        try {
+            var res = transform("importstr 'http://localhost:8080/imports/garnish.txt'");
+            JSONAssert.assertEquals("\"Maraschino Cherry\"", res, true);
+        } finally {
+            srv.stop();
+        }
+    }
+
+    @Test
+    public void https_import() throws NoSuchAlgorithmException, KeyManagementException, JSONException {
+        var context = SSLContextBuilder.create().loadTrustMaterial(new TrustEverythingStrategy()).build();
+        HttpsURLConnection.setDefaultSSLSocketFactory(context.getSocketFactory());
+
+        var srv = new WireMockServer(options().httpsPort(8443));
+        srv.start();
+        srv.addStubMapping(WireMock.get("/imports/garnish.txt")
+                .willReturn(okForContentType("text/plain", "Maraschino Cherry")).build());
+
+        try {
+            var res = transform("importstr 'https://localhost:8443/imports/garnish.txt'");
+            JSONAssert.assertEquals("\"Maraschino Cherry\"", res, true);
+        } finally {
+            srv.stop();
+        }
+    }
+
+    @Test
+    public void file_import() throws JSONException, URISyntaxException {
+        var res = transform("importstr 'file:%s'".formatted(getClass().getClassLoader().getResource("imports/garnish.txt").toURI().getPath()));
+        JSONAssert.assertEquals("\"Maraschino Cherry\"", res, true);
     }
 }

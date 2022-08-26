@@ -1,0 +1,34 @@
+{
+  "Vodka Martini": {
+    "ingredients": [
+      {
+        "kind": "Vodka",
+        "qty": 2
+      },
+      {
+        "kind": "Dry White Vermouth",
+        "qty": 1
+      }
+    ],
+    "garnish": "Olive",
+    "served": "Straight Up"
+  },
+  "Manhattan": {
+    "ingredients": [
+      {
+        "kind": "Rye",
+        "qty": 2.5
+      },
+      {
+        "kind": "Sweet Red Vermouth",
+        "qty": 1
+      },
+      {
+        "kind": "Angostura",
+        "qty": "dash"
+      }
+    ],
+    "garnish": "Maraschino Cherry",
+    "served": "Straight Up"
+  }
+}

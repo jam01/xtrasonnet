@@ -52,7 +52,7 @@ package com.github.jam01.xtrasonnet
  */
 
 import com.github.jam01.xtrasonnet.document.Document.BasicDocument
-import com.github.jam01.xtrasonnet.document.MediaType
+import com.github.jam01.xtrasonnet.document.{Document, MediaType}
 import com.github.jam01.xtrasonnet.header.Header
 import com.github.jam01.xtrasonnet.modules.{Crypto, JsonPath}
 import com.github.jam01.xtrasonnet.spi.Library
@@ -64,8 +64,9 @@ import sjsonnet.Val.{Builtin, Obj}
 import sjsonnet.{Error, EvalScope, Expr, FileScope, Importer, Lazy, Materializer, Position, ReadWriter, Val}
 import ujson.{Bool, Null, Num, Str}
 
+import java.io.IOException
 import java.math.{BigDecimal, RoundingMode}
-import java.net.URL
+import java.net.{HttpURLConnection, URI, URL}
 import java.security.SecureRandom
 import java.text.DecimalFormat
 import java.time._
@@ -372,15 +373,8 @@ object Xtr extends Library {
         } else {
           args(2).cast[Val.Obj]
         }
-        url match {
-          case str if str.startsWith("classpath://") => importer.read(ClasspathPath(str.substring(12))) match {
-            case Some(value) => read(dataFormats, value, mimeType, params, ev)
-            case None => Val.Null(pos)
-          }
-          case _ =>
-            val out = new Scanner(new URL(url).openStream(), "UTF-8").useDelimiter("\\A").next()
-            read(dataFormats, out, mimeType, params, ev)
-        }
+        val data = ResourceResolver.asString(url, null)
+        read(dataFormats, data, mimeType, params, ev)
     },
 
     builtin("sizeOf", "value") {
@@ -1912,7 +1906,7 @@ object Xtr extends Library {
     })
   }
 
-  def read(dataFormats: DataFormatService, data: String, mimeType: String, params: Val.Obj, ev: EvalScope): Val = {
+  def read(dataFormats: DataFormatService, data: Object, mimeType: String, params: Val.Obj, ev: EvalScope): Val = {
     val paramsAsJava = ujson.read(Materializer.apply(params)(ev)).obj.map(keyVal => {
       (keyVal._1, keyVal._2 match {
         case Str(value) => value
@@ -1921,12 +1915,9 @@ object Xtr extends Library {
         case Null => "null"
       })
     }).asJava
-    val doc = new BasicDocument(data, MediaType.parseMediaType(mimeType).withParameters(paramsAsJava))
 
-    val plugin = dataFormats.thatCanRead(doc)
-      .orElseThrow(() => Error.fail("No suitable plugin found for mime type: " + mimeType))
-
-    Materializer.reverse(dummyPosition, plugin.read(doc))
+    val doc = Document.of(data, MediaType.parseMediaType(mimeType).withParameters(paramsAsJava))
+    Materializer.reverse(dummyPosition, dataFormats.mandatoryRead(doc))
   }
 
   def write(dataFormats: DataFormatService, json: Val, mimeType: String, params: Val.Obj, ev: EvalScope): String = {

@@ -10,6 +10,9 @@ package com.github.jam01.xtrasonnet.modules;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+
 import static com.github.jam01.xtrasonnet.TestUtils.transform;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -473,17 +476,16 @@ public class RootTest {
                 }"""), transform("xtr.read('<hello>world!</hello>', 'application/xml', { textkey: '_txt' })"));
     }
 
-    @Disabled
     @Test
     public void readUrl() {
         assertEquals(transform("""
                 {
-                  hello: { '$': 'world!' }
-                }"""), transform("xtr.readUrl('example.com/data', 'application/xml')"));
+                  hello: { '_text': 'world!' }
+                }"""), transform("xtr.readUrl('classpath:readurl-data.xml', 'application/xml')"));
         assertEquals(transform("""
                 {
                   hello: { _txt: 'world!' }
-                }"""), transform("xtr.readUrl('example.com', 'application/xml', { textvaluekey: '_txt' })"));
+                }"""), transform("xtr.readUrl('classpath:readurl-data.xml', 'application/xml', { textkey: '_txt' })"));
     }
 
     @Test
