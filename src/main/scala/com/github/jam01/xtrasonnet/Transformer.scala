@@ -17,7 +17,6 @@ import sjsonnet.Expr.Params
 import sjsonnet.ScopedExprTransform.{Scope, ScopedVal, emptyScope}
 import sjsonnet.{CachedResolver, DefaultParseCache, Error, EvalScope, Evaluator, Expr, FileScope, Importer, Materializer, ParseCache, ParseError, Path, Position, Settings, StaticOptimizer, Val, ValScope}
 
-import java.net.URI
 import java.util.Collections
 import scala.collection.{Seq, immutable, mutable}
 import scala.jdk.CollectionConverters.{IterableHasAsScala, MapHasAsScala}
@@ -28,7 +27,7 @@ object Transformer {
   private val resource = "resource:"
 
   // We wrap the script as function in order to pass in payload, and named inputs
-  // see the 'Top-level arguments' section in https:based on//jsonnet.org/learning/tutorial.html#parameterize-entire-config
+  // see the 'Top-level arguments' section in https://jsonnet.org/learning/tutorial.html#parameterize-entire-config
   private def asFunction(script: String, argumentNames: Iterable[String]) =
     (Seq("payload") ++ argumentNames).mkString("function(", ", ", ")\n") + script
 
@@ -50,7 +49,6 @@ class Transformer(private var script: String,
                   inputNames: java.util.Set[String] = Collections.emptySet(),
                   libs: java.util.Set[Library] = Collections.emptySet(),
                   formats: DataFormatService = DataFormatService.DEFAULT,
-                  defaultOut: MediaType = MediaTypes.APPLICATION_JSON,
                   wd: Path = ResourcePath.root,
                   parseCache: ParseCache = new DefaultParseCache,
                   importer: Importer = ResourcePath.importer,
@@ -59,16 +57,8 @@ class Transformer(private var script: String,
   def this(script: String,
            inputNames: java.util.Set[String],
            libs: java.util.Set[Library],
-           formats: DataFormatService,
-           defaultOut: MediaType) = {
-    this(script, inputNames, libs, formats, defaultOut, ResourcePath.root, new DefaultParseCache)
-  }
-
-  def this(script: String,
-           inputNames: java.util.Set[String],
-           libs: java.util.Set[Library],
            formats: DataFormatService) = {
-    this(script, inputNames, libs, formats, MediaTypes.APPLICATION_JSON)
+    this(script, inputNames, libs, formats, ResourcePath.root, new DefaultParseCache)
   }
 
   def this(script: String,
@@ -153,10 +143,10 @@ class Transformer(private var script: String,
       return fromHeader.get()
     }
 
-    defaultOut
+    MediaTypes.APPLICATION_JSON
   }
 
-  // If the input type is UNKNOWN then look in the header, default to JAVA
+  // If the input type is UNKNOWN then look in the header, default to JSON
   private def effectiveInput[T](name: String, input: Document[T]): Document[T] = {
     if (!input.getMediaType.equalsTypeAndSubtype(MediaTypes.UNKNOWN)) {
       return input
@@ -167,7 +157,7 @@ class Transformer(private var script: String,
       return input.withMediaType(fromHeader.get())
     }
 
-    input.withMediaType(MediaTypes.APPLICATION_JAVA)
+    input.withMediaType(MediaTypes.APPLICATION_JSON)
   }
 
   // supports a Map[String, Document] to enable a scenario where documents are grouped into a single input

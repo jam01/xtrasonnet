@@ -112,11 +112,10 @@ public class TransformerTest {
     @Test
     void executeErrorLineNumberWhenWrapped() {
         try {
-            Transformer transformer = new Transformer("payload.foo");
-            transformer.transform("{}");
+            transform("payload.foo");
             fail("Must fail to execute");
         } catch (IllegalArgumentException e) {
-            assertTrue(e.getCause().getMessage().contains("attempted to index a string with string foo"), "Found message: " + e.getCause().getMessage());
+            assertTrue(e.getCause().getMessage().contains("attempted to index a null with string foo"), "Found message: " + e.getCause().getMessage());
             assertTrue(stacktraceFrom(e).contains("(main):1:8"), "Stacktrace does not indicate the issue");
         }
     }

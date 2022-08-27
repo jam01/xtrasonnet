@@ -29,7 +29,7 @@ public class JavaPluginTest {
 
     @Test
     public void read_simple() throws JSONException {
-        var doc = new Transformer("payload").transform(Document.of(carMap));
+        var doc = new Transformer("payload").transform(Document.of(carMap, MediaTypes.APPLICATION_JAVA));
 
         JSONAssert.assertEquals(carJson, doc.getContent(), true);
         Assertions.assertEquals(MediaTypes.APPLICATION_JSON, doc.getMediaType());
@@ -37,7 +37,7 @@ public class JavaPluginTest {
 
     @Test
     public void read_object() throws JSONException {
-        var doc = new Transformer("payload").transform(Document.of(car));
+        var doc = new Transformer("payload").transform(Document.of(car, MediaTypes.APPLICATION_JAVA));
 
         JSONAssert.assertEquals(carJson, doc.getContent(), true);
         assertEquals(MediaTypes.APPLICATION_JSON, doc.getMediaType());

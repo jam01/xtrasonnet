@@ -27,7 +27,6 @@ public class TransformerBuilder {
     private Set<String> inputNames = Collections.emptySet();
     private Set<Library> libs = Collections.emptySet();
     private DataFormatService service = DataFormatService.DEFAULT;
-    private MediaType defaultOutput = MediaTypes.APPLICATION_JSON;
 
     public TransformerBuilder(String script) {
         this.script = script;
@@ -74,12 +73,7 @@ public class TransformerBuilder {
         return this;
     }
 
-    public TransformerBuilder withDefaultOutput(MediaType output) {
-        this.defaultOutput = output;
-        return this;
-    }
-
     public Transformer build() {
-        return new Transformer(script, inputNames, libs, service, defaultOutput);
+        return new Transformer(script, inputNames, libs, service);
     }
 }
