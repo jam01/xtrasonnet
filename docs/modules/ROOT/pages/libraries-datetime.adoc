@@ -188,8 +188,6 @@ xtr.datetime.now()
 == `parse(datetime: String|Number, format: String): String`
 Returns an ISO-8601 extended offset date-time from the given `datetime` using the specified `format`.
 
-you can use `'epoch'` or `'timestamp'` as the inputFormat
-
 .Example
 ----
 xtr.datetime.parse('12/31/1990 10:10:10', 'MM/dd/yyyy HH:mm:ss')
@@ -198,6 +196,8 @@ xtr.datetime.parse('12/31/1990 10:10:10', 'MM/dd/yyyy HH:mm:ss')
 ----
 '1990-12-31T10:10:10Z'
 ----
+
+Additionally, developers can parse Unix timestamps by passing `'unix'` as the `format`.
 
 == `plus(datetime: String, duration: String): String`
 Returns the result of adding the specified ISO-8601 `duration` to the given `datetime`.

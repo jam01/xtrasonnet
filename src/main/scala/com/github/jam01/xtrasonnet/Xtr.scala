@@ -588,10 +588,10 @@ object Xtr extends Library {
       builtin("parse", "datetime", "inputFormat") { (pos, ev, datetime: Val, inputFormat: String) =>
         var datetimeObj: OffsetDateTime = null
         inputFormat.toLowerCase match {
-          case "epoch" =>
+          case "unix" =>
             var inst: Instant = null
             datetime match {
-              case str: Val.Str => inst = Instant.ofEpochSecond(str.value.toInt.toLong)
+              case str: Val.Str => inst = Instant.ofEpochSecond(str.value.toLong)
               case num: Val.Num => inst = Instant.ofEpochSecond(num.value.toLong)
               case _ => Error.fail("Expected datetime to be a string or number, got: " + datetime.prettyName)
             }
