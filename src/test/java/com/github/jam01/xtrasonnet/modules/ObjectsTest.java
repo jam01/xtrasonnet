@@ -73,6 +73,23 @@ public class ObjectsTest {
     }
 
     @Test
+    public void fromArray() {
+        assertEquals(transform("""
+                {
+                    java: { name: 'java', version: '19', isPreferred: false },
+                    python: { name: 'python', version: '3.1.14', isPreferred: false },
+                    default: { name: 'scala', version: '3.1.3', isPreferred: true }
+                }"""), transform("""
+                local languages = [
+                    { name: 'java', version: '19', isPreferred: false },
+                    { name: 'python', version: '3.1.14', isPreferred: false },
+                    { name: 'scala', version: '3.1.3', isPreferred: true }
+                ];
+
+                xtr.objects.fromArray(languages, function(lang) if (lang.isPreferred) then 'default' else lang.name)"""));
+    }
+
+    @Test
     public void innerJoin() throws JSONException {
         JSONAssert.assertEquals(transform("""
                 [

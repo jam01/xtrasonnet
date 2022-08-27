@@ -51,8 +51,6 @@ package com.github.jam01.xtrasonnet
  * - refactored datetime to use OffsetDateTime and changed Period functionality for ISO8601 Duration
  */
 
-import com.github.jam01.xtrasonnet.Xtr.builtin4
-import com.github.jam01.xtrasonnet.document.Document.BasicDocument
 import com.github.jam01.xtrasonnet.document.{Document, MediaType}
 import com.github.jam01.xtrasonnet.header.Header
 import com.github.jam01.xtrasonnet.modules.{Crypto, JsonPath}
@@ -65,16 +63,13 @@ import sjsonnet.Val.{Builtin, Obj}
 import sjsonnet.{Error, EvalScope, Expr, FileScope, Importer, Lazy, Materializer, Position, ReadWriter, Val}
 import ujson.{Bool, Null, Num, Str}
 
-import java.io.IOException
 import java.math.{BigDecimal, RoundingMode}
-import java.net.{HttpURLConnection, URI, URL}
 import java.security.SecureRandom
 import java.text.DecimalFormat
 import java.time._
 import java.time.format.DateTimeFormatter
-import java.time.temporal.ChronoUnit
 import java.util
-import java.util.{Base64, Collections, Scanner, UUID}
+import java.util.{Base64, Collections, UUID}
 import javax.crypto.Cipher
 import javax.crypto.spec.{IvParameterSpec, SecretKeySpec}
 import scala.collection.mutable
@@ -578,39 +573,6 @@ object Xtr extends Library {
           case array: Val.Arr => array.asLazyArray.lastIndexWhere(lzy => ev.equal(lzy.force, value))
           case x => Error.fail("Expected String or Array, got: " + x.prettyName)
         }
-    },
-
-    builtinWithDefaults("objectFrom",
-      "arr" -> null,
-      "keyF" -> null,
-      "valueF" -> Val.False(dummyPosition)) { (args, pos, ev) =>
-      val lzyArr = args(0) match {
-        case arr: Val.Arr => arr.asLazyArray
-        case x => Error.fail("Expected Array, got: " + x.prettyName)
-      }
-      val kFunc = args(1) match {
-        case f: Val.Func => f.asFunc
-        case x => Error.fail("Expected Function, got: " + x.prettyName)
-      }
-      val vFunc = args(2)
-
-      val m = new util.LinkedHashMap[String, Val.Obj.Member](lzyArr.length)
-      var i = 0
-      while (i < lzyArr.length) {
-        val k = kFunc.apply1(lzyArr(i), pos.noOffset)(ev)
-        if (!k.isInstanceOf[Val.Str]) Error.fail("Key Function should return a String, got: " + k.prettyName)
-        val j = i.intValue // ints are objects in Scala, so we must set a 'final' reference
-
-        m.put(k.asString,
-          if (vFunc.isInstanceOf[Val.False]) new Obj.Member(false, Visibility.Normal) {
-            override def invoke(self: Obj, sup: Obj, fs: FileScope, ev: EvalScope): Val = lzyArr(j).force
-          } else new Obj.Member(false, Visibility.Normal) {
-            override def invoke(self: Obj, sup: Obj, fs: FileScope, ev: EvalScope): Val = vFunc.asFunc.apply1(lzyArr(j), pos.noOffset)(ev)
-          })
-        i = i + 1
-      }
-
-      new Val.Obj(pos, m, false, null, null).asInstanceOf[Val]
     },
 
     builtin("parseNum", "str") { (pos, ev, str: String) =>
@@ -1525,6 +1487,58 @@ object Xtr extends Library {
         leftHash.putAll(bothHash)
         new Val.Arr(pos, leftHash.values().asScala.flatten.toArray)
       },
+
+      builtinWithDefaults("fromArray",
+        "arr" -> null,
+        "keyF" -> null,
+        "valueF" -> Val.False(dummyPosition)) { (args, pos, ev) =>
+        val lzyArr = args(0) match {
+          case arr: Val.Arr => arr.asLazyArray
+          case x => Error.fail("Expected Array, got: " + x.prettyName)
+        }
+        val kFunc = args(1) match {
+          case f: Val.Func => f.asFunc
+          case x => Error.fail("Expected Function, got: " + x.prettyName)
+        }
+        val vFunc = args(2)
+        val fArgs = kFunc.params.names.length
+
+        val m = new util.LinkedHashMap[String, Val.Obj.Member](lzyArr.length)
+        var i = 0
+        if (fArgs == 2) {
+          while (i < lzyArr.length) {
+            val k = kFunc.apply2(lzyArr(i), Val.Num(kFunc.pos, i), pos.noOffset)(ev)
+            if (!k.isInstanceOf[Val.Str]) Error.fail("Key Function should return a String, got: " + k.prettyName)
+            val j = i.intValue // ints are objects in Scala??, so we set a 'final' reference
+
+            m.put(k.asString,
+              if (vFunc.isInstanceOf[Val.False]) new Obj.Member(false, Visibility.Normal) {
+                override def invoke(self: Obj, sup: Obj, fs: FileScope, ev: EvalScope): Val = lzyArr(j).force
+              } else new Obj.Member(false, Visibility.Normal) {
+                override def invoke(self: Obj, sup: Obj, fs: FileScope, ev: EvalScope): Val = vFunc.asFunc.apply1(lzyArr(j), pos.noOffset)(ev)
+              })
+            i = i + 1
+          }
+        } else if (fArgs == 1) {
+          while (i < lzyArr.length) {
+            val k = kFunc.apply1(lzyArr(i), pos.noOffset)(ev)
+            if (!k.isInstanceOf[Val.Str]) Error.fail("Key Function should return a String, got: " + k.prettyName)
+            val j = i.intValue // ints are objects in Scala??, so we set a 'final' reference
+
+            m.put(k.asString,
+              if (vFunc.isInstanceOf[Val.False]) new Obj.Member(false, Visibility.Normal) {
+                override def invoke(self: Obj, sup: Obj, fs: FileScope, ev: EvalScope): Val = lzyArr(j).force
+              } else new Obj.Member(false, Visibility.Normal) {
+                override def invoke(self: Obj, sup: Obj, fs: FileScope, ev: EvalScope): Val = vFunc.asFunc.apply1(lzyArr(j), pos.noOffset)(ev)
+              })
+            i = i + 1
+          }
+        } else {
+          Error.fail("Expected function to take 1 or 2 parameters, received: " + fArgs)
+        }
+
+        new Val.Obj(pos, m, false, null, null).asInstanceOf[Val]
+      }
     ),
 
     "numbers" -> moduleFrom(
