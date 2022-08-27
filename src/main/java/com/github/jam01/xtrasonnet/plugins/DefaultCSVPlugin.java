@@ -26,7 +26,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -80,14 +79,14 @@ public class DefaultCSVPlugin extends BaseJacksonPlugin {
             CsvSchema.Builder builder = baseBuilderFor(doc.getMediaType());
 
             // assume header line present unless explicitly a value other than "present"
-            boolean headerln = paramAbsent(doc.getMediaType(), PARAM_HEADER_LINE) || paramEq(doc.getMediaType(), PARAM_HEADER_LINE, HEADER_LN_PRESENT_VALUE);
+            boolean headerln = doc.getMediaType().notContainsParameter(PARAM_HEADER_LINE) || doc.getMediaType().isParameterEqual(PARAM_HEADER_LINE, HEADER_LN_PRESENT_VALUE);
             if (headerln) {
                 builder.setUseHeader(true); // returning an Obj
                 return CSV_MAPPER.readerFor(Map.class).with(builder.build());
             } else {
                 builder.setUseHeader(false);
-                char separator = paramAsChar(doc.getMediaType(), PARAM_SEPARATOR_CHAR, CsvSchema.DEFAULT_COLUMN_SEPARATOR);
-                List<String> columns = paramAsList(doc.getMediaType(), PARAM_COLUMNS, separator, Collections.emptyList());
+                char separator = doc.getMediaType().getParameterAsChar(PARAM_SEPARATOR_CHAR, CsvSchema.DEFAULT_COLUMN_SEPARATOR);
+                List<String> columns = doc.getMediaType().getParameterAsList(PARAM_COLUMNS, separator, Collections.emptyList());
                 if (columns.size() > 0) { // columns found in param, return Obj with param columns
                     for (String column : columns) {
                         builder.addColumn(column);
@@ -128,9 +127,9 @@ public class DefaultCSVPlugin extends BaseJacksonPlugin {
         CsvSchema.Builder builder = baseBuilderFor(mediaType);
 
         // assume header line present unless explicitly a value other than "present"
-        boolean headerln = paramAbsent(mediaType, PARAM_HEADER_LINE) || paramAsBoolean(mediaType, PARAM_HEADER_LINE, HEADER_LN_PRESENT_VALUE);
-        char separator = paramAsChar(mediaType, PARAM_SEPARATOR_CHAR, CsvSchema.DEFAULT_COLUMN_SEPARATOR);
-        List<String> paramColumns = paramAsList(mediaType, PARAM_COLUMNS, separator, Collections.emptyList());
+        boolean headerln = mediaType.notContainsParameter(PARAM_HEADER_LINE) || mediaType.getParameterAsBoolean(PARAM_HEADER_LINE, HEADER_LN_PRESENT_VALUE);
+        char separator = mediaType.getParameterAsChar(PARAM_SEPARATOR_CHAR, CsvSchema.DEFAULT_COLUMN_SEPARATOR);
+        List<String> paramColumns = mediaType.getParameterAsList(PARAM_COLUMNS, separator, Collections.emptyList());
 
         if (first.isObject() && headerln) { // no header param, use first Obj for headers
             builder.setUseHeader(true);
@@ -141,7 +140,7 @@ public class DefaultCSVPlugin extends BaseJacksonPlugin {
             builder.setUseHeader(false);
             first.fieldNames().forEachRemaining(builder::addColumn);
             writer = CSV_MAPPER.writerFor(JsonNode.class).with(builder.build());
-        } else if (first.isArray() && paramAbsent(mediaType, PARAM_HEADER_LINE)) { // an array and doesn't explicitly want header
+        } else if (first.isArray() && mediaType.notContainsParameter(PARAM_HEADER_LINE)) { // an array and doesn't explicitly want header
             builder.setUseHeader(false);
             writer = CSV_MAPPER.writerFor(JsonNode.class).with(builder.build());
         } else if (first.isArray() && headerln) {
@@ -181,61 +180,18 @@ public class DefaultCSVPlugin extends BaseJacksonPlugin {
         CsvSchema.Builder builder = CsvSchema.builder();
 
         // no quotes or quote char
-        if (paramEq(type, PARAM_QUOTE_CHAR, "")) {
+        if (type.isParameterEqual(PARAM_QUOTE_CHAR, "")) {
             builder.disableQuoteChar();
         } else {
-            builder.setQuoteChar(paramAsChar(type, PARAM_QUOTE_CHAR, CsvSchema.DEFAULT_QUOTE_CHAR));
+            builder.setQuoteChar(type.getParameterAsChar(PARAM_QUOTE_CHAR, CsvSchema.DEFAULT_QUOTE_CHAR));
         }
 
         // separator char
-        builder.setColumnSeparator(paramAsChar(type, PARAM_SEPARATOR_CHAR, CsvSchema.DEFAULT_COLUMN_SEPARATOR));
+        builder.setColumnSeparator(type.getParameterAsChar(PARAM_SEPARATOR_CHAR, CsvSchema.DEFAULT_COLUMN_SEPARATOR));
 
         // escape char
-        builder.setEscapeChar(paramAsChar(type, PARAM_ESCAPE_CHAR, (char) CsvSchema.DEFAULT_ESCAPE_CHAR));
+        builder.setEscapeChar(type.getParameterAsChar(PARAM_ESCAPE_CHAR, (char) CsvSchema.DEFAULT_ESCAPE_CHAR));
 
         return builder;
-    }
-
-    public static boolean paramPresent(MediaType type, String name) {
-        return type.getParameters().containsKey(name);
-    }
-
-    public static boolean paramAbsent(MediaType type, String name) {
-        return !type.getParameters().containsKey(name);
-    }
-
-    public static boolean paramEq(MediaType type, String name, String expected) {
-        if (!type.getParameters().containsKey(name)) return false;
-        return expected.equals(type.getParameters().get(name));
-    }
-
-    public static char paramAsChar(MediaType type, String name, char defaault) {
-        if (!type.getParameters().containsKey(name)) return defaault;
-        return type.getParameters().get(name).charAt(0);
-    }
-
-    public static List<String> paramAsList(MediaType type, String name, List<String> defaault) {
-        if (!type.getParameters().containsKey(name)) return defaault;
-        return Arrays.asList(type.getParameters().get(name).split(" "));
-    }
-
-    public static List<String> paramAsList(MediaType type, String name, char separator, List<String> defaault) {
-        if (!type.getParameters().containsKey(name)) return defaault;
-        return Arrays.asList(type.getParameters().get(name).split(String.valueOf(separator)));
-    }
-
-    public static boolean paramAsBoolean(MediaType type, String name, boolean defaault) {
-        if (!type.getParameters().containsKey(name)) return defaault;
-        return Boolean.parseBoolean(type.getParameter(name));
-    }
-
-    public static String paramOr(MediaType type, String name, String defaault) {
-        if (!type.getParameters().containsKey(name)) return defaault;
-        return type.getParameter(name);
-    }
-
-    public static boolean paramAsBoolean(MediaType type, String name, String positive) {
-        if (!type.getParameters().containsKey(name)) return false;
-        return positive.equalsIgnoreCase(type.getParameter(name));
     }
 }

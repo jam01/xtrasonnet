@@ -178,32 +178,32 @@ object DefaultXMLPlugin extends BasePlugin {
 
   object EffectiveParams {
     def apply(mediaType: MediaType): EffectiveParams = {
-      val qnameChar = DefaultCSVPlugin.paramOr(mediaType, PARAM_QNAME_SEP, DEFAULT_QNAME_SEP)
-      val textKey = DefaultCSVPlugin.paramOr(mediaType, PARAM_TEXT_KEY, DEFAULT_TEXT_KEY)
-      val cdataKey = DefaultCSVPlugin.paramOr(mediaType, PARAM_CDATA_KEY, DEFAULT_CDATA_KEY)
-      val attrKey = DefaultCSVPlugin.paramOr(mediaType, PARAM_ATTRIBUTE_KEY, DEFAULT_ATTRIBUTE_KEY)
-      val orderKey = DefaultCSVPlugin.paramOr(mediaType, PARAM_ORDER_KEY, DEFAULT_ORDER_KEY)
-      val xmlVer = DefaultCSVPlugin.paramOr(mediaType, PARAM_XML_VERSION, DEFAULT_XML_VERSION)
-      val xmlnsKey = DefaultCSVPlugin.paramOr(mediaType, PARAM_XMLNS_KEY, DEFAULT_XMLNS_KEY)
-      val emptyTags = DefaultCSVPlugin.paramAsList(mediaType, PARAM_EMPTY_TAGS, Collections.emptyList())
+      val qnameChar = mediaType.getParameter(PARAM_QNAME_SEP, DEFAULT_QNAME_SEP)
+      val textKey = mediaType.getParameter(PARAM_TEXT_KEY, DEFAULT_TEXT_KEY)
+      val cdataKey = mediaType.getParameter(PARAM_CDATA_KEY, DEFAULT_CDATA_KEY)
+      val attrKey = mediaType.getParameter(PARAM_ATTRIBUTE_KEY, DEFAULT_ATTRIBUTE_KEY)
+      val orderKey = mediaType.getParameter(PARAM_ORDER_KEY, DEFAULT_ORDER_KEY)
+      val xmlVer = mediaType.getParameter(PARAM_XML_VERSION, DEFAULT_XML_VERSION)
+      val xmlnsKey = mediaType.getParameter(PARAM_XMLNS_KEY, DEFAULT_XMLNS_KEY)
+      val emptyTags = mediaType.getParameterAsList(PARAM_EMPTY_TAGS, Collections.emptyList())
       val declarations: Map[String, String] = mediaType.getParameters.asScala.toList
         .filter(entryVal => entryVal._1.matches(PARAM_XMLNS_DECLARATIONS))
         .map(entryVal => (entryVal._2, entryVal._1.substring(PARAM_XMLNS_DECLARATIONS.length - 3)))
         .map(entry => if (entry._2 == DEFAULT_NS_KEY) (entry._1, "") else entry)
         .toMap
-      val mode = Mode.withName(DefaultCSVPlugin.paramOr(mediaType, PARAM_MODE, BADGER_MODE_VALUE))
-      val xmlnsAware = DefaultCSVPlugin.paramAsBoolean(mediaType, PARAM_XMLNS_AWARE, true)
-      val nameForm = if (DefaultCSVPlugin.paramPresent(mediaType, PARAM_NAME_FORM)) mediaType.getParameter(PARAM_NAME_FORM)
+      val mode = Mode.withName(mediaType.getParameter(PARAM_MODE, BADGER_MODE_VALUE))
+      val xmlnsAware = mediaType.getParameterAsBoolean(PARAM_XMLNS_AWARE, true)
+      val nameForm = if (mediaType.containsParameter(PARAM_NAME_FORM)) mediaType.getParameter(PARAM_NAME_FORM)
         else if (mode == Mode.simplified) NAME_FORM_LOCAL_VALUE else NAME_FORM_QNAME_VALUE
 
-      val exclude = DefaultCSVPlugin.paramAsList(mediaType, PARAM_EXCLUDE, Collections.emptyList())
-      val include = DefaultCSVPlugin.paramAsList(mediaType, PARAM_INCLUDE, Collections.emptyList())
+      val exclude = mediaType.getParameterAsList(PARAM_EXCLUDE, Collections.emptyList())
+      val include = mediaType.getParameterAsList(PARAM_INCLUDE, Collections.emptyList())
 
       val includeComments = include.contains(INCLUDE_COMMENTS_VALUE) || mode == Mode.extended
       val excludeAttrs = exclude.contains(EXCLUDE_ATTRIBUTES_VALUE) || mode == Mode.simplified
       val omitDeclaration = exclude.contains(EXCLUDE_XML_DECLARATION_VALUE)
 
-      val trimText = if (DefaultCSVPlugin.paramPresent(mediaType, PARAM_TRIM_TEXT)) DefaultCSVPlugin.paramAsBoolean(mediaType, PARAM_TRIM_TEXT, true)
+      val trimText = if (mediaType.containsParameter(PARAM_TRIM_TEXT)) mediaType.getParameterAsBoolean(PARAM_TRIM_TEXT, true)
       else if (mode == Mode.extended) false
       else true
 

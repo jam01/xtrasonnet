@@ -41,6 +41,7 @@ import org.jetbrains.annotations.Nullable;
 import java.io.Serializable;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.Collections;
@@ -992,5 +993,49 @@ public class MediaType implements Comparable<MediaType>, Serializable {
             return super.compareParameters(mediaType1, mediaType2);
         }
     };
-}
 
+    // convenience param methods
+    // -----------------------------------------------------------------------------------------------------------------
+    public boolean containsParameter(String name) {
+        return getParameters().containsKey(name);
+    }
+
+    public boolean notContainsParameter(String name) {
+        return !getParameters().containsKey(name);
+    }
+
+    public boolean isParameterEqual(String name, String expected) {
+        if (!getParameters().containsKey(name)) return false;
+        return expected.equals(getParameters().get(name));
+    }
+
+    public char getParameterAsChar(String name, char defaault) {
+        if (!getParameters().containsKey(name)) return defaault;
+        return getParameters().get(name).charAt(0);
+    }
+
+    public List<String> getParameterAsList(String name, List<String> defaault) {
+        if (!getParameters().containsKey(name)) return defaault;
+        return Arrays.asList(getParameters().get(name).split(" "));
+    }
+
+    public List<String> getParameterAsList(String name, char separator, List<String> defaault) {
+        if (!getParameters().containsKey(name)) return defaault;
+        return Arrays.asList(getParameters().get(name).split(String.valueOf(separator)));
+    }
+
+    public boolean getParameterAsBoolean(String name, boolean defaault) {
+        if (!getParameters().containsKey(name)) return defaault;
+        return Boolean.parseBoolean(getParameter(name));
+    }
+
+    public String getParameter(String name, String defaault) {
+        if (!getParameters().containsKey(name)) return defaault;
+        return getParameter(name);
+    }
+
+    public boolean getParameterAsBoolean(String name, String positive) {
+        if (!getParameters().containsKey(name)) return false;
+        return positive.equalsIgnoreCase(getParameter(name));
+    }
+}
