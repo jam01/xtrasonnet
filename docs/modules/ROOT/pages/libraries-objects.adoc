@@ -100,7 +100,7 @@ local orders = [
     { orderId: 10311, customerId: 93, date: '2021-05-03' }
 ];
 
-xtr.objects.innerJoin(customers, orders
+xtr.objects.innerJoin(customers, orders,
     function(cust) cust.id, function(order) order.customerId)
 ----
 .Result
@@ -133,20 +133,20 @@ local orders = [
     { orderId: 10311, customerId: 93, date: '2021-05-03' }
 ];
 
-xtr.objects.innerJoin(customers, orders
+xtr.objects.innerJoin(customers, orders,
     function(cust) cust.id, function(order) order.customerId,
-    function(cust, order) { id: cust.id, oId: order.id })
+    function(cust, order) { id: cust.id, oId: order.orderId })
 ----
 .Result
 ----
 [
-    { id: 2, orderId: 10308 },
-    { id: 2, orderId: 10309 },
-    { id: 77, orderId: 10310 }
+    { id: 2, oId: 10308 },
+    { id: 2, oId: 10309 },
+    { id: 77, oId: 10310 }
 ]
 ----
 
-== `leftJoin(arrL: Array[Object[A]], arrR: Array[Object[B]], identity: Func[(Object[A]) => String|Number|Boolean], identityR: Func[(Object[B]) => String|Number|Boolean)]): Array[Object[C]]`
+== `outerJoin(arrL: Array[Object[A]], arrR: Array[Object[B]], identity: Func[(Object[A]) => String|Number|Boolean], identityR: Func[(Object[B]) => String|Number|Boolean)]): Array[Object[C]]`
 Returns a new `Array` with all the objects that exist in `arrL`, joined with a shallow merge with those that also exist in `arrR`, using the given `identity` functions to compute equality.
 
 .Example
@@ -164,7 +164,7 @@ local orders = [
     { orderId: 10311, customerId: 93, date: '2021-05-03' }
 ];
 
-xtr.objects.leftJoin(customers, orders
+xtr.objects.outerJoin(customers, orders,
     function(cust) cust.id, function(order) order.customerId)
 ----
 .Result
@@ -174,13 +174,13 @@ xtr.objects.leftJoin(customers, orders
         orderId: 10308, customerId: 2, date: '2022-07-30' },
     { id: 2, email: 'joe@example.com', joined: '2021-07-30',
         orderId: 10309, customerId: 2, date: '2022-07-30' },
-    { id: 77, email: 'jane@example.com', joined: '2019-07-30'
+    { id: 77, email: 'jane@example.com', joined: '2019-07-30',
         orderId: 10310, customerId: 77, date: '2022-07-03' },
     { id: 17, email: 'john@example.com', joined: '2002-07-03' }
 ]
 ----
 
-== `leftJoin(arrL: Array[Object[A]], arrR: Array[Object[B]], identity: Func[(Object[A]) => String|Number|Boolean], identityR: Func[(Object[B]) => String|Number|Boolean), join: Func[(Object[A], Object[B]) => Object[C]]): Array[Object[C]]`
+== `outerJoin(arrL: Array[Object[A]], arrR: Array[Object[B]], identity: Func[(Object[A]) => String|Number|Boolean], identityR: Func[(Object[B]) => String|Number|Boolean), join: Func[(Object[A], Object[B]) => Object[C]]): Array[Object[C]]`
 Returns a new `Array` with all the objects that exist in `arrL`, joined with the given `join` function with those that also exist in `arrR`, using the given `identity` functions to compute equality.
 
 .Example
@@ -198,9 +198,9 @@ local orders = [
     { orderId: 10311, customerId: 93, date: '2021-05-03' }
 ];
 
-xtr.objects.leftJoin(customers, orders
+xtr.objects.outerJoin(customers, orders,
     function(cust) cust.id, function(order) order.customerId,
-    function(cust, order) { id: cust.id, oId: order?.id })
+    function(cust, order) { id: cust.id, oId: order?.orderId })
 ----
 .Result
 ----
@@ -230,7 +230,7 @@ local orders = [
     { orderId: 10311, customerId: 93, date: '2021-05-03' }
 ];
 
-xtr.objects.fullJoin(customers, orders
+xtr.objects.fullJoin(customers, orders,
     function(cust) cust.id, function(order) order.customerId)
 ----
 .Result
@@ -240,7 +240,7 @@ xtr.objects.fullJoin(customers, orders
         orderId: 10308, customerId: 2, date: '2022-07-30' },
     { id: 2, email: 'joe@example.com', joined: '2021-07-30',
         orderId: 10309, customerId: 2, date: '2022-07-30' },
-    { id: 77, email: 'jane@example.com', joined: '2019-07-30'
+    { id: 77, email: 'jane@example.com', joined: '2019-07-30',
         orderId: 10310, customerId: 77, date: '2022-07-03' },
     { id: 17, email: 'john@example.com', joined: '2002-07-03' },
     { orderId: 10311, customerId: 93, date: '2021-05-03' }
@@ -265,9 +265,9 @@ local orders = [
     { orderId: 10311, customerId: 93, date: '2021-05-03' }
 ];
 
-xtr.objects.fullJoin(customers, orders
+xtr.objects.fullJoin(customers, orders,
     function(cust) cust.id, function(order) order.customerId,
-    function(cust, order) { id: cust.?id, oId: order?.id })
+    function(cust, order) { id: cust?.id, oId: order?.orderId })
 ----
 .Result
 ----

@@ -51,6 +51,7 @@ package com.github.jam01.xtrasonnet
  * - refactored datetime to use OffsetDateTime and changed Period functionality for ISO8601 Duration
  */
 
+import com.github.jam01.xtrasonnet.Xtr.builtin4
 import com.github.jam01.xtrasonnet.document.Document.BasicDocument
 import com.github.jam01.xtrasonnet.document.{Document, MediaType}
 import com.github.jam01.xtrasonnet.header.Header
@@ -1238,54 +1239,6 @@ object Xtr extends Library {
           new Val.Arr(pos, out.toArray)
       },
 
-      builtin4("innerJoin", "arrL", "arryR", "funcL", "funcR") {
-        (pos, ev, arrL: Val.Arr, arrR: Val.Arr, funcL: Val.Func, funcR: Val.Func) =>
-          val out = new ArrayBuffer[Lazy]
-
-          arrL.asLazyArray.foreach({
-            valueL =>
-              val compareL = funcL.apply1(valueL, pos.noOffset)(ev)
-              //append all that match the condition
-              out.appendAll(arrR.asLazyArray.collect({
-                case valueR if ev.equal(compareL, funcR.apply1(valueR, pos.noOffset)(ev)) =>
-                  val temp = new util.LinkedHashMap[String, Val.Obj.Member]()
-                  temp.put("l", memberOf(valueL.force))
-                  temp.put("r", memberOf(valueR.force))
-                  new Val.Obj(pos, temp, false, null, null)
-              }))
-          })
-          new Val.Arr(pos, out.toArray)
-      },
-
-      builtin4("leftJoin", "arrL", "arryR", "funcL", "funcR") {
-        (pos, ev, arrL: Val.Arr, arrR: Val.Arr, funcL: Val.Func, funcR: Val.Func) =>
-          //make backup array for leftovers
-          var leftoversL = arrL.asLazyArray
-          val out = new ArrayBuffer[Lazy]
-
-          arrL.foreach({
-            valueL =>
-              val compareL = funcL.apply1(valueL, pos.noOffset)(ev)
-              //append all that match the condition
-              out.appendAll(arrR.asLazyArray.collect({
-                case valueR if ev.equal(compareL, funcR.apply1(valueR, pos.noOffset)(ev)) =>
-                  val temp = new util.LinkedHashMap[String, Val.Obj.Member]()
-                  //remove matching values from the leftOvers arrays
-                  leftoversL = leftoversL.filter(item => !ev.equal(item.force, valueL.force))
-
-                  temp.put("l", memberOf(valueL.force))
-                  temp.put("r", memberOf(valueR.force))
-                  new Val.Obj(pos, temp, false, null, null)
-              }))
-          })
-
-          out.appendAll(leftoversL.map(
-            leftOver =>
-              Val.Obj.mk(pos, ("l" -> memberOf(leftOver.force)))
-          ))
-          new Val.Arr(pos, out.toArray)
-      },
-
       builtin("occurrencesBy", "arr", "func") {
         (pos, ev, array: Val.Arr, func: Val.Func) =>
           // no idea why, but this sorts the result in the correct order
@@ -1296,41 +1249,6 @@ object Xtr extends Library {
           )
 
           Val.Obj.mk(pos, ordered.toSeq: _*)
-      },
-
-      builtin4("rightJoin", "arrL", "arrR", "funcL", "funcR") {
-        (pos, ev, arrL: Val.Arr, arrR: Val.Arr, funcL: Val.Func, funcR: Val.Func) =>
-          //make backup array for leftovers
-          var lzArrL = arrL.asLazyArray
-          var lzArrR = arrR.asLazyArray
-
-          val out = new ArrayBuffer[Lazy]
-
-          lzArrL.foreach({
-            valueL =>
-              val compareL = funcL.apply1(valueL, pos.noOffset)(ev)
-              // append all that match the condition
-              out.appendAll(arrR.asLazyArray.collect({
-                case valueR if ev.equal(compareL, funcR.apply1(valueR, pos.noOffset)(ev)) =>
-                  val temp = new util.LinkedHashMap[String, Val.Obj.Member]()
-                  // remove matching values from the leftOvers arrays
-                  lzArrL = lzArrL.filter(item => !ev.equal(item.force, valueL.force))
-                  lzArrR = lzArrR.filter(item => !ev.equal(item.force, valueR.force))
-
-                  temp.put("l", memberOf(valueL.force))
-                  temp.put("r", memberOf(valueR.force))
-                  new Val.Obj(pos, temp, false, null, null)
-              }))
-          })
-
-          out.appendAll(lzArrL.map(
-            leftOver =>
-              Val.Obj.mk(pos, "l" -> memberOf(leftOver.force)
-              ))).appendAll(lzArrR.map(
-            leftOver =>
-              Val.Obj.mk(pos, "r" -> memberOf(leftOver.force)
-              )))
-          new Val.Arr(pos, out.toArray)
       },
 
       builtin("partition", "arr", "func") {
@@ -1463,7 +1381,150 @@ object Xtr extends Library {
       builtin("distinctBy", "container", "func") {
         (_, ev, obj: Val.Obj, func: Val.Func) =>
           distinctBy(obj, func, ev)
-      }
+      },
+
+      builtinWithDefaults("innerJoin",
+        "arrL" -> null,
+        "arrR" -> null,
+        "funcIdL" -> null,
+        "funcIdR" -> null,
+        "funcJoin" -> Val.False(dummyPosition)) { (args, pos, ev) =>
+
+        val left = args(0).asArr
+        val right = args(1).asArr
+        val funcIdL = args(2).asFunc
+        val funcIdR = args(3).asFunc
+        val funcJoin = args(4) match {
+          case _: Val.False => null
+          case f: Val.Func => f
+          case x => Error.fail("Expected function, got: " + x.prettyName)
+        }
+        val leftHash = new util.HashMap[String, ArrayBuffer[Val.Obj]]()
+        val out = new ArrayBuffer[Val.Obj]()
+
+        var i = 0
+        while (i < left.length) {
+          val k = keyFrom(funcIdL.apply1(left.asLazy(i), funcIdL.pos)(ev))
+          if (leftHash.containsKey(k)) leftHash.put(k, leftHash.get(k).addOne(left.force(i).asObj))
+          else leftHash.put(k, ArrayBuffer[Obj](left.force(i).asObj))
+          i = i + 1
+        }
+
+        i = 0
+        while (i < right.length) {
+          val k = keyFrom(funcIdR.apply1(right.asLazy(i), funcIdL.pos)(ev))
+          if (leftHash.containsKey(k)) {
+            leftHash.get(k).foreach(obj =>
+              out.addOne(
+                if (funcJoin == null) obj.asObj.addSuper(pos, right.force(i).asObj).asObj
+                else funcJoin.asFunc.apply2(obj, right.force(i), funcJoin.pos)(ev).asObj
+              )
+            )
+          }
+
+          i = i + 1
+        }
+
+        new Val.Arr(pos, out.toArray)
+      },
+
+      builtinWithDefaults("outerJoin",
+        "arrL" -> null,
+        "arrR" -> null,
+        "funcIdL" -> null,
+        "funcIdR" -> null,
+        "funcJoin" -> Val.False(dummyPosition)) { (args, pos, ev) =>
+
+        val left = args(0).asArr
+        val right = args(1).asArr
+        val funcIdL = args(2).asFunc
+        val funcIdR = args(3).asFunc
+        val funcJoin = args(4) match {
+          case _: Val.False => null
+          case f: Val.Func => f
+          case x => Error.fail("Expected function, got: " + x.prettyName)
+        }
+        val leftHash = new util.HashMap[String, ArrayBuffer[Val.Obj]]()
+        val bothHash = new util.HashMap[String, ArrayBuffer[Val.Obj]]()
+
+        var i = 0
+        while (i < left.length) {
+          val k = keyFrom(funcIdL.apply1(left.asLazy(i), funcIdL.pos)(ev))
+          val toAdd = if (funcJoin == null) left.force(i).asObj else funcJoin.asFunc.apply2(left.force(i).asObj, emptyObj, funcJoin.pos)(ev).asObj
+          if (leftHash.containsKey(k)) leftHash.put(k, leftHash.get(k).addOne(toAdd))
+          else leftHash.put(k, ArrayBuffer[Obj](toAdd))
+          i = i + 1
+        }
+
+        i = 0
+        while (i < right.length) {
+          val k = keyFrom(funcIdR.apply1(right.asLazy(i), funcIdL.pos)(ev))
+          if (leftHash.containsKey(k)) {
+            leftHash.get(k).foreach(obj =>
+              bothHash.computeIfAbsent(k, _ => new ArrayBuffer[Obj]()).addOne(
+                if (funcJoin == null) obj.asObj.addSuper(pos, right.force(i).asObj).asObj
+                else funcJoin.asFunc.apply2(obj, right.force(i), funcJoin.pos)(ev).asObj
+              )
+            )
+          }
+
+          i = i + 1
+        }
+
+        leftHash.putAll(bothHash)
+        new Val.Arr(pos, leftHash.values().asScala.flatten.toArray)
+      },
+
+      builtinWithDefaults("fullJoin",
+        "arrL" -> null,
+        "arrR" -> null,
+        "funcIdL" -> null,
+        "funcIdR" -> null,
+        "funcJoin" -> Val.False(dummyPosition)) { (args, pos, ev) =>
+
+        val left = args(0).asArr
+        val right = args(1).asArr
+        val funcIdL = args(2).asFunc
+        val funcIdR = args(3).asFunc
+        val funcJoin = args(4) match {
+          case _: Val.False => null
+          case f: Val.Func => f
+          case x => Error.fail("Expected function, got: " + x.prettyName)
+        }
+        val leftHash = new util.HashMap[String, ArrayBuffer[Val.Obj]]()
+        val bothHash = new util.HashMap[String, ArrayBuffer[Val.Obj]]()
+
+        var i = 0
+        while (i < left.length) {
+          val k = keyFrom(funcIdL.apply1(left.asLazy(i), funcIdL.pos)(ev))
+          val toAdd = if (funcJoin == null) left.force(i).asObj else funcJoin.asFunc.apply2(left.force(i).asObj, emptyObj, funcJoin.pos)(ev).asObj
+          if (leftHash.containsKey(k)) leftHash.put(k, leftHash.get(k).addOne(toAdd))
+          else leftHash.put(k, ArrayBuffer[Obj](toAdd))
+          i = i + 1
+        }
+
+        i = 0
+        while (i < right.length) {
+          val k = keyFrom(funcIdR.apply1(right.asLazy(i), funcIdL.pos)(ev))
+          if (leftHash.containsKey(k)) {
+            leftHash.get(k).foreach(obj =>
+              bothHash.computeIfAbsent(k, _ => new ArrayBuffer[Obj]()).addOne(
+                if (funcJoin == null) obj.asObj.addSuper(pos, right.force(i).asObj).asObj
+                else funcJoin.asFunc.apply2(obj, right.force(i), funcJoin.pos)(ev).asObj
+              )
+            )
+          } else {
+            val toAdd = if (funcJoin == null) right.force(i).asObj else funcJoin.asFunc.apply2(emptyObj, right.force(i).asObj, funcJoin.pos)(ev).asObj
+            if (leftHash.containsKey(k)) leftHash.put(k, leftHash.get(k).addOne(toAdd))
+            else leftHash.put(k, ArrayBuffer[Obj](toAdd))
+          }
+
+          i = i + 1
+        }
+
+        leftHash.putAll(bothHash)
+        new Val.Arr(pos, leftHash.values().asScala.flatten.toArray)
+      },
     ),
 
     "numbers" -> moduleFrom(
@@ -1871,10 +1932,7 @@ object Xtr extends Library {
 
   private def keyFrom(value: Val): String = {
     value match {
-      case x: Val.Num =>
-        val tmp = x.value
-        if (tmp.ceil == tmp.floor) tmp.longValue.toString
-        else tmp.toString
+      case x: Val.Num => x.asDouble.toString
       case x: Val.Str => x.value
       case Val.Null(_) => "null"
       case _: Val.True => "true"

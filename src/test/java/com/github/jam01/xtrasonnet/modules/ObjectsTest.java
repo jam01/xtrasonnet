@@ -7,8 +7,10 @@ package com.github.jam01.xtrasonnet.modules;
  * compliance with the Elastic License 2.0.
  */
 
+import org.json.JSONException;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.skyscreamer.jsonassert.JSONAssert;
 
 import static com.github.jam01.xtrasonnet.TestUtils.transform;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -70,10 +72,9 @@ public class ObjectsTest {
                 )"""));
     }
 
-    @Disabled
     @Test
-    public void innerJoin() {
-        assertEquals(transform("""
+    public void innerJoin() throws JSONException {
+        JSONAssert.assertEquals(transform("""
                 [
                     { id: 2, email: 'joe@example.com', joined: '2021-07-30',
                         orderId: 10308, customerId: 2, date: '2022-07-30' },
@@ -95,13 +96,13 @@ public class ObjectsTest {
                     { orderId: 10311, customerId: 93, date: '2021-05-03' }
                 ];
 
-                xtr.objects.innerJoin(customers, orders
-                    function(cust) cust.id, function(order) order.customerId)"""));
+                xtr.objects.innerJoin(customers, orders,
+                    function(cust) cust.id, function(order) order.customerId)"""), true);
         assertEquals(transform("""
                 [
-                    { id: 2, orderId: 10308 },
-                    { id: 2, orderId: 10309 },
-                    { id: 77, orderId: 10310 }
+                    { id: 2, oId: 10308 },
+                    { id: 2, oId: 10309 },
+                    { id: 77, oId: 10310 }
                 ]"""), transform("""
                 local customers = [
                     { id: 2, email: 'joe@example.com', joined: '2021-07-30' },
@@ -116,21 +117,20 @@ public class ObjectsTest {
                     { orderId: 10311, customerId: 93, date: '2021-05-03' }
                 ];
 
-                xtr.objects.innerJoin(customers, orders
+                xtr.objects.innerJoin(customers, orders,
                     function(cust) cust.id, function(order) order.customerId,
-                    function(cust, order) { id: cust.id, oId: order.id })"""));
+                    function(cust, order) { id: cust.id, oId: order.orderId })"""));
     }
 
-    @Disabled
     @Test
-    public void leftJoin() {
-        assertEquals(transform("""
+    public void outerJoin() throws JSONException {
+        JSONAssert.assertEquals(transform("""
                 [
                     { id: 2, email: 'joe@example.com', joined: '2021-07-30',
                         orderId: 10308, customerId: 2, date: '2022-07-30' },
                     { id: 2, email: 'joe@example.com', joined: '2021-07-30',
                         orderId: 10309, customerId: 2, date: '2022-07-30' },
-                    { id: 77, email: 'jane@example.com', joined: '2019-07-30'
+                    { id: 77, email: 'jane@example.com', joined: '2019-07-30',
                         orderId: 10310, customerId: 77, date: '2022-07-03' },
                     { id: 17, email: 'john@example.com', joined: '2002-07-03' }
                 ]"""), transform("""
@@ -147,8 +147,8 @@ public class ObjectsTest {
                     { orderId: 10311, customerId: 93, date: '2021-05-03' }
                 ];
 
-                xtr.objects.leftJoin(customers, orders
-                    function(cust) cust.id, function(order) order.customerId)"""));
+                xtr.objects.outerJoin(customers, orders,
+                    function(cust) cust.id, function(order) order.customerId)"""), true);
         assertEquals(transform("""
                 [
                     { id: 2, oId: 10308 },
@@ -169,21 +169,20 @@ public class ObjectsTest {
                     { orderId: 10311, customerId: 93, date: '2021-05-03' }
                 ];
 
-                xtr.objects.leftJoin(customers, orders
+                xtr.objects.outerJoin(customers, orders,
                     function(cust) cust.id, function(order) order.customerId,
-                    function(cust, order) { id: cust.id, oId: order?.id })"""));
+                    function(cust, order) { id: cust.id, oId: order?.orderId })"""));
     }
 
-    @Disabled
     @Test
-    public void fullJoin() {
-        assertEquals(transform("""
+    public void fullJoin() throws JSONException {
+        JSONAssert.assertEquals(transform("""
                 [
                     { id: 2, email: 'joe@example.com', joined: '2021-07-30',
                         orderId: 10308, customerId: 2, date: '2022-07-30' },
                     { id: 2, email: 'joe@example.com', joined: '2021-07-30',
                         orderId: 10309, customerId: 2, date: '2022-07-30' },
-                    { id: 77, email: 'jane@example.com', joined: '2019-07-30'
+                    { id: 77, email: 'jane@example.com', joined: '2019-07-30',
                         orderId: 10310, customerId: 77, date: '2022-07-03' },
                     { id: 17, email: 'john@example.com', joined: '2002-07-03' },
                     { orderId: 10311, customerId: 93, date: '2021-05-03' }
@@ -201,7 +200,32 @@ public class ObjectsTest {
                     { orderId: 10311, customerId: 93, date: '2021-05-03' }
                 ];
 
-                xtr.objects.fullJoin(customers, orders
-                    function(cust) cust.id, function(order) order.customerId)"""));
+                xtr.objects.fullJoin(customers, orders,
+                    function(cust) cust.id, function(order) order.customerId)"""), false);
+
+        JSONAssert.assertEquals(transform("""
+                [
+                    { id: 2, oId: 10308 },
+                    { id: 2, oId: 10309 },
+                    { id: 77, oId: 10310 },
+                    { id: 17, oId: null },
+                    { id: null, oId: 10311 }
+                ]"""), transform("""
+                local customers = [
+                    { id: 2, email: 'joe@example.com', joined: '2021-07-30' },
+                    { id: 77, email: 'jane@example.com', joined: '2019-07-30' },
+                    { id: 17, email: 'john@example.com', joined: '2002-07-03' }
+                ];
+                                
+                local orders = [
+                    { orderId: 10308, customerId: 2, date: '2022-07-30' },
+                    { orderId: 10309, customerId: 2, date: '2022-07-30' },
+                    { orderId: 10310, customerId: 77, date: '2022-07-03' },
+                    { orderId: 10311, customerId: 93, date: '2021-05-03' }
+                ];
+                                
+                xtr.objects.fullJoin(customers, orders,
+                    function(cust) cust.id, function(order) order.customerId,
+                    function(cust, order) { id: cust?.id, oId: order?.orderId })"""), false);
     }
 }
