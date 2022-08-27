@@ -223,4 +223,10 @@ public class TransformerTest {
         var res = transform("importstr 'file:%s'".formatted(getClass().getClassLoader().getResource("imports/garnish.txt").toURI().getPath()));
         JSONAssert.assertEquals("\"Maraschino Cherry\"", res, true);
     }
+
+    @Test
+    public void resource_script() throws JSONException {
+        var res = transform("resource:resource.xtr");
+        JSONAssert.assertEquals("{\"hello\": \"world!\"}", res, true);
+    }
 }

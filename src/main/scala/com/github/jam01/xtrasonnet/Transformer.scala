@@ -7,7 +7,7 @@ package com.github.jam01.xtrasonnet
  * compliance with the Elastic License 2.0.
  */
 
-import com.github.jam01.xtrasonnet.Transformer.{ERROR_LINE_REGEX, handleException, main}
+import com.github.jam01.xtrasonnet.Transformer.{ERROR_LINE_REGEX, handleException, main, resource}
 import com.github.jam01.xtrasonnet.document.Document.BasicDocument
 import com.github.jam01.xtrasonnet.document.{Document, MediaType, MediaTypes}
 import com.github.jam01.xtrasonnet.header.Header
@@ -25,6 +25,7 @@ import scala.util.control.NonFatal
 
 object Transformer {
   val main = "(main)"
+  private val resource = "resource:"
 
   // We wrap the script as function in order to pass in payload, and named inputs
   // see the 'Top-level arguments' section in https:based on//jsonnet.org/learning/tutorial.html#parameterize-entire-config
@@ -83,6 +84,13 @@ class Transformer(private var script: String,
 
   def this(script: String) = {
     this(script, Collections.emptySet())
+  }
+
+  if (script.startsWith(resource)) {
+    val res = script.substring(resource.length)
+    script = importer.resolveAndRead(wd, res)
+      .getOrElse(Error.fail("Couldn't load resource: " + res))
+      ._2
   }
 
   val header: Header = Header.parseHeader(script)
