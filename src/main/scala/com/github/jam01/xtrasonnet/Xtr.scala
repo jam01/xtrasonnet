@@ -1115,7 +1115,7 @@ object Xtr extends Library {
           total
       },
 
-      builtin("splitEvery", "array", "size") { // TODO: better name?
+      builtin("chunksOf", "array", "size") { // TODO: better name?
         (pos, ev, array: Val.Arr, size: Int) =>
           new Val.Arr(pos, array.asLazyArray.sliding(size, size).map(item => new Val.Arr(pos, item)).toArray)
       },
@@ -1236,7 +1236,7 @@ object Xtr extends Library {
           new Val.Obj(pos, out, false, null, null)
       },
 
-      builtin("splitWhere", "arr", "func") {
+      builtin("break", "arr", "func") {
         (pos, ev, arr: Val.Arr, func: Val.Func) =>
           val split = arr.asLazyArray.splitAt(arr.asLazyArray.indexWhere(func.apply1(_, pos.noOffset)(ev).isInstanceOf[Val.True]))
           val out = new util.LinkedHashMap[String, Val.Obj.Member]()

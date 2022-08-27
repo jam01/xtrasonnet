@@ -24,6 +24,33 @@ xtr.arrays.any([1, 2, 3], function(item) item > 1)
 true
 ----
 
+== `break(arr: Array[A], predicate: Func[(A) => Boolean]): Object[Array[A]]`
+Returns an `Object` with two entries:
+
+- `left` key with an `Array[A]` containing the elements of `arr` before the first element to satisfy the given `predicate`.
+- `right` key with an `Array[A]` containing the remaining elements of `arr`.
+
+.Example
+----
+xtr.arrays.break([1, 2, 3, 4, 5], function(item) item % 2 == 0)
+----
+.Result
+----
+{ left: [1], right: [2, 3, 4, 5] }
+----
+
+== `chunksOf(arr: Array[A], size: Number): Array[Array[A]]`
+Returns a new `Array` of `Array[A]`, with every element containing the next `size` elements in `arr`.
+
+.Example
+----
+xtr.arrays.chunksOf([1, 2, 3, 4, 5], 2)
+----
+.Result
+----
+[[1, 2], [3, 4], [5]]
+----
+
 == `countBy(arr: Array[A], function: Func[(A) => Boolean]): Number`
 Returns a `Number` count of all the elements in `array` that satisfy the given `predicate`, which must accept and `A`.
 
@@ -202,8 +229,8 @@ xtr.arrays.partition([1, 2, 3, 4, 5], function(item) item < 4)
 == `splitAt(arr: Array[A], n: Number): Object[A]`
 Returns an `Object[A]` with two entries:
 
-- `l` key with an `Array[A]` of the first `n` elements of `arr`.
-- `r` key with an `Array[A]` of the remaining elements of `arr`.
+- `left` key with an `Array[A]` containing the elements of `arr` before the `n` element.
+- `right` key with an `Array[A]` containing the remaining elements of `arr`.
 
 .Example
 ----
@@ -211,39 +238,8 @@ xtr.arrays.splitAt([1, 2, 3, 4, 5], 3)
 ----
 .Result
 ----
-{ l: [1, 2, 3], r: [4, 5] }
+{ left: [1, 2, 3], right: [4, 5] }
 ----
-
-== `splitEvery(arr: Array[A], size: Number): Array[Array[A]]`
-Returns a new `Array` of `Array[A]`, with every element containing the next `size` elements in `arr`.
-
-.Example
-----
-xtr.arrays.splitEvery([1, 2, 3, 4, 5], 2)
-----
-.Result
-----
-[[1, 2], [3, 4], [5]]
-----
-
-== `splitWhere(arr: Array[A], predicate: Func[(A) => Boolean]): Object[Array[A]]`
-Returns an `Object` with two entries:
-
-- `l` key with an `Array[A]` of the subsets of elements of `arr` before the first element to satisfy the given `predicate`.
-- `r` key with an `Array[A]` of the remaining elements of `arr`.
-
-.Example
-----
-xtr.arrays.splitWhere([1, 2, 3, 4, 5], function(item) item % 2 == 0)
-----
-.Result
-----
-{ l: [1], r: [2, 3, 4, 5] }
-----
-
-// todo: keep?
-== `sumBy(arr: Array[A], function: Func[(A) => Number]): Number`
-Returns the sum of the numbers in `arr`.
 
 == `take(arr: Array[A], n: Number): Array[A]`
 Returns a new `Array` with the elements in `arr`, from first to the `n`-th element.

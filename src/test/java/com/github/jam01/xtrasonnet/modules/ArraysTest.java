@@ -92,13 +92,13 @@ public class ArraysTest {
     }
 
     @Test
-    public void splitEvery() {
-        assertEquals(transform("[[1, 2], [3, 4], [5]]"), transform("xtr.arrays.splitEvery([1, 2, 3, 4, 5], 2)"));
+    public void chunksOf() {
+        assertEquals(transform("[[1, 2], [3, 4], [5]]"), transform("xtr.arrays.chunksOf([1, 2, 3, 4, 5], 2)"));
     }
 
     @Test
-    public void splitWhere() {
-        assertEquals(transform("{ l: [1], r: [2, 3, 4, 5] }"), transform("xtr.arrays.splitWhere([1, 2, 3, 4, 5], function(item) item % 2 == 0)"));
+    public void breakk() {
+        assertEquals(transform("{ l: [1], r: [2, 3, 4, 5] }"), transform("xtr.arrays.break([1, 2, 3, 4, 5], function(item) item % 2 == 0)"));
     }
 
     @Test
