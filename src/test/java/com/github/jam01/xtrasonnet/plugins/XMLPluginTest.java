@@ -57,6 +57,26 @@ public class XMLPluginTest {
     }
 
     @Test
+    public void write_simple_simplified() {
+        var doc = new Transformer(rootAsJsonSimple)
+                .transform(Documents.Null(), Collections.emptyMap(),
+                        MediaTypes.APPLICATION_XML.withParameter(DefaultXMLPlugin.PARAM_MODE(), DefaultXMLPlugin.SIMPLIFIED_MODE_VALUE()));
+
+        assertThat(doc.getContent(), CompareMatcher.isSimilarTo(root).ignoreWhitespace());
+    }
+
+    @Test
+    public void write_comprehensive_simplified() {
+        var doc = new Transformer(resourceAsString("xml/reports-simplified.json"))
+                .transform(Documents.Null(), Collections.emptyMap(),
+                        MediaTypes.APPLICATION_XML.withParameter(DefaultXMLPlugin.PARAM_MODE(), DefaultXMLPlugin.SIMPLIFIED_MODE_VALUE()));
+
+        assertThat(doc.getContent(), CompareMatcher.isSimilarTo(resourceAsString("xml/reports-simplified-nostylesheet.xml"))
+                .ignoreWhitespace().normalizeWhitespace().throwComparisonFailure()
+                .withNodeMatcher(new DefaultNodeMatcher(ElementSelectors.byNameAndText)));
+    }
+
+    @Test
     public void read_simple_basic() throws JSONException {
         var doc = new Transformer("payload")
                 .transform(Document.of(root,
