@@ -4,10 +4,10 @@
 * xtrasonnet Modules
 ** xref:libraries-root.adoc[Core]
 ** xref:libraries-arrays.adoc[Arrays]
-** xref:libraries-base64.adoc[Url]
+** xref:libraries-base64.adoc[Base64]
 ** xref:libraries-crypto.adoc[Crypto]
 ** xref:libraries-datetime.adoc[Datetime]
-** xref:libraries-duration.adoc[Url]
+** xref:libraries-duration.adoc[Duration]
 ** xref:libraries-jsonpath.adoc[JsonPath]
 ** xref:libraries-math.adoc[Math]
 ** xref:libraries-numbers.adoc[Numbers]
