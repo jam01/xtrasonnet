@@ -9,6 +9,7 @@ package com.github.jam01.xtrasonnet.plugins;
 
 import com.github.jam01.xtrasonnet.Transformer;
 import com.github.jam01.xtrasonnet.document.Document;
+import com.github.jam01.xtrasonnet.document.Documents;
 import com.github.jam01.xtrasonnet.document.MediaTypes;
 import org.json.JSONException;
 import org.junit.jupiter.api.Assertions;
@@ -45,7 +46,7 @@ public class JavaPluginTest {
 
     @Test
     public void read_null() throws JSONException {
-        var doc = new Transformer("payload").transform(Document.BasicDocument.NULL_INSTANCE);
+        var doc = new Transformer("payload").transform(Documents.Null());
 
         assertEquals("null", doc.getContent()); // "null" is a valid JSON doc
         assertEquals(MediaTypes.APPLICATION_JSON, doc.getMediaType());
@@ -54,7 +55,7 @@ public class JavaPluginTest {
     @Test
     public void write_simple() {
         var doc = new Transformer("{ color: 'blue', type: 'bus' }")
-                .transform(Document.BasicDocument.NULL_INSTANCE, Collections.emptyMap(), MediaTypes.APPLICATION_JAVA, Map.class);
+                .transform(Documents.Null(), Collections.emptyMap(), MediaTypes.APPLICATION_JAVA, Map.class);
 
         assertEquals(carMap, doc.getContent());
         assertEquals("application/x-java-object;type=java.util.Map", doc.getMediaType().toString());
@@ -63,7 +64,7 @@ public class JavaPluginTest {
     @Test
     public void write_object() {
         var doc = new Transformer("{ color: 'blue', type: 'bus' }")
-                .transform(Document.BasicDocument.NULL_INSTANCE, Collections.emptyMap(), MediaTypes.APPLICATION_JAVA, Car.class);
+                .transform(Documents.Null(), Collections.emptyMap(), MediaTypes.APPLICATION_JAVA, Car.class);
 
         assertEquals(car, doc.getContent());
         assertEquals("application/x-java-object;type=com.github.jam01.xtrasonnet.plugins.JavaPluginTest$Car", doc.getMediaType().toString());
@@ -72,7 +73,7 @@ public class JavaPluginTest {
     @Test
     public void write_null() throws JSONException {
         var doc = new Transformer("null")
-                .transform(Document.BasicDocument.NULL_INSTANCE, Collections.emptyMap(), MediaTypes.APPLICATION_JAVA);
+                .transform(Documents.Null(), Collections.emptyMap(), MediaTypes.APPLICATION_JAVA);
 
         JSONAssert.assertEquals(null, doc.getContent(), true);
         assertEquals(MediaTypes.APPLICATION_JAVA, doc.getMediaType());

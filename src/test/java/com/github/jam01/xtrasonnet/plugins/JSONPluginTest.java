@@ -9,6 +9,7 @@ package com.github.jam01.xtrasonnet.plugins;
 
 import com.github.jam01.xtrasonnet.Transformer;
 import com.github.jam01.xtrasonnet.document.Document;
+import com.github.jam01.xtrasonnet.document.Documents;
 import com.github.jam01.xtrasonnet.document.MediaTypes;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
@@ -36,7 +37,7 @@ public class JSONPluginTest {
     @Test
     public void read_null() throws JSONException {
         var doc = new Transformer("payload")
-                .transform(Document.BasicDocument.NULL_INSTANCE);
+                .transform(Documents.Null());
 
         assertEquals("null", doc.getContent());
         assertEquals(MediaTypes.APPLICATION_JSON, doc.getMediaType());
@@ -45,7 +46,7 @@ public class JSONPluginTest {
     @Test
     public void write_simple() throws JSONException {
         var doc = new Transformer("{ foo: 'bar' }")
-                .transform(Document.BasicDocument.NULL_INSTANCE);
+                .transform(Documents.Null());
 
         JSONAssert.assertEquals(foobar, doc.getContent(), true);
         assertEquals(MediaTypes.APPLICATION_JSON, doc.getMediaType());
@@ -54,7 +55,7 @@ public class JSONPluginTest {
     @Test
     public void write_null() {
         var doc = new Transformer("null")
-                .transform(Document.BasicDocument.NULL_INSTANCE);
+                .transform(Documents.Null());
 
         assertEquals("null", doc.getContent());
         assertEquals(MediaTypes.APPLICATION_JSON, doc.getMediaType());
@@ -63,7 +64,7 @@ public class JSONPluginTest {
     @Test
     public void write_indent() {
         var doc = new Transformer("{ foo: 'bar' }")
-                .transform(Document.BasicDocument.NULL_INSTANCE, Collections.emptyMap(), MediaTypes.APPLICATION_JSON.withParameter(DefaultJSONPlugin.PARAM_FORMAT, "true"));
+                .transform(Documents.Null(), Collections.emptyMap(), MediaTypes.APPLICATION_JSON.withParameter(DefaultJSONPlugin.PARAM_FORMAT, "true"));
         assertEquals("""
                 {
                     "foo": "bar"

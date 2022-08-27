@@ -36,8 +36,6 @@ public interface Document<T> {
         private final T content;
         private final MediaType mediaType;
 
-        public final static Document<Object> NULL_INSTANCE = new BasicDocument<>(null, MediaTypes.APPLICATION_JAVA);
-
         public BasicDocument(T content) {
             this(content, null);
         }

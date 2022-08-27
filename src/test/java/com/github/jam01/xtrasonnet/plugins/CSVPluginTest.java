@@ -9,6 +9,7 @@ package com.github.jam01.xtrasonnet.plugins;
 
 import com.github.jam01.xtrasonnet.Transformer;
 import com.github.jam01.xtrasonnet.document.Document;
+import com.github.jam01.xtrasonnet.document.Documents;
 import com.github.jam01.xtrasonnet.document.MediaTypes;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
@@ -107,7 +108,7 @@ public class CSVPluginTest {
     @Test
     public void write_simple() throws JSONException {
         var doc = new Transformer(carsJson)
-                .transform(Document.BasicDocument.NULL_INSTANCE, Collections.emptyMap(), MediaTypes.TEXT_CSV);
+                .transform(Documents.Null(), Collections.emptyMap(), MediaTypes.TEXT_CSV);
 
         assertEquals(cars, doc.getContent());
         assertEquals(MediaTypes.TEXT_CSV, doc.getMediaType());
@@ -116,7 +117,7 @@ public class CSVPluginTest {
     @Test
     public void write_object_noheader() throws JSONException {
         var doc = new Transformer(carsJson)
-                .transform(Document.BasicDocument.NULL_INSTANCE, Collections.emptyMap(),
+                .transform(Documents.Null(), Collections.emptyMap(),
                         MediaTypes.TEXT_CSV.withParameter(DefaultCSVPlugin.PARAM_HEADER_LINE, "absent"));
 
         assertEquals(carsNoheader, doc.getContent());
@@ -126,7 +127,7 @@ public class CSVPluginTest {
     @Test
     public void write_array_noheader() throws JSONException {
         var doc = new Transformer(carsJsonNoheader)
-                .transform(Document.BasicDocument.NULL_INSTANCE, Collections.emptyMap(), MediaTypes.TEXT_CSV);
+                .transform(Documents.Null(), Collections.emptyMap(), MediaTypes.TEXT_CSV);
 
         assertEquals(carsNoheader, doc.getContent());
         assertEquals(MediaTypes.TEXT_CSV, doc.getMediaType());
@@ -135,7 +136,7 @@ public class CSVPluginTest {
     @Test
     public void write_array_with_columns() throws JSONException {
         var doc = new Transformer(carsJsonNoheader)
-                .transform(Document.BasicDocument.NULL_INSTANCE, Collections.emptyMap(),
+                .transform(Documents.Null(), Collections.emptyMap(),
                         MediaTypes.TEXT_CSV
                                 .withParameter(DefaultCSVPlugin.PARAM_HEADER_LINE, "present")
                                 .withParameter(DefaultCSVPlugin.PARAM_COLUMNS, "color,type"));

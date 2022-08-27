@@ -8,6 +8,7 @@ package com.github.jam01.xtrasonnet.plugins;
  */
 
 import com.github.jam01.xtrasonnet.document.Document;
+import com.github.jam01.xtrasonnet.document.Documents;
 import com.github.jam01.xtrasonnet.document.MediaType;
 import com.github.jam01.xtrasonnet.document.MediaTypes;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -79,7 +80,7 @@ public class DefaultJavaPlugin extends BaseJacksonPlugin {
     public <T> Document<T> write(Value input, MediaType mediaType, Class<T> targetType) throws PluginException {
         // TODO: 8/11/22 should throw instead? null a valid result when requesting anything?
         if (input == ujson.Null$.MODULE$) {
-            return (Document<T>) Document.BasicDocument.NULL_INSTANCE;
+            return (Document<T>) Documents.Null();
         }
 
         ObjectMapper mapper = mapperFor(mediaType);

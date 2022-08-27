@@ -8,6 +8,7 @@ package com.github.jam01.xtrasonnet;
  */
 
 import com.github.jam01.xtrasonnet.document.Document;
+import com.github.jam01.xtrasonnet.document.Documents;
 import com.github.jam01.xtrasonnet.document.MediaTypes;
 import org.junit.Assert;
 import org.junit.Test;
@@ -31,7 +32,7 @@ public class NestedDocumentsTest {
         String result = Transformer.builder("nested")
                 .withInputNames("nested")
                 .build()
-                .transform(Document.BasicDocument.NULL_INSTANCE, inputs, MediaTypes.APPLICATION_JSON)
+                .transform(Documents.Null(), inputs, MediaTypes.APPLICATION_JSON)
                 .getContent();
         Assert.assertEquals("{\"json\":{\"hello\":\"world!\"},\"xml\":{\"root\":{}}}", result);
     }

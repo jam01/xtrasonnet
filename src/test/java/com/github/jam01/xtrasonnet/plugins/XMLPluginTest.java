@@ -9,6 +9,7 @@ package com.github.jam01.xtrasonnet.plugins;
 
 import com.github.jam01.xtrasonnet.Transformer;
 import com.github.jam01.xtrasonnet.document.Document;
+import com.github.jam01.xtrasonnet.document.Documents;
 import com.github.jam01.xtrasonnet.document.MediaTypes;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
@@ -89,7 +90,7 @@ public class XMLPluginTest {
     @Test
     public void write_simple_basic() {
         var doc = new Transformer(rootAsJsonBasic)
-                .transform(Document.BasicDocument.NULL_INSTANCE, Collections.emptyMap(),
+                .transform(Documents.Null(), Collections.emptyMap(),
                         MediaTypes.APPLICATION_XML.withParameter(DefaultXMLPlugin.PARAM_MODE(), DefaultXMLPlugin.BADGER_MODE_VALUE()));
 
         assertThat(doc.getContent(), CompareMatcher.isSimilarTo(root).ignoreWhitespace());
@@ -98,7 +99,7 @@ public class XMLPluginTest {
     @Test
     public void write_comprehensive_basic() {
         var doc = new Transformer(resourceAsString("xml/reports-basic.json"))
-                .transform(Document.BasicDocument.NULL_INSTANCE, Collections.emptyMap(),
+                .transform(Documents.Null(), Collections.emptyMap(),
                         MediaTypes.APPLICATION_XML.withParameter(DefaultXMLPlugin.PARAM_MODE(), DefaultXMLPlugin.BADGER_MODE_VALUE()));
 
         assertThat(doc.getContent(), CompareMatcher.isSimilarTo(resourceAsString("xml/reports-nostylesheet.xml"))
@@ -129,7 +130,7 @@ public class XMLPluginTest {
     @Test
     public void write_comprehensive_extended() {
         var doc = new Transformer(resourceAsString("xml/mixedcontent-extended.json"))
-                .transform(Document.BasicDocument.NULL_INSTANCE, Collections.emptyMap(),
+                .transform(Documents.Null(), Collections.emptyMap(),
                         MediaTypes.APPLICATION_XML.withParameter(DefaultXMLPlugin.PARAM_MODE(), DefaultXMLPlugin.EXTENDED_MODE_VALUE()));
 
         assertThat(doc.getContent(), CompareMatcher.isSimilarTo(resourceAsString("xml/mixedcontent.xml"))
@@ -153,7 +154,7 @@ public class XMLPluginTest {
     @Test
     public void write_override_qnames_basic() {
         var doc = new Transformer(resourceAsString("xml/qnames-overriden.json"))
-                .transform(Document.BasicDocument.NULL_INSTANCE, Collections.emptyMap(),
+                .transform(Documents.Null(), Collections.emptyMap(),
                         MediaTypes.APPLICATION_XML.withParameter(DefaultXMLPlugin.PARAM_MODE(), DefaultXMLPlugin.BADGER_MODE_VALUE())
                                 .withParameter("xmlns.a1", "http://example.org/ns/one")
                                 .withParameter("xmlns.a2", "http://example.org/ns/three")
@@ -184,7 +185,7 @@ public class XMLPluginTest {
     @Test
     public void write_comprehensive_extended_custom_convention() {
         var doc = new Transformer(resourceAsString("xml/reports-custom-convention.json"))
-                .transform(Document.BasicDocument.NULL_INSTANCE, Collections.emptyMap(),
+                .transform(Documents.Null(), Collections.emptyMap(),
                         MediaTypes.APPLICATION_XML.withParameter(DefaultXMLPlugin.PARAM_MODE(), DefaultXMLPlugin.EXTENDED_MODE_VALUE())
                                 .withParameter(DefaultXMLPlugin.PARAM_TEXT_KEY(), "_text_")
                                 .withParameter(DefaultXMLPlugin.PARAM_ATTRIBUTE_KEY(), "_attr_")
@@ -201,7 +202,7 @@ public class XMLPluginTest {
     @Test
     public void write_simple_basic_custom_xmlversion() {
         var doc = new Transformer(rootAsJsonBasic)
-                .transform(Document.BasicDocument.NULL_INSTANCE, Collections.emptyMap(),
+                .transform(Documents.Null(), Collections.emptyMap(),
                         MediaTypes.APPLICATION_XML.withParameter(DefaultXMLPlugin.PARAM_MODE(), DefaultXMLPlugin.BADGER_MODE_VALUE())
                                 .withParameter(DefaultXMLPlugin.PARAM_XML_VERSION(), "1.2"));
 
@@ -211,7 +212,7 @@ public class XMLPluginTest {
     @Test
     public void write_simple_basic_omitxmldeclaration() {
         var doc = new Transformer(rootAsJsonBasic)
-                .transform(Document.BasicDocument.NULL_INSTANCE, Collections.emptyMap(),
+                .transform(Documents.Null(), Collections.emptyMap(),
                         MediaTypes.APPLICATION_XML.withParameter(DefaultXMLPlugin.PARAM_MODE(), DefaultXMLPlugin.BADGER_MODE_VALUE())
                                 .withParameter(DefaultXMLPlugin.PARAM_EXCLUDE(), DefaultXMLPlugin.EXCLUDE_XML_DECLARATION_VALUE()));
 
@@ -231,7 +232,7 @@ public class XMLPluginTest {
     @Test
     public void write_escaped_basic() {
         var doc = new Transformer(escapedAsJson)
-                .transform(Document.BasicDocument.NULL_INSTANCE, Collections.emptyMap(),
+                .transform(Documents.Null(), Collections.emptyMap(),
                         MediaTypes.APPLICATION_XML.withParameter(DefaultXMLPlugin.PARAM_MODE(), DefaultXMLPlugin.BADGER_MODE_VALUE())
                                 .withParameter(DefaultXMLPlugin.PARAM_EXCLUDE(), DefaultXMLPlugin.EXCLUDE_XML_DECLARATION_VALUE()));
 
@@ -241,7 +242,7 @@ public class XMLPluginTest {
     @Test
     public void write_emptytags_basic() {
         var doc = new Transformer(emptyTagsAsJson)
-                .transform(Document.BasicDocument.NULL_INSTANCE, Collections.emptyMap(),
+                .transform(Documents.Null(), Collections.emptyMap(),
                         MediaTypes.APPLICATION_XML.withParameter(DefaultXMLPlugin.PARAM_MODE(), DefaultXMLPlugin.BADGER_MODE_VALUE())
                                 .withParameter(DefaultXMLPlugin.PARAM_EMPTY_TAGS(), "null string object")
                                 .withParameter(DefaultXMLPlugin.PARAM_EXCLUDE(), DefaultXMLPlugin.EXCLUDE_XML_DECLARATION_VALUE()));
@@ -252,7 +253,7 @@ public class XMLPluginTest {
     @Test
     public void write_null_simple_fails() {
         try {
-            new Transformer("null").transform(Document.BasicDocument.NULL_INSTANCE, Collections.emptyMap(), MediaTypes.APPLICATION_XML);
+            new Transformer("null").transform(Documents.Null(), Collections.emptyMap(), MediaTypes.APPLICATION_XML);
             fail("Should not succeed");
         } catch (Exception e) {
             assertTrue(e.getMessage().contains("Input for XML writer must be an Object"), "Failed with wrong message: " + e.getMessage());
@@ -273,7 +274,7 @@ public class XMLPluginTest {
     @Test
     public void write_arbitrary() {
         var doc = new Transformer(resourceAsString("xml/reports-arbitrary.json"))
-                .transform(Document.BasicDocument.NULL_INSTANCE, Collections.emptyMap(),
+                .transform(Documents.Null(), Collections.emptyMap(),
                         MediaTypes.APPLICATION_XML.withParameter(DefaultXMLPlugin.PARAM_MODE(), DefaultXMLPlugin.BADGER_MODE_VALUE()));
 
         assertThat(doc.getContent(), CompareMatcher.isSimilarTo(resourceAsString("xml/reports-arbitrary.xml"))
