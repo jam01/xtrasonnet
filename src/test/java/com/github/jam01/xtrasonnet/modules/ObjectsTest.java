@@ -90,7 +90,7 @@ public class ObjectsTest {
     }
 
     @Test
-    public void innerJoin() throws JSONException {
+    public void innerEqJoin() throws JSONException {
         JSONAssert.assertEquals(transform("""
                 [
                     { id: 2, email: 'joe@example.com', joined: '2021-07-30',
@@ -113,7 +113,7 @@ public class ObjectsTest {
                     { orderId: 10311, customerId: 93, date: '2021-05-03' }
                 ];
 
-                xtr.objects.innerJoin(customers, orders,
+                xtr.objects.innerEqJoin(customers, orders,
                     function(cust) cust.id, function(order) order.customerId)"""), true);
         assertEquals(transform("""
                 [
@@ -134,13 +134,13 @@ public class ObjectsTest {
                     { orderId: 10311, customerId: 93, date: '2021-05-03' }
                 ];
 
-                xtr.objects.innerJoin(customers, orders,
+                xtr.objects.innerEqJoin(customers, orders,
                     function(cust) cust.id, function(order) order.customerId,
                     function(cust, order) { id: cust.id, oId: order.orderId })"""));
     }
 
     @Test
-    public void outerJoin() throws JSONException {
+    public void leftEqJoin() throws JSONException {
         JSONAssert.assertEquals(transform("""
                 [
                     { id: 2, email: 'joe@example.com', joined: '2021-07-30',
@@ -164,7 +164,7 @@ public class ObjectsTest {
                     { orderId: 10311, customerId: 93, date: '2021-05-03' }
                 ];
 
-                xtr.objects.outerJoin(customers, orders,
+                xtr.objects.leftEqJoin(customers, orders,
                     function(cust) cust.id, function(order) order.customerId)"""), true);
         assertEquals(transform("""
                 [
@@ -186,13 +186,13 @@ public class ObjectsTest {
                     { orderId: 10311, customerId: 93, date: '2021-05-03' }
                 ];
 
-                xtr.objects.outerJoin(customers, orders,
+                xtr.objects.leftEqJoin(customers, orders,
                     function(cust) cust.id, function(order) order.customerId,
                     function(cust, order) { id: cust.id, oId: order?.orderId })"""));
     }
 
     @Test
-    public void fullJoin() throws JSONException {
+    public void fullEqJoin() throws JSONException {
         JSONAssert.assertEquals(transform("""
                 [
                     { id: 2, email: 'joe@example.com', joined: '2021-07-30',
@@ -217,7 +217,7 @@ public class ObjectsTest {
                     { orderId: 10311, customerId: 93, date: '2021-05-03' }
                 ];
 
-                xtr.objects.fullJoin(customers, orders,
+                xtr.objects.fullEqJoin(customers, orders,
                     function(cust) cust.id, function(order) order.customerId)"""), false);
 
         JSONAssert.assertEquals(transform("""
@@ -241,7 +241,7 @@ public class ObjectsTest {
                     { orderId: 10311, customerId: 93, date: '2021-05-03' }
                 ];
                                 
-                xtr.objects.fullJoin(customers, orders,
+                xtr.objects.fullEqJoin(customers, orders,
                     function(cust) cust.id, function(order) order.customerId,
                     function(cust, order) { id: cust?.id, oId: order?.orderId })"""), false);
     }

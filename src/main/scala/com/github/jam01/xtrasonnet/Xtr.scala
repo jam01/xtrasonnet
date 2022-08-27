@@ -1345,7 +1345,7 @@ object Xtr extends Library {
           distinctBy(obj, func, ev)
       },
 
-      builtinWithDefaults("innerJoin",
+      builtinWithDefaults("innerEqJoin",
         "arrL" -> null,
         "arrR" -> null,
         "funcIdL" -> null,
@@ -1390,7 +1390,7 @@ object Xtr extends Library {
         new Val.Arr(pos, out.toArray)
       },
 
-      builtinWithDefaults("outerJoin",
+      builtinWithDefaults("leftEqJoin",
         "arrL" -> null,
         "arrR" -> null,
         "funcIdL" -> null,
@@ -1437,7 +1437,7 @@ object Xtr extends Library {
         new Val.Arr(pos, leftHash.values().asScala.flatten.toArray)
       },
 
-      builtinWithDefaults("fullJoin",
+      builtinWithDefaults("fullEqJoin",
         "arrL" -> null,
         "arrR" -> null,
         "funcIdL" -> null,
