@@ -322,11 +322,11 @@ object Xtr extends Library {
         }
     },
 
-    builtin("orderBy", "value", "func") {
+    builtin("sortBy", "value", "func") {
       (pos, ev, value: Val, func: Val.Func) =>
         value match {
-          case array: Val.Arr => orderBy(array.asLazyArray, func, ev)
-          case obj: Val.Obj => orderBy(obj, func, ev)
+          case array: Val.Arr => sortBy(array.asLazyArray, func, ev)
+          case obj: Val.Obj => sortBy(obj, func, ev)
           case x => Error.fail("Expected Array or Object, got: " + x.prettyName)
         }
     },
@@ -2398,7 +2398,7 @@ object Xtr extends Library {
   }
 
   // TODO: optimize with while-loop
-  private def orderBy(array: Array[Lazy], func: Val.Func, ev: EvalScope): Val = {
+  private def sortBy(array: Array[Lazy], func: Val.Func, ev: EvalScope): Val = {
     val pos = func.pos
     val args = func.params.names.length
 
@@ -2415,7 +2415,7 @@ object Xtr extends Library {
   }
 
   // TODO: we're traversing the object twice, needed?
-  private def orderBy(obj: Val.Obj, func: Val.Func, ev: EvalScope): Val = {
+  private def sortBy(obj: Val.Obj, func: Val.Func, ev: EvalScope): Val = {
     val pos = func.pos
     val args = func.params.names.length
     val m = new mutable.LinkedHashMap[String, Val.Obj.Member]

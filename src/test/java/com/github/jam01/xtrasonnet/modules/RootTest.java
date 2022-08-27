@@ -430,7 +430,7 @@ public class RootTest {
     }
 
     @Test
-    public void orderBy() {
+    public void sortBy() {
         assertEquals(transform("""
                 [
                     { name: 'python', version: '3.1.14', weight: 2 },
@@ -443,7 +443,7 @@ public class RootTest {
                     { name: 'python', version: '3.1.14', weight: 2 }
                 ];
 
-                xtr.orderBy(languages, function(lang) lang.weight)"""));
+                xtr.sortBy(languages, function(lang) lang.weight)"""));
         assertEquals(transform("""
                 [
                     { name: 'java', version: '19', code: 'B' },
@@ -456,7 +456,7 @@ public class RootTest {
                     { name: 'python', version: '3.1.14', code: 'B' }
                 ];
 
-                xtr.orderBy(languages, function(lang) lang.code)"""));
+                xtr.sortBy(languages, function(lang) lang.code)"""));
     }
 
     @Test

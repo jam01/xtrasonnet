@@ -975,7 +975,7 @@ Returns a new `Object[B]` containing the entry of every `Object[B]` obtained by 
 == `objectFrom(arr: Array[A], Func[(A, Number) => Object[B]]: Object[B]`
 Returns a new `Object[B]` containing the entry of every `Object[B]` obtained by applying the given `function` to all elements in `arr`. `function` must accept an `A` value and its `Number` index.
 
-== `orderBy(arr: Array[A], Func[(A) => Boolean]): Array[A]`
+== `sortBy(arr: Array[A], Func[(A) => Boolean]): Array[A]`
 Returns a new `Array[A]` with the conents of `arr` sorted by comparing the values returned by `function`, which must accept and `A`.
 
 .Example
@@ -997,7 +997,7 @@ xtr.minBy(languages, function(lang) lang.isPreferred)
 ]
 ----
 
-== `orderBy(arr: Array[A], Func[(A) => Number]): Array[A]`
+== `sortBy(arr: Array[A], Func[(A) => Number]): Array[A]`
 Returns a new `Array[A]` with the conents of `arr` sorted by comparing the values returned by `function`, which must accept and `A`.
 
 .Example
@@ -1008,7 +1008,7 @@ local languages = [
     { name: 'python', version: '3.1.14', weight: 2 }
 ];
 
-xtr.orderBy(languages, function(lang) lang.weight)
+xtr.sortBy(languages, function(lang) lang.weight)
 ----
 .Result
 ----
@@ -1019,7 +1019,7 @@ xtr.orderBy(languages, function(lang) lang.weight)
 ]
 ----
 
-== `orderBy(arr: Array[A], Func[(A) => String]): Array[A]`
+== `sortBy(arr: Array[A], Func[(A) => String]): Array[A]`
 Returns a new `Array[A]` with the conents of `arr` sorted by comparing the values returned by `function`, which must accept and `A`.
 
 .Example
@@ -1030,7 +1030,7 @@ local languages = [
     { name: 'python', version: '3.1.14', code: 'B' }
 ];
 
-xtr.orderBy(languages, function(lang) lang.code)
+xtr.sortBy(languages, function(lang) lang.code)
 ----
 .Result
 ----
