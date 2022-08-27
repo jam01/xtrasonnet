@@ -82,6 +82,12 @@ xtr.objects.distinctBy(languages, function(lang, ordinal)
 }
 ----
 
+== `fromArray(arr: Array[A], Func[(A) => Object[B]): Object[B]`
+Returns a new `Object[B]` containing the entry of every `Object[B]` obtained by applying the given `function` to all elements in `arr`. `function` must accept an `A` value.
+
+== `fromArray(arr: Array[A], Func[(A, Number) => Object[B]]: Object[B]`
+Returns a new `Object[B]` containing the entry of every `Object[B]` obtained by applying the given `function` to all elements in `arr`. `function` must accept an `A` value and its `Number` index.
+
 == `fullEqJoin(arrL: Array[Object[A]], arrR: Array[Object[B]], identity: Func[(Object[A]) => String|Number|Boolean], identityR: Func[(Object[B]) => String|Number|Boolean) => Object[C]]): Array[Object[C]]`
 Returns a new `Array` with all the objects that exist in `arrL` or in `arrR`, joining those that exist in both with a shallow merge, and using the given `identity` functions to compute equality.
 

@@ -969,12 +969,6 @@ Result
 123.45
 ----
 
-== `objectFrom(arr: Array[A], Func[(A) => Object[B]): Object[B]`
-Returns a new `Object[B]` containing the entry of every `Object[B]` obtained by applying the given `function` to all elements in `arr`. `function` must accept an `A` value.
-
-== `objectFrom(arr: Array[A], Func[(A, Number) => Object[B]]: Object[B]`
-Returns a new `Object[B]` containing the entry of every `Object[B]` obtained by applying the given `function` to all elements in `arr`. `function` must accept an `A` value and its `Number` index.
-
 == `sortBy(arr: Array[A], Func[(A) => Boolean]): Array[A]`
 Returns a new `Array[A]` with the conents of `arr` sorted by comparing the values returned by `function`, which must accept and `A`.
 
