@@ -104,6 +104,11 @@ public class StringsTest {
     }
 
     @Test
+    public void wrap() {
+        assertEquals(transform("'__Hello, world!_'"), transform("xtr.strings.wrap('_Hello, world!', '_')"));
+    }
+
+    @Test
     public void wrapIfMissing() {
         assertEquals(transform("'_Hello, world!_'"), transform("xtr.strings.wrapIfMissing('_Hello, world!', '_')"));
     }

@@ -327,6 +327,18 @@ xtr.strings.truncate('Hello, world!', 5)
 'Hello'
 ----
 
+== `wrap(str: String, wrap: String): String`
+Returns `str`, prepended and appended with `wrap`.
+
+.Example
+----
+xtr.strings.wrap('_Hello, world!', '_')
+----
+.Result
+----
+'__Hello, world!_'
+----
+
 == `wrapIfMissing(str: String, wrap: String): String`
 Returns `str`, prepended and appended with `wrap`, if not found.
 
@@ -337,16 +349,4 @@ xtr.strings.wrapIfMissing('_Hello, world!', '_')
 .Result
 ----
 '_Hello, world!_'
-----
-
-== `wrapWith(str: String, wrap: String): String`
-Returns `str`, prepended and appended with `wrap`.
-
-.Example
-----
-xtr.strings.wrapIfMissing('_Hello, world!', '_')
-----
-.Result
-----
-'__Hello, world!_'
 ----
