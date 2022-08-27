@@ -6,9 +6,6 @@ Decrypts the Base64 `data` with specified Java Cryptographic `transformation` an
 
 The `transformation` must include the name of a cryptographic algorithm (e.g., AES), and may be followed by a feedback mode and padding scheme. A transformation is of the form: 'algorithm/mode/padding' or 'algorithm'. See the https://docs.oracle.com/en/java/javase/17/docs/api/java.base/javax/crypto/Cipher.html[Java Cipher] docs for more information.
 
-> Note:
-xtrasonnet supports decryption through the Java Cryptographic Extension (JCE) framework. Every Java distribution is required to support a specific set of algorithms, while others may only be found in third party libraries such as the popular https://www.bouncycastle.org/java.html[Bouncy Castle] libraries, which are bundled with xtrasonnet.
-
 .Example
 ----
 xtr.crypto.decrypt('vAkb3PWJPQF1kGkM3vQrdQ==', '$sixteencharkey$', 'AES/ECB/PKCS5Padding')
@@ -22,7 +19,7 @@ xtr.crypto.decrypt('vAkb3PWJPQF1kGkM3vQrdQ==', '$sixteencharkey$', 'AES/ECB/PKCS
 xtrasonnet supports decryption through the Java Cryptographic Extension (JCE) framework. Every Java distribution is required to support a specific set of algorithms, while others may only be supported by third party libraries such as the popular https://www.bouncycastle.org/java.html[Bouncy Castle] libraries, which are bundled with xtrasonnet.
 
 > Note:
-In order to facilitate encryption/decryption, xtrasonnet prefixes the encrypted data with the randomly generated initialization vector (IV) used by the JCE Cipher; similarly decryption operations expect such IV to be present in order to correctly decrypt the data.
+In order to facilitate encryption/decryption, xtrasonnet prefixes the encrypted data with the randomly generated initialization vector (IV) used by the JCE Cipher. Similarly, decryption operations expect such IV to be present in order to correctly decrypt the data.
 >
 The form of the payload expected for decryption is as follows:
 >
@@ -48,7 +45,7 @@ xtr.crypto.encrypt('Hello, world!', '$sixteencharkey$', 'AES/ECB/PKCS5Padding')
 xtrasonnet supports encryption through the Java Cryptographic Extension (JCE) framework. Every Java distribution is required to support a specific set of algorithms, while others may only be found in third party libraries such as the popular https://www.bouncycastle.org/java.html[Bouncy Castle] libraries, which are bundled with xtrasonnet.
 
 > Note:
-In order to facilitate encryption/decryption, xtrasonnet prefixes the encrypted data with the randomly generated initialization vector (IV) used by the JCE Cipher; similarly decryption operations expect such IV to be present in order to correctly decrypt the data.
+In order to facilitate encryption/decryption, xtrasonnet prefixes the encrypted data with the randomly generated initialization vector (IV) used by the JCE Cipher. Similarly decryption operations expect such IV to be present in order to correctly decrypt the data.
 >
 The form of the encrypted payload is as follows:
 >
