@@ -62,9 +62,9 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.databricks</groupId>
+            <groupId>io.github.jam01</groupId>
             <artifactId>sjsonnet_2.13</artifactId>
-            <version>0.4.3</version>
+            <version>0.4.3-01</version>
         </dependency>
         <dependency>
             <groupId>org.jetbrains</groupId>
