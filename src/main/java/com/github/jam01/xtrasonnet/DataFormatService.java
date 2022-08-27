@@ -57,13 +57,13 @@ public class DataFormatService {
 
     public <T> Document<T> mandatoryWrite(Value input, MediaType mediaType, Class<T> targetType) throws PluginException {
         return thatCanWrite(mediaType, targetType)
-                .orElseThrow(() -> new IllegalArgumentException("The output MediaType " + mediaType + " is not supported for class" + targetType))
+                .orElseThrow(() -> new IllegalArgumentException("The output MediaType " + mediaType + " is not supported for " + targetType))
                 .write(input, mediaType, targetType);
     }
 
     public ujson.Value mandatoryRead(Document<?> doc) throws PluginException {
         return thatCanRead(doc)
-                .orElseThrow(() -> new IllegalArgumentException("The input MediaType " + doc.getMediaType() + " is not supported for class" + doc.getContent().getClass()))
+                .orElseThrow(() -> new IllegalArgumentException("The input MediaType " + doc.getMediaType() + " is not supported for " + doc.getContent().getClass()))
                 .read(doc);
     }
 }
