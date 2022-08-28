@@ -1217,8 +1217,8 @@ object Xtr extends Library {
         (pos, ev, array: Val.Arr, func: Val.Func) =>
           val out = new util.LinkedHashMap[String, Val.Obj.Member]()
           val part = array.asLazyArray.partition(func.apply1(_, pos.noOffset)(ev).isInstanceOf[Val.True])
-          out.put("success", memberOf(new Val.Arr(pos, part._1)))
-          out.put("failure", memberOf(new Val.Arr(pos, part._2)))
+          out.put("pass", memberOf(new Val.Arr(pos, part._1)))
+          out.put("fail", memberOf(new Val.Arr(pos, part._2)))
           new Val.Obj(pos, out, false, null, null)
       },
 
@@ -1231,8 +1231,8 @@ object Xtr extends Library {
           val split = array.asLazyArray.splitAt(index)
           val out = new util.LinkedHashMap[String, Val.Obj.Member]()
 
-          out.put("l", memberOf(new Val.Arr(pos, split._1)))
-          out.put("r", memberOf(new Val.Arr(pos, split._2)))
+          out.put("left", memberOf(new Val.Arr(pos, split._1)))
+          out.put("right", memberOf(new Val.Arr(pos, split._2)))
           new Val.Obj(pos, out, false, null, null)
       },
 
@@ -1241,8 +1241,8 @@ object Xtr extends Library {
           val split = arr.asLazyArray.splitAt(arr.asLazyArray.indexWhere(func.apply1(_, pos.noOffset)(ev).isInstanceOf[Val.True]))
           val out = new util.LinkedHashMap[String, Val.Obj.Member]()
 
-          out.put("l", memberOf(new Val.Arr(pos, split._1)))
-          out.put("r", memberOf(new Val.Arr(pos, split._2)))
+          out.put("left", memberOf(new Val.Arr(pos, split._1)))
+          out.put("right", memberOf(new Val.Arr(pos, split._2)))
           new Val.Obj(pos, out, false, null, null)
       },
 

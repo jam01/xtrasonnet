@@ -214,7 +214,7 @@ xtr.arrays.occurrencesBy([1, 2, 3, 4, 5], function(item) if (item) < 4 then 'und
 == `partition(arr: Array[A], predicate: Func[(A) => Boolean]): Object[A]`
 Returns an `Object` with two entries:
 
-- `success` key with an `Array[A]` of the subset of elements in `arr` that satisfy the given `predicate`, which must take an `A`.
+- `pass` key with an `Array[A]` of the subset of elements in `arr` that satisfy the given `predicate`, which must take an `A`.
 - `fail` key with an `Array[A]` of the subset of elements in `arr` that fail the given `predicate`, which must take an `A`.
 
 .Example
@@ -223,7 +223,7 @@ xtr.arrays.partition([1, 2, 3, 4, 5], function(item) item < 4)
 ----
 .Result
 ----
-{ success: [1, 2, 3], failure: [4, 5] }
+{ pass: [1, 2, 3], fail: [4, 5] }
 ----
 
 == `splitAt(arr: Array[A], n: Number): Object[A]`

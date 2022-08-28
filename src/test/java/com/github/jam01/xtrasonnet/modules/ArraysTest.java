@@ -7,7 +7,6 @@ package com.github.jam01.xtrasonnet.modules;
  * compliance with the Elastic License 2.0.
  */
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static com.github.jam01.xtrasonnet.TestUtils.transform;
@@ -83,12 +82,12 @@ public class ArraysTest {
 
     @Test
     public void partition() {
-        assertEquals(transform("{ success: [1, 2, 3], failure: [4, 5] }"), transform("xtr.arrays.partition([1, 2, 3, 4, 5], function(item) item < 4)"));
+        assertEquals(transform("{ pass: [1, 2, 3], fail: [4, 5] }"), transform("xtr.arrays.partition([1, 2, 3, 4, 5], function(item) item < 4)"));
     }
 
     @Test
     public void splitAt() {
-        assertEquals(transform("{ l: [1, 2, 3], r: [4, 5] }"), transform("xtr.arrays.splitAt([1, 2, 3, 4, 5], 3)"));
+        assertEquals(transform("{ left: [1, 2, 3], right: [4, 5] }"), transform("xtr.arrays.splitAt([1, 2, 3, 4, 5], 3)"));
     }
 
     @Test
@@ -98,7 +97,7 @@ public class ArraysTest {
 
     @Test
     public void breakk() {
-        assertEquals(transform("{ l: [1], r: [2, 3, 4, 5] }"), transform("xtr.arrays.break([1, 2, 3, 4, 5], function(item) item % 2 == 0)"));
+        assertEquals(transform("{ left: [1], right: [2, 3, 4, 5] }"), transform("xtr.arrays.break([1, 2, 3, 4, 5], function(item) item % 2 == 0)"));
     }
 
     @Test
