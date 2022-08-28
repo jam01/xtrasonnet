@@ -26,7 +26,7 @@ package com.github.jam01.xtrasonnet
 /*-
  * Changed:
  * - d74e8ff8838292274aa0c386d39fece6db16916d: Encapsulates Library logic
- *      Reimplemented DS under the new Library interface, while keeping some function under Crypto, JsonPath, and URL
+ *      Reimplemented DS under the new Library interface, while keeping some function under Crypto, and URL
  *
  * Adopted:
  * - 6b92da38753b0f8d00f12dc5859c644027d92cd1: Added operations for concatentation and removal
@@ -53,7 +53,7 @@ package com.github.jam01.xtrasonnet
 
 import com.github.jam01.xtrasonnet.document.{Document, MediaType}
 import com.github.jam01.xtrasonnet.header.Header
-import com.github.jam01.xtrasonnet.modules.{Crypto, JsonPath}
+import com.github.jam01.xtrasonnet.modules.{Crypto}
 import com.github.jam01.xtrasonnet.spi.Library
 import com.github.jam01.xtrasonnet.spi.Library.{emptyObj, memberOf}
 import sjsonnet.Expr.Member.Visibility
@@ -950,13 +950,6 @@ object Xtr extends Library {
 
             new String(cipher.doFinal(encryptedBytes))
           }
-      }
-    ),
-
-    "jsonpath" -> moduleFrom(
-      builtin("eval", "json", "path") {
-        (pos, ev, json: Val, path: String) =>
-          Materializer.reverse(pos, ujson.read(JsonPath.select(ujson.write(Materializer.apply(json)(ev)), path)))
       }
     ),
 
