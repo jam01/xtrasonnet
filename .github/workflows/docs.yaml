@@ -6,6 +6,7 @@ on:
     paths:
       - 'docs/**'
       - 'mkdocs.yml'
+      - '.github/workflows/docs.yaml'
 jobs:
   build_site:
     name: "Build mkdocs site"
@@ -18,5 +19,5 @@ jobs:
           python-version: 3.x
       - shell: bash
         run: |
-          pip install mkdocs-material
+          pip install mkdocs-material mkdocs-minify-plugin
       - run: mkdocs gh-deploy --force
