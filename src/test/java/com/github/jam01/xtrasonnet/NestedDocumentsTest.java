@@ -10,12 +10,13 @@ package com.github.jam01.xtrasonnet;
 import com.github.jam01.xtrasonnet.document.Document;
 import com.github.jam01.xtrasonnet.document.Documents;
 import com.github.jam01.xtrasonnet.document.MediaTypes;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class NestedDocumentsTest {
 
@@ -34,6 +35,6 @@ public class NestedDocumentsTest {
                 .build()
                 .transform(Documents.Null(), inputs, MediaTypes.APPLICATION_JSON)
                 .getContent();
-        Assert.assertEquals("{\"json\":{\"hello\":\"world!\"},\"xml\":{\"root\":{}}}", result);
+        assertEquals("{\"json\":{\"hello\":\"world!\"},\"xml\":{\"root\":{}}}", result);
     }
 }
