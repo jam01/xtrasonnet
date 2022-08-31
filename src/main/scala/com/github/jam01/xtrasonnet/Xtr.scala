@@ -1872,12 +1872,6 @@ object Xtr extends Library {
           else str
       },
 
-      builtin("truncate", "value", "num") {
-        (pos, ev, str: String, num: Int) =>
-          if (str.length <= num) str
-          else str.substring(0, num)
-      },
-
       builtin("wrapIfMissing", "value", "wrapper") {
         (pos, ev, str: String, wrapper: String) =>
           val ret = new mutable.StringBuilder(str)

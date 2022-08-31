@@ -99,11 +99,6 @@ public class StringsTest {
     }
 
     @Test
-    public void truncate() {
-        assertEquals(transform("'Hello'"), transform("xtr.strings.truncate('Hello, world!', 5)"));
-    }
-
-    @Test
     public void wrap() {
         assertEquals(transform("'__Hello, world!_'"), transform("xtr.strings.wrap('_Hello, world!', '_')"));
     }
