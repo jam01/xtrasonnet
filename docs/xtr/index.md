@@ -1,64 +1,77 @@
-= `xtr`
+# xtr
 
-Also called core or root functions.
+## contains
+### Array contains
+`contains(arr: Array, value: Any): Boolean`
 
-== `contains(arr: Array, value: Any): Boolean`
 Returns `true` if `arr` contains the given `value`, otherwise `false`.
 
-.Example
-----
+**Example**
+```
 xtr.contains([1, 2, 3], 1)
-----
-.Result
-----
+```
+**Result**
+```
 true
-----
+```
 
-== `contains(obj: Object, value: Any): Boolean`
+<br/>
+### Object contains
+`contains(obj: Object, value: Any): Boolean`
+
 Returns `true` if `obj` contains the given `value`, otherwise `false`.
 
-.Example
-----
+**Example**
+```
 xtr.contains({ scala: '3.1.3' }, 'scala')
-----
-.Result
-----
+```
+**Result**
+```
 true
-----
+```
 
-== `contains(str1: String, str2: String): Boolean`
+<br/>
+### String contains
+`contains(str1: String, str2: String): Boolean`
+
 Returns `true` if `str1` contains `str2`, otherwise `false`.
 
-.Example
-----
+**Example**
+```
 xtr.contains('Lorem ipsum', 'Lorem')
-----
-.Result
-----
+```
+**Result**
+```
 true
-----
+```
 
-== `endsWith(str1: String, str2: String): String`
+<br/>
+## endsWith
+`endsWith(str1: String, str2: String): String`
+
 Returns `true` if `str1` ends with `str2`, otherwise `false`.
 
-.Example
-----
+**Example**
+```
 xtr.endsWith('Lorem ipsum', 'ipsum')
-----
-.Result
-----
+```
+**Result**
+```
 true
-----
+```
 
-== `entriesOf(obj: Object[A]): Array[Object[String|A]]`
+<br/>
+## entries
+`entries(obj: Object[A]): Array[Object[String|A]]`
+
 Returns an `Array[Object[String|A]]` with one `Object[String|A]` for every entry in `obj`. The result has the form of `[{ key: String, value: A }]`.
 
-.Example
-----
-xtr.entriesOf({ scala: '3.1.3', java: '19' })
-----
-.Result
-----
+**Example**
+```
+xtr.entries({ scala: '3.1.3', java: '19' })
+```
+**Result**
+```
 [
   {
     key: 'scala',
@@ -69,61 +82,78 @@ xtr.entriesOf({ scala: '3.1.3', java: '19' })
     value: '19'
   }
 ]
-----
+```
 
-== `filter(arr: Array[A], predicate Func[(A) => Boolean]): Array[A]`
+<br/>
+## filter
+### filter func(value)
+`filter(arr: Array[A], predicate Func[(A) => Boolean]): Array[A]`
+
 Returns a new `Array[A]` containing the elements of `arr` that satisfy the given `predicate`, which must accept an `A` value to test.
 
-.Example
-----
+**Example**
+```
 xtr.filter([1, 2, 3, 4], function(item) item < 3)
-----
-.Result
-----
+```
+**Result**
+```
 [1, 2]
-----
+```
 
-== `filter(arr: Array[A], predicate Func[(A, Number) => Boolean]): Array[A]`
+<br/>
+### filter func(value, idx)
+`filter(arr: Array[A], predicate Func[(A, Number) => Boolean]): Array[A]`
+
 Returns a new `Array[A]` containing the elements of `arr` that satisfy the given `predicate`, which must accept an `A` value and its `Number` index to test.
 
-.Example
-----
+**Example**
+```
 xtr.filter([1, 2, 3, 4], function(item, idx) idx > 2)
-----
-.Result
-----
+```
+**Result**
+```
 [4]
-----
+```
 
-== `filterNotEq(arr: Array[A], value: B): Array[A]`
+<br/>
+## filterNotEq
+`filterNotEq(arr: Array[A], value: B): Array[A]`
+
 Returns a new `Array[A]` containing the elements of `arr` that are not equal to the given `value`.
 
-.Example
-----
+**Example**
+```
 xtr.filterNotEq([1, 2, 3, 4, 3, 4], 3)
-----
-.Result
-----
+```
+**Result**
+```
 [1, 2, 4, 4]
-----
+```
 
-== `filterNotIn(arr: Array[A], arr2: Array[B]): Array[A]`
+<br/>
+## filterNotIn
+`filterNotIn(arr: Array[A], arr2: Array[B]): Array[A]`
+
 Returns a new `Array[A]` containing the elements of `arr1` that are not in the given `arr2`.
 
-.Example
-----
+**Example**
+```
 xtr.filterNotIn([1, 2, 3, 4, 3, 4], [3, 4])
-----
-.Result
-----
+```
+**Result**
+```
 [1, 2]
-----
+```
 
-== `filterObject(obj: Object[A], predicate: Func[(A) => Boolean]): Object[A]`
+<br/>
+## filterObject
+### filterObject func(value)
+`filterObject(obj: Object[A], predicate: Func[(A) => Boolean]): Object[A]`
+
 Returns a new `Object[A]` containing the entries of `obj` that satisfy the given `predicate`, which must accept an `A` value to test.
 
-.Example
-----
+**Example**
+```
 local languages = {
     scala: { version: '3.1.3', isJvm: true },
     java: { version: '19', isJvm: true },
@@ -131,20 +161,23 @@ local languages = {
 };
 
 xtr.filterObject(languages, function(lang) lang.isJvm)
-----
-.Result
-----
+```
+**Result**
+```
 {
     scala: { version: '3.1.3', isJvm: true },
     java: { version: '19', isJvm: true }
 }
-----
+```
 
-== `filterObject(obj: Object[A], predicate: Func[(A, String) => Boolean]): Object[A]`
+<br/>
+### filterObject func(value, key)
+`filterObject(obj: Object[A], predicate: Func[(A, String) => Boolean]): Object[A]`
+
 Returns a new `Object[A]` containing the entries of `obj` that satisfy the given `predicate`, which must accept an `A` value and its corresponding `String` key to test.
 
-.Example
-----
+**Example**
+```
 local languages = {
     scala: { version: '3.1.3', isJvm: true },
     java: { version: '19', isJvm: true },
@@ -152,20 +185,23 @@ local languages = {
 };
 
 xtr.filterObject(languages, function(lang, name) !lang.isJvm || name == 'scala')
-----
-.Result
-----
+```
+**Result**
+```
 {
     scala: { version: '3.1.3', isJvm: true },
     python: { version: '3.10.4', isJvm: false }
 }
-----
+```
 
-== `filterObject(obj: Object[A], predicate: Func[(A, String, Number) => Boolean]): Object[A]`
+<br/>
+### filterObject func(value, key, idx)
+`filterObject(obj: Object[A], predicate: Func[(A, String, Number) => Boolean]): Object[A]`
+
 Returns a new `Object[A]` containing the entries of `obj` that satisfy the given `predicate`, which must accept an `A` value and its corresponding `String` key and `Number` index to test.
 
-.Example
-----
+**Example**
+```
 local languages = {
     scala: { version: '3.1.3', isJvm: true },
     java: { version: '19', isJvm: true },
@@ -173,44 +209,55 @@ local languages = {
 };
 
 xtr.filterObject(languages, function(lang, name, idx) idx == 0 || name == 'python')
-----
-.Result
-----
+```
+**Result**
+```
 {
     scala: { version: '3.1.3', isJvm: true},
     python: { version: '3.10.4', isJvm: false}
 }
-----
+```
 
-== `flatMap(arr: Array[A], function: Func[(A) => Array[B]]): Array[B]`
+<br/>
+## flatMap
+### flatMap func(value)
+`flatMap(arr: Array[A], function: Func[(A) => Array[B]]): Array[B]`
+
 Returns a new `Array[B]` containing the elements of every `Array[B]` obtained by applying the given `function` to all elements in `arr`. `function` must accept an `A` value.
 
-.Example
-----
+**Example**
+```
 xtr.flatMap([1, 3, 5], function(item) [item, item * item])
-----
-.Result
-----
+```
+**Result**
+```
 [1, 1, 3, 9, 5, 25]
-----
+```
 
-== `flatMap(arr: Array[A], function: Func[(A, Number) => Array[B]]): Array[B]`
+<br/>
+### flatMap func(value, idx)
+`flatMap(arr: Array[A], function: Func[(A, Number) => Array[B]]): Array[B]`
+
 Returns a new `Array[B]` containing the elements of every `Array[B]` obtained by applying the given `function` to all elements in `arr`. `function` must accept an `A` value and its `Number` index.
 
-.Example
-----
+**Example**
+```
 xtr.flatMap([1, 3, 5], function(item, idx) [item, item * idx])
-----
-.Result
-----
+```
+**Result**
+```
 [1, 0, 3, 3, 5, 10]
-----
+```
 
-== `flatMapObject(obj: Object[A], function: Func[(A) => Object[B]]): Object[B]`
+<br/>
+## flatMapObject
+### flatMapObject func(value)
+`flatMapObject(obj: Object[A], function: Func[(A) => Object[B]]): Object[B]`
+
 Returns a new `Object[B]` containing the entries of every `Object[B]` obtained by applying the given `function` to all entries in `obj`. `function` must accept an `A` value.
 
-.Example
-----
+**Example**
+```
 local candidateReqs = {
     req1: { skillsType: 'dev', required: ['java'], preferred: ['unit-testing'] },
     req2: { skillsType: 'ops', required: ['containers'], preferred: ['kubernetes'] }
@@ -223,9 +270,9 @@ local reqsWeight(req) = {
 };
 
 xtr.flatMapObject(candidateReqs, reqsWeight)
-----
-.Result
-----
+```
+**Result**
+```
 {
     java: 5,
     'unit-testing': 2,
@@ -234,13 +281,16 @@ xtr.flatMapObject(candidateReqs, reqsWeight)
     kubernetes: 2,
     jenkins: 4
 }
-----
+```
 
-== `flatMapObject(obj: Object[A], function: Func[(A, String) => Object[B]]): Object[B]`
+<br/>
+### flatMapObject func(value, key)
+`flatMapObject(obj: Object[A], function: Func[(A, String) => Object[B]]): Object[B]`
+
 Returns a new `Object[B]` containing the entries of every `Object[B]` obtained by applying the given `function` to all entries in `obj`. `function` must accept an `A` value and its corresponding `String` key.
 
-.Example
-----
+**Example**
+```
 local candidateReqs = {
     dev: { required: ['java'], preferred: ['unit-testing'] },
     ops: { required: ['containers'], preferred: ['kubernetes'] }
@@ -253,9 +303,9 @@ local reqsWeight(req, type) = {
 };
 
 xtr.flatMapObject(candidateReqs, reqsWeight)
-----
-.Result
-----
+```
+**Result**
+```
 {
     java: 5,
     'unit-testing': 2,
@@ -264,13 +314,16 @@ xtr.flatMapObject(candidateReqs, reqsWeight)
     kubernetes: 2,
     jenkins: 4
 }
-----
+```
 
-== `flatMapObject(obj: Object[A], function: Func[(A, String, Number) => Object[B]]): Object[B]`
+<br/>
+### flatMapObject func(value, key, idx)
+`flatMapObject(obj: Object[A], function: Func[(A, String, Number) => Object[B]]): Object[B]`
+
 Returns a new `Object[B]` containing the entries of every `Object[B]` obtained by applying the given `function` to all entries in `obj`. `function` must accept an `A` value and its corresponding `String` key and `Number` index.
 
-.Example
-----
+**Example**
+```
 local candidateReqs = {
     dev: { required: ['java'], preferred: ['unit-testing'] },
     ops: { required: ['containers'], preferred: ['kubernetes'] }
@@ -283,9 +336,9 @@ local reqsWeight(req, type, idx) = {
 };
 
 xtr.flatMapObject(candidateReqs, reqsWeight)
-----
-.Result
-----
+```
+**Result**
+```
 {
     java: 5,
     'unit-testing': 3,
@@ -294,59 +347,72 @@ xtr.flatMapObject(candidateReqs, reqsWeight)
     kubernetes: 1,
     jenkins: 2
 }
-----
+```
 
-== `flatten(arr: Array[Array[A]]): Array[A]`
+<br/>
+## flatten
+`flatten(arr: Array[Array[A]]): Array[A]`
+
 Returns a new `Array[A]` containing the elements of every `Array[A]` in `arr`.
 
-.Example
-----
+**Example**
+```
 xtr.flatten([[1, 2], [3]])
-----
-.Result
-----
+```
+**Result**
+```
 [1, 2, 3]
-----
+```
 
-== `foldLeft(arr: Array[A], initValue: Any, function: Func[(A, Any) => Any]): Any`
-From left to right in `arr`, applies the given `function` to the first element along with `initValue`, then applies it to every subsequent element along with the result of the previous invocation. `function` must accept an `A` value and `Any` value, which is `initValue` for the first invocation, and the result of the previous one for all others.
+<br/>
+## foldLeft
+`foldLeft(arr: Array[A], initValue: Any, function: Func[(A, Any) => Any]): Any`
+
+From left to right in `arr`, applies the given `function` to the first element with `initValue`, then applies it to every subsequent element with the result of the previous invocation. `function` must accept an `A` value and `Any` value, which is `initValue` for the first invocation, and the result of the previous one for all others.
 
 Returns the `Any` result of the final `function` invocation.
 
 > Note:
 fold functions usually mutate the "accumulator" value on each invocation, thus "folding" the array into a single value.
 
-.Example
-----
+**Example**
+```
 xtr.foldLeft([1, 2, 3], 0, function(item, acc) item + acc)
-----
-.Result
-----
+```
+**Result**
+```
 6
-----
+```
 
-== `foldRight(arr: Array[A], initValue: Any, Func[(A, Any) => Any]): Any`
-From right to left in `arr`, applies the given `function` to the first element along with `initValue`, then applies it to every subsequent element along with the result of the previous invocation. `function` must accept an `A` value and `Any` value, which is `initValue` for the first invocation, and the result of the previous one for all others.
+<br/>
+## foldRight
+`foldRight(arr: Array[A], initValue: Any, Func[(A, Any) => Any]): Any`
+
+From right to left in `arr`, applies the given `function` to the first element with `initValue`, then applies it to every subsequent element with the result of the previous invocation. `function` must accept an `A` value and `Any` value, which is `initValue` for the first invocation, and the result of the previous one for all others.
 
 Returns the `Any` result of the final `function` invocation.
 
 > Note:
 fold functions usually mutate the "accumulator" value on each invocation, thus "folding" the array into a single value.
 
-.Example
-----
+**Example**
+```
 xtr.foldRight(['Lorem', 'ipsum', 'dolor'], '', function(item, acc) acc + ' ' + item)
-----
-.Result
-----
+```
+**Result**
+```
 ' dolor ipsum Lorem'
-----
+```
 
-== `groupBy(arr: Array[A], Func[(A) => String]): Object[Array[A]]`
+<br/>
+## groupBy
+### Array groupBy func(value)
+`groupBy(arr: Array[A], Func[(A) => String]): Object[Array[A]]`
+
 Returns an `Object[Array[A]]` where the keys are the results of applying the given `function` to all elements in `arr`, and their corresponding values are the `arr` elements for which the `function` invocation resulted in such key. `function` must accept an `A` value.
 
-.Example
-----
+**Example**
+```
 local languages = [
     { name: 'scala', version: '3.1.3', isJvm: true },
     { name: 'java', version: '19', isJvm: true },
@@ -354,9 +420,9 @@ local languages = [
 ];
 
 xtr.groupBy(languages, function(lang) if lang.isJvm then 'jvmLangs' else 'others')
-----
-.Result
-----
+```
+**Result**
+```
 {
     jvmLangs: [
         { name: 'scala', version: '3.1.3', isJvm: true },
@@ -364,13 +430,16 @@ xtr.groupBy(languages, function(lang) if lang.isJvm then 'jvmLangs' else 'others
     ],
     others: [{ name: 'python', version: '3.10.4', isJvm: false }]
 }
-----
+```
 
-== `groupBy(arr: Array[A], Func[(A, Number) => String]): Object[Array[A]]`
+<br/>
+### Array groupBy func(value, idx)
+`groupBy(arr: Array[A], Func[(A, Number) => String]): Object[Array[A]]`
+
 Returns an `Object[Array[A]]` where the keys are the results of applying the given `function` to all elements in `arr`, and their corresponding values are the `arr` elements for which the `function` invocation resulted in such key. `function` must accept an `A` value and its `Number` index.
 
-.Example
-----
+**Example**
+```
 local languages = [
     { name: 'scala', version: '3.1.3', isJvm: true },
     { name: 'java', version: '19', isJvm: true },
@@ -381,21 +450,24 @@ local langFunc(lang, idx) = if idx == 0 then 'preferred'
     else 'others';
 
 xtr.groupBy(languages, langFunc)
-----
-.Result
-----
+```
+**Result**
+```
 {
     preferred: [{ name: 'scala', version: '3.1.3', isJvm: true }],
     jvmLangs: [{ name: 'java', version: '19', isJvm: true }],
     others: [{ name: 'python', version: '3.10.4', isJvm: false }]
 }
-----
+```
 
-== `groupBy(obj: Object[A], Func[(A) => String]): Object[Object[A]]`
+<br/>
+### Object groupBy func(value)
+`groupBy(obj: Object[A], Func[(A) => String]): Object[Object[A]]`
+
 Returns an `Object[Object[A]]` where the keys are the results of applying the given `function` to all elements in `arr`, and their corresponding values are the `arr` elements for which the `function` invocation resulted in such key. `function` must accept an `A` value.
 
-.Example
-----
+**Example**
+```
 local languages = {
     scala: { version: '3.1.3', isJvm: true, project: 'scala-lang.org' },
     java: { version: '19', isJvm: true, project: 'jdk.java.net' },
@@ -403,9 +475,9 @@ local languages = {
 };
 
 xtr.groupBy(languages, function(lang) if lang.isJvm then 'jvmLangs' else 'others')
-----
-.Result
-----
+```
+**Result**
+```
 {
     jvmLangs: {
         scala: { version: '3.1.3', isJvm: true, project: 'scala-lang.org' },
@@ -413,13 +485,16 @@ xtr.groupBy(languages, function(lang) if lang.isJvm then 'jvmLangs' else 'others
     },
     others: { python: { version: '3.10.4', isJvm: false, project: 'python.org' }}
 }
-----
+```
 
-== `groupBy(obj: Object[A], Func[(A, String) => String]): Object[Object[A]]`
+<br/>
+### Object groupBy func(value, key)
+`groupBy(obj: Object[A], Func[(A, String) => String]): Object[Object[A]]`
+
 Returns an `Object[Object[A]]` where the keys are the results of applying the given `function` to all elements in `arr`, and their corresponding values are the `arr` elements for which the `function` invocation resulted in such key.`function` must accept an `A` value and its corresponding `String` key.
 
-.Example
-----
+**Example**
+```
 local languages = {
     scala: { version: '3.1.3', isJvm: true, project: 'scala-lang.org' },
     java: { version: '19', isJvm: true, project: 'jdk.java.net' },
@@ -430,287 +505,361 @@ local langFunc(lang, name) = if name == 'scala' then 'preferred'
     else 'others';
 
 xtr.groupBy(languages, langFunc)
-----
-.Result
-----
+```
+**Result**
+```
 {
     preferred: { scala: { version: '3.1.3', isJvm: true, project: 'scala-lang.org' }},
     jvmLangs: { java: { version: '19', isJvm: true, project: 'jdk.java.net' }},
     others: { python: { version: '3.10.4', isJvm: false, project: 'python.org' }}
 }
-----
+```
 
-== `indicesOf(arr: Array, value: Any): Array[Number]`
+<br/>
+## indicesOf
+### Array indicesOf
+`indicesOf(arr: Array, value: Any): Array[Number]`
+
 Returns an `Array[Number]` with the indices of the elements in `arr` that equal `value`.
 
-.Example
-----
+**Example**
+```
 xtr.indicesOf([1, 7, 3, 4, 7], 7)
-----
-.Result
-----
+```
+**Result**
+```
 [1, 4]
-----
+```
 
-== `indicesOf(str1: String, str2: String): Array[Number]`
+<br/>
+### String indicesOf
+`indicesOf(str1: String, str2: String): Array[Number]`
+
 Returns an `Array[Number]` with the indices of the substrings in `str1` that equal `str2`.
 
-.Example
-----
+**Example**
+```
 xtr.indicesOf('lorem ipsum dolor', 'lo')
-----
-.Result
-----
+```
+**Result**
+```
 [0, 14]
-----
+```
 
-== `isArray(value: Any): Boolean`
+<br/>
+## isArray
+`isArray(value: Any): Boolean`
+
 Returns `true` if `value` is an `Array`, otherwise `false`.
 
-.Example
-----
+**Example**
+```
 xtr.isArray([1, 2])
-----
-.Result
-----
+```
+**Result**
+```
 true
-----
+```
 
-== `isBlank(str: String): Boolean`
+<br/>
+## isBlank
+`isBlank(str: String): Boolean`
+
 Returns `true` if `str` is empty or contains whitespace characters only, otherwise `false`.
 
-.Example
-----
+**Example**
+```
 xtr.isBlank('   ')
-----
-.Result
-----
+```
+**Result**
+```
 true
-----
+```
 
-== `isBoolean(value: Any): Boolean`
+<br/>
+## isBoolean
+`isBoolean(value: Any): Boolean`
+
 Returns `true` if `value` is a `Boolean`, otherwise `false`.
 
-.Example
-----
+**Example**
+```
 xtr.isBoolean(false)
-----
-.Result
-----
+```
+**Result**
+```
 true
-----
+```
 
-== `isDecimal(num: Number): Boolean`
+<br/>
+## isDecimal
+`isDecimal(num: Number): Boolean`
+
 Returns `true` if `num` is a decimal, otherwise `false`.
 
-.Example
-----
+**Example**
+```
 xtr.isDecimal(2.5)
-----
-.Result
-----
+```
+**Result**
+```
 true
-----
+```
 
-== `isEmpty(arr: Array): Boolean`
+<br/>
+## isEmpty
+### Array isEmpty
+`isEmpty(arr: Array): Boolean`
+
 Returns `true` if `arr` is empty, otherwise `false`.
 
-.Example
-----
+**Example**
+```
 xtr.isEmpty([])
-----
-.Result
-----
+```
+**Result**
+```
 true
-----
+```
 
-== `isEmpty(obj: Object): Boolean`
+<br/>
+### Object isEmpty
+`isEmpty(obj: Object): Boolean`
+
 Returns `true` if `obj` is empty, otherwise `false`.
 
-.Example
-----
+**Example**
+```
 xtr.isEmpty({})
-----
-.Result
-----
+```
+**Result**
+```
 true
-----
+```
 
-== `isEmpty(str: String): Boolean`
+<br/>
+### String isEmpty
+`isEmpty(str: String): Boolean`
+
 Returns `true` if `str` is empty, otherwise `false`.
 
-.Example
-----
+**Example**
+```
 xtr.isEmpty('')
-----
-.Result
-----
+```
+**Result**
+```
 true
-----
+```
 
-== `isEven(num: Number): Boolean`
+<br/>
+## isEven
+`isEven(num: Number): Boolean`
+
 Returns `true` if `num` is even, otherwise `false`.
 
-.Example
-----
+**Example**
+```
 xtr.isEven(2)
-----
-.Result
-----
+```
+**Result**
+```
 true
-----
+```
 
-== `isFunction(value: Any): Boolean`
+<br/>
+## isFunction
+`isFunction(value: Any): Boolean`
+
 Returns `true` if `value` is a `Function`, otherwise `false`.
 
-.Example
-----
+**Example**
+```
 local increment(item) = item + 1;
 
 xtr.isFunction(increment)
-----
-.Result
-----
+```
+**Result**
+```
 true
-----
+```
 
-== `isInteger(num: Number): Boolean`
+<br/>
+## isInteger
+`isInteger(num: Number): Boolean`
+
 Returns `true` if `num` is an integer, otherwise `false`.
 
-.Example
-----
+**Example**
+```
 xtr.isInteger(2)
-----
-.Result
-----
+```
+**Result**
+```
 true
-----
+```
 
-== `isNumber(value: Any): Boolean`
+<br/>
+## isNumber
+`isNumber(value: Any): Boolean`
+
 Returns `true` if `value` is a `Number`, otherwise `false`.
 
-.Example
-----
+**Example**
+```
 xtr.isNumber(2)
-----
-.Result
-----
+```
+**Result**
+```
 true
-----
+```
 
-== `isObject(value: Any): Boolean`
+<br/>
+## isObject
+`isObject(value: Any): Boolean`
+
 Returns `true` if `value` is an `Object`, otherwise `false`.
 
-.Example
-----
+**Example**
+```
 xtr.isObject({})
-----
-.Result
-----
+```
+**Result**
+```
 true
-----
+```
 
-== `isOdd(num: Number): Boolean`
+<br/>
+## isOdd
+`isOdd(num: Number): Boolean`
+
 Returns `true` if `num` is odd, otherwise `false`.
 
-.Example
-----
+**Example**
+```
 xtr.isOdd(1)
-----
-.Result
-----
+```
+**Result**
+```
 true
-----
+```
 
-== `isString(value: Any): Boolean`
+<br/>
+## isString
+`isString(value: Any): Boolean`
+
 Returns `true` if `value` is a `String`, otherwise `false`.
 
-.Example
-----
+**Example**
+```
 xtr.isString('Lorem')
-----
-.Result
-----
+```
+**Result**
+```
 true
-----
+```
 
-== `join(arr: Array[Number], separator: String): String`
+<br/>
+## join
+### Array[Number] join
+`join(arr: Array[Number], separator: String): String`
+
 Returns a new `String` composed of all the elements in `arr` separated by the `separator`.
 
-.Example
-----
+**Example**
+```
 xtr.join([0, 1, 1, 2, 3, 5, 8], ', ')
-----
-.Result
-----
+```
+**Result**
+```
 '0, 1, 1, 2, 3, 5, 8'
-----
+```
 
-== `join(arr: Array[String], String): String`
+<br/>
+### Array[String] join
+`join(arr: Array[String], String): String`
+
 Returns a new `String` composed of all the elements in `arr` separated by the `separator`.
 
-.Example
-----
+**Example**
+```
 xtr.join(['hello', 'world', '!'], ' ')
-----
-.Result
-----
+```
+**Result**
+```
 'hello world !'
-----
+```
 
-== `keysOf(obj: Object): Array[String]`
+<br/>
+## keys
+`keys(obj: Object): Array[String]`
+
 Returns an `Array[String]` containing all the keys in `obj`.
 
-.Example
-----
-xtr.keysOf({ scala: '3.1.3', java: '19' })
-----
-.Result
-----
+**Example**
+```
+xtr.keys({ scala: '3.1.3', java: '19' })
+```
+**Result**
+```
 ['scala', 'java']
-----
+```
 
-== `lower(str: String): String`
+<br/>
+## lower
+`lower(str: String): String`
+
 Returns the lowercase representation of `str`.
 
-.Example
-----
+**Example**
+```
 xtr.lower('Hello World!')
-----
-.Result
-----
+```
+**Result**
+```
 'hello world!'
-----
+```
 
-== `map(arr: Array[A], function: Func[(A) => B]): Array[B]`
+<br/>
+## map
+### map func(value)
+`map(arr: Array[A], function: Func[(A) => B]): Array[B]`
+
 Returns a new `Array[B]` with the results of applying `function` to all elements in `arr`. `function` must accept an `A`.
 
-.Example
-----
+**Example**
+```
 xtr.map([1, 2, 3, 4], function(item) item * item)
-----
-.Result
-----
+```
+**Result**
+```
 [1, 4, 9, 16]
-----
+```
 
-== `map(arr: Array[A], function: Func[(A, Number) => B]): Array[B]`
+<br/>
+### map func(value, idx)
+`map(arr: Array[A], function: Func[(A, Number) => B]): Array[B]`
+
 Returns a new `Array[B]` with the results of applying `function` to all elements in `arr`. `function` must accept an `A` and its `Number` index.
 
-.Example
-----
+**Example**
+```
 xtr.map([1, 2, 3, 4], function(item, idx) item * idx)
-----
-.Result
-----
+```
+**Result**
+```
 [0, 2, 6, 12]
-----
+```
 
-== `mapEntries(obj: Object[A], function: Func[(Object[A]) => B]): Array[B]`
+<br/>
+## mapEntries
+### mapEntries func(value)
+`mapEntries(obj: Object[A], function: Func[(Object[A]) => B]): Array[B]`
+
 Returns an `Array[B]` with the results of applying `function` to all entries in `obj`. `function` must accept an `A`.
 
-.Example
-----
+**Example**
+```
 local languages = {
     scala: { version: '3.1.3', isJvm: true, project: 'scala-lang.org' },
     java: { version: '19', isJvm: true, project: 'jdk.java.net' },
@@ -718,17 +867,20 @@ local languages = {
 };
 
 xtr.mapEntries(languages, function(lang) lang.project)
-----
-.Result
-----
+```
+**Result**
+```
 ['scala-lang.org', 'jdk.java.net', 'python.org']
-----
+```
 
-== `mapEntries(obj: Object[A], function: Func[(Object[A], String) => B]): Array[B]`
+<br/>
+### mapEntries func(value, key)
+`mapEntries(obj: Object[A], function: Func[(Object[A], String) => B]): Array[B]`
+
 Returns an `Array[B]` with the results of applying `function` to all entries in `obj`. `function` must accept an `A` and its corresponding `String` key.
 
-.Example
-----
+**Example**
+```
 local languages = {
     scala: { version: '3.1.3', isJvm: true, project: 'scala-lang.org' },
     java: { version: '19', isJvm: true, project: 'jdk.java.net' }
@@ -738,20 +890,23 @@ xtr.mapEntries(languages, function(lang, name) {
     name: name,
     version: lang.version
 })
-----
-.Result
-----
+```
+**Result**
+```
 [
     { name: 'scala', version: '3.1.3' },
     { name: 'java', version: '19' }
 ]
-----
+```
 
-== `mapEntries(obj: Object[A], function: Func[(Object[A], String, Number) => B]): Array[B]`
+<br/>
+### mapEntries func(value, key, idx)
+`mapEntries(obj: Object[A], function: Func[(Object[A], String, Number) => B]): Array[B]`
+
 Returns an `Array[B]` with the results of applying `function` to all entries in `obj`. `function` must accept an `A` and its corresponding `String` key and `Number` index.
 
-.Example
-----
+**Example**
+```
 local languages = {
     scala: { version: '3.1.3', isJvm: true, project: 'scala-lang.org' },
     java: { version: '19', isJvm: true, project: 'jdk.java.net' }
@@ -762,62 +917,86 @@ local langFunc(lang, name, idx) = {
 };
 
 xtr.mapEntries(languages, langFunc)
-----
-.Result
-----
+```
+**Result**
+```
 [{ name: 'scala', preferred: true }, { name: 'java' }]
-----
+```
 
-== `mapObject(obj: Object[A], function: Func[(A) => Object[B]]): Object[B]`
+<br/>
+## mapObject
+### mapObject func(value)
+`mapObject(obj: Object[A], function: Func[(A) => Object[B]]): Object[B]`
+
 Returns a new Object[B] containing the entry of every Object[B] obtained by applying the given `function` to all entries in obj. `function` must accept an `A` value.
 
-== `mapObject(obj: Object[A], function: Func[(A, String) => Object[B]]): Object[B]`
+<br/>
+### mapObject func(value, key)
+`mapObject(obj: Object[A], function: Func[(A, String) => Object[B]]): Object[B]`
+
 Returns a new Object[B] containing the entry of every Object[B] obtained by applying the given `function` to all entries in obj. `function` must accept an `A` value and its corresponding `String` key.
 
-== `mapObject(obj: Object[A], function: Func[(A, String, Number) => Object[B]]): Object[B]`
+<br/>
+### mapObject func(value, key, idx)
+`mapObject(obj: Object[A], function: Func[(A, String, Number) => Object[B]]): Object[B]`
+
 Returns a new Object[B] containing the entry of every Object[B] obtained by applying the given `function` to all entries in obj. `function` must accept an `A` value and its corresponding `String` key and `Number` index.
 
-== `max(arr: Array[Boolean]): Boolean`
+<br/>
+## max
+### Array[Boolean] max
+`max(arr: Array[Boolean]): Boolean`
+
 Returns the max `Boolean` in `arr`, with `true` being "bigger" than `false`.
 
-.Example
-----
+**Example**
+```
 xtr.max([false, false, true])
-----
-.Result
-----
+```
+**Result**
+```
 true
-----
+```
 
-== `max(arr: Array[Number]): Number`
+<br/>
+### Array[Number] max
+`max(arr: Array[Number]): Number`
+
 Returns the max `Number` in `arr`.
 
-.Example
-----
+**Example**
+```
 xtr.max([0, 8, 2, 100])
-----
-.Result
-----
+```
+**Result**
+```
 100
-----
+```
 
-== `max(arr: Array[String]): String`
+<br/>
+### Array[String] max
+`max(arr: Array[String]): String`
+
 Returns the max `String` in `arr`.
 
-.Example
-----
+**Example**
+```
 xtr.max(['Lorem', 'zzz', 'ipsum', 'dolor'])
-----
-.Result
-----
+```
+**Result**
+```
 'zzz'
-----
+```
 
-== `maxBy(arr: Array[A], function: Func[(A) => Boolean]): Array[A]`
+<br/>
+## maxBy
+### maxBy func => Boolean
+`maxBy(arr: Array[A], function: Func[(A) => Boolean]): Array[A]`
+
 Returns the max `A` by comparing the values returned by `function`, which must accept an `A`.
 
-.Example
-----
+**Example**
+```
 local languages = [
     { name: 'java', version: '19', isPreferred: false },
     { name: 'python', version: '3.1.14', isPreferred: false }
@@ -825,17 +1004,20 @@ local languages = [
 ];
 
 xtr.maxBy(languages, function(lang) lang.isPreferred)
-----
-.Result
-----
+```
+**Result**
+```
 { name: 'scala', version: '3.1.3', isPreferred: true }
-----
+```
 
-== `maxBy(arr: Array[A], function: Func[(A) => Number]): Array[A]`
+<br/>
+### maxBy func => Number
+`maxBy(arr: Array[A], function: Func[(A) => Number]): Array[A]`
+
 Returns the max `A` by comparing the values returned by `function`, which must accept an `A`.
 
-.Example
-----
+**Example**
+```
 local languages = [
     { name: 'java', version: '19', weight: 2 },
     { name: 'python', version: '3.1.14', weight: 2 }
@@ -843,17 +1025,20 @@ local languages = [
 ];
 
 xtr.maxBy(languages, function(lang) lang.weight)
-----
-.Result
-----
+```
+**Result**
+```
 { name: 'scala', version: '3.1.3', weight: 4 }
-----
+```
 
-== `maxBy(arr: Array[A], function: Func[(A) => String]): Array[A]`
+<br/>
+### maxBy func => String
+`maxBy(arr: Array[A], function: Func[(A) => String]): Array[A]`
+
 Returns the max `A` by comparing the values returned by `function`, which must accept an `A`.
 
-.Example
-----
+**Example**
+```
 local languages = [
     { name: 'java', version: '19', code: 'B' },
     { name: 'python', version: '3.1.14', code: 'B' },
@@ -861,53 +1046,67 @@ local languages = [
 ];
 
 xtr.maxBy(languages, function(lang) lang.code)
-----
-.Result
-----
+```
+**Result**
+```
 { name: 'scala', version: '3.1.3', code: 'S' }
-----
+```
 
-== `min(arr: Array[Boolean]): Boolean`
+<br/>
+## min
+### Array[Boolean] min
+`min(arr: Array[Boolean]): Boolean`
+
 Returns the min `Boolean` in `arr`, with `false` being "smaller" than `true`.
 
-.Example
-----
+**Example**
+```
 xtr.min([false, false, true])
-----
-.Result
-----
+```
+**Result**
+```
 false
-----
+```
 
-== `min(arr: Array[Number]): Number`
+<br/>
+### Array[Number] min
+`min(arr: Array[Number]): Number`
+
 Returns the min `Number` in `arr`.
 
-.Example
-----
+**Example**
+```
 xtr.min([0, 8, 2, 100])
-----
-.Result
-----
+```
+**Result**
+```
 0
-----
+```
 
-== `min(arr: Array[String]): String`
+<br/>
+### Array[String] min
+`min(arr: Array[String]): String`
+
 Returns the min `String` in `arr`.
 
-.Example
-----
+**Example**
+```
 xtr.min(['Lorem', 'AAA', 'ipsum', 'dolor'])
-----
-.Result
-----
+```
+**Result**
+```
 'AAA'
-----
+```
 
-== `minBy(arr: Array[A], comparator: Func[(A) => Boolean]): Array[A]`
+<br/>
+## minBy
+### minBy func => Boolean
+`minBy(arr: Array[A], comparator: Func[(A) => Boolean]): Array[A]`
+
 Returns the min `A` by comparing the values returned by `function`, which must accept an `A`.
 
-.Example
-----
+**Example**
+```
 local languages = [
     { name: 'java', version: '19', isPreferred: false },
     { name: 'python', version: '3.1.14', isPreferred: false },
@@ -915,17 +1114,20 @@ local languages = [
 ];
 
 xtr.minBy(languages, function(lang) lang.isPreferred)
-----
-.Result
-----
+```
+**Result**
+```
 { name: 'java', version: '19', isPreferred: false }
-----
+```
 
-== `minBy(arr: Array[A], comparator: Func[(A) => Number]): Array[A]`
+<br/>
+### minBy func => Number
+`minBy(arr: Array[A], comparator: Func[(A) => Number]): Array[A]`
+
 Returns the min `A` by comparing the values returned by `function`, which must accept an `A`.
 
-.Example
-----
+**Example**
+```
 local languages = [
     { name: 'java', version: '19', weight: 2 },
     { name: 'python', version: '3.1.14', weight: 2 },
@@ -933,17 +1135,20 @@ local languages = [
 ];
 
 xtr.minBy(languages, function(lang) lang.weight)
-----
-.Result
-----
+```
+**Result**
+```
 { name: 'java', version: '19', weight: 2 }
-----
+```
 
-== `minBy(arr: Array[A], comparator: Func[(A) => String]): Array[A]`
+<br/>
+### minBy func => String
+`minBy(arr: Array[A], comparator: Func[(A) => String]): Array[A]`
+
 Returns the min `A` by comparing the values returned by `function`, which must accept an `A`.
 
-.Example
-----
+**Example**
+```
 local languages = [
     { name: 'java', version: '19', code: 'B' },
     { name: 'python', version: '3.1.14', code: 'B' },
@@ -951,29 +1156,36 @@ local languages = [
 ];
 
 xtr.minBy(languages, function(lang) lang.code)
-----
-.Result
-----
+```
+**Result**
+```
 { name: 'java', version: '19', code: 'B' }
-----
+```
 
-== `numOf(str: String): Number`
+<br/>
+## parseNum
+`parseNum(str: String): Number`
+
 Returns the `Number` representation of the given `str`.
 
-.Example
-----
-numOf('123.45')
-----
+**Example**
+```
+parseNum('123.45')
+```
 Result
-----
+```
 123.45
-----
+```
 
-== `sortBy(arr: Array[A], Func[(A) => Boolean]): Array[A]`
+<br/>
+## sortBy
+### sortBy func => Boolean
+`sortBy(arr: Array[A], Func[(A) => Boolean]): Array[A]`
+
 Returns a new `Array[A]` with the conents of `arr` sorted by comparing the values returned by `function`, which must accept and `A`.
 
-.Example
-----
+**Example**
+```
 local languages = [
     { name: 'java', version: '19', isPreferred: false },
     { name: 'scala', version: '3.1.3', isPreferred: true },
@@ -981,21 +1193,24 @@ local languages = [
 ];
 
 xtr.minBy(languages, function(lang) lang.isPreferred)
-----
-.Result
-----
+```
+**Result**
+```
 [
     { name: 'java', version: '19', isPreferred: false },
     { name: 'python', version: '3.1.14', isPreferred: false },
     { name: 'scala', version: '3.1.3', isPreferred: true }
 ]
-----
+```
 
-== `sortBy(arr: Array[A], Func[(A) => Number]): Array[A]`
+<br/>
+### sortBy func => Number
+`sortBy(arr: Array[A], Func[(A) => Number]): Array[A]`
+
 Returns a new `Array[A]` with the conents of `arr` sorted by comparing the values returned by `function`, which must accept and `A`.
 
-.Example
-----
+**Example**
+```
 local languages = [
     { name: 'java', version: '19', weight: 3 },
     { name: 'scala', version: '3.1.3', weight: 4 },
@@ -1003,21 +1218,24 @@ local languages = [
 ];
 
 xtr.sortBy(languages, function(lang) lang.weight)
-----
-.Result
-----
+```
+**Result**
+```
 [
     { name: 'python', version: '3.1.14', weight: 2 },
     { name: 'java', version: '19', weight: 3 },
     { name: 'scala', version: '3.1.3', weight: 4 }
 ]
-----
+```
 
-== `sortBy(arr: Array[A], Func[(A) => String]): Array[A]`
+<br/>
+### sortBy func => String
+`sortBy(arr: Array[A], Func[(A) => String]): Array[A]`
+
 Returns a new `Array[A]` with the conents of `arr` sorted by comparing the values returned by `function`, which must accept and `A`.
 
-.Example
-----
+**Example**
+```
 local languages = [
     { name: 'java', version: '19', code: 'B' },
     { name: 'scala', version: '3.1.3', code: 'S' },
@@ -1025,284 +1243,348 @@ local languages = [
 ];
 
 xtr.sortBy(languages, function(lang) lang.code)
-----
-.Result
-----
+```
+**Result**
+```
 [
     { name: 'java', version: '19', code: 'B' },
     { name: 'python', version: '3.1.14', code: 'B' },
     { name: 'scala', version: '3.1.3', code: 'S' }
 ]
-----
+```
 
-== `range(first: Number, last: Number): Array[Number]`
+<br/>
+## range
+`range(first: Number, last: Number): Array[Number]`
+
 Returns an `Array[Number]` containing numbers from `first` to `last`.
 
-.Example
-----
+**Example**
+```
 xtr.range(1, 5)
-----
-.Result
-----
+```
+**Result**
+```
 [1, 2, 3, 4, 5]
-----
+```
 
-== `read(data: String, mediaType: String): Any`
+<br/>
+## read
+### read mediaType
+`read(data: String, mediaType: String): Any`
+
 Parses the `data` as the given `mediaType`.
 
-.Example
-----
+**Example**
+```
 xtr.read('<hello>world!</hello>', 'application/xml')
-----
-.Result
-----
+```
+**Result**
+```
 {
   hello: { '$': 'world!' }
 }
-----
+```
 
-== `read(data: String, mediaType: String, params: Object): Any`
+<br/>
+### read mediaType, params
+`read(data: String, mediaType: String, params: Object): Any`
+
 Parses the `data` as the given `mediaType` with `params` options.
 
-.Example
-----
+**Example**
+```
 xtr.read('<hello>world!</hello>', 'application/xml', { textvaluekey: '_txt' })
-----
-.Result
-----
+```
+**Result**
+```
 {
   hello: { _txt: 'world!' }
 }
-----
+```
 
-== `readUrl(url: String, mediaType: String): Any`
+<br/>
+## readUrl
+### readUrl mediaType
+`readUrl(url: String, mediaType: String): Any`
+
 Retrieves the data at `url` and parses it as the given `mediaType`. Supported schemes/protocols are `http`, `https`, `classpath`, and `file`.
 
 Asumming `example.com` returns `<hello>world!</hello>`:
 
-.Example
-----
+**Example**
+```
 xtr.readUrl('example.com/data', 'application/xml')
-----
-.Result
-----
+```
+**Result**
+```
 {
   hello: { '$': 'world!' }
 }
-----
+```
 
-== `readUrl(url: String, mediaType: String, params: Object): Any`
+<br/>
+### readUrl mediaType, params
+`readUrl(url: String, mediaType: String, params: Object): Any`
+
 Retrieves the data at `url` and parses it as the given `mediaType` with `params` options. Supported schemes/protocols are `http`, `https`, `classpath`, and `file`.
 
 Asumming `example.com` returns `<hello>world!</hello>`:
 
-.Example
-----
+**Example**
+```
 xtr.readUrl('example.com', 'application/xml', { textvaluekey: '_txt' })
-----
-.Result
-----
+```
+**Result**
+```
 {
   hello: { _txt: 'world!' }
 }
-----
+```
 
-== `rmKey(obj: Object[A], key: String): Object[A]`
+<br/>
+## rmKey
+`rmKey(obj: Object[A], key: String): Object[A]`
+
 Returns a new `Object[A]` containing the entries of `obj` minus the entry for the given `key`.
 
-.Example
-----
+**Example**
+```
 xtr.rmKey({ scala: '3.1.3', java: '19' }, 'java')
-----
-.Result
-----
+```
+**Result**
+```
 { scala: '3.1.3' }
-----
+```
 
-== `rmKeyIn(obj: Object[A], arr: Array[String]): Object[A]`
-Returns a new `Object[A]` containing the entries of `obj` minus the entries whose key is not in the given `arr`.
+<br/>
+## rmKeyIn
+`rmKeyIn(obj: Object[A], arr: Array[String]): Object[A]`
 
-.Example
-----
+Returns a new `Object[A]` containing the entries of `obj` minus the entries whose key is in the given `arr`.
+
+**Example**
+```
 xtr.rmKeyIn({ scala: '3.1.3', java: '19' }, ['java', 'scala'])
-----
-.Result
-----
+```
+**Result**
+```
 {}
-----
+```
 
-== `replace(str1: String, str2: String, str3: String): String`
+<br/>
+## replace
+`replace(str1: String, str2: String, str3: String): String`
+
 Returns a new `String` with the contents of `str1`, with occurrences of `str2` replaced by `str3`.
 
-.Example
-----
+**Example**
+```
 xtr.replace('hello, world!', 'world', 'everyone')
-----
-.Result
-----
+```
+**Result**
+```
 'hello, everyone!'
-----
+```
 
-== `reverse(arr: Array): Array`
+<br/>
+## reverse
+### Array reverse
+`reverse(arr: Array): Array`
+
 Returns a new `Array` with the elements of `arr` in reversed order.
 
-.Example
-----
+**Example**
+```
 xtr.reverse([1, 2, 3])
-----
-.Result
-----
+```
+**Result**
+```
 [3, 2, 1]
-----
+```
 
-== `reverse(obj: Object): Object`
+<br/>
+### Object reverse
+`reverse(obj: Object): Object`
+
 Returns a new `Object` with the entries of `obj` in reversed order.
 
-.Example
-----
+**Example**
+```
 xtr.reverse({ key1: 'value1', key2: 'value2' })
-----
-.Result
-----
+```
+**Result**
+```
 { key2: 'value2', key1: 'value1' }
-----
+```
 
-== `reverse(str: String): String`
+<br/>
+### String reverse
+`reverse(str: String): String`
+
 Returns a new `String` with the characters of `str` in reversed order.
 
-.Example
-----
+**Example**
+```
 xtr.reverse('rolod muspi meroL')
-----
-.Result
-----
+```
+**Result**
+```
 'Lorem ipsum dolor'
-----
+```
 
-== `sizeOf(arr: Array): Number`
+<br/>
+## length
+### Array length
+`length(arr: Array): Number`
+
 Returns the size of `arr`.
 
-.Example
-----
-xtr.sizeOf([1, 2, 3])
-----
-.Result
-----
+**Example**
+```
+xtr.length([1, 2, 3])
+```
+**Result**
+```
 3
-----
+```
 
-== `sizeOf(func: Function): Number`
+<br/>
+### Func length
+`length(func: Function): Number`
+
 Returns the number of `func` parameters.
 
-.Example
-----
+**Example**
+```
 local add(item, item2) = item + item2;
 
-xtr.sizeOf(add)
-----
-.Result
-----
+xtr.length(add)
+```
+**Result**
+```
 2
-----
+```
 
-== `sizeOf(obj: Object): Number`
+<br/>
+### Object length
+`length(obj: Object): Number`
+
 Returns the number of entries in `obj`.
 
-.Example
-----
-xtr.sizeOf({ key: 'value' })
-----
-.Result
-----
+**Example**
+```
+xtr.length({ key: 'value' })
+```
+**Result**
+```
 1
-----
+```
 
-== `sizeOf(str: String): Number`
+<br/>
+### String length
+`length(str: String): Number`
+
 Returns the number of characters in `str`.
 
-.Example
-----
-xtr.sizeOf('hello, world!')
-----
-.Result
-----
+**Example**
+```
+xtr.length('hello, world!')
+```
+**Result**
+```
 13
-----
+```
 
-== `split(str1: String, str2: String): Array[String]`
+<br/>
+## split
+`split(str1: String, str2: String): Array[String]`
+
 Returns an `Array[String]` containing the chunks of `str1` split by the contents of `str2`.
 
-.Example
-----
+**Example**
+```
 xtr.split('hello, world!', 'o')
-----
-.Result
-----
+```
+**Result**
+```
 ['hell', ', w', 'rld!']
-----
+```
 
-== `startsWith(str1: String, str2: String): Boolean`
+<br/>
+## startsWith
+`startsWith(str1: String, str2: String): Boolean`
+
 Returns `true` if `str1` starts with `str2`.
 
-.Example
-----
+**Example**
+```
 xtr.startsWith('hello, world!', 'hello')
-----
-.Result
-----
+```
+**Result**
+```
 true
-----
+```
 
-== `toString(value: String|Number|Boolean|Null): String`
+<br/>
+## toString
+`toString(value: String|Number|Boolean|Null): String`
+
 Returns the `String` representation of `value`.
 
-.Example
-----
+**Example**
+```
 {
     bool: xtr.toString(true),
     num: xtr.toString(365),
     nil: xtr.toString(null)
 }
-----
-.Result
-----
+```
+**Result**
+```
 {
     bool: 'true',
     num: '365',
     nil: 'null'
 }
-----
+```
 
-== `trim(str: String): String`
+<br/>
+## trim
+`trim(str: String): String`
+
 Returns a new `String` with the contents of `str` removed of leading and trailing whitespaces.
 
-.Example
-----
+**Example**
+```
 xtr.trim('  hello, world!   ')
-----
-.Result
-----
+```
+**Result**
+```
 'hello, world!'
-----
+```
 
-== `typeOf(value: Any): String`
+<br/>
+## type
+`type(value: Any): String`
+
 Returns the `String` name of the type of `value`.
 
-.Example
-----
+**Example**
+```
 local func(it) = it;
 
 {
-    bool: xtr.typeOf(true),
-    num: xtr.typeOf(365),
-    nil: xtr.typeOf(null),
-    arr: xtr.typeOf([]),
-    obj: xtr.typeOf({}),
-    func: xtr.typeOf(func)
+    bool: xtr.type(true),
+    num: xtr.type(365),
+    nil: xtr.type(null),
+    arr: xtr.type([]),
+    obj: xtr.type({}),
+    func: xtr.type(func)
 }
-----
-.Result
-----
+```
+**Result**
+```
 {
     bool: 'boolean',
     num: 'number',
@@ -1311,70 +1593,80 @@ local func(it) = it;
     obj: 'object',
     func: 'function'
 }
-----
+```
 
-== `upper(String): String`
+<br/>
+## upper
+`upper(String): String`
+
 Returns the uppercase representation of `str`.
 
-.Example
-----
+**Example**
+```
 xtr.upper('Hello World!')
-----
-.Result
-----
+```
+**Result**
+```
 'HELLO WORLD!'
-----
+```
 
-== `uuid(): String`
+<br/>
+## uuid
+`uuid(): String`
+
 Generates a new random UUID v4 `String`.
 
-.Example
-----
+**Example**
+```
 xtr.uuid()
-----
-.Result
-----
+```
+**Result**
+```
 '8eae62af-d2dc-4759-8316-ce6eeca0b61c'
-----
+```
 
-== `valuesOf(obj: Object[A]): Array[A]`
+<br/>
+## values
+`values(obj: Object[A]): Array[A]`
+
 Returns an `Array[String]` containing all the values in `obj`.
 
-.Example
-----
-xtr.valuesOf({ scala: '3.1.3', java: '19' })
-----
-.Result
-----
+**Example**
+```
+xtr.values({ scala: '3.1.3', java: '19' })
+```
+**Result**
+```
 ['3.1.3', '19']
-----
+```
 
-== `write(data: Any, mediaType: String): String`
+<br/>
+## write
+### write mediaType
+`write(data: Any, mediaType: String): String`
+
 Writes the `data` as the given `mediaType`
 
-.Example
-----
+**Example**
+```
 xtr.write({ hello: 'world', arr: [], nil: null }, 'application/json')
-----
-.Result
-----
+```
+**Result**
+```
 '{"hello":"world","arr":[],"nil":null}'
-----
+```
 
-== `write(data: Any, mediaType: String, params: Object[): String`
+<br/>
+### write mediaType, params
+`write(data: Any, mediaType: String, params: Object[): String`
+
 Writes the `data` as the given `mediaType` with `params` options.
 
-.Example
-----
+**Example**
+```
 xtr.write({ hello: 'world', arr: [] }, 'application/json', { indent: true })
-----
-.Result
-----
+```
+**Result**
+```
 '{\n    "hello": "world",\n    "arr": [\n        \n    ]\n}'
-----
-
-// todo
-// == `indexOf(arr: Array[A], value: A): Number
-// == `indexOf(str1: String, str2: String): Number
-// == `lastIndexOf(arr: Array[A], value: A): Number
-// == `lastIndexOf(str1: Array[A], str2: String): Number
+```

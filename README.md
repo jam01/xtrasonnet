@@ -8,11 +8,11 @@ xtrasonnet is an extensible, template-based, data transformation engine for Java
 xtrasonnet extends sjsonnet by enabling extensibility, adding support for data formats other than JSON, and offering data transformation facilities through the `xtr` library and a few additions to the jsonnet language itself.
 
 ```java
-String output = new Transformer(xtrasonnet).transform(someJson);
+String output = new Transformer(xtrasonnet).transform(input);
 ```
 
 <table>
-<thead><tr><td>Input</td><td>xtrasonnet</td><td>Output</td></tr></thead>
+<thead><tr><td>input</td><td>xtrasonnet</td><td>output</td></tr></thead>
 <tbody>
 <tr><td>
 
@@ -27,8 +27,8 @@ String output = new Transformer(xtrasonnet).transform(someJson);
 
 ```
 /** xtrasonnet
-output application/xml
 input payload application/json
+output application/xml
 */
 {
     root: {

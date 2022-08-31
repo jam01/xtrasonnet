@@ -1,352 +1,422 @@
-= `xtr.strings`
+# xtr.strings
 
-== `appendIfMissing(str: String, suffix: String): String`
+## appendIfMissing
+`appendIfMissing(str: String, suffix: String): String`
+
 Returns `str`, appended with `suffix` if it does not already end with `suffix`.
 
-.Example
-----
+**Example**
+```
 xtr.strings.appendIfMissing('Hello', ' World')
-----
-.Result
-----
+```
+**Result**
+```
 'Hello World'
-----
+```
 
-== `camelize(str: String): String`
+<br/>
+## camelize
+`camelize(str: String): String`
+
 Returns the camelized version of `str`, by removing all spaces and underscores, and capitalizing the first letter of every word after the first.
 
-.Example
-----
+**Example**
+```
 xtr.strings.camelize('Hello to_everyone')
-----
-.Result
-----
+```
+**Result**
+```
 'helloToEveryone'
-----
+```
 
-== `capitalize(str: String): String`
+<br/>
+## capitalize
+`capitalize(str: String): String`
+
 Returns the capitalized version of `str`, by capitalizing the first letter of every word.
 
-.Example
-----
+**Example**
+```
 xtr.strings.capitalize('hello world')
-----
-.Result
-----
+```
+**Result**
+```
 'Hello World'
-----
+```
 
-== `charCode(char: String): String`
+<br/>
+## charCode
+`charCode(char: String): String`
+
 Returns the character-code for the given `char`.
 
-.Example
-----
+**Example**
+```
 xtr.strings.charCode('*')
-----
-.Result
-----
+```
+**Result**
+```
 42
-----
+```
 
-== `charCodeAt(str: String, index: Number): String`
+<br/>
+## charCodeAt
+`charCodeAt(str: String, index: Number): String`
+
 Returns the character-code for the character at the given `index` in `str`.
 
-.Example
-----
+**Example**
+```
 xtr.strings.charCodeAt('_*_', 1)
-----
-.Result
-----
+```
+**Result**
+```
 42
-----
+```
 
-== `dasherize(str: String): String`
+<br/>
+## dasherize
+`dasherize(str: String): String`
+
 Returns the dasherized version of `str`, by changing alphabetic characters to lowercase, and replacing all spaces and underscores for dashes.
 
-.Example
-----
+**Example**
+```
 xtr.strings.dasherize('Hello World_X')
-----
-.Result
-----
+```
+**Result**
+```
 'hello-world-x'
-----
+```
 
-== `ofCharCode(code: Number): String`
+<br/>
+## ofCharCode
+`ofCharCode(code: Number): String`
+
 Returns the character for the given character-code.
 
-.Example
-----
+**Example**
+```
 xtr.strings.ofCharCode(42)
-----
-.Result
-----
+```
+**Result**
+```
 '*'
-----
+```
 
-== `isAlpha(str: String): String`
+<br/>
+## isAlpha
+`isAlpha(str: String): String`
+
 Returns `true` if the given `str` contains only alphabetic characters, otherwise `false`.
 
-.Example
-----
+**Example**
+```
 xtr.strings.isAlpha('abcde')
-----
-.Result
-----
+```
+**Result**
+```
 true
-----
+```
 
-== `isAlphanumeric(str: String): String`
+<br/>
+## isAlphanumeric
+`isAlphanumeric(str: String): String`
+
 Returns `true` if the given `str` contains only alphanumeric characters, otherwise `false`.
 
-.Example
-----
+**Example**
+```
 xtr.strings.isAlphanumeric('a1b2cd3e4')
-----
-.Result
-----
+```
+**Result**
+```
 true
-----
+```
 
-== `isLowerCase(str: String): String`
+<br/>
+## isLowerCase
+`isLowerCase(str: String): String`
+
 Returns `true` if the alphabetic characters in the given `str` are all lowercase, otherwise `false`.
 
-.Example
-----
+**Example**
+```
 xtr.strings.isLowerCase('hello')
-----
-.Result
-----
+```
+**Result**
+```
 true
-----
+```
 
-== `isNumeric(str: String): String`
+<br/>
+## isNumeric
+`isNumeric(str: String): String`
+
 Returns `true` if the given `str` contains only numeric characters.
 
-.Example
-----
+**Example**
+```
 xtr.strings.isNumeric('34634')
-----
-.Result
-----
+```
+**Result**
+```
 true
-----
+```
 
-== `isUpperCase(str: String): String`
+<br/>
+## isUpperCase
+`isUpperCase(str: String): String`
+
 Returns `true` if the alphabetic characters in the given `str` are all uppercse, otherwise `false`.
 
-.Example
-----
+**Example**
+```
 xtr.strings.isUpperCase('HELLO')
-----
-.Result
-----
+```
+**Result**
+```
 true
-----
+```
 
-== `isWhitespace(str: String): String`
+<br/>
+## isWhitespace
+`isWhitespace(str: String): String`
+
 Returns `true` if the given `str` contains only whitespaces.
 
-.Example
-----
+**Example**
+```
 xtr.strings.isWhitespace('      ')
-----
-.Result
-----
+```
+**Result**
+```
 true
-----
+```
 
-== `leftPad(str: String, size: Number, char: String): String`
+<br/>
+## leftPad
+`leftPad(str: String, size: Number, char: String): String`
+
 Returns `str` prepended with enough repetitions of `char` required to meet the given `size`, otherwise returns `str` if its size is already equal or longer than `size`.
 
-.Example
-----
+**Example**
+```
 xtr.strings.leftPad('Hello', 10, ' ')
-----
-.Result
-----
+```
+**Result**
+```
 '     Hello'
-----
+```
 
-// todo: num in result?
-== `ordinalOf(num: Number): String`
-Returns the ordinal name for the given `num`.
+<br/>
+## numOrdinalOf
+`numOrdinalOf(num: Number): String`
 
-.Example
-----
-xtr.strings.ordinalOf(1)
-----
-.Result
-----
+Returns the numeric ordinal name for the given `num`.
+
+**Example**
+```
+xtr.strings.numOrdinalOf(1)
+```
+**Result**
+```
 '1st'
-----
+```
 
-// todo: document algo
-== `pluralize(word: String): String`
+[//]: # ( todo: document algo)
+<br/>
+## pluralize
+`pluralize(word: String): String`
+
 Returns the plural of the given `word`.
 
-.Example
-----
+**Example**
+```
 xtr.strings.pluralize('car')
-----
-.Result
-----
+```
+**Result**
+```
 'cars'
-----
+```
 
-== `prependIfMissing(str: String, prefix: String): String`
+<br/>
+## prependIfMissing
+`prependIfMissing(str: String, prefix: String): String`
+
 Returns `str`, prepended with `suffix` if it does not already start with `prefix`.
 
-.Example
-----
+**Example**
+```
 xtr.strings.prependIfMissing('World', 'Hello ')
-----
-.Result
-----
+```
+**Result**
+```
 'Hello World'
-----
+```
 
-== `repeat(str: String, n: Number): String`
+<br/>
+## repeat
+`repeat(str: String, n: Number): String`
+
 Returns a new `String` with `str` repeated `n` times.
 
-.Example
-----
+**Example**
+```
 xtr.strings.repeat('hey ', 2)
-----
-.Result
-----
+```
+**Result**
+```
 'hey hey hey '
-----
+```
 
-== `rightPad(str: String, size: Number, char: String): String`
+<br/>
+## rightPad
+`rightPad(str: String, size: Number, char: String): String`
+
 Returns `str` prepended with enough repetitions of `char` required to meet the given `size`, otherwise returns `str` if its size is already equal or longer than `size`.
 
-.Example
-----
+**Example**
+```
 xtr.strings.rightPad('Hello', 10, ' ')
-----
-.Result
-----
+```
+**Result**
+```
 'Hello     '
-----
+```
 
-// todo: document algo
-== `singularize(word: String): String`
+[//]: # (todo: document algo)
+<br/>
+## singularize
+`singularize(word: String): String`
+
 Returns the singular of the given `word`.
 
-.Example
-----
+**Example**
+```
 xtr.strings.singularize('cars')
-----
-.Result
-----
+```
+**Result**
+```
 'car'
-----
+```
 
-== `substringAfter(str1: String, str2: String): String`
+<br/>
+## substringAfter
+`substringAfter(str1: String, str2: String): String`
+
 Returns the contents of `str1` after the first occurrence of `str2`, otherwise returns `str1` if it does not contain `str2`.
 
-.Example
-----
+**Example**
+```
 xtr.strings.substringAfter('!XHelloXWorldXAfter', 'X')
-----
-.Result
-----
+```
+**Result**
+```
 'HelloXWorldXAfter'
-----
+```
 
-== `substringAfterLast(str1: String, str2: String): String`
+<br/>
+## substringAfterLast
+`substringAfterLast(str1: String, str2: String): String`
+
 Returns the contents of `str1` after the last occurrence of `str2`, otherwise returns `str1` if it does not contain `str2`.
 
-.Example
-----
+**Example**
+```
 xtr.strings.substringAfterLast('!XHelloXWorldXAfter', 'X')
-----
-.Result
-----
+```
+**Result**
+```
 'After'
-----
+```
 
-== `substringBefore(str1: String, str2: String): String`
+<br/>
+## substringBefore
+`substringBefore(str1: String, str2: String): String`
+
 Returns the contents of `str1` before the first occurrence of `str2`, otherwise returns `str1` if it does not contain `str2`.
 
-.Example
-----
+**Example**
+```
 xtr.strings.substringBefore('!XHelloXWorldXAfter', 'X')
-----
-.Result
-----
+```
+**Result**
+```
 '!'
-----
+```
 
-== `substringBeforeLast(str1: String, str2: String): String`
+<br/>
+## substringBeforeLast
+`substringBeforeLast(str1: String, str2: String): String`
+
 Returns the contents of `str1` before the last occurrence of `str2`, otherwise returns `str1` if it does not contain `str2`.
 
-.Example
-----
+**Example**
+```
 xtr.strings.substringBeforeLast('!XHelloXWorldXAfter', 'X')
-----
-.Result
-----
+```
+**Result**
+```
 '!XHelloXWorld'
-----
+```
 
-== `underscore(str: String): String`
+<br/>
+## underscore
+`underscore(str: String): String`
+
 Returns the underscored version (aka snake case) of the given `str`, by changing alphabetic characters to lowercase, and replacing all spaces for underscores.
 
-.Example
-----
+**Example**
+```
 xtr.strings.underscore('Hello WorldX')
-----
-.Result
-----
+```
+**Result**
+```
 'hello_world_x'
-----
+```
 
-== `unwrap(str: String, wrap: String): String`
+<br/>
+## unwrap
+`unwrap(str: String, wrap: String): String`
+
 Returns `str` without the given `wrap` as prefix and suffix, if found.
 
-.Example
-----
+**Example**
+```
 xtr.strings.unwrap('_Hello, world!_', '_')
-----
-.Result
-----
+```
+**Result**
+```
 'Hello, world!'
-----
+```
 
-== `truncate(str: String, size: Number): String`
-Returns `str` truncated by the given `size`.
+<br/>
+## wrap
+`wrap(str: String, wrap: String): String`
 
-.Example
-----
-xtr.strings.truncate('Hello, world!', 5)
-----
-.Result
-----
-'Hello'
-----
-
-== `wrap(str: String, wrap: String): String`
 Returns `str`, prepended and appended with `wrap`.
 
-.Example
-----
+**Example**
+```
 xtr.strings.wrap('_Hello, world!', '_')
-----
-.Result
-----
+```
+**Result**
+```
 '__Hello, world!_'
-----
+```
 
-== `wrapIfMissing(str: String, wrap: String): String`
+<br/>
+## wrapIfMissing
+`wrapIfMissing(str: String, wrap: String): String`
+
 Returns `str`, prepended and appended with `wrap`, if not found.
 
-.Example
-----
+**Example**
+```
 xtr.strings.wrapIfMissing('_Hello, world!', '_')
-----
-.Result
-----
+```
+**Result**
+```
 '_Hello, world!_'
-----
+```

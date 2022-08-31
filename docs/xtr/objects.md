@@ -1,10 +1,12 @@
-= `xtr.objects`
+# xtr.objects
 
-== `all(obj, Object[A], predicate: Func[(A, String) => Boolean]): Boolean`
+## all
+`all(obj, Object[A], predicate: Func[(A, String) => Boolean]): Boolean`
+
 Returns `true` if all entries in `obj` satisfy the given `predicate`, otherwise `false`. `predicate` must accept an `A` and its corresponding `String` key.
 
-.Example
-----
+**Example**
+```
 local languages = {
     scala: { version: '3.1.3', isJvm: true },
     java: { version: '19', isJvm: true },
@@ -12,17 +14,20 @@ local languages = {
 };
 
 xtr.objects.all(languages, function(lang, name) lang.isJvm)
-----
-.Result
-----
+```
+**Result**
+```
 false
-----
+```
 
-== `any(obj, Object[A], predicate: Func[(A, String) => Boolean]): Boolean`
+<br/>
+## any
+`any(obj, Object[A], predicate: Func[(A, String) => Boolean]): Boolean`
+
 Returns `true` if any entry in `obj` satisfies the given `predicate`, otherwise `false`. `predicate` must accept an `A` and its corresponding `String` key.
 
-.Example
-----
+**Example**
+```
 local languages = {
     scala: { version: '3.1.3', isJvm: true },
     java: { version: '19', isJvm: true },
@@ -30,17 +35,21 @@ local languages = {
 };
 
 xtr.objects.any(languages, function(lang, name) lang.isJvm)
-----
-.Result
-----
+```
+**Result**
+```
 true
-----
+```
 
-== `distinctBy(obj: Object[A], Func[(A) => B]): Object[A]`
+<br/>
+## distinctBy
+### distinctBy func(value)
+`distinctBy(obj: Object[A], Func[(A) => B]): Object[A]`
+
 Returns a new `Object` with the distinct entries in `obj` using the given `identity` function for comparison. `identity` must accept an `A`.
 
-.Example
-----
+**Example**
+```
 local languages = {
     first: { name: 'scala', version: '3.1.3', isJvm: true },
     second: { name: 'java', version: '19', isJvm: true },
@@ -48,20 +57,23 @@ local languages = {
 };
 
 xtr.objects.distinctBy(languages, function(lang) lang.name)
-----
-.Result
-----
+```
+**Result**
+```
 {
     first: { name: 'scala', version: '3.1.3', isJvm: true },
     second: { name: 'java', version: '19', isJvm: true }
 }
-----
+```
 
-== `distinctBy(obj: Object[A], Func[(A, String) => B]): Object[A]`
+<br/>
+### distinctBy func(value, idx)
+`distinctBy(obj: Object[A], Func[(A, String) => B]): Object[A]`
+
 Returns a new `Object` with the distinct entries in `obj` using the given `identity` function for comparison. `identity` must accept an `A` and its corresponding `String` key.
 
-.Example
-----
+**Example**
+```
 local languages = {
     first: { name: 'scala', version: '3.1.3', isJvm: true },
     second: { name: 'java', version: '19', isJvm: true },
@@ -72,27 +84,38 @@ xtr.objects.distinctBy(languages, function(lang, ordinal)
     if (lang.name == 'java') then lang.version
     else ordinal
 )
-----
-.Result
-----
+```
+**Result**
+```
 {
     first: { name: 'scala', version: '3.1.3', isJvm: true },
     second: { name: 'java', version: '19', isJvm: true },
     third: { name: 'java', version: '18', isJvm: true }
 }
-----
+```
 
-== `fromArray(arr: Array[A], Func[(A) => Object[B]): Object[B]`
+<br/>
+## fromArray
+### fromArray func(value)
+`fromArray(arr: Array[A], Func[(A) => Object[B]): Object[B]`
+
 Returns a new `Object[B]` containing the entry of every `Object[B]` obtained by applying the given `function` to all elements in `arr`. `function` must accept an `A` value.
 
-== `fromArray(arr: Array[A], Func[(A, Number) => Object[B]]: Object[B]`
+<br/>
+### fromArray func(value, idx)
+`fromArray(arr: Array[A], Func[(A, Number) => Object[B]]: Object[B]`
+
 Returns a new `Object[B]` containing the entry of every `Object[B]` obtained by applying the given `function` to all elements in `arr`. `function` must accept an `A` value and its `Number` index.
 
-== `fullEqJoin(arrL: Array[Object[A]], arrR: Array[Object[B]], identity: Func[(Object[A]) => String|Number|Boolean], identityR: Func[(Object[B]) => String|Number|Boolean) => Object[C]]): Array[Object[C]]`
+<br/>
+## fullEqJoin
+### fullEqJoin
+`fullEqJoin(arrL: Array[Object[A]], arrR: Array[Object[B]], identity: Func[(Object[A]) => String|Number|Boolean], identityR: Func[(Object[B]) => String|Number|Boolean) => Object[C]]): Array[Object[C]]`
+
 Returns a new `Array` with all the objects that exist in `arrL` or in `arrR`, joining those that exist in both with a shallow merge, and using the given `identity` functions to compute equality.
 
-.Example
-----
+**Example**
+```
 local customers = [
     { id: 2, email: 'joe@example.com', joined: '2021-07-30' },
     { id: 77, email: 'jane@example.com', joined: '2019-07-30' },
@@ -108,9 +131,9 @@ local orders = [
 
 xtr.objects.fullEqJoin(customers, orders,
     function(cust) cust.id, function(order) order.customerId)
-----
-.Result
-----
+```
+**Result**
+```
 [
     { id: 2, email: 'joe@example.com', joined: '2021-07-30',
         orderId: 10308, customerId: 2, date: '2022-07-30' },
@@ -121,13 +144,16 @@ xtr.objects.fullEqJoin(customers, orders,
     { id: 17, email: 'john@example.com', joined: '2002-07-03' },
     { orderId: 10311, customerId: 93, date: '2021-05-03' }
 ]
-----
+```
 
-== `fullEqJoin(arrL: Array[Object[A]], arrR: Array[Object[B]], identity: Func[(Object[A]) => String|Number|Boolean], identityR: Func[(Object[B]) => String|Number|Boolean) => Object[C]], join: Func[(Object[A], Object[B]) => Object[C]]): Array[Object[C]]`
+<br/>
+### fullEqJoin func(left, right) => joined
+`fullEqJoin(arrL: Array[Object[A]], arrR: Array[Object[B]], identity: Func[(Object[A]) => String|Number|Boolean], identityR: Func[(Object[B]) => String|Number|Boolean) => Object[C]], join: Func[(Object[A], Object[B]) => Object[C]]): Array[Object[C]]`
+
 Returns a new `Array` with all the objects that exist in `arrL` or in `arrR`, joining those that exist in both with the given `join` function, and using the given `identity` functions to compute equality.
 
-.Example
-----
+**Example**
+```
 local customers = [
     { id: 2, email: 'joe@example.com', joined: '2021-07-30' },
     { id: 77, email: 'jane@example.com', joined: '2019-07-30' },
@@ -144,9 +170,9 @@ local orders = [
 xtr.objects.fullEqJoin(customers, orders,
     function(cust) cust.id, function(order) order.customerId,
     function(cust, order) { id: cust?.id, oId: order?.orderId })
-----
-.Result
-----
+```
+**Result**
+```
 [
     { id: 2, oId: 10308 },
     { id: 2, oId: 10309 },
@@ -154,13 +180,17 @@ xtr.objects.fullEqJoin(customers, orders,
     { id: 17, oId: null },
     { id: null, oId: 10311 }
 ]
-----
+```
 
-== `innerEqJoin(arrL: Array[Object[A]], arrR: Array[Object[B]], identity: Func[(Object[A]) => String|Number|Boolean], identityR: Func[(Object[B]) => String|Number|Boolean)]): Array[Object[C]]`
+<br/>
+## innerEqJoin
+### innerEqJoin
+`innerEqJoin(arrL: Array[Object[A]], arrR: Array[Object[B]], identity: Func[(Object[A]) => String|Number|Boolean], identityR: Func[(Object[B]) => String|Number|Boolean)]): Array[Object[C]]`
+
 Returns a new `Array` with all the objects that exist in both `arrL` _and_ `arrR`, using the given `identity` functions to compute equality, and joined using a shallow merge.
 
-.Example
-----
+**Example**
+```
 local customers = [
     { id: 2, email: 'joe@example.com', joined: '2021-07-30' },
     { id: 77, email: 'jane@example.com', joined: '2019-07-30' },
@@ -176,9 +206,9 @@ local orders = [
 
 xtr.objects.innerEqJoin(customers, orders,
     function(cust) cust.id, function(order) order.customerId)
-----
-.Result
-----
+```
+**Result**
+```
 [
     { id: 2, email: 'joe@example.com', joined: '2021-07-30',
         orderId: 10308, customerId: 2, date: '2022-07-30' },
@@ -187,13 +217,16 @@ xtr.objects.innerEqJoin(customers, orders,
     { id: 77, email: 'jane@example.com', joined: '2019-07-30',
         orderId: 10310, customerId: 77, date: '2022-07-03' }
 ]
-----
+```
 
-== `innerEqJoin(arrL: Array[Object[A]], arrR: Array[Object[B]], identity: Func[(Object[A]) => String|Number|Boolean], identityR: Func[(Object[B]) => String|Number|Boolean), join: Func[(Object[A], Object[B]) => Object[C]]): Array[Object[C]]`
+<br/>
+### innerEqJoin func(left, right) => joined
+`innerEqJoin(arrL: Array[Object[A]], arrR: Array[Object[B]], identity: Func[(Object[A]) => String|Number|Boolean], identityR: Func[(Object[B]) => String|Number|Boolean), join: Func[(Object[A], Object[B]) => Object[C]]): Array[Object[C]]`
+
 Returns a new `Array` with all the objects that exist in both `arrL` _and_ `arrR`, using the given `identity` functions to compute equality, and joined using the given `join` function.
 
-.Example
-----
+**Example**
+```
 local customers = [
     { id: 2, email: 'joe@example.com', joined: '2021-07-30' },
     { id: 77, email: 'jane@example.com', joined: '2019-07-30' },
@@ -210,21 +243,25 @@ local orders = [
 xtr.objects.innerEqJoin(customers, orders,
     function(cust) cust.id, function(order) order.customerId,
     function(cust, order) { id: cust.id, oId: order.orderId })
-----
-.Result
-----
+```
+**Result**
+```
 [
     { id: 2, oId: 10308 },
     { id: 2, oId: 10309 },
     { id: 77, oId: 10310 }
 ]
-----
+```
 
-== `leftEqJoin(arrL: Array[Object[A]], arrR: Array[Object[B]], identity: Func[(Object[A]) => String|Number|Boolean], identityR: Func[(Object[B]) => String|Number|Boolean)]): Array[Object[C]]`
+<br/>
+## leftEqJoin
+### leftEqJoin func(left, right) => joined
+`leftEqJoin(arrL: Array[Object[A]], arrR: Array[Object[B]], identity: Func[(Object[A]) => String|Number|Boolean], identityR: Func[(Object[B]) => String|Number|Boolean)]): Array[Object[C]]`
+
 Returns a new `Array` with all the objects that exist in `arrL`, joined using a shallow merge with those that also exist in `arrR`, using the given `identity` functions to compute equality.
 
-.Example
-----
+**Example**
+```
 local customers = [
     { id: 2, email: 'joe@example.com', joined: '2021-07-30' },
     { id: 77, email: 'jane@example.com', joined: '2019-07-30' },
@@ -240,9 +277,9 @@ local orders = [
 
 xtr.objects.leftEqJoin(customers, orders,
     function(cust) cust.id, function(order) order.customerId)
-----
-.Result
-----
+```
+**Result**
+```
 [
     { id: 2, email: 'joe@example.com', joined: '2021-07-30',
         orderId: 10308, customerId: 2, date: '2022-07-30' },
@@ -252,13 +289,16 @@ xtr.objects.leftEqJoin(customers, orders,
         orderId: 10310, customerId: 77, date: '2022-07-03' },
     { id: 17, email: 'john@example.com', joined: '2002-07-03' }
 ]
-----
+```
 
-== `leftEqJoin(arrL: Array[Object[A]], arrR: Array[Object[B]], identity: Func[(Object[A]) => String|Number|Boolean], identityR: Func[(Object[B]) => String|Number|Boolean), join: Func[(Object[A], Object[B]) => Object[C]]): Array[Object[C]]`
+<br/>
+### leftEqJoin func(left, right) => joined
+`leftEqJoin(arrL: Array[Object[A]], arrR: Array[Object[B]], identity: Func[(Object[A]) => String|Number|Boolean], identityR: Func[(Object[B]) => String|Number|Boolean), join: Func[(Object[A], Object[B]) => Object[C]]): Array[Object[C]]`
+
 Returns a new `Array` with all the objects that exist in `arrL`, joined using the given `join` function with those that also exist in `arrR`, using the given `identity` functions to compute equality.
 
-.Example
-----
+**Example**
+```
 local customers = [
     { id: 2, email: 'joe@example.com', joined: '2021-07-30' },
     { id: 77, email: 'jane@example.com', joined: '2019-07-30' },
@@ -275,13 +315,13 @@ local orders = [
 xtr.objects.leftEqJoin(customers, orders,
     function(cust) cust.id, function(order) order.customerId,
     function(cust, order) { id: cust.id, oId: order?.orderId })
-----
-.Result
-----
+```
+**Result**
+```
 [
     { id: 2, oId: 10308 },
     { id: 2, oId: 10309 },
     { id: 77, oId: 10310 },
     { id: 17, oId: null }
 ]
-----
+```

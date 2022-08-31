@@ -1,0 +1,81 @@
+# Project information
+site_name: xtrasonnet
+site_url: https://jam01.github.io/xtrasonnet/
+site_author: Jose Montoya
+site_description: extensible jsonnet transformations
+
+# Repository
+repo_name: jam01/xtrasonnet
+repo_url: https://github.com/jam01/xtrasonnet
+
+# Copyright
+copyright: Copyright Jose Montoya 2022
+
+# Configuration
+theme:
+  name: material
+#   custom_dir: theme/overrides
+  features:
+    - content.code.annotate
+    - navigation.indexes
+    - navigation.tabs
+docs_dir: docs
+
+# Plugins
+plugins:
+  - search
+  - minify:
+      minify_html: true
+#  - extra-sass # https://github.com/squidfunk/mkdocs-material/issues/2376
+
+# Customization
+extra:
+#  version:
+#    provider: mike
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/jam01
+
+#extra_css:
+#  - stylesheets/extra.scss
+
+# Extensions
+markdown_extensions:
+  # heading links
+  - toc:
+      permalink: true
+  # code-blocks
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  # grids
+  - attr_list
+  - md_in_html
+  # notes
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+
+# Page tree
+nav:
+  - Home: index.md
+  - Getting started:
+      - installation.md
+      - Programmatically: programmatic.md
+#      - Executable: cli.md
+  - xtr:
+    - xtr/index.md
+    - arrays: xtr/arrays.md
+    - base64: xtr/base64.md
+    - crypto: xtr/crypto.md
+    - datetime: xtr/datetime.md
+    - duration: xtr/duration.md
+    - math: xtr/math.md
+    - numbers: xtr/numbers.md
+    - objects: xtr/objects.md
+    - strings: xtr/strings.md
+    - url: xtr/url.md
+  - Header: header.md
+  - DataFormats: dataformats.md

@@ -177,8 +177,9 @@
                                 <exclude>**/LICENSE</exclude>
                                 <exclude>pom.xml</exclude>
                                 <exclude>README.md</exclude>
-                                <exclude>antora-playbook.yml</exclude>
                                 <exclude>docs/**</exclude>
+                                <exclude>theme/**</exclude>
+                                <exclude>mkdocs.yml</exclude>
                                 <exclude>src/test/resources/**</exclude>
                                 <exclude>**/target/**</exclude>
                                 <!-- files unchanged from spring-framework -->

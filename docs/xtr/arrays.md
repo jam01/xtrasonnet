@@ -1,322 +1,392 @@
-= `xtr.arrays`
+# xtr.arrays
 
-== `all`(arr: Array[A], predicate: Func[(A) => Boolean]): Boolean`
+## all
+`all(arr: Array[A], predicate: Func[(A) => Boolean]): Boolean`
+
 Returns `true` if all elements in `arr` satisfy the given `predicate`, otherwise `false`. `predicate` must accept an `A`.
 
-.Example
-----
+**Example**
+```
 xtr.arrays.all([1, 2, 3], function(item) item > 0)
-----
-.Result
-----
+```
+**Result**
+```
 true
-----
+```
 
-== `any(arr: Array[A], function: Func[(A) => Boolean]): Boolean`
+<br/>
+## any
+`any(arr: Array[A], function: Func[(A) => Boolean]): Boolean`
+
 Returns `true` if any element in `arr` satisfies the given `predicate`, otherwise `false`. `predicate` must accept an `A`.
 
-.Example
-----
+**Example**
+```
 xtr.arrays.any([1, 2, 3], function(item) item > 1)
-----
-.Result
-----
+```
+**Result**
+```
 true
-----
+```
 
-== `break(arr: Array[A], predicate: Func[(A) => Boolean]): Object[Array[A]]`
+<br/>
+## break
+`break(arr: Array[A], predicate: Func[(A) => Boolean]): Object[Array[A]]`
+
 Returns an `Object` with two entries:
 
 - `left` key with an `Array[A]` containing the elements of `arr` before the first element to satisfy the given `predicate`.
 - `right` key with an `Array[A]` containing the remaining elements of `arr`.
 
-.Example
-----
+**Example**
+```
 xtr.arrays.break([1, 2, 3, 4, 5], function(item) item % 2 == 0)
-----
-.Result
-----
+```
+**Result**
+```
 { left: [1], right: [2, 3, 4, 5] }
-----
+```
 
-== `chunksOf(arr: Array[A], size: Number): Array[Array[A]]`
+<br/>
+## chunksOf
+`chunksOf(arr: Array[A], size: Number): Array[Array[A]]`
+
 Returns a new `Array` of `Array[A]`, with every element containing the next `size` elements in `arr`.
 
-.Example
-----
+**Example**
+```
 xtr.arrays.chunksOf([1, 2, 3, 4, 5], 2)
-----
-.Result
-----
+```
+**Result**
+```
 [[1, 2], [3, 4], [5]]
-----
+```
 
-== `countBy(arr: Array[A], function: Func[(A) => Boolean]): Number`
+<br/>
+## countBy
+`countBy(arr: Array[A], function: Func[(A) => Boolean]): Number`
+
 Returns a `Number` count of all the elements in `array` that satisfy the given `predicate`, which must accept and `A`.
 
-.Example
-----
+**Example**
+```
 xtr.arrays.countBy([1, 2, 3], function(item) item > 2)
-----
-.Result
-----
+```
+**Result**
+```
 1
-----
+```
 
-== `deepFlatten(arr: Array[Array[A]]): Array[Any]`
+<br/>
+## deepFlatten
+`deepFlatten(arr: Array[Array[A]]): Array[Any]`
+
 Returns a new single level `Array` with the contents of all `Array` in `arr`, recursively flattening each `Array` element found.
 
-.Example
-----
+**Example**
+```
 xtr.arrays.deepFlatten([[1, 2], '3', [4, {}, [5, 6]]])
-----
-.Result
-----
+```
+**Result**
+```
 [1, 2, '3', 4, {}, 5, 6]
-----
+```
 
-== `distinctBy(arr: Array[A], identity: Func[(A) => B]): Array[A]`
+<br/>
+## distinctBy
+### distinctBy func(value)
+`distinctBy(arr: Array[A], identity: Func[(A) => B]): Array[A]`
+
 Returns a new `Array` with the distinct elements in `arr` using the given `identity` function for comparison. `identity` must accept an `A`.
 
-.Example
-----
+**Example**
+```
 xtr.arrays.distinctBy([1, 2, 3, 4, 5, 6], function(item) item % 3)
-----
-.Result
-----
+```
+**Result**
+```
 [1, 2, 3]
-----
+```
 
 The modulo operation on the elements yields `[1, 2, 0, 1, 2, 0]` meaning `1` and `4` share the same identity, therefore `1` is kept and `4` discarded. Same is true for `2` and `3` with `5` and `6`, respectively.
 
-== `distinctBy(arr: Array[A], identity: Func[(A, Number) => B]): Array[A]`
+<br/>
+### distinctBy func(value, idx)
+`distinctBy(arr: Array[A], identity: Func[(A, Number) => B]): Array[A]`
+
 Returns a new `Array` with the distinct elements in `arr` using the given `identity` function for comparison. `identity` must accept an `A`.
 
-.Example
-----
+**Example**
+```
 xtr.arrays.distinctBy([1, 2, 3, 4, 5, 6], function(item, idx) item % (3 * idx))
-----
-.Result
-----
+```
+**Result**
+```
 [1, 2, 3, 4, 5, 6]
-----
+```
 
 The modulo operation on the elements yields `[0, 2, 3, 4, 5, 6]` where all are distinct, so all elements are kept.
 
-== `drop(arr: Array[A], n: Number): Array[A]`
+<br/>
+## drop
+`drop(arr: Array[A], n: Number): Array[A]`
+
 Returns a new `Array` with the elements in `arr`, from `n`-th element to last.
 
-.Example
-----
+**Example**
+```
 xtr.arrays.drop([1, 2, 3, 4, 5], 3)
-----
-.Result
-----
+```
+**Result**
+```
 [4, 5]
-----
+```
 
-== `dropWhile(arr: Array[A], predicate: Func[(A) => Boolean]): Array[A]`
+<br/>
+## dropWhile
+`dropWhile(arr: Array[A], predicate: Func[(A) => Boolean]): Array[A]`
+
 Returns a new `Array` with the elements in `arr`, from the first element to not satisfy `predicate` to last. `predicate` must accept an `A`.
 
-.Example
-----
+**Example**
+```
 xtr.arrays.dropWhile([1, 2, 3, 4, 5], function(item) item * 3 < 10)
-----
-.Result
-----
+```
+**Result**
+```
 [4, 5]
-----
+```
 
-== `duplicates(arr: Array[A]): Array[A]`
+<br/>
+## duplicates
+`duplicates(arr: Array[A]): Array[A]`
+
 Returns a new `Array` with any element in `arr` that is duplicated.
 
-.Example
-----
+**Example**
+```
 xtr.arrays.duplicates([1, 2, 3, 1, 2])
-----
-.Result
-----
+```
+**Result**
+```
 [1, 2]
-----
+```
 
-== `find(arr: Array[A], predicate: Func[(A) => Boolean]): [A]`
+<br/>
+## find
+### find func(value)
+`find(arr: Array[A], predicate: Func[(A) => Boolean]): [A]`
+
 Returns a single element `Array` with the first `A` that satisfies the given `predicate`, which must accept an `A`.
 
-.Example
-----
+**Example**
+```
 xtr.arrays.find([1, 2, 3, 4, 5], function(item) item * 3 > 10)
-----
-.Result
-----
+```
+**Result**
+```
 [4]
-----
+```
 
-== `find(arr: Array[A], predicate: Func[(A, Number) => Boolean]): [A]`
+<br/>
+### find func(value, idx)
+`find(arr: Array[A], predicate: Func[(A, Number) => Boolean]): [A]`
+
 Returns a single element `Array` with the first `A` that satisfies the given `predicate`, which must accept an `A` and its `Number` index.
 
-.Example
-----
+**Example**
+```
 xtr.arrays.find([1, 2, 3, 4, 5], function(item, idx) item * (3 + idx) > 10)
-----
-.Result
-----
+```
+**Result**
+```
 [3]
-----
+```
 
-== `indexWhere(arr: Array[A], predicate: Func[(A) => Boolean]): Number`
+<br/>
+## indexWhere
+`indexWhere(arr: Array[A], predicate: Func[(A) => Boolean]): Number`
+
 Returns the `Number` index of the first element that satisfies the given `predicate`, otherwise `-1`. `predicate` which must accept an `A`.
 
-.Example
-----
+**Example**
+```
 xtr.arrays.indexWhere([1, 2, 3, 4, 5], function(item) item * 3 < 10)
-----
-.Result
-----
+```
+**Result**
+```
 0
-----
+```
 
-== `indicesWhere(arr: Array[A], function: Func[(A) => Boolean]): Array[Number]`
+<br/>
+## indicesWhere
+`indicesWhere(arr: Array[A], function: Func[(A) => Boolean]): Array[Number]`
+
 Returns an `Array[Number]` with the indices of elements that satisfy the given `predicate`, which must accept an `A`.
 
-.Example
-----
+**Example**
+```
 xtr.arrays.indicesWhere([1, 2, 3, 4, 5], function(item) item * 3 < 10)
-----
-.Result
-----
+```
+**Result**
+```
 [0, 1, 2]
-----
+```
 
-== `lastIndexWhere(arr: Array[A], predicate: Func[(A) => Boolean]): Number`
+<br/>
+## lastIndexWhere
+`lastIndexWhere(arr: Array[A], predicate: Func[(A) => Boolean]): Number`
+
 Returns the `Number` index of the last element in `arr` that satisfies the given `predicate`, otherwise `-1`. `predicate` which must accept an `A`.
 
-.Example
-----
+**Example**
+```
 xtr.arrays.lastIndexWhere([1, 2, 3, 4, 5], function(item) item * 3 < 10)
-----
-.Result
-----
+```
+**Result**
+```
 2
-----
+```
 
-== `occurrencesBy(arr: Array[A], identity: Func[(A) => String]): Object[Number]`
+<br/>
+## occurrencesBy
+`occurrencesBy(arr: Array[A], identity: Func[(A) => String]): Object[Number]`
+
 Returns an `Object` with an entry for each unique identity of elements in `arr`. The value of each entry is the `Number` of elements in `arr` that produced such identity, using `identity`. `identity` must take an `A`.
 
-.Example
-----
+**Example**
+```
 xtr.arrays.occurrencesBy([1, 2, 3, 4, 5], function(item) if (item) < 4 then 'under4' else 'over4')
-----
-.Result
-----
+```
+**Result**
+```
 { 'under4': 3, 'over4': 2 }
-----
+```
 
-== `partition(arr: Array[A], predicate: Func[(A) => Boolean]): Object[A]`
+<br/>
+## partition
+`partition(arr: Array[A], predicate: Func[(A) => Boolean]): Object[A]`
+
 Returns an `Object` with two entries:
 
 - `pass` key with an `Array[A]` of the subset of elements in `arr` that satisfy the given `predicate`, which must take an `A`.
 - `fail` key with an `Array[A]` of the subset of elements in `arr` that fail the given `predicate`, which must take an `A`.
 
-.Example
-----
+**Example**
+```
 xtr.arrays.partition([1, 2, 3, 4, 5], function(item) item < 4)
-----
-.Result
-----
+```
+**Result**
+```
 { pass: [1, 2, 3], fail: [4, 5] }
-----
+```
 
-== `splitAt(arr: Array[A], n: Number): Object[A]`
+<br/>
+## splitAt
+`splitAt(arr: Array[A], n: Number): Object[A]`
+
 Returns an `Object[A]` with two entries:
 
 - `left` key with an `Array[A]` containing the elements of `arr` before the `n` element.
 - `right` key with an `Array[A]` containing the remaining elements of `arr`.
 
-.Example
-----
+**Example**
+```
 xtr.arrays.splitAt([1, 2, 3, 4, 5], 3)
-----
-.Result
-----
+```
+**Result**
+```
 { left: [1, 2, 3], right: [4, 5] }
-----
+```
 
-== `take(arr: Array[A], n: Number): Array[A]`
+<br/>
+## take
+`take(arr: Array[A], n: Number): Array[A]`
+
 Returns a new `Array` with the elements in `arr`, from first to the `n`-th element.
 
-.Example
-----
+**Example**
+```
 xtr.arrays.take([1, 2, 3, 4, 5], 3)
-----
-.Result
-----
+```
+**Result**
+```
 [1, 2, 3]
-----
+```
 
-== `takeWhile(arr: Array[A], predicate: Func[(A) => Boolean]): Array[A]`
+<br/>
+## takeWhile
+`takeWhile(arr: Array[A], predicate: Func[(A) => Boolean]): Array[A]`
+
 Returns a new `Array` with the elements in `arr`, from the first element until the first element to not satisfy the given `predicate`, which must accept an A.
 
-.Example
-----
+**Example**
+```
 xtr.arrays.takeWhile([1, 2, 3, 4, 5], function(item) item * 2 < 9)
-----
-.Result
-----
+```
+**Result**
+```
 [1, 2, 3, 4]
-----
+```
 
-== `unzip(arr: Array[Array[A]]): Array[Array[A]]`
+<br/>
+## unzip
+`unzip(arr: Array[Array[A]]): Array[Array[A]]`
+
 Create n-number of `Arrays`, each containing the n-th element of every array in `arr`.
 
 Returns a new `Array` of equal size to the shortest array in `arr`. Every n-th element in the result is an `Array` containing the n-th element the arrays in `arr`.
 
-.Example
-----
+**Example**
+```
 xtr.arrays.unzip([[1, 'x'], [2, 'y'], [3, 'z']])
-----
-.Result
-----
+```
+**Result**
+```
 [[1, 2, 3], ['x', 'y', 'z']]
-----
+```
 
-//== `unzipAll(arr: Array[Array[A]], fill: B): Array[Array[A|B]]`
-//Create n-number of `Arrays`, each containing the n-th element of every array in `arr`, using a `fill` value for missing n-th elements.
-//
-//Returns a new `Array` of equal size to the longest array in `arr`. Every n-th element in the result is an `Array` containing the n-th element the arrays in `arr` that have such element or `fill` for short arrays.
-//
-//.Example
-//----
-//xtr.arrays.unzipAll([[1, 'x'], [2], [3, 'z']], 'NA')
-//----
-//.Result
-//----
-//[[1, 2, 3], ['x', 'NA', 'z']]
-//----
+[//]: # (## `unzipAll&#40;arr: Array[Array[A]], fill: B&#41;: Array[Array[A|B]]`)
+[//]: # (Create n-number of `Arrays`, each containing the n-th element of every array in `arr`, using a `fill` value for missing n-th elements.)
+[//]: # ()
+[//]: # (Returns a new `Array` of equal size to the longest array in `arr`. Every n-th element in the result is an `Array` containing the n-th element the arrays in `arr` that have such element or `fill` for short arrays.)
+[//]: # ()
+[//]: # (**Example**)
+[//]: # (```)
+[//]: # (xtr.arrays.unzipAll&#40;[[1, 'x'], [2], [3, 'z']], 'NA'&#41;)
+[//]: # (```)
+[//]: # (**Result**)
+[//]: # (```)
+[//]: # ([[1, 2, 3], ['x', 'NA', 'z']])
+[//]: # (```)
 
-== `zip(arr1: Array[A], arr2: Array[B], arrN: Array[C]*): Array[Array[A|B|C]]`
+<br/>
+## zip
+`zip(arr1: Array[A], arr2: Array[B], arrN: Array[C]*): Array[Array[A|B|C]]`
+
 Combines corresponding elements of the given arrays.
 
 Returns a new `Array` of equal size to the shortest array given. Every n-th element in the result is an `Array` containing the n-th element of the given arrays.
 
-.Example
-----
+**Example**
+```
 xtr.arrays.zip([1, 2, 3], ['x', 'y', 'z'])
-----
-.Result
-----
+```
+**Result**
+```
 [[1, 'x'], [2, 'y'], [3, 'z']]
-----
+```
 
-//== `zipAll(arr: Array[Array[A]], fill: B): Array[Array[A|B]]`
-//Combines corresponding elements of the arrays in `arr`, using a `fill` value for short arrays.
-//
-//Returns a new `Array` of equal size to the longest array in `arr`. Every n-th element in the result is an `Array` containing the n-th element of the arrays in `arr` that have such element or `fill` for short arrays.
-//
-//.Example
-//----
-//xtr.arrays.zipAll([[1, 2, 3], ['x', 'y']], 'NA')
-//----
-//.Result
-//----
-//[[1, 'x'], [2, 'y'], [3, 'NA']]
-//----
+[//]: # (## `zipAll&#40;arr: Array[Array[A]], fill: B&#41;: Array[Array[A|B]]`)
+[//]: # (Combines corresponding elements of the arrays in `arr`, using a `fill` value for short arrays.)
+[//]: # ()
+[//]: # (Returns a new `Array` of equal size to the longest array in `arr`. Every n-th element in the result is an `Array` containing the n-th element of the arrays in `arr` that have such element or `fill` for short arrays.)
+[//]: # ()
+[//]: # (**Example**)
+[//]: # (```)
+[//]: # (xtr.arrays.zipAll&#40;[[1, 2, 3], ['x', 'y']], 'NA'&#41;)
+[//]: # (```)
+[//]: # (**Result**)
+[//]: # (```)
+[//]: # ([[1, 'x'], [2, 'y'], [3, 'NA']])
+[//]: # (```)
