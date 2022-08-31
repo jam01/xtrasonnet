@@ -31,7 +31,7 @@ public class RootTest {
     }
 
     @Test
-    public void entriesOf() {
+    public void entries() {
         assertEquals(transform("""
                 [
                   {
@@ -42,7 +42,7 @@ public class RootTest {
                     key: 'java',
                     value: '19'
                   }
-                ]"""), transform("xtr.entriesOf({ scala: '3.1.3', java: '19' })"));
+                ]"""), transform("xtr.entries({ scala: '3.1.3', java: '19' })"));
     }
 
     @Test
@@ -289,8 +289,8 @@ public class RootTest {
     }
 
     @Test
-    public void keysOf() {
-        assertEquals(transform("['scala', 'java']"), transform("xtr.keysOf({ scala: '3.1.3', java: '19' })"));
+    public void keys() {
+        assertEquals(transform("['scala', 'java']"), transform("xtr.keys({ scala: '3.1.3', java: '19' })"));
     }
 
     @Test
@@ -511,14 +511,14 @@ public class RootTest {
     }
 
     @Test
-    public void sizeOf() {
-        assertEquals(transform("3"), transform("xtr.sizeOf([1, 2, 3])"));
+    public void length() {
+        assertEquals(transform("3"), transform("xtr.length([1, 2, 3])"));
         assertEquals(transform("2"), transform("""
                 local add(item, item2) = item + item2;
 
-                xtr.sizeOf(add)"""));
-        assertEquals(transform("1"), transform("xtr.sizeOf({ key: 'value' })"));
-        assertEquals(transform("13"), transform("xtr.sizeOf('hello, world!')"));
+                xtr.length(add)"""));
+        assertEquals(transform("1"), transform("xtr.length({ key: 'value' })"));
+        assertEquals(transform("13"), transform("xtr.length('hello, world!')"));
     }
 
     @Test
@@ -548,7 +548,7 @@ public class RootTest {
     }
 
     @Test
-    public void typeOf() {
+    public void type() {
         assertEquals(transform("""
                 {
                     bool: 'boolean',
@@ -561,12 +561,12 @@ public class RootTest {
                 local func(it) = it;
 
                 {
-                    bool: xtr.typeOf(true),
-                    num: xtr.typeOf(365),
-                    nil: xtr.typeOf(null),
-                    arr: xtr.typeOf([]),
-                    obj: xtr.typeOf({}),
-                    func: xtr.typeOf(func)
+                    bool: xtr.type(true),
+                    num: xtr.type(365),
+                    nil: xtr.type(null),
+                    arr: xtr.type([]),
+                    obj: xtr.type({}),
+                    func: xtr.type(func)
                 }"""));
     }
 
@@ -582,8 +582,8 @@ public class RootTest {
     }
 
     @Test
-    public void valuesOf() {
-        assertEquals(transform("['3.1.3', '19']"), transform("xtr.valuesOf({ scala: '3.1.3', java: '19' })"));
+    public void values() {
+        assertEquals(transform("['3.1.3', '19']"), transform("xtr.values({ scala: '3.1.3', java: '19' })"));
     }
 
     @Test

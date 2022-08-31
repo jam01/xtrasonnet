@@ -112,7 +112,7 @@ object Xtr extends Library {
         }
     },
 
-    builtin("entriesOf", "obj") {
+    builtin("entries", "obj") {
       (pos, ev, obj: Val.Obj) =>
         new Val.Arr(pos, obj.visibleKeyNames.collect({
           case key => Val.Obj.mk(pos,
@@ -229,7 +229,7 @@ object Xtr extends Library {
         }).mkString(sep)
     },
 
-    builtin("keysOf", "obj") {
+    builtin("keys", "obj") {
       (pos, _, obj: Val.Obj) =>
         new Val.Arr(pos, obj.visibleKeyNames.map(item => Val.Str(pos, item)))
     },
@@ -373,7 +373,7 @@ object Xtr extends Library {
         read(dataFormats, data, mimeType, params, ev)
     },
 
-    builtin("sizeOf", "value") {
+    builtin("length", "value") {
       (pos, ev, value: Val) =>
         value match {
           case s: Val.Str => s.value.length()
@@ -401,7 +401,7 @@ object Xtr extends Library {
       (pos, ev, str: String) => str.trim()
     },
 
-    builtin("typeOf", "value") {
+    builtin("type", "value") {
       (pos, ev, value: Val) =>
         value match {
           case _: Val.Bool => "boolean"
@@ -424,7 +424,7 @@ object Xtr extends Library {
         UUID.randomUUID().toString
     },
 
-    builtin("valuesOf", "obj") {
+    builtin("values", "obj") {
       (pos, ev, obj: Val.Obj) =>
         new Val.Arr(pos, obj.visibleKeyNames.map(key => obj.value(key, pos)(ev)))
     },
