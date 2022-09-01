@@ -29,8 +29,8 @@ public class ArraysTest {
     }
 
     @Test
-    public void deepFlatten() {
-        assertEquals(transform("[1, 2, '3', 4, {}, 5, 6]"), transform("xtr.arrays.deepFlatten([[1, 2], '3', [4, {}, [5, 6]]])"));
+    public void flat() {
+        assertEquals(transform("[1, 2, '3', 4, {}, 5, 6]"), transform("xtr.arrays.flat([[1, 2], '3', [4, {}, [5, 6]]])"));
     }
 
     @Test

@@ -1155,9 +1155,9 @@ object Xtr extends Library {
           }
       },
 
-      builtin("deepFlatten", "arr") {
+      builtin("flat", "arr") {
         (pos, ev, arr: Val.Arr) =>
-          new Val.Arr(pos, deepFlatten(arr.asLazyArray))
+          new Val.Arr(pos, flat(arr.asLazyArray))
       },
 
       builtin("indexWhere", "arr", "func") {
@@ -2430,10 +2430,11 @@ object Xtr extends Library {
     }
   }
 
-  private def deepFlatten(array: Array[Lazy]): Array[Lazy] = {
+  // TODO: add depth parameter, guard for stackoverflow
+  private def flat(array: Array[Lazy]): Array[Lazy] = {
     array.foldLeft(new ArrayBuffer[Lazy])((agg, curr) => {
       curr.force match {
-        case inner: Val.Arr => agg.appendAll(deepFlatten(inner.asLazyArray))
+        case inner: Val.Arr => agg.appendAll(flat(inner.asLazyArray))
         case _ => agg.append(curr)
       }
     }).toArray

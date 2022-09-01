@@ -78,21 +78,6 @@ xtr.arrays.countBy([1, 2, 3], function(item) item > 2)
 ```
 
 <br/>
-## deepFlatten
-`deepFlatten(arr: Array[Array[A]]): Array[Any]`
-
-Returns a new single level `Array` with the contents of all `Array` in `arr`, recursively flattening each `Array` element found.
-
-**Example**
-```
-xtr.arrays.deepFlatten([[1, 2], '3', [4, {}, [5, 6]]])
-```
-**Result**
-```
-[1, 2, '3', 4, {}, 5, 6]
-```
-
-<br/>
 ## distinctBy
 ### distinctBy func(value)
 `distinctBy(arr: Array[A], identity: Func[(A) => B]): Array[A]`
@@ -201,6 +186,21 @@ xtr.arrays.find([1, 2, 3, 4, 5], function(item, idx) item * (3 + idx) > 10)
 **Result**
 ```
 [3]
+```
+
+<br/>
+## flat
+`flat(arr: Array[Array[A]]): Array[Any]`
+
+Returns a new single level `Array` with the contents of all `Array` in `arr`, recursively flattening each `Array` element found.
+
+**Example**
+```
+xtr.arrays.flat([[1, 2], '3', [4, {}, [5, 6]]])
+```
+**Result**
+```
+[1, 2, '3', 4, {}, 5, 6]
 ```
 
 <br/>
