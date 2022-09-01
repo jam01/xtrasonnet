@@ -16,21 +16,6 @@ true
 ```
 
 <br/>
-### Object contains
-`contains(obj: Object, value: Any): Boolean`
-
-Returns `true` if `obj` contains the given `value`, otherwise `false`.
-
-**Example**
-```
-xtr.contains({ scala: '3.1.3' }, 'scala')
-```
-**Result**
-```
-true
-```
-
-<br/>
 ### String contains
 `contains(str1: String, str2: String): Boolean`
 

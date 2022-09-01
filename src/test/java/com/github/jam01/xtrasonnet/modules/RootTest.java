@@ -21,7 +21,6 @@ public class RootTest {
     @Test
     public void contains() {
         assertEquals(transform("true"), transform("xtr.contains([1, 2, 3], 1)"));
-        assertEquals(transform("true"), transform("xtr.contains({ scala: '3.1.3' }, 'scala')"));
         assertEquals(transform("true"), transform("xtr.contains('Lorem ipsum', 'Lorem')"));
     }
 

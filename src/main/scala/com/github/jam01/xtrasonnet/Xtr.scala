@@ -54,7 +54,7 @@ package com.github.jam01.xtrasonnet
 
 import com.github.jam01.xtrasonnet.document.{Document, MediaType}
 import com.github.jam01.xtrasonnet.header.Header
-import com.github.jam01.xtrasonnet.modules.{Crypto}
+import com.github.jam01.xtrasonnet.modules.Crypto
 import com.github.jam01.xtrasonnet.spi.Library
 import com.github.jam01.xtrasonnet.spi.Library.{emptyObj, memberOf}
 import sjsonnet.Expr.Member.Visibility
@@ -105,10 +105,8 @@ object Xtr extends Library {
           // See: scala.collection.IterableOnceOps.exists
           case array: Val.Arr =>
             array.asLazyArray.exists(v => ev.equal(v.force, value))
-          case obj: Val.Obj =>
-            obj.containsVisibleKey(value.asString)
           case str: Val.Str =>
-            str.value.r.findAllMatchIn(str.value).nonEmpty;
+            str.value.contains(str.value)
           case x => Error.fail("Expected Array or String, got: " + x.prettyName)
         }
     },
