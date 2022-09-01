@@ -1020,15 +1020,14 @@ object Xtr extends Library {
 
       builtinWithDefaults("round",
         "num" -> Val.Null(dummyPosition),
+        "mode" -> Val.Str(dummyPosition, "half-up"),
         "precision" -> Val.Num(dummyPosition, 0)) { (args, pos, ev) =>
         val num = args(0).cast[Val.Num].value
-        val prec = args(1).cast[Val.Num].value.toInt
+        val mode = args(1).asString
+        val prec = args(2).asInt
 
-        if (prec == 0) {
-          Math.round(num).intValue()
-        } else {
-          BigDecimal.valueOf(num).setScale(prec, RoundingMode.HALF_UP).doubleValue()
-        }
+        val res = BigDecimal.valueOf(num).setScale(prec, RoundingMode.valueOf(mode.toUpperCase().replace('-', '_'))).doubleValue()
+        if (prec == 0) res.intValue() else res
       },
 
       builtin("sqrt", "num") {
