@@ -294,8 +294,8 @@ public class RootTest {
     }
 
     @Test
-    public void lower() {
-        assertEquals(transform("'hello world!'"), transform("xtr.lower('Hello World!')"));
+    public void toLowerCase() {
+        assertEquals(transform("'hello world!'"), transform("xtr.toLowerCase('Hello World!')"));
     }
 
     @Test
@@ -571,8 +571,8 @@ public class RootTest {
     }
 
     @Test
-    public void upper() {
-        assertEquals(transform("'HELLO WORLD!'"), transform("xtr.upper('Hello World!')"));
+    public void toUpperCase() {
+        assertEquals(transform("'HELLO WORLD!'"), transform("xtr.toUpperCase('Hello World!')"));
     }
 
     @Disabled

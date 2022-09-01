@@ -869,21 +869,6 @@ xtr.length('hello, world!')
 ```
 
 <br/>
-## lower
-`lower(str: String): String`
-
-Returns the lowercase representation of `str`.
-
-**Example**
-```
-xtr.lower('Hello World!')
-```
-**Result**
-```
-'hello world!'
-```
-
-<br/>
 ## map
 ### map func(value)
 `map(arr: Array[A], function: Func[(A) => B]): Array[B]`
@@ -1527,6 +1512,21 @@ true
 ```
 
 <br/>
+## toLowerCase
+`toLowerCase(str: String): String`
+
+Returns the lowercase representation of `str`.
+
+**Example**
+```
+xtr.toLowerCase('Hello World!')
+```
+**Result**
+```
+'hello world!'
+```
+
+<br/>
 ## toString
 `toString(value: String|Number|Boolean|Null): String`
 
@@ -1547,6 +1547,21 @@ Returns the `String` representation of `value`.
     num: '365',
     nil: 'null'
 }
+```
+
+<br/>
+## toUpperCase
+`toUpperCase(String): String`
+
+Returns the uppercase representation of `str`.
+
+**Example**
+```
+xtr.toUpperCase('Hello World!')
+```
+**Result**
+```
+'HELLO WORLD!'
 ```
 
 <br/>
@@ -1593,21 +1608,6 @@ local func(it) = it;
     obj: 'object',
     func: 'function'
 }
-```
-
-<br/>
-## upper
-`upper(String): String`
-
-Returns the uppercase representation of `str`.
-
-**Example**
-```
-xtr.upper('Hello World!')
-```
-**Result**
-```
-'HELLO WORLD!'
 ```
 
 <br/>

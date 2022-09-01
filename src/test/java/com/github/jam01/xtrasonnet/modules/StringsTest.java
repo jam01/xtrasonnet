@@ -19,8 +19,8 @@ public class StringsTest {
     }
 
     @Test
-    public void camelize() {
-        assertEquals(transform("'helloToEveryone'"), transform("xtr.strings.camelize('Hello to_everyone')"));
+    public void toCamelCase() {
+        assertEquals(transform("'helloToEveryone'"), transform("xtr.strings.toCamelCase('Hello to_everyone')"));
     }
 
     @Test
@@ -36,8 +36,8 @@ public class StringsTest {
     }
 
     @Test
-    public void dasherize() {
-        assertEquals(transform("'hello-world-x'"), transform("xtr.strings.dasherize('Hello World_X')"));
+    public void toKebabCase() {
+        assertEquals(transform("'hello-world-x'"), transform("xtr.strings.toKebabCase('Hello World_X')"));
     }
 
     @Test
@@ -89,8 +89,8 @@ public class StringsTest {
     }
 
     @Test
-    public void underscore() {
-        assertEquals(transform("'hello_world_x'"), transform("xtr.strings.underscore('Hello WorldX')"));
+    public void toSnakeCase() {
+        assertEquals(transform("'hello_world_x'"), transform("xtr.strings.toSnakeCase('Hello WorldX')"));
     }
 
     @Test

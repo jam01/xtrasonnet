@@ -235,7 +235,7 @@ object Xtr extends Library {
         new Val.Arr(pos, obj.visibleKeyNames.map(item => Val.Str(pos, item)))
     },
 
-    builtin("lower", "str") {
+    builtin("toLowerCase", "str") {
       (pos, ev, str: String) =>
         str.toLowerCase();
     },
@@ -415,7 +415,7 @@ object Xtr extends Library {
         }
     },
 
-    builtin("upper", "str") {
+    builtin("toUpperCase", "str") {
       (pos, ev, str: String) =>
         str.toUpperCase()
     },
@@ -1631,7 +1631,7 @@ object Xtr extends Library {
           ret
       },
 
-      builtin("camelize", "str") {
+      builtin("toCamelCase", "str") {
         (pos, ev, str: String) =>
           //regex fo _CHAR
           "([A-Z])|[\\s-_]+(\\w)".r("head", "tail").replaceAllIn(str, found => {
@@ -1667,7 +1667,7 @@ object Xtr extends Library {
           str.codePointAt(num)
       },
 
-      builtin("dasherize", "str") {
+      builtin("toKebabCase", "str") {
         (pos, ev, str: String) =>
           //regex fo _CHAR
           val regex = "([_\\s-]+)([0-9A-Za-z])([A-Z]+|)".r("one", "two", "three")
@@ -1845,7 +1845,7 @@ object Xtr extends Library {
           )
       },
 
-      builtin("underscore", "str") {
+      builtin("toSnakeCase", "str") {
         (pos, ev, str: String) =>
           //regex fo _CHAR
           val regex = "([_\\s-]+)([0-9A-Za-z])([A-Z]+|)".r("one", "two", "three")

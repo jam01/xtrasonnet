@@ -15,21 +15,6 @@ xtr.strings.appendIfMissing('Hello', ' World')
 ```
 
 <br/>
-## camelize
-`camelize(str: String): String`
-
-Returns the camelized version of `str`, by removing all spaces and underscores, and capitalizing the first letter of every word after the first.
-
-**Example**
-```
-xtr.strings.camelize('Hello to_everyone')
-```
-**Result**
-```
-'helloToEveryone'
-```
-
-<br/>
 ## capitalize
 `capitalize(str: String): String`
 
@@ -72,21 +57,6 @@ xtr.strings.charCodeAt('_*_', 1)
 **Result**
 ```
 42
-```
-
-<br/>
-## dasherize
-`dasherize(str: String): String`
-
-Returns the dasherized version of `str`, by changing alphabetic characters to lowercase, and replacing all spaces and underscores for dashes.
-
-**Example**
-```
-xtr.strings.dasherize('Hello World_X')
-```
-**Result**
-```
-'hello-world-x'
 ```
 
 <br/>
@@ -347,14 +317,44 @@ xtr.strings.substringBeforeLast('!XHelloXWorldXAfter', 'X')
 ```
 
 <br/>
-## underscore
-`underscore(str: String): String`
+## toCamelCase
+`toCamelCase(str: String): String`
 
-Returns the underscored version (aka snake case) of the given `str`, by prepending uppercase characters with an underscore, changing alphabetic characters to lowercase, and replacing all spaces for underscores.
+Returns the toCamelCased version of `str`, by removing all spaces and underscores, and capitalizing the first letter of every word after the first.
 
 **Example**
 ```
-xtr.strings.underscore('Hello WorldX')
+xtr.strings.toCamelCase('Hello to_everyone')
+```
+**Result**
+```
+'helloToEveryone'
+```
+
+<br/>
+## toKebabCase
+`toKebabCase(str: String): String`
+
+Returns the kebab-case version of `str`, by changing alphabetic characters to lowercase, and replacing all spaces and underscores for dashes.
+
+**Example**
+```
+xtr.strings.toKebabCase('Hello World_X')
+```
+**Result**
+```
+'hello-world-x'
+```
+
+<br/>
+## toSnakeCase
+`toSnakeCase(str: String): String`
+
+Returns the snake_case version of the given `str`, by prepending uppercase characters with an underscore, changing alphabetic characters to lowercase, and replacing all spaces for underscores.
+
+**Example**
+```
+xtr.strings.toSnakeCase('Hello WorldX')
 ```
 **Result**
 ```
