@@ -180,21 +180,6 @@ true
 ```
 
 <br/>
-## isWhitespace
-`isWhitespace(str: String): String`
-
-Returns `true` if the given `str` contains only whitespaces.
-
-**Example**
-```
-xtr.strings.isWhitespace('      ')
-```
-**Result**
-```
-true
-```
-
-<br/>
 ## leftPad
 `leftPad(str: String, size: Number, char: String): String`
 
@@ -244,7 +229,7 @@ xtr.strings.pluralize('car')
 ## prependIfMissing
 `prependIfMissing(str: String, prefix: String): String`
 
-Returns `str`, prepended with `suffix` if it does not already start with `prefix`.
+Returns `str`, prepended with `prefix` if it does not already start with `prefix`.
 
 **Example**
 ```
@@ -259,7 +244,7 @@ xtr.strings.prependIfMissing('World', 'Hello ')
 ## repeat
 `repeat(str: String, n: Number): String`
 
-Returns a new `String` with `str` repeated `n` times.
+Returns `str` appended with itself `n` times.
 
 **Example**
 ```
@@ -365,7 +350,7 @@ xtr.strings.substringBeforeLast('!XHelloXWorldXAfter', 'X')
 ## underscore
 `underscore(str: String): String`
 
-Returns the underscored version (aka snake case) of the given `str`, by changing alphabetic characters to lowercase, and replacing all spaces for underscores.
+Returns the underscored version (aka snake case) of the given `str`, by prepending uppercase characters with an underscore, changing alphabetic characters to lowercase, and replacing all spaces for underscores.
 
 **Example**
 ```

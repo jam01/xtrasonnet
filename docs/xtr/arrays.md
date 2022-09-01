@@ -64,7 +64,7 @@ xtr.arrays.chunksOf([1, 2, 3, 4, 5], 2)
 
 <br/>
 ## countBy
-`countBy(arr: Array[A], function: Func[(A) => Boolean]): Number`
+`countBy(arr: Array[A], predicate: Func[(A) => Boolean]): Number`
 
 Returns a `Number` count of all the elements in `array` that satisfy the given `predicate`, which must accept and `A`.
 
@@ -131,7 +131,7 @@ The modulo operation on the elements yields `[0, 2, 3, 4, 5, 6]` where all are d
 ## drop
 `drop(arr: Array[A], n: Number): Array[A]`
 
-Returns a new `Array` with the elements in `arr`, from `n`-th element to last.
+Returns a new `Array` with the elements in `arr` but dropping the first `n` elements.
 
 **Example**
 ```
@@ -146,7 +146,7 @@ xtr.arrays.drop([1, 2, 3, 4, 5], 3)
 ## dropWhile
 `dropWhile(arr: Array[A], predicate: Func[(A) => Boolean]): Array[A]`
 
-Returns a new `Array` with the elements in `arr`, from the first element to not satisfy `predicate` to last. `predicate` must accept an `A`.
+Returns a new `Array` with the elements in `arr`, but dropping the first elements while they satisfy the given `predicate`, which must accept an `A`.
 
 **Example**
 ```
@@ -161,7 +161,7 @@ xtr.arrays.dropWhile([1, 2, 3, 4, 5], function(item) item * 3 < 10)
 ## duplicates
 `duplicates(arr: Array[A]): Array[A]`
 
-Returns a new `Array` with any element in `arr` that is duplicated.
+Returns a new `Array` with the element in `arr` that are duplicated.
 
 **Example**
 ```
@@ -220,7 +220,7 @@ xtr.arrays.indexWhere([1, 2, 3, 4, 5], function(item) item * 3 < 10)
 
 <br/>
 ## indicesWhere
-`indicesWhere(arr: Array[A], function: Func[(A) => Boolean]): Array[Number]`
+`indicesWhere(arr: Array[A], predicate: Func[(A) => Boolean]): Array[Number]`
 
 Returns an `Array[Number]` with the indices of elements that satisfy the given `predicate`, which must accept an `A`.
 
@@ -303,7 +303,7 @@ xtr.arrays.splitAt([1, 2, 3, 4, 5], 3)
 ## take
 `take(arr: Array[A], n: Number): Array[A]`
 
-Returns a new `Array` with the elements in `arr`, from first to the `n`-th element.
+Returns a new `Array` with the elements in `arry`, but only taking the first `n` elements.
 
 **Example**
 ```
@@ -318,7 +318,7 @@ xtr.arrays.take([1, 2, 3, 4, 5], 3)
 ## takeWhile
 `takeWhile(arr: Array[A], predicate: Func[(A) => Boolean]): Array[A]`
 
-Returns a new `Array` with the elements in `arr`, from the first element until the first element to not satisfy the given `predicate`, which must accept an A.
+Returns a new `Array` with the elements in `arr`, but only taking the first elements that satisfy the given `predicate`, which must accept an `A`.
 
 **Example**
 ```

@@ -241,9 +241,9 @@ xtr.math.randomInt(500)
 
 <br/>
 ## round
-`round(num: Number): Number`
+`round(num: Number, mode: String = 'half-up', precision: Number = '0'): Number`
 
-Rounds `num` to the nearest whole number.
+Rounds the given `num` using the `mode` and `precision` requested. Supported modes are `up`, `down`, `half-up`, `half-down`, `ceiling`, `floor`, and `half-even`.
 
 **Example**
 ```

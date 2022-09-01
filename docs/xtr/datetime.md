@@ -182,7 +182,7 @@ xtr.datetime.format('2019-09-20T18:53:41.425Z', 'yyyy/MM/dd')
 ## isLeapYear
 `isLeapYear(datetime: String): String`
 
-Returns a `true` if `datetime` is a leap year, otherwise `false`.
+Returns a `true` if `datetime` is in a leap year, otherwise `false`.
 
 **Example**
 ```

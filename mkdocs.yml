@@ -64,7 +64,7 @@ nav:
   - Getting started:
       - installation.md
       - Programmatically: programmatic.md
-#      - Executable: cli.md
+      - Executable: cli.md
   - xtr:
     - xtr/index.md
     - arrays: xtr/arrays.md

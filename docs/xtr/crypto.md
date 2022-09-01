@@ -24,7 +24,7 @@ xtr.crypto.decrypt('vAkb3PWJPQF1kGkM3vQrdQ==', '$sixteencharkey$', 'AES/ECB/PKCS
 !!! note
 	In order to facilitate encryption/decryption, xtrasonnet prefixes the encrypted data with the randomly generated initialization vector (IV) used by the JCE Cipher. Similarly, decryption operations expect such IV to be present in order to correctly decrypt the data.  
 
-    The form of the payload expected for decryption is as follows: `[{encryption IV bytes}{encrypted data bytes}]` where the size of the IV portion is equal to the block size for the selected algorithm.
+    The form of the payload byte array expected for decryption is as follows: `[{encryption IV bytes},{encrypted data bytes}]` where the size of the IV portion is equal to the block size for the selected algorithm.
 
 <br/>
 ## encrypt
@@ -49,7 +49,7 @@ xtr.crypto.encrypt('Hello, world!', '$sixteencharkey$', 'AES/ECB/PKCS5Padding')
 !!! note
 	In order to facilitate encryption/decryption, xtrasonnet prefixes the encrypted data with the randomly generated initialization vector (IV) used by the JCE Cipher. Similarly decryption operations expect such IV to be present in order to correctly decrypt the data.  
 
-    The form of the encrypted payload is as follows: `[{random IV bytes}{encrypted data bytes}]` where the size of the IV portion is equal to the block size for the selected algorithm.
+    The form of the encrypted byte array payload is as follows: `[{random IV bytes},{encrypted data bytes}]` where the size of the IV portion is equal to the block size for the selected algorithm.
 
 <br/>
 ## hash

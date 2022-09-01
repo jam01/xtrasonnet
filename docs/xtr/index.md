@@ -372,8 +372,8 @@ From left to right in `arr`, applies the given `function` to the first element w
 
 Returns the `Any` result of the final `function` invocation.
 
-> Note:
-fold functions usually mutate the "accumulator" value on each invocation, thus "folding" the array into a single value.
+!!! hint
+    `fold` functions usually mutate the "accumulator" value on each invocation, thus "folding" the collection into a single value.
 
 **Example**
 ```
@@ -392,8 +392,8 @@ From right to left in `arr`, applies the given `function` to the first element w
 
 Returns the `Any` result of the final `function` invocation.
 
-> Note:
-fold functions usually mutate the "accumulator" value on each invocation, thus "folding" the array into a single value.
+!!! hint
+    `fold` functions usually mutate the "accumulator" value on each invocation, thus "folding" the collection into a single value.
 
 **Example**
 ```
@@ -806,6 +806,69 @@ xtr.keys({ scala: '3.1.3', java: '19' })
 ```
 
 <br/>
+## length
+### Array length
+`length(arr: Array): Number`
+
+Returns the size of `arr`.
+
+**Example**
+```
+xtr.length([1, 2, 3])
+```
+**Result**
+```
+3
+```
+
+<br/>
+### Func length
+`length(func: Function): Number`
+
+Returns the number of `func` parameters.
+
+**Example**
+```
+local add(item, item2) = item + item2;
+
+xtr.length(add)
+```
+**Result**
+```
+2
+```
+
+<br/>
+### Object length
+`length(obj: Object): Number`
+
+Returns the number of entries in `obj`.
+
+**Example**
+```
+xtr.length({ key: 'value' })
+```
+**Result**
+```
+1
+```
+
+<br/>
+### String length
+`length(str: String): Number`
+
+Returns the number of characters in `str`.
+
+**Example**
+```
+xtr.length('hello, world!')
+```
+**Result**
+```
+13
+```
+
+<br/>
 ## lower
 `lower(str: String): String`
 
@@ -990,7 +1053,7 @@ xtr.max(['Lorem', 'zzz', 'ipsum', 'dolor'])
 
 <br/>
 ## maxBy
-### maxBy func => Boolean
+### maxBy func(_) => Boolean
 `maxBy(arr: Array[A], function: Func[(A) => Boolean]): Array[A]`
 
 Returns the max `A` by comparing the values returned by `function`, which must accept an `A`.
@@ -1011,7 +1074,7 @@ xtr.maxBy(languages, function(lang) lang.isPreferred)
 ```
 
 <br/>
-### maxBy func => Number
+### maxBy func(_) => Number
 `maxBy(arr: Array[A], function: Func[(A) => Number]): Array[A]`
 
 Returns the max `A` by comparing the values returned by `function`, which must accept an `A`.
@@ -1032,7 +1095,7 @@ xtr.maxBy(languages, function(lang) lang.weight)
 ```
 
 <br/>
-### maxBy func => String
+### maxBy func(_) => String
 `maxBy(arr: Array[A], function: Func[(A) => String]): Array[A]`
 
 Returns the max `A` by comparing the values returned by `function`, which must accept an `A`.
@@ -1040,16 +1103,16 @@ Returns the max `A` by comparing the values returned by `function`, which must a
 **Example**
 ```
 local languages = [
-    { name: 'java', version: '19', code: 'B' },
-    { name: 'python', version: '3.1.14', code: 'B' },
-    { name: 'scala', version: '3.1.3', code: 'S' }
+    { name: 'java', version: '19', score: 'B' },
+    { name: 'python', version: '3.1.14', score: 'B' },
+    { name: 'scala', version: '3.1.3', score: 'S' }
 ];
 
-xtr.maxBy(languages, function(lang) lang.code)
+xtr.maxBy(languages, function(lang) lang.score)
 ```
 **Result**
 ```
-{ name: 'scala', version: '3.1.3', code: 'S' }
+{ name: 'scala', version: '3.1.3', score: 'S' }
 ```
 
 <br/>
@@ -1100,7 +1163,7 @@ xtr.min(['Lorem', 'AAA', 'ipsum', 'dolor'])
 
 <br/>
 ## minBy
-### minBy func => Boolean
+### minBy func(_) => Boolean
 `minBy(arr: Array[A], comparator: Func[(A) => Boolean]): Array[A]`
 
 Returns the min `A` by comparing the values returned by `function`, which must accept an `A`.
@@ -1121,7 +1184,7 @@ xtr.minBy(languages, function(lang) lang.isPreferred)
 ```
 
 <br/>
-### minBy func => Number
+### minBy func(_) => Number
 `minBy(arr: Array[A], comparator: Func[(A) => Number]): Array[A]`
 
 Returns the min `A` by comparing the values returned by `function`, which must accept an `A`.
@@ -1142,7 +1205,7 @@ xtr.minBy(languages, function(lang) lang.weight)
 ```
 
 <br/>
-### minBy func => String
+### minBy func(_) => String
 `minBy(arr: Array[A], comparator: Func[(A) => String]): Array[A]`
 
 Returns the min `A` by comparing the values returned by `function`, which must accept an `A`.
@@ -1150,16 +1213,16 @@ Returns the min `A` by comparing the values returned by `function`, which must a
 **Example**
 ```
 local languages = [
-    { name: 'java', version: '19', code: 'B' },
-    { name: 'python', version: '3.1.14', code: 'B' },
-    { name: 'scala', version: '3.1.3', code: 'S' }
+    { name: 'java', version: '19', score: 'B' },
+    { name: 'python', version: '3.1.14', score: 'B' },
+    { name: 'scala', version: '3.1.3', score: 'S' }
 ];
 
-xtr.minBy(languages, function(lang) lang.code)
+xtr.minBy(languages, function(lang) lang.score)
 ```
 **Result**
 ```
-{ name: 'java', version: '19', code: 'B' }
+{ name: 'java', version: '19', score: 'B' }
 ```
 
 <br/>
@@ -1179,7 +1242,7 @@ Result
 
 <br/>
 ## sortBy
-### sortBy func => Boolean
+### sortBy func(_) => Boolean
 `sortBy(arr: Array[A], Func[(A) => Boolean]): Array[A]`
 
 Returns a new `Array[A]` with the conents of `arr` sorted by comparing the values returned by `function`, which must accept and `A`.
@@ -1204,7 +1267,7 @@ xtr.minBy(languages, function(lang) lang.isPreferred)
 ```
 
 <br/>
-### sortBy func => Number
+### sortBy func(_) => Number
 `sortBy(arr: Array[A], Func[(A) => Number]): Array[A]`
 
 Returns a new `Array[A]` with the conents of `arr` sorted by comparing the values returned by `function`, which must accept and `A`.
@@ -1229,7 +1292,7 @@ xtr.sortBy(languages, function(lang) lang.weight)
 ```
 
 <br/>
-### sortBy func => String
+### sortBy func(_) => String
 `sortBy(arr: Array[A], Func[(A) => String]): Array[A]`
 
 Returns a new `Array[A]` with the conents of `arr` sorted by comparing the values returned by `function`, which must accept and `A`.
@@ -1237,19 +1300,19 @@ Returns a new `Array[A]` with the conents of `arr` sorted by comparing the value
 **Example**
 ```
 local languages = [
-    { name: 'java', version: '19', code: 'B' },
-    { name: 'scala', version: '3.1.3', code: 'S' },
-    { name: 'python', version: '3.1.14', code: 'B' }
+    { name: 'java', version: '19', score: 'B' },
+    { name: 'scala', version: '3.1.3', score: 'S' },
+    { name: 'python', version: '3.1.14', score: 'B' }
 ];
 
-xtr.sortBy(languages, function(lang) lang.code)
+xtr.sortBy(languages, function(lang) lang.score)
 ```
 **Result**
 ```
 [
-    { name: 'java', version: '19', code: 'B' },
-    { name: 'python', version: '3.1.14', code: 'B' },
-    { name: 'scala', version: '3.1.3', code: 'S' }
+    { name: 'java', version: '19', score: 'B' },
+    { name: 'python', version: '3.1.14', score: 'B' },
+    { name: 'scala', version: '3.1.3', score: 'S' }
 ]
 ```
 
@@ -1273,7 +1336,7 @@ xtr.range(1, 5)
 ### read mediaType
 `read(data: String, mediaType: String): Any`
 
-Parses the `data` as the given `mediaType`.
+Parses the `data` as the given `mediaType` using the data format plugins available to the `Transformer`.
 
 **Example**
 ```
@@ -1290,11 +1353,11 @@ xtr.read('<hello>world!</hello>', 'application/xml')
 ### read mediaType, params
 `read(data: String, mediaType: String, params: Object): Any`
 
-Parses the `data` as the given `mediaType` with `params` options.
+Parses the `data` as the given `mediaType` and `params` options using the data format plugins available to the `Transformer`.
 
 **Example**
 ```
-xtr.read('<hello>world!</hello>', 'application/xml', { textvaluekey: '_txt' })
+xtr.read('<hello>world!</hello>', 'application/xml', { textkey: '_txt' })
 ```
 **Result**
 ```
@@ -1333,7 +1396,7 @@ Asumming `example.com` returns `<hello>world!</hello>`:
 
 **Example**
 ```
-xtr.readUrl('example.com', 'application/xml', { textvaluekey: '_txt' })
+xtr.readUrl('example.com', 'application/xml', { textkey: '_txt' })
 ```
 **Result**
 ```
@@ -1431,69 +1494,6 @@ xtr.reverse('rolod muspi meroL')
 **Result**
 ```
 'Lorem ipsum dolor'
-```
-
-<br/>
-## length
-### Array length
-`length(arr: Array): Number`
-
-Returns the size of `arr`.
-
-**Example**
-```
-xtr.length([1, 2, 3])
-```
-**Result**
-```
-3
-```
-
-<br/>
-### Func length
-`length(func: Function): Number`
-
-Returns the number of `func` parameters.
-
-**Example**
-```
-local add(item, item2) = item + item2;
-
-xtr.length(add)
-```
-**Result**
-```
-2
-```
-
-<br/>
-### Object length
-`length(obj: Object): Number`
-
-Returns the number of entries in `obj`.
-
-**Example**
-```
-xtr.length({ key: 'value' })
-```
-**Result**
-```
-1
-```
-
-<br/>
-### String length
-`length(str: String): Number`
-
-Returns the number of characters in `str`.
-
-**Example**
-```
-xtr.length('hello, world!')
-```
-**Result**
-```
-13
 ```
 
 <br/>
@@ -1645,7 +1645,7 @@ xtr.values({ scala: '3.1.3', java: '19' })
 ### write mediaType
 `write(data: Any, mediaType: String): String`
 
-Writes the `data` as the given `mediaType`
+Writes the `data` in the given `mediaType` format using the data format plugins available to the `Transformer`.
 
 **Example**
 ```
@@ -1660,7 +1660,7 @@ xtr.write({ hello: 'world', arr: [], nil: null }, 'application/json')
 ### write mediaType, params
 `write(data: Any, mediaType: String, params: Object[): String`
 
-Writes the `data` as the given `mediaType` with `params` options.
+Writes the `data` in the given `mediaType` format and `params` options using the data format plugins available to the `Transformer`.
 
 **Example**
 ```

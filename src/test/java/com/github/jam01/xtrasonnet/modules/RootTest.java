@@ -371,14 +371,14 @@ public class RootTest {
                 ];
 
                 xtr.maxBy(languages, function(lang) lang.weight)"""));
-        assertEquals(transform("{ name: 'scala', version: '3.1.3', code: 'S' }"), transform("""
+        assertEquals(transform("{ name: 'scala', version: '3.1.3', score: 'S' }"), transform("""
                 local languages = [
-                    { name: 'java', version: '19', code: 'B' },
-                    { name: 'python', version: '3.1.14', code: 'B' },
-                    { name: 'scala', version: '3.1.3', code: 'S' }
+                    { name: 'java', version: '19', score: 'B' },
+                    { name: 'python', version: '3.1.14', score: 'B' },
+                    { name: 'scala', version: '3.1.3', score: 'S' }
                 ];
 
-                xtr.maxBy(languages, function(lang) lang.code)"""));
+                xtr.maxBy(languages, function(lang) lang.score)"""));
     }
 
     @Test
@@ -406,14 +406,14 @@ public class RootTest {
                 ];
 
                 xtr.minBy(languages, function(lang) lang.weight)"""));
-        assertEquals(transform("{ name: 'java', version: '19', code: 'B' }"), transform("""
+        assertEquals(transform("{ name: 'java', version: '19', score: 'B' }"), transform("""
                 local languages = [
-                    { name: 'java', version: '19', code: 'B' },
-                    { name: 'python', version: '3.1.14', code: 'B' },
-                    { name: 'scala', version: '3.1.3', code: 'S' }
+                    { name: 'java', version: '19', score: 'B' },
+                    { name: 'python', version: '3.1.14', score: 'B' },
+                    { name: 'scala', version: '3.1.3', score: 'S' }
                 ];
 
-                xtr.minBy(languages, function(lang) lang.code)"""));
+                xtr.minBy(languages, function(lang) lang.score)"""));
         assertEquals(transform("{ name: 'java', version: '19', isPreferred: false }"), transform("""
                 local languages = [
                     { name: 'java', version: '19', isPreferred: false },
@@ -446,17 +446,17 @@ public class RootTest {
                 xtr.sortBy(languages, function(lang) lang.weight)"""));
         assertEquals(transform("""
                 [
-                    { name: 'java', version: '19', code: 'B' },
-                    { name: 'python', version: '3.1.14', code: 'B' },
-                    { name: 'scala', version: '3.1.3', code: 'S' }
+                    { name: 'java', version: '19', score: 'B' },
+                    { name: 'python', version: '3.1.14', score: 'B' },
+                    { name: 'scala', version: '3.1.3', score: 'S' }
                 ]"""), transform("""
                 local languages = [
-                    { name: 'java', version: '19', code: 'B' },
-                    { name: 'scala', version: '3.1.3', code: 'S' },
-                    { name: 'python', version: '3.1.14', code: 'B' }
+                    { name: 'java', version: '19', score: 'B' },
+                    { name: 'scala', version: '3.1.3', score: 'S' },
+                    { name: 'python', version: '3.1.14', score: 'B' }
                 ];
 
-                xtr.sortBy(languages, function(lang) lang.code)"""));
+                xtr.sortBy(languages, function(lang) lang.score)"""));
     }
 
     @Test

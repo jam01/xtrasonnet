@@ -6,7 +6,7 @@ hide:
 
 # **_extensible jsonnet transformations_**
 
-## xtrasonnet is an extensible, template-based, data transformation engine for Java or any JVM-based language. It is an extension of databricks' [sjsonnet](https://github.com/databricks/sjsonnet) project, a Scala implementation of Google's [jsonnet](https://github.com/google/jsonnet).
+## xtrasonnet is an extensible, jsonnet-based, data transformation engine for Java or any JVM-based language. 
 
 <br/>
 
@@ -14,7 +14,7 @@ hide:
 ![xtrasonnet](assets/images/xtrasonnet.drawio.png)
 </figure>
 
-### xtrasonnet extends sjsonnet by enabling extensibility, adding support for data formats other than JSON, and offering data transformation facilities through the `xtr` library and a few additions to the jsonnet language itself.
+### xtrasonnet is an extension of databricks' [sjsonnet](https://github.com/databricks/sjsonnet), a Scala implementation of Google's [jsonnet](https://github.com/google/jsonnet). xtrasonnet extends sjsonnet by enabling extensibility, support for data formats other than JSON, and data transformation facilities through the `xtr` library and a few additions to the jsonnet language itself.
 
 <div class="container p-0">
     <div class="row">

@@ -12,6 +12,7 @@
 
 ### Gradle
 ``` groovy
+dependency "com.github.jam01:xtrasonnet:0.3.0"
 ```
 
 ## Standalone

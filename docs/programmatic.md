@@ -1,6 +1,6 @@
 # Using xtrasonnet programmatically
 
-Once you've included the xtrasonnet dependency in your classpath, you can create a `Transformer` object to execute transformations. Here's a simple JSON-to-JSON transformation example:
+Once you've included the xtrasonnet dependency in your classpath, you can create a `Transformer` object to evaluate a jsonnet transformation. Here's a simple JSON-to-JSON example:
 
 ```java
 var myJsonnet = """
@@ -12,14 +12,14 @@ var myTransformer = new Transformer(myJsonnet);
 
 
 // transform our input when it's available
-var myInput = """
+var myPayload = """
         { 
             "key1": "value1",
             "key2": "value2"
         }""";
-var output = myTransformer.transform(myInput);
+var output = myTransformer.transform(myPayload);
 
-        
+
 // the expected results
 assert output.equals("""
             {"firstKey":"value1","secondKey":"value2"}""");
@@ -27,7 +27,7 @@ assert output.equals("""
 
 ## Fine tuning the transformer
 
-The `Transformer` class requires at least the jsonnet transformation template you wish the evaluate, but developers can further control the transformation behavior by passing more arguments, here's an extended example using the `TransformerBuilder` class:
+The `Transformer` class requires at least the jsonnet transformation template you wish the evaluate, but developers can further control the transformation behavior by passing more arguments, here's an extended example using a `TransformerBuilder`:
 
 ```java
 var myTransformer = Transformer.builder(myJsonnet)
@@ -37,13 +37,13 @@ var myTransformer = Transformer.builder(myJsonnet)
         .build();
 ```
 
-1. Signal to the transformer to expect inputs other than the main `payload`
+1. Signal to the transformer to expect inputs other than the `payload` input
 2. Extend the available functions with a custom `Library`
 3. Extend the supported data formats with a custom `DataFormatPlugin`
 
 ## Fine tuning the transformation
 
-Developers can also exert more control on the behavior of the transformation at the point they're ready to execute it, by passing more arguments to the `transform` method. To do so we leverage `Document` and `MediaType` classes:
+Developers can also exert more control on the behavior of the transformation at the point they're ready to evaluate it, by passing more arguments to the `transform` method. To do so we leverage `Document` and `MediaType` objects:
 
 ```java
 OutputStream output = myTransformer.transform(
@@ -54,7 +54,7 @@ OutputStream output = myTransformer.transform(
 ```
 
 1. A `Document` object with the input content and the media type that describes its format.
-2. A `java.util.Map` containing the inputs, other than the main `payload`, that the transformation requires.
+2. A `java.util.Map` containing the inputs, other than the `payload` input, that the transformation expects.
 3. The `MediaType` object representing the output format to be returned, if supported.
 4. The type of the object to be returned, if supported.
 

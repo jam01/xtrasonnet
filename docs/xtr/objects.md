@@ -67,7 +67,7 @@ xtr.objects.distinctBy(languages, function(lang) lang.name)
 ```
 
 <br/>
-### distinctBy func(value, idx)
+### distinctBy func(value, key)
 `distinctBy(obj: Object[A], Func[(A, String) => B]): Object[A]`
 
 Returns a new `Object` with the distinct entries in `obj` using the given `identity` function for comparison. `identity` must accept an `A` and its corresponding `String` key.
@@ -148,7 +148,7 @@ xtr.objects.fullEqJoin(customers, orders,
 
 <br/>
 ### fullEqJoin func(left, right) => joined
-`fullEqJoin(arrL: Array[Object[A]], arrR: Array[Object[B]], identity: Func[(Object[A]) => String|Number|Boolean], identityR: Func[(Object[B]) => String|Number|Boolean) => Object[C]], join: Func[(Object[A], Object[B]) => Object[C]]): Array[Object[C]]`
+`fullEqJoin(arrL: Array[Object[A]], arrR: Array[Object[B]], identity: Func[(Object[A]) => String|Number|Boolean], identityR: Func[(Object[B]) => String|Number|Boolean)score], join: Func[(Object[A], Object[B]) => Object[C]]): Array[Object[C]]`
 
 Returns a new `Array` with all the objects that exist in `arrL` or in `arrR`, joining those that exist in both with the given `join` function, and using the given `identity` functions to compute equality.
 
