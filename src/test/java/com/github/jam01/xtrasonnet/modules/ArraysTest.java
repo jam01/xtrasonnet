@@ -50,8 +50,8 @@ public class ArraysTest {
     }
 
     @Test
-    public void duplicates() {
-        assertEquals(transform("[1, 2]"), transform("xtr.arrays.duplicates([1, 2, 3, 1, 2])"));
+    public void duplicatesBy() {
+        assertEquals(transform("[1, 2]"), transform("xtr.arrays.duplicatesBy([1, 2, 3, 1, 2], function(item) item)"));
     }
 
     @Test

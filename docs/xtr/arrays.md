@@ -158,14 +158,14 @@ xtr.arrays.dropWhile([1, 2, 3, 4, 5], function(item) item * 3 < 10)
 ```
 
 <br/>
-## duplicates
-`duplicates(arr: Array[A]): Array[A]`
+## duplicatesBy
+`duplicatesBy(arr: Array[A]): Array[A]`
 
 Returns a new `Array` with the element in `arr` that are duplicated.
 
 **Example**
 ```
-xtr.arrays.duplicates([1, 2, 3, 1, 2])
+xtr.arrays.duplicatesBy([1, 2, 3, 1, 2])
 ```
 **Result**
 ```

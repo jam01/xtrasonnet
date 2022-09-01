@@ -49,6 +49,7 @@ package com.github.jam01.xtrasonnet
  * - 2662d96cdfbd613d766830420a0b2a6920d07b52: changed remove to rmKey and filterNotEq, and removeMatch to rmKeyIn and filterNotIn
  * - d37ba4c860723b42cecfe20e381c302eef75b49e - 2213fec224b8cbd1302f0b15542d1699308d3d08: removed null support from adopted functions
  * - refactored datetime to use OffsetDateTime and changed Period functionality for ISO8601 Duration
+ * - added identity func to duplicates, now duplicatesBy
  */
 
 import com.github.jam01.xtrasonnet.document.{Document, MediaType}
@@ -1122,11 +1123,11 @@ object Xtr extends Library {
           new Val.Arr(pos, arr.asLazyArray.dropWhile(func.apply1(_, pos.noOffset)(ev).isInstanceOf[Val.True]))
       },
 
-      builtin("duplicates", "array") {
-        (pos, ev, array: Val.Arr) =>
+      builtin("duplicatesBy", "array", "func") {
+        (pos, ev, array: Val.Arr, func: Val.Func) =>
           val out = mutable.ArrayBuffer[Lazy]()
           array.asLazyArray.collect({
-            case item if array.asLazyArray.count(lzy => ev.equal(lzy.force, item.force)) >= 2 &&
+            case item if array.asLazyArray.count(lzy => ev.equal(lzy.force, func.apply1(item.force, func.pos)(ev))) >= 2 &&
               !out.exists(lzy => ev.equal(lzy.force, item.force)) => out.append(item)
           })
           new Val.Arr(pos, out.toArray)
