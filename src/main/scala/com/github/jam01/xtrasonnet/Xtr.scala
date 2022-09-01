@@ -1937,6 +1937,7 @@ object Xtr extends Library {
       case Val.Null(_) => "null"
       case _: Val.True => "true"
       case _: Val.False => "false"
+      case x => Error.fail("function expected to return Number, String, Null, or Boolean, got: " + x.prettyName)
     }
   }
 
