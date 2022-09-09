@@ -638,21 +638,6 @@ true
 ```
 
 <br/>
-## isEven
-`isEven(num: Number): Boolean`
-
-Returns `true` if `num` is even, otherwise `false`.
-
-**Example**
-```
-xtr.isEven(2)
-```
-**Result**
-```
-true
-```
-
-<br/>
 ## isFunction
 `isFunction(value: Any): Boolean`
 
@@ -708,21 +693,6 @@ Returns `true` if `value` is an `Object`, otherwise `false`.
 **Example**
 ```
 xtr.isObject({})
-```
-**Result**
-```
-true
-```
-
-<br/>
-## isOdd
-`isOdd(num: Number): Boolean`
-
-Returns `true` if `num` is odd, otherwise `false`.
-
-**Example**
-```
-xtr.isOdd(1)
 ```
 **Result**
 ```

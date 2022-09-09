@@ -276,12 +276,6 @@ public class RootTest {
     }
 
     @Test
-    public void numIsCondition() {
-        assertEquals(transform("true"), transform("xtr.isEven(2)"));
-        assertEquals(transform("true"), transform("xtr.isOdd(1)"));
-    }
-
-    @Test
     public void join() {
         assertEquals(transform("'0, 1, 1, 2, 3, 5, 8'"), transform("xtr.join([0, 1, 1, 2, 3, 5, 8], ', ')"));
         assertEquals(transform("'hello world !'"), transform("xtr.join(['hello', 'world', '!'], ' ')"));

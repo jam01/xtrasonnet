@@ -202,19 +202,9 @@ object Xtr extends Library {
         }
     },
 
-    builtin("isEven", "num") {
-      (pos, ev, num: Double) =>
-        (num % 2) == 0
-    },
-
     builtin("isInteger", "value") {
       (pos, ev, value: Double) =>
         (Math.ceil(value) == Math.floor(value)).booleanValue()
-    },
-
-    builtin("isOdd", "num") {
-      (pos, ev, num: Double) =>
-        (num % 2) != 0
     },
 
     builtin("join", "array", "sep") {
