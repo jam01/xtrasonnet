@@ -78,4 +78,10 @@ nav:
     - strings: xtr/strings.md
     - url: xtr/url.md
   - Header: header.md
-  - DataFormats: dataformats.md
+  - Data formats:
+    - dataformats/index.md
+    - application/json: dataformats/json.md
+    - application/xml: dataformats/xml.md
+    - application/x-java-object: dataformats/java.md
+    - text/csv: dataformats/csv.md
+    - text/plain: dataformats/plaintext.md
