@@ -125,7 +125,7 @@ Returns the `String` representation of the date and time given in `parts`, an `O
 {
     year: Number, month: Number, day: Number,
     hour: Number, minute: Number, second: Number,
-    timezone: String
+    offset: String
 }
 ```
 
@@ -135,7 +135,7 @@ where all elements are optional.
 ```
 local parts = {
     'year': 2021,
-    'timezone': '-08:00'
+    'offset': '-08:00'
 };
 
 xtr.datetime.of(parts)
