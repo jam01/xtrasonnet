@@ -214,7 +214,7 @@ xtr.strings.prependIfMissing('World', 'Hello ')
 ## repeat
 `repeat(str: String, n: Number): String`
 
-Returns `str` appended with itself `n` times.
+Returns `str` repeated `n` times.
 
 **Example**
 ```
@@ -222,7 +222,7 @@ xtr.strings.repeat('hey ', 2)
 ```
 **Result**
 ```
-'hey hey hey '
+'hey hey '
 ```
 
 <br/>

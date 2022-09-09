@@ -1768,11 +1768,13 @@ object Xtr extends Library {
 
       builtin("repeat", "str", "num") {
         (pos, ev, str: String, num: Int) =>
-          var ret = ""
-          for (_ <- 0 until num) {
-            ret += str
+          var i = 0
+          val builder = new mutable.StringBuilder("")
+          while (i < num) {
+            builder.append(str)
+            i = i + 1
           }
-          ret
+          builder.toString
       },
 
       builtin("rightPad", "str", "offset", "pad") {
