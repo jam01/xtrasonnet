@@ -63,7 +63,7 @@ class BadgerFishWriter(val params: EffectiveParams) {
 
   def serialize(name: String, value: ujson.Value, sb: Writer = new StringWriter()): Writer = {
     sb.append('<')
-    val qname = if (params.qnameSep != ":") name.replace(params.qnameSep, ":") else name
+    val qname = name
     sb.append(qname)
 
     value match {

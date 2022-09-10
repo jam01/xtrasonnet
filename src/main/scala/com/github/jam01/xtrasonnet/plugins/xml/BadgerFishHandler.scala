@@ -99,8 +99,7 @@ class BadgerFishHandler(params: EffectiveParams) extends DefaultHandler2 {
             attrName.substring(colonidx + 1)
           }
         } else {
-          val translated = if (params.xmlnsAware) overrides.name(attrName, true) else attrName
-          attrName = if (params.qnameSep != ":") translated.replaceFirst(COLON, params.qnameSep) else translated
+          attrName = if (params.xmlnsAware) overrides.name(attrName, true) else attrName
         }
 
         attrs.addOne(attrName, ujson.Str(value))
@@ -145,8 +144,7 @@ class BadgerFishHandler(params: EffectiveParams) extends DefaultHandler2 {
         qname.substring(colonidx + 1)
       }
     } else {
-      val translated = if (params.xmlnsAware) overrides.name(qname, false) else qname
-      currName = if (params.qnameSep != ':') translated.replaceFirst(COLON, params.qnameSep.toString) else translated
+      currName = if (params.xmlnsAware) overrides.name(qname, false) else qname
     }
 
     val current = badgerStack.pop

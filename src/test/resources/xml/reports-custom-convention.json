@@ -34,7 +34,7 @@
           },
           "_pos_": 5
         },
-        "georss#point": {
+        "georss:point": {
           "_text_1": "40.7111 -73.9565",
           "_pos_": 6
         },
@@ -106,7 +106,7 @@
           },
           "_pos_": 5
         },
-        "georss#point": {
+        "georss:point": {
           "_text_1": "40.7111 -73.9565",
           "_pos_": 6
         },
@@ -178,7 +178,7 @@
           },
           "_pos_": 5
         },
-        "georss#point": {
+        "georss:point": {
           "_text_1": "40.7111 -73.9565",
           "_pos_": 6
         },

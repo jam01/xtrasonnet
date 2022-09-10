@@ -36,7 +36,6 @@ object DefaultXMLPlugin extends BasePlugin {
   val PARAM_CDATA_KEY = "cdatakey"
   val PARAM_ORDER_KEY = "orderkey"
   val PARAM_XMLNS_KEY = "xmlnskey"
-  val PARAM_QNAME_SEP = "qnamesep"
 
   // default keys and chars
   private val DEFAULT_TEXT_KEY = "_text"
@@ -86,7 +85,6 @@ object DefaultXMLPlugin extends BasePlugin {
   writerParams.add(PARAM_CDATA_KEY)
   writerParams.add(PARAM_ORDER_KEY)
   writerParams.add(PARAM_XMLNS_KEY)
-  writerParams.add(PARAM_QNAME_SEP)
   writerParams.add(PARAM_XMLNS_DECLARATIONS)
   writerParams.add(PARAM_XML_VERSION)
   writerParams.add(PARAM_EMPTY_TAGS)
@@ -99,7 +97,6 @@ object DefaultXMLPlugin extends BasePlugin {
   readerParams.add(PARAM_ORDER_KEY)
   readerParams.add(PARAM_XMLNS_KEY)
   readerParams.add(PARAM_XMLNS_AWARE)
-  readerParams.add(PARAM_QNAME_SEP)
   readerParams.add(PARAM_XMLNS_DECLARATIONS)
   readerParams.add(PARAM_TRIM_TEXT)
   readerParams.add(PARAM_EXCLUDE)
@@ -171,14 +168,13 @@ object DefaultXMLPlugin extends BasePlugin {
   case class EffectiveParams(mode: Mode.Value,
                              excludeAttrs: Boolean, includeComments: Boolean,
                              textKey: String, cdataKey: String, attrKey: String, orderKey: String, xmlnsKey: String,
-                             xmlnsAware: Boolean, declarations: Map[String, String], qnameSep: String,
+                             xmlnsAware: Boolean, declarations: Map[String, String],
                              omitDeclaration: Boolean, xmlVer: String,
                              emptyTagsStr: Boolean, emptyTagsNull: Boolean, emptyTagsObj: Boolean, arrElements: java.util.List[String],
                              nameform: String, trimText: Boolean)
 
   object EffectiveParams {
     def apply(mediaType: MediaType): EffectiveParams = {
-      val qnameChar = mediaType.getParameter(PARAM_QNAME_SEP, DEFAULT_QNAME_SEP)
       val textKey = mediaType.getParameter(PARAM_TEXT_KEY, DEFAULT_TEXT_KEY)
       val cdataKey = mediaType.getParameter(PARAM_CDATA_KEY, DEFAULT_CDATA_KEY)
       val attrKey = mediaType.getParameter(PARAM_ATTRIBUTE_KEY, DEFAULT_ATTRIBUTE_KEY)
@@ -210,7 +206,7 @@ object DefaultXMLPlugin extends BasePlugin {
       new EffectiveParams(mode,
         excludeAttrs, includeComments,
         textKey, cdataKey, attrKey, orderKey, xmlnsKey,
-        xmlnsAware, declarations, qnameChar,
+        xmlnsAware, declarations,
         omitDeclaration, xmlVer,
         emptyTags.contains(EMPTY_TAGS_NULL_VALUE), emptyTags.contains(EMPTY_TAGS_STRING_VALUE), emptyTags.contains(EMPTY_TAGS_OBJECT_VALUE), Collections.emptyList(),
         nameForm, trimText)

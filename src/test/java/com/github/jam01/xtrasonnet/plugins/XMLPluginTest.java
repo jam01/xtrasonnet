@@ -195,8 +195,7 @@ public class XMLPluginTest {
                                         .withParameter(DefaultXMLPlugin.PARAM_ATTRIBUTE_KEY(), "_attr_")
                                         .withParameter(DefaultXMLPlugin.PARAM_CDATA_KEY(), "_cdata_")
                                         .withParameter(DefaultXMLPlugin.PARAM_XMLNS_KEY(), "_xmlns_")
-                                        .withParameter(DefaultXMLPlugin.PARAM_ORDER_KEY(), "_pos_")
-                                        .withParameter(DefaultXMLPlugin.PARAM_QNAME_SEP(), "#")));
+                                        .withParameter(DefaultXMLPlugin.PARAM_ORDER_KEY(), "_pos_")));
 
         JSONAssert.assertEquals(resourceAsString("xml/reports-custom-convention.json"), doc.getContent(), true);
         assertEquals(MediaTypes.APPLICATION_JSON, doc.getMediaType());
@@ -211,8 +210,7 @@ public class XMLPluginTest {
                                 .withParameter(DefaultXMLPlugin.PARAM_ATTRIBUTE_KEY(), "_attr_")
                                 .withParameter(DefaultXMLPlugin.PARAM_CDATA_KEY(), "_cdata_")
                                 .withParameter(DefaultXMLPlugin.PARAM_XMLNS_KEY(), "_xmlns_")
-                                .withParameter(DefaultXMLPlugin.PARAM_ORDER_KEY(), "_pos_")
-                                .withParameter(DefaultXMLPlugin.PARAM_QNAME_SEP(), "#"));
+                                .withParameter(DefaultXMLPlugin.PARAM_ORDER_KEY(), "_pos_"));
 
         assertThat(doc.getContent(), CompareMatcher.isSimilarTo(resourceAsString("xml/reports-nostylesheet.xml"))
                 .ignoreWhitespace().normalizeWhitespace().throwComparisonFailure()
