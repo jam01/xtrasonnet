@@ -116,7 +116,7 @@ class BadgerFishWriter(val params: EffectiveParams) {
           children.toSeq
             // selectively flatten arrays
             .foldLeft(new ArrayBuffer[(String, Value)])((acc, value) =>
-              if (!value._1.equals(params.orderKey)) {
+              if (!value._1.equals(params.posKey)) {
                 value._2 match {
                   case ujson.Arr(arr) => acc.addAll(arr.map(it => value._1 -> it))
                   case _ => acc.addOne(value)
@@ -125,7 +125,7 @@ class BadgerFishWriter(val params: EffectiveParams) {
             // sort using ordering key in objects, and index substring in text and cdatas
             .sortBy(entry => entry._2 match { // TODO: only do this if in extended mode
               case ujson.Obj(inner) =>
-                val order = inner.get(params.orderKey)
+                val order = inner.get(params.posKey)
                 if (order.isEmpty) Integer.MAX_VALUE else order.get match {
                   case Str(value) => value.toInt
                   case Num(value) => value.toInt

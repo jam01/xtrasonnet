@@ -49,8 +49,7 @@ public class XMLPluginTest {
     public void read_comprehensive_simplified() throws JSONException {
         var doc = new Transformer("payload")
                 .transform(Document.of(resourceAsString("xml/reports.xml"), MediaTypes.APPLICATION_XML
-                        .withParameter(DefaultXMLPlugin.PARAM_MODE(), DefaultXMLPlugin.SIMPLIFIED_MODE_VALUE())
-                        .withParameter(DefaultXMLPlugin.PARAM_XMLNS_AWARE(), "false")));
+                        .withParameter(DefaultXMLPlugin.PARAM_MODE(), DefaultXMLPlugin.SIMPLIFIED_MODE_VALUE())));
 
         JSONAssert.assertEquals(resourceAsString("xml/reports-simplified.json"), doc.getContent(), true);
         assertEquals(MediaTypes.APPLICATION_JSON, doc.getMediaType());
@@ -195,7 +194,7 @@ public class XMLPluginTest {
                                         .withParameter(DefaultXMLPlugin.PARAM_ATTRIBUTE_KEY(), "_attr_")
                                         .withParameter(DefaultXMLPlugin.PARAM_CDATA_KEY(), "_cdata_")
                                         .withParameter(DefaultXMLPlugin.PARAM_XMLNS_KEY(), "_xmlns_")
-                                        .withParameter(DefaultXMLPlugin.PARAM_ORDER_KEY(), "_pos_")));
+                                        .withParameter(DefaultXMLPlugin.PARAM_POS_KEY(), "_pos_")));
 
         JSONAssert.assertEquals(resourceAsString("xml/reports-custom-convention.json"), doc.getContent(), true);
         assertEquals(MediaTypes.APPLICATION_JSON, doc.getMediaType());
@@ -210,7 +209,7 @@ public class XMLPluginTest {
                                 .withParameter(DefaultXMLPlugin.PARAM_ATTRIBUTE_KEY(), "_attr_")
                                 .withParameter(DefaultXMLPlugin.PARAM_CDATA_KEY(), "_cdata_")
                                 .withParameter(DefaultXMLPlugin.PARAM_XMLNS_KEY(), "_xmlns_")
-                                .withParameter(DefaultXMLPlugin.PARAM_ORDER_KEY(), "_pos_"));
+                                .withParameter(DefaultXMLPlugin.PARAM_POS_KEY(), "_pos_"));
 
         assertThat(doc.getContent(), CompareMatcher.isSimilarTo(resourceAsString("xml/reports-nostylesheet.xml"))
                 .ignoreWhitespace().normalizeWhitespace().throwComparisonFailure()

@@ -66,7 +66,7 @@ class BadgerFishHandler(params: EffectiveParams) extends DefaultHandler2 {
     }
 
     val newPrefix = if (prefix.equals("xmlns")) DefaultXMLPlugin.DEFAULT_NS_KEY else overrides.prefix(prefix, uri)
-    declaredXmlns.put(newPrefix, ujson.Str(uri))
+    if (!params.excludeXmlns) declaredXmlns.put(newPrefix, ujson.Str(uri))
   }
 
   override def startElement(uri: String,
@@ -85,7 +85,7 @@ class BadgerFishHandler(params: EffectiveParams) extends DefaultHandler2 {
     }
 
     // add attributes
-    if (attributes.getLength > 0 && !params.excludeAttrs) {
+    if (!params.excludeAttrs && attributes.getLength > 0) {
       val attrs = mutable.ListBuffer[(String, ujson.Str)]()
 
       // TODO: optimize with while-loop
@@ -159,7 +159,7 @@ class BadgerFishHandler(params: EffectiveParams) extends DefaultHandler2 {
     val parentObj = parent.obj.value
 
     val pos = parent.nextPos
-    if (params.mode == Mode.extended) current.obj.value.addOne(params.orderKey, ujson.Num(pos)) // only extended supports positions
+    if (params.mode == Mode.extended) current.obj.value.addOne(params.posKey, ujson.Num(pos)) // only extended supports positions
     parent.nextPos = pos + 1
 
     if (parentObj.contains(currName)) {

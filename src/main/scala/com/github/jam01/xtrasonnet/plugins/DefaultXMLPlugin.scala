@@ -34,14 +34,14 @@ object DefaultXMLPlugin extends BasePlugin {
   val PARAM_TEXT_KEY = "textkey"
   val PARAM_ATTRIBUTE_KEY = "attrkey"
   val PARAM_CDATA_KEY = "cdatakey"
-  val PARAM_ORDER_KEY = "orderkey"
+  val PARAM_POS_KEY = "poskey"
   val PARAM_XMLNS_KEY = "xmlnskey"
 
   // default keys and chars
   private val DEFAULT_TEXT_KEY = "_text"
   private val DEFAULT_ATTRIBUTE_KEY = "_attr"
   private val DEFAULT_CDATA_KEY = "_cdata"
-  private val DEFAULT_ORDER_KEY = "_pos"
+  private val DEFAULT_POS_KEY = "_pos"
   private val DEFAULT_XMLNS_KEY = "_xmlns"
   private val DEFAULT_QNAME_SEP = ":"
   private val DEFAULT_XML_VERSION = "1.0"
@@ -52,10 +52,11 @@ object DefaultXMLPlugin extends BasePlugin {
   // parsing / writing instructions
   val PARAM_NAME_FORM = "nameform"
   val NAME_FORM_QNAME_VALUE = "qname"
-  val NAME_FORM_LOCAL_VALUE = "local-name"
+  val NAME_FORM_LOCAL_VALUE = "local"
 
   val PARAM_EXCLUDE = "exclude"
   val EXCLUDE_ATTRIBUTES_VALUE = "attrs"
+  val EXCLUDE_XMLNS_VALUE = "xmlns"
   val EXCLUDE_XML_DECLARATION_VALUE = "xml-declaration"
 
   val PARAM_INCLUDE = "include"
@@ -83,7 +84,7 @@ object DefaultXMLPlugin extends BasePlugin {
   writerParams.add(PARAM_TEXT_KEY)
   writerParams.add(PARAM_ATTRIBUTE_KEY)
   writerParams.add(PARAM_CDATA_KEY)
-  writerParams.add(PARAM_ORDER_KEY)
+  writerParams.add(PARAM_POS_KEY)
   writerParams.add(PARAM_XMLNS_KEY)
   writerParams.add(PARAM_XMLNS_DECLARATIONS)
   writerParams.add(PARAM_XML_VERSION)
@@ -94,7 +95,7 @@ object DefaultXMLPlugin extends BasePlugin {
   readerParams.add(PARAM_TEXT_KEY)
   readerParams.add(PARAM_ATTRIBUTE_KEY)
   readerParams.add(PARAM_CDATA_KEY)
-  readerParams.add(PARAM_ORDER_KEY)
+  readerParams.add(PARAM_POS_KEY)
   readerParams.add(PARAM_XMLNS_KEY)
   readerParams.add(PARAM_XMLNS_AWARE)
   readerParams.add(PARAM_XMLNS_DECLARATIONS)
@@ -166,8 +167,8 @@ object DefaultXMLPlugin extends BasePlugin {
   }
 
   case class EffectiveParams(mode: Mode.Value,
-                             excludeAttrs: Boolean, includeComments: Boolean,
-                             textKey: String, cdataKey: String, attrKey: String, orderKey: String, xmlnsKey: String,
+                             excludeAttrs: Boolean, excludeXmlns: Boolean, includeComments: Boolean,
+                             textKey: String, cdataKey: String, attrKey: String, posKey: String, xmlnsKey: String,
                              xmlnsAware: Boolean, declarations: Map[String, String],
                              omitDeclaration: Boolean, xmlVer: String,
                              emptyTagsStr: Boolean, emptyTagsNull: Boolean, emptyTagsObj: Boolean, arrElements: java.util.List[String],
@@ -178,7 +179,7 @@ object DefaultXMLPlugin extends BasePlugin {
       val textKey = mediaType.getParameter(PARAM_TEXT_KEY, DEFAULT_TEXT_KEY)
       val cdataKey = mediaType.getParameter(PARAM_CDATA_KEY, DEFAULT_CDATA_KEY)
       val attrKey = mediaType.getParameter(PARAM_ATTRIBUTE_KEY, DEFAULT_ATTRIBUTE_KEY)
-      val orderKey = mediaType.getParameter(PARAM_ORDER_KEY, DEFAULT_ORDER_KEY)
+      val posKey = mediaType.getParameter(PARAM_POS_KEY, DEFAULT_POS_KEY)
       val xmlVer = mediaType.getParameter(PARAM_XML_VERSION, DEFAULT_XML_VERSION)
       val xmlnsKey = mediaType.getParameter(PARAM_XMLNS_KEY, DEFAULT_XMLNS_KEY)
       val emptyTags = mediaType.getParameterAsList(PARAM_EMPTY_TAGS, Collections.emptyList())
@@ -188,15 +189,18 @@ object DefaultXMLPlugin extends BasePlugin {
         .map(entry => if (entry._2 == DEFAULT_NS_KEY) (entry._1, "") else entry)
         .toMap
       val mode = Mode.withName(mediaType.getParameter(PARAM_MODE, BADGER_MODE_VALUE))
+
       val xmlnsAware = mediaType.getParameterAsBoolean(PARAM_XMLNS_AWARE, true)
+
       val nameForm = if (mediaType.containsParameter(PARAM_NAME_FORM)) mediaType.getParameter(PARAM_NAME_FORM)
-        else if (mode == Mode.simplified) NAME_FORM_LOCAL_VALUE else NAME_FORM_QNAME_VALUE
+      else if (mode == Mode.simplified) NAME_FORM_LOCAL_VALUE else NAME_FORM_QNAME_VALUE
 
       val exclude = mediaType.getParameterAsList(PARAM_EXCLUDE, Collections.emptyList())
       val include = mediaType.getParameterAsList(PARAM_INCLUDE, Collections.emptyList())
 
       val includeComments = include.contains(INCLUDE_COMMENTS_VALUE) || mode == Mode.extended
       val excludeAttrs = exclude.contains(EXCLUDE_ATTRIBUTES_VALUE) || mode == Mode.simplified
+      val excludeXmlns = exclude.contains(EXCLUDE_XMLNS_VALUE) || mode == Mode.simplified
       val omitDeclaration = exclude.contains(EXCLUDE_XML_DECLARATION_VALUE)
 
       val trimText = if (mediaType.containsParameter(PARAM_TRIM_TEXT)) mediaType.getParameterAsBoolean(PARAM_TRIM_TEXT, true)
@@ -204,8 +208,8 @@ object DefaultXMLPlugin extends BasePlugin {
       else true
 
       new EffectiveParams(mode,
-        excludeAttrs, includeComments,
-        textKey, cdataKey, attrKey, orderKey, xmlnsKey,
+        excludeAttrs, excludeXmlns, includeComments,
+        textKey, cdataKey, attrKey, posKey, xmlnsKey,
         xmlnsAware, declarations,
         omitDeclaration, xmlVer,
         emptyTags.contains(EMPTY_TAGS_NULL_VALUE), emptyTags.contains(EMPTY_TAGS_STRING_VALUE), emptyTags.contains(EMPTY_TAGS_OBJECT_VALUE), Collections.emptyList(),
