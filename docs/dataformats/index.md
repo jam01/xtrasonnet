@@ -1,6 +1,6 @@
 # Data formats
 
-xtrasonnet mechanism for supporting multiple data formats is influenced by REST and HTTP.
+The mechanism xtrasonnet utilizes to support multiple data formats is influenced by REST and HTTP.
 
 ## Media types as identifiers
 

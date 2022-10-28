@@ -12,7 +12,12 @@
 
 ### Gradle
 ``` groovy
-dependency "com.github.jam01:xtrasonnet:0.3.0"
+implementation "com.github.jam01:xtrasonnet:0.3.0"
+```
+
+### sbt
+``` groovy
+libraryDependencies += "com.github.jam01" % "xtrasonnet" % "0.3.0"
 ```
 
 ## Standalone
