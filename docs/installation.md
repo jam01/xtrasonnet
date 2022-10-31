@@ -4,7 +4,7 @@
 
 ``` xml
 <dependency>
-    <groupId>com.github.jam01</groupId>
+    <groupId>io.github.jam01</groupId>
     <artifactId>xtrasonnet</artifactId>
     <version>0.3.0</version>
 </dependency>
@@ -12,12 +12,12 @@
 
 ### Gradle
 ``` groovy
-implementation "com.github.jam01:xtrasonnet:0.3.0"
+implementation "io.github.jam01:xtrasonnet:0.3.0"
 ```
 
 ### sbt
 ``` groovy
-libraryDependencies += "com.github.jam01" % "xtrasonnet" % "0.3.0"
+libraryDependencies += "io.github.jam01" % "xtrasonnet" % "0.3.0"
 ```
 
 [//]: # ()
