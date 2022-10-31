@@ -20,6 +20,8 @@ implementation "com.github.jam01:xtrasonnet:0.3.0"
 libraryDependencies += "com.github.jam01" % "xtrasonnet" % "0.3.0"
 ```
 
-## Standalone
+[//]: # ()
+[//]: # (## Standalone)
 
-Download the [xtrasonnet executable](https://github.com/jam01/xtrasonnet/releases/0.3.0/xtr.bin)
+[//]: # ()
+[//]: # (Download the [xtrasonnet executable]&#40;https://github.com/jam01/xtrasonnet/releases/0.3.0/xtr.bin&#41;)
