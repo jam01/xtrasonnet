@@ -1,7 +1,7 @@
 # xtrasonnet
 
 ## _extensible jsonnet transformations_ 
-For detailed information see the [xtrasonnet docs](https://josemontoya.io/xtrasonnet).
+For detailed information see the [xtrasonnet docs](https://jam01.github.io/xtrasonnet/).
 
 ### xtrasonnet is an extensible, jsonnet-based, data transformation engine for Java or any JVM-based language.
 
