@@ -1,4 +1,3 @@
-# re:gpg signing see: https://gist.github.com/sualeh/ae78dc16123899d7942bc38baba5203c
 name: release
 on:
   workflow_dispatch:
@@ -32,6 +31,7 @@ jobs:
         -DreleaseVersion='${{ github.event.inputs.release_ver }}' \
         -DdevelopmentVersion='${{ github.event.inputs.snapshot_ver }}' \
         release:prepare"
+      # re:gpg signing see: https://gist.github.com/sualeh/ae78dc16123899d7942bc38baba5203c
       - id: install-secret-key
         name: Install gpg secret key
         run: |
