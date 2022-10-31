@@ -62,7 +62,7 @@ import sjsonnet.ReadWriter.{ArrRead, ObjRead, ValRead}
 import sjsonnet.Std.{builtin, builtinWithDefaults}
 import sjsonnet.Val.{Builtin, Obj}
 import sjsonnet.{Error, EvalScope, Expr, FileScope, Importer, Lazy, Materializer, Position, ReadWriter, Val}
-import ujson.{Bool, Null, Str}
+import ujson.{Bool, Null, Str, Num}
 
 import java.math.{BigDecimal, RoundingMode}
 import java.security.SecureRandom
