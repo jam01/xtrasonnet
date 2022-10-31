@@ -7,7 +7,7 @@ The xtrasonnet header is a regular jsonnet comment of the following form:
 input payload application/json
 output application/xml
 
-// disregard order of elements
+// this is a comment
 preserveOrder=false
 */
 ```

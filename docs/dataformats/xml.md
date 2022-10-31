@@ -374,7 +374,7 @@ Default is `_cdata`.
 ### `poskey`
 The key to use for element positions in `extended` mode.
 
-Default is `_poskey`.
+Default is `_pos`.
 
 ### `xmlnsaware`
 Whether to validate and process XML Namespaces as defined by the 1.1 XML specification
