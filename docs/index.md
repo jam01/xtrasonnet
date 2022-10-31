@@ -14,7 +14,7 @@ hide:
 ![xtrasonnet](assets/images/xtrasonnet.drawio.png)
 </figure>
 
-### xtrasonnet is an extension of databricks' [sjsonnet](https://github.com/databricks/sjsonnet), a Scala implementation of Google's [jsonnet](https://github.com/google/jsonnet). xtrasonnet enables extensibility, support for data formats other than JSON, and data transformation facilities through the `xtr` library and a few additions to the jsonnet language itself.
+### xtrasonnet is an extension of databricks' [sjsonnet](https://github.com/databricks/sjsonnet), a Scala implementation of Google's [jsonnet](https://github.com/google/jsonnet). xtrasonnet enables extensibility, adds support for data formats other than JSON, and adds data transformation facilities through the `xtr` library and few additions to the jsonnet language itself.
 
 <div class="container p-0">
     <div class="row">
@@ -25,9 +25,9 @@ hide:
             }
             ```
         </div>
-    <div class="col-2 d-flex justify-content-center align-items-center">
-        ➡
-    </div>
+        <div class="col-2 d-flex justify-content-center align-items-center">
+            ➡
+        </div>
         <div class="col-5">
             ``` jsonnet
             /** xtrasonnet
@@ -58,3 +58,68 @@ hide:
         </div>
     </div>
 </div>
+
+## How extensible?
+xtrasonnet has two points of extensibility:
+
+* _Custom functions_: users can write native (e.g.: Java or Scala) functions as a `Library` and utilize them from their transformation code.
+* _Any* data format_: users can write a custom `DataFormatPlugin` and transform from/to a given data format.
+
+\* Any format that can be expressed as jsonnet elements.
+
+## What kind of additions to the jsonnet language?
+There are two main additions motivated to facilitate data transformation applications:
+
+### Null-safe select `?.`
+This allows developers to select, and chain, properties arbitrarily without testing existence.
+
+```jsonnet
+local myObj = {
+    keyA: { first: { second: 'value' } },
+    keyB: { first: { } }
+};
+
+{
+    a: myObj?.keyA?.first?.second,
+    b: myObj?.keyB?.first?.second,
+    c: myObj?.keyC?.first?.second
+}
+```
+
+➡
+
+```jsonnet
+{
+    a: 'value',
+    b: null,
+    c: null
+}
+```
+
+
+
+### Null coalescing operator `??`
+This allows developers to tersely test for `null` and provide a default value. For example
+
+```jsonnet
+local myObj = {
+    keyA: { first: { second: 'value' } },
+    keyB: { first: { } }
+};
+
+{
+    a: myObj?.keyA?.first?.second,
+    b: myObj?.keyB?.first?.second ?? 'defaultB',
+    c: myObj?.keyC?.first?.second ?? 'defaultC'
+}
+```
+
+➡
+
+```jsonnet
+{
+    a: 'value',
+    b: 'defaultB',
+    c: 'defaultC'
+}
+```
