@@ -24,48 +24,36 @@ package io.github.jam01.xtrasonnet;
  * limitations under the License.
  */
 
-import io.github.jam01.xtrasonnet.document.Document;
-import io.github.jam01.xtrasonnet.document.MediaTypes;
 import com.github.tomakehurst.wiremock.WireMockServer;
-import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.http.ssl.SSLContextBuilder;
 import com.github.tomakehurst.wiremock.http.ssl.TrustEverythingStrategy;
-import com.github.tomakehurst.wiremock.matching.RequestPattern;
-import com.github.tomakehurst.wiremock.stubbing.StubMapping;
+import io.github.jam01.xtrasonnet.document.Document;
+import io.github.jam01.xtrasonnet.document.MediaTypes;
 import org.json.JSONException;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.skyscreamer.jsonassert.JSONAssert;
 
 import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManagerFactory;
-import java.io.IOException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.KeyManagementException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.okForContentType;
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 import static io.github.jam01.xtrasonnet.TestUtils.resourceAsString;
 import static io.github.jam01.xtrasonnet.TestUtils.stacktraceFrom;
 import static io.github.jam01.xtrasonnet.TestUtils.transform;
-import static com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder.okForEmptyJson;
-import static com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder.okForJson;
-import static com.github.tomakehurst.wiremock.client.WireMock.ok;
-import static com.github.tomakehurst.wiremock.client.WireMock.okForContentType;
-import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class TransformerTest {
 

@@ -28,13 +28,13 @@ package io.github.jam01.xtrasonnet.spi
  * - e6698ae51aed518a9c671ae39682d7068fa10deb: Merge pull request #62 from datasonnet/java-friendly-libraries
  */
 
-import Library.{dummyPosition, memberOf}
 import io.github.jam01.xtrasonnet.DataFormatService
 import io.github.jam01.xtrasonnet.header.Header
+import io.github.jam01.xtrasonnet.spi.Library.{dummyPosition, memberOf}
 import sjsonnet.Expr.Member.Visibility
 import sjsonnet.Expr.Params
 import sjsonnet.Val.Obj
-import sjsonnet.{EvalScope, Expr, FileScope, Importer, Position, Val, ValScope}
+import sjsonnet._
 
 import java.util.Collections
 import scala.jdk.CollectionConverters._

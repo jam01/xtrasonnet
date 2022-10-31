@@ -7,12 +7,12 @@ package io.github.jam01.xtrasonnet.plugins.xml
  * compliance with the Elastic License 2.0.
  */
 
-import java.io.{File, FileInputStream, InputStream, Reader, StringReader}
-import java.nio.charset.Charset
-
 import io.github.jam01.xtrasonnet.plugins.DefaultXMLPlugin.EffectiveParams
-import javax.xml.parsers.SAXParser
 import org.xml.sax.InputSource
+
+import java.io._
+import java.nio.charset.Charset
+import javax.xml.parsers.SAXParser
 
 object Source {
   def fromFile(file: File) = new InputSource(new FileInputStream(file))

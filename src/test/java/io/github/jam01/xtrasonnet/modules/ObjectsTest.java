@@ -8,7 +8,6 @@ package io.github.jam01.xtrasonnet.modules;
  */
 
 import org.json.JSONException;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 

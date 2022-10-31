@@ -7,20 +7,17 @@ package io.github.jam01.xtrasonnet.plugins;
  * compliance with the Elastic License 2.0.
  */
 
-import io.github.jam01.xtrasonnet.document.Document;
-import io.github.jam01.xtrasonnet.document.Documents;
-import io.github.jam01.xtrasonnet.document.MediaType;
-import io.github.jam01.xtrasonnet.document.MediaTypes;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.databind.util.StdDateFormat;
-import io.github.jam01.xtrasonnet.spi.PluginException;
-import io.github.jam01.xtrasonnet.spi.ujsonUtils;
 import io.github.jam01.xtrasonnet.document.Document;
+import io.github.jam01.xtrasonnet.document.Documents;
 import io.github.jam01.xtrasonnet.document.MediaType;
 import io.github.jam01.xtrasonnet.document.MediaTypes;
+import io.github.jam01.xtrasonnet.spi.PluginException;
+import io.github.jam01.xtrasonnet.spi.ujsonUtils;
 import ujson.Value;
 
 import java.text.SimpleDateFormat;

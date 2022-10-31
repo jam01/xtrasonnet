@@ -11,17 +11,12 @@ import io.github.jam01.xtrasonnet.Transformer;
 import io.github.jam01.xtrasonnet.document.Document;
 import io.github.jam01.xtrasonnet.document.Documents;
 import io.github.jam01.xtrasonnet.document.MediaTypes;
-import io.github.jam01.xtrasonnet.Transformer;
-import io.github.jam01.xtrasonnet.document.Document;
-import io.github.jam01.xtrasonnet.document.MediaTypes;
 import org.json.JSONException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 
 import java.util.Collections;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class JSONPluginTest {
 

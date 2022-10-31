@@ -9,7 +9,6 @@ package io.github.jam01.xtrasonnet.plugins
 
 import com.fasterxml.jackson.databind.node._
 import com.fasterxml.jackson.databind.{JsonNode, ObjectMapper}
-import BaseJacksonPlugin.OBJECT_MAPPER
 import io.github.jam01.xtrasonnet.spi.BasePlugin
 import ujson._
 

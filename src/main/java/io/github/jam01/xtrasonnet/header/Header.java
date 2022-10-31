@@ -36,9 +36,6 @@ package io.github.jam01.xtrasonnet.header;
 import io.github.jam01.xtrasonnet.document.InvalidMediaTypeException;
 import io.github.jam01.xtrasonnet.document.MediaType;
 import io.github.jam01.xtrasonnet.document.MediaTypes;
-import io.github.jam01.xtrasonnet.document.InvalidMediaTypeException;
-import io.github.jam01.xtrasonnet.document.MediaType;
-import io.github.jam01.xtrasonnet.document.MediaTypes;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;

@@ -11,9 +11,6 @@ import io.github.jam01.xtrasonnet.TestUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import static io.github.jam01.xtrasonnet.TestUtils.transform;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 public class Base64Test {
 
     @Test

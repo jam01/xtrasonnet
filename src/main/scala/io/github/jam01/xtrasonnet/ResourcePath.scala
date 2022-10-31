@@ -7,7 +7,7 @@ package io.github.jam01.xtrasonnet
  * compliance with the Elastic License 2.0.
  */
 
-import ResourcePath.root
+import io.github.jam01.xtrasonnet.ResourcePath.root
 import sjsonnet.{Importer, Path}
 
 import scala.collection.mutable

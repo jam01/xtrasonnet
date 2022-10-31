@@ -13,10 +13,6 @@ import io.github.jam01.xtrasonnet.document.MediaTypes;
 import io.github.jam01.xtrasonnet.spi.BasePlugin;
 import io.github.jam01.xtrasonnet.spi.PluginException;
 import io.github.jam01.xtrasonnet.spi.ujsonUtils;
-import io.github.jam01.xtrasonnet.document.Document;
-import io.github.jam01.xtrasonnet.document.MediaType;
-import io.github.jam01.xtrasonnet.document.MediaTypes;
-import io.github.jam01.xtrasonnet.spi.BasePlugin;
 import ujson.Value;
 
 public class DefaultPlainTextPlugin extends BasePlugin {

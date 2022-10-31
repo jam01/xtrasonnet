@@ -7,8 +7,6 @@ package io.github.jam01.xtrasonnet;
  * compliance with the Elastic License 2.0.
  */
 
-import io.github.jam01.xtrasonnet.document.MediaType;
-import io.github.jam01.xtrasonnet.document.MediaTypes;
 import io.github.jam01.xtrasonnet.spi.DataFormatPlugin;
 import io.github.jam01.xtrasonnet.spi.Library;
 

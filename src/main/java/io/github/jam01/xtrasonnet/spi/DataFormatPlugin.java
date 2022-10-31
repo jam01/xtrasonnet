@@ -9,8 +9,6 @@ package io.github.jam01.xtrasonnet.spi;
 
 import io.github.jam01.xtrasonnet.document.Document;
 import io.github.jam01.xtrasonnet.document.MediaType;
-import io.github.jam01.xtrasonnet.document.Document;
-import io.github.jam01.xtrasonnet.document.MediaType;
 import ujson.Value;
 
 public interface DataFormatPlugin {

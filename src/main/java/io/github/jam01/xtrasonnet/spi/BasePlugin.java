@@ -10,9 +10,6 @@ package io.github.jam01.xtrasonnet.spi;
 import io.github.jam01.xtrasonnet.document.Document;
 import io.github.jam01.xtrasonnet.document.MediaType;
 import io.github.jam01.xtrasonnet.document.MediaTypes;
-import io.github.jam01.xtrasonnet.document.Document;
-import io.github.jam01.xtrasonnet.document.MediaType;
-import io.github.jam01.xtrasonnet.document.MediaTypes;
 import ujson.Value;
 
 import java.util.LinkedHashSet;

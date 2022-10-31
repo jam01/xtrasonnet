@@ -7,12 +7,12 @@ package io.github.jam01.xtrasonnet
  * compliance with the Elastic License 2.0.
  */
 
-import Transformer.{ERROR_LINE_REGEX, handleException, main, resource}
+import io.github.jam01.xtrasonnet.Transformer.{ERROR_LINE_REGEX, handleException, main, resource}
 import io.github.jam01.xtrasonnet.document.Document.BasicDocument
-import io.github.jam01.xtrasonnet.spi.Library.{dummyPosition, memberOf}
 import io.github.jam01.xtrasonnet.document.{Document, MediaType, MediaTypes}
 import io.github.jam01.xtrasonnet.header.Header
 import io.github.jam01.xtrasonnet.spi.Library
+import io.github.jam01.xtrasonnet.spi.Library.{dummyPosition, memberOf}
 import sjsonnet.Expr.Params
 import sjsonnet.ScopedExprTransform.{Scope, ScopedVal, emptyScope}
 import sjsonnet.{CachedResolver, DefaultParseCache, Error, EvalScope, Evaluator, Expr, FileScope, Importer, Materializer, ParseCache, ParseError, Path, Position, Settings, StaticOptimizer, Val, ValScope}

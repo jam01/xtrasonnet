@@ -32,8 +32,7 @@ package io.github.jam01.xtrasonnet.plugins.xml
  */
 
 import io.github.jam01.xtrasonnet.plugins.DefaultXMLPlugin.{DEFAULT_NS_KEY, EffectiveParams}
-import io.github.jam01.xtrasonnet.plugins.DefaultXMLPlugin.EffectiveParams
-import ujson.{Arr, Bool, Null, Num, Obj, Str, Value}
+import ujson._
 
 import java.io.{StringWriter, Writer}
 import scala.collection.mutable

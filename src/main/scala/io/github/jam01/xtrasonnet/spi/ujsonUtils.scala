@@ -25,7 +25,7 @@ package io.github.jam01.xtrasonnet.spi
  */
 // TODO: state changes
 
-import ujson.{Arr, Bool, Null, Num, Obj, Readable, Str, Value}
+import ujson.{Arr, Bool, Null, Obj, Readable, Str, Value}
 
 import scala.jdk.CollectionConverters.{MapHasAsJava, SeqHasAsJava}
 import scala.util.control.TailCalls.{TailRec, done, tailcall}

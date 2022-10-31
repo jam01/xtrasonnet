@@ -7,12 +7,10 @@ package io.github.jam01.xtrasonnet.plugins;
  * compliance with the Elastic License 2.0.
  */
 
+import io.github.jam01.xtrasonnet.TestUtils;
 import io.github.jam01.xtrasonnet.Transformer;
 import io.github.jam01.xtrasonnet.document.Document;
 import io.github.jam01.xtrasonnet.document.Documents;
-import io.github.jam01.xtrasonnet.document.MediaTypes;
-import io.github.jam01.xtrasonnet.TestUtils;
-import io.github.jam01.xtrasonnet.document.Document;
 import io.github.jam01.xtrasonnet.document.MediaTypes;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
@@ -23,7 +21,6 @@ import org.xmlunit.matchers.CompareMatcher;
 
 import java.util.Collections;
 
-import static io.github.jam01.xtrasonnet.TestUtils.resourceAsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;

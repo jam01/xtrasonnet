@@ -12,12 +12,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-
-import static io.github.jam01.xtrasonnet.TestUtils.transform;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 public class RootTest {
 
     @Test

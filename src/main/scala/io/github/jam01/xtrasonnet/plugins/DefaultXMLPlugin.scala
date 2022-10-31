@@ -8,15 +8,14 @@ package io.github.jam01.xtrasonnet.plugins
  */
 
 import io.github.jam01.xtrasonnet.document.Document.BasicDocument
-
-import java.io._
-import java.net.URL
-import java.nio.charset.Charset
 import io.github.jam01.xtrasonnet.document.{Document, MediaType, MediaTypes}
 import io.github.jam01.xtrasonnet.plugins.xml.XML
 import io.github.jam01.xtrasonnet.spi.{BasePlugin, PluginException}
 import ujson.Value
 
+import java.io._
+import java.net.URL
+import java.nio.charset.Charset
 import java.util.Collections
 import scala.collection.mutable
 import scala.jdk.CollectionConverters.MapHasAsScala

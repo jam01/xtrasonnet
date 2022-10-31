@@ -33,7 +33,6 @@ package io.github.jam01.xtrasonnet.plugins.xml
  *    xmlns found, use new NamespaceDeclarations
  */
 
-import io.github.jam01.xtrasonnet.plugins.DefaultXMLPlugin.{EffectiveParams, Mode}
 import io.github.jam01.xtrasonnet.plugins.DefaultXMLPlugin
 import io.github.jam01.xtrasonnet.plugins.DefaultXMLPlugin.{EffectiveParams, Mode}
 import org.xml.sax.ext.DefaultHandler2

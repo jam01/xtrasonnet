@@ -53,16 +53,16 @@ package io.github.jam01.xtrasonnet
  */
 
 import io.github.jam01.xtrasonnet.document.{Document, MediaType}
-import io.github.jam01.xtrasonnet.spi.Library.{emptyObj, memberOf}
 import io.github.jam01.xtrasonnet.header.Header
 import io.github.jam01.xtrasonnet.modules.Crypto
 import io.github.jam01.xtrasonnet.spi.Library
+import io.github.jam01.xtrasonnet.spi.Library.{emptyObj, memberOf}
 import sjsonnet.Expr.Member.Visibility
 import sjsonnet.ReadWriter.{ArrRead, ObjRead, ValRead}
 import sjsonnet.Std.{builtin, builtinWithDefaults}
 import sjsonnet.Val.{Builtin, Obj}
 import sjsonnet.{Error, EvalScope, Expr, FileScope, Importer, Lazy, Materializer, Position, ReadWriter, Val}
-import ujson.{Bool, Null, Num, Str}
+import ujson.{Bool, Null, Str}
 
 import java.math.{BigDecimal, RoundingMode}
 import java.security.SecureRandom

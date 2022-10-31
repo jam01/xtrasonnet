@@ -7,13 +7,13 @@ package io.github.jam01.xtrasonnet.plugins.xml
  * compliance with the Elastic License 2.0.
  */
 
+import io.github.jam01.xtrasonnet.plugins.DefaultXMLPlugin.EffectiveParams
+import io.github.jam01.xtrasonnet.plugins.xml.Source.{fromFile, fromInputStream, fromString}
+import org.xml.sax.InputSource
+
 import java.io._
 import java.net.URL
-
-import io.github.jam01.xtrasonnet.plugins.DefaultXMLPlugin.EffectiveParams
-import Source.{fromFile, fromInputStream, fromString}
 import javax.xml.parsers.{SAXParser, SAXParserFactory}
-import org.xml.sax.InputSource
 
 // See {@link scala.xml.factory.XMLLoader}
 trait XMLLoader {
