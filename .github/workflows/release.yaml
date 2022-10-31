@@ -27,10 +27,11 @@ jobs:
           git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
           git config --global user.name "${GITHUB_ACTOR}"
       - name: mvn clean release:prepare
-        run: "mvn -V --no-transfer-progress --batch-mode --settings .settings.xml clean \
-        -DreleaseVersion='${{ github.event.inputs.release_ver }}' \
-        -DdevelopmentVersion='${{ github.event.inputs.snapshot_ver }}' \
-        release:prepare"
+        run: |
+          mvn -V --no-transfer-progress --batch-mode --settings .settings.xml clean \
+          -DreleaseVersion='${{ github.event.inputs.release_ver }}' \
+          -DdevelopmentVersion='${{ github.event.inputs.snapshot_ver }}' \
+          release:prepare
       # re:gpg signing see: https://gist.github.com/sualeh/ae78dc16123899d7942bc38baba5203c
       - id: install-secret-key
         name: Install gpg secret key
@@ -43,6 +44,7 @@ jobs:
           SONATYPE_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
           GPG_EXECUTABLE: gpg
           GPG_PASSPHRASE: ${{ secrets.OSSRH_GPG_PASSPHRASE }}
-        run: "mvn -V --no-transfer-progress --batch-mode --settings .settings.xml \
-        -Darguments='--settings .settings.xml -Dlicense.skip=true -DskipTests -Dmaven.install.skip=true -P release' \
-        release:perform"
+        run: |
+          mvn -V --no-transfer-progress --batch-mode --settings .settings.xml \
+          -Darguments='--settings .settings.xml -Dlicense.skip=true -DskipTests -Dmaven.install.skip=true -P release' \
+          release:perform
