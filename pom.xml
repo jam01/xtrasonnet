@@ -27,7 +27,7 @@
     <scm>
         <connection>scm:git:https://github.com/jam01/xtrasonnet.git</connection>
         <developerConnection>scm:git:https://github.com/jam01/xtrasonnet.git</developerConnection>
-        <url>https://github.com/jam01/trobador</url>
+        <url>https://github.com/jam01/xtrasonnet.git</url>
     </scm>
     <distributionManagement>
         <repository>
