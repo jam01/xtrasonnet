@@ -98,10 +98,10 @@ class Transformer(private var script: String,
   private val optimizer = new StaticOptimizer(evaluator)
   optimizer.scope = new Scope(immutable.HashMap.from(allLibs
     .map(lib => (lib.namespace(), ScopedVal(Library.emptyObj, emptyScope, -1)))
-    .toMap), libs.size + 1)
+    .toMap), allLibs.size)
 
   // reserving indices for DS and additional libraries
-  private val libsScope = ValScope.empty.extendBy(libs.size + 1)
+  private val libsScope = ValScope.empty.extendBy(allLibs.size)
   private val libMappingsMap: Map[String, ScopedVal] = allLibs
     .map(composeLib)
     .map { case (k, obj) => (k, ScopedVal(obj, emptyScope, -1)) }
@@ -225,8 +225,7 @@ class Transformer(private var script: String,
         val lineIdx = el.getFileName.lastIndexOf(":")
         new StackTraceElement(el.getClassName,
           el.getMethodName,
-          el.getFileName.substring(0, lineIdx + 1)
-            + (Integer.parseInt(el.getFileName.substring(lineIdx + 1)) - 1),
+          el.getFileName.substring(0, lineIdx + 1) + (Integer.parseInt(el.getFileName.substring(lineIdx + 1)) - 1),
           el.getLineNumber)
       }
     })
