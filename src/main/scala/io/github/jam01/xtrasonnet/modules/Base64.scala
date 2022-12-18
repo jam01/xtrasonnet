@@ -13,7 +13,7 @@ import sjsonnet.{Val, Error}
 object Base64 {
   val functions: Seq[(String, Val.Func)] = Seq(
     builtin("decode", "value") {
-      (pos, ev, value: Val) =>
+      (_, _, value: Val) =>
         value match {
           case x: Val.Num => new String(java.util.Base64.getDecoder.decode(x.value.toString))
           case x: Val.Str => new String(java.util.Base64.getDecoder.decode(x.value))
@@ -22,7 +22,7 @@ object Base64 {
     },
 
     builtin("encode", "value") {
-      (pos, ev, value: Val) =>
+      (_, _, value: Val) =>
         value match {
           case x: Val.Num =>
             if (x.value % 1 == 0) new String(java.util.Base64.getEncoder.encode(x.value.toInt.toString.getBytes()))

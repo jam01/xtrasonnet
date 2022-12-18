@@ -33,7 +33,7 @@ object Duration {
     },
 
     builtin("toParts", "str") {
-      (pos, ev, duration: String) =>
+      (pos, _, duration: String) =>
         val out = new java.util.LinkedHashMap[String, Val.Obj.Member]
         val timeIdx = duration.indexOf('T')
         var period: Period = null

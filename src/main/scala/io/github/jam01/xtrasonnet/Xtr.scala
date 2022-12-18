@@ -78,7 +78,7 @@ object Xtr extends Library {
 
   override def namespace() = "xtr"
 
-  override def libsonnets(): java.util.Set[String] = Collections.emptySet();
+  override def libsonnets(): java.util.Set[String] = Collections.emptySet()
 
   override def functions(dataFormats: DataFormatService,
                          header: Header, importer: Importer): java.util.Map[String, Val.Func] = Map(
@@ -105,11 +105,11 @@ object Xtr extends Library {
     },
 
     builtin("filter", "array", "func") {
-      (pos, ev, arr: Val.Arr, func: Val.Func) => filter(arr.asLazyArray, func, ev)
+      (_, ev, arr: Val.Arr, func: Val.Func) => filter(arr.asLazyArray, func, ev)
     },
 
     builtin("filterObject", "array", "func") {
-      (pos, ev, obj: Val.Obj, func: Val.Func) => filterObject(obj, func, ev).asInstanceOf[Val]
+      (_, ev, obj: Val.Obj, func: Val.Func) => filterObject(obj, func, ev).asInstanceOf[Val]
     },
 
     builtin("indicesOf", "container", "value") {
@@ -134,11 +134,11 @@ object Xtr extends Library {
     },
 
     builtin("flatMap", "array", "func") {
-      (pos, ev, value: Val.Arr, func: Val.Func) => flatMap(value.asLazyArray, func, ev)
+      (_, ev, value: Val.Arr, func: Val.Func) => flatMap(value.asLazyArray, func, ev)
     },
 
     builtin("flatMapObject", "value", "func") {
-      (pos, ev, obj: Val.Obj, func: Val.Func) => flatMapObject(obj, func, ev)
+      (_, ev, obj: Val.Obj, func: Val.Func) => flatMapObject(obj, func, ev)
     },
 
     builtin("flatten", "array") {
@@ -153,12 +153,12 @@ object Xtr extends Library {
     },
 
     builtin("endsWith", "main", "sub") {
-      (pos, ev, main: String, sub: String) =>
+      (_, _, main: String, sub: String) =>
         main.toLowerCase().endsWith(sub.toLowerCase());
     },
 
     builtin("groupBy", "container", "func") {
-      (pos, ev, container: Val, func: Val.Func) =>
+      (_, ev, container: Val, func: Val.Func) =>
         container match {
           case array: Val.Arr => groupBy(array.asLazyArray, func, ev)
           case obj: Val.Obj => groupBy(obj, func, ev)
@@ -167,16 +167,16 @@ object Xtr extends Library {
     },
 
     builtin("isBlank", "value") {
-      (pos, ev, str: String) => !Utils.hasText(str)
+      (_, _, str: String) => !Utils.hasText(str)
     },
 
     builtin("isDecimal", "value") {
-      (pos, ev, value: Double) =>
+      (_, _, value: Double) =>
         (java.lang.Math.ceil(value) != java.lang.Math.floor(value)).booleanValue()
     },
 
     builtin("isEmpty", "container") {
-      (pos, ev, container: Val) =>
+      (_, _, container: Val) =>
         container match {
           case s: Val.Str => s.value.isEmpty.booleanValue()
           case array: Val.Arr => array.asLazyArray.isEmpty.booleanValue()
@@ -186,12 +186,12 @@ object Xtr extends Library {
     },
 
     builtin("isInteger", "value") {
-      (pos, ev, value: Double) =>
+      (_, _, value: Double) =>
         (java.lang.Math.ceil(value) == java.lang.Math.floor(value)).booleanValue()
     },
 
     builtin("join", "array", "sep") {
-      (pos, ev, array: Val.Arr, sep: String) =>
+      (_, _, array: Val.Arr, sep: String) =>
         array.asLazyArray.map({
           _.force match {
             case str: Val.Str => str.value
@@ -207,25 +207,25 @@ object Xtr extends Library {
     },
 
     builtin("toLowerCase", "str") {
-      (pos, ev, str: String) =>
+      (_, _, str: String) =>
         str.toLowerCase();
     },
 
     builtin("map", "value", "func") {
-      (pos, ev, arr: Val.Arr, func: Val.Func) => map(arr.asLazyArray, func, ev)
+      (_, ev, arr: Val.Arr, func: Val.Func) => map(arr.asLazyArray, func, ev)
     },
 
     builtin("mapObject", "value", "func") {
-      (pos, ev, obj: Val.Obj, func: Val.Func) => mapObject(obj, func, ev)
+      (_, ev, obj: Val.Obj, func: Val.Func) => mapObject(obj, func, ev)
     },
 
     builtin("mapEntries", "value", "func") {
-      (pos, ev, obj: Val.Obj, func: Val.Func) => mapEntries(obj, func, ev)
+      (_, ev, obj: Val.Obj, func: Val.Func) => mapEntries(obj, func, ev)
     },
 
     // TODO: optimize with while-loop
     builtin("max", "array") {
-      (pos, ev, array: Val.Arr) =>
+      (_, _, array: Val.Arr) =>
         var value = array.asLazyArray.head
         for (x <- array.asLazyArray) {
           // TODO: avoid string comparison
@@ -260,7 +260,7 @@ object Xtr extends Library {
 
     // TODO: optimize with while-loop
     builtin("min", "array") {
-      (pos, ev, array: Val.Arr) =>
+      (_, _, array: Val.Arr) =>
         var value = array.asLazyArray.head
         for (x <- array.asLazyArray) {
           // TODO: avoid string comparison
@@ -295,7 +295,7 @@ object Xtr extends Library {
     },
 
     builtin("sortBy", "value", "func") {
-      (pos, ev, value: Val, func: Val.Func) =>
+      (_, ev, value: Val, func: Val.Func) =>
         value match {
           case array: Val.Arr => sortBy(array.asLazyArray, func, ev)
           case obj: Val.Obj => sortBy(obj, func, ev)
@@ -310,7 +310,7 @@ object Xtr extends Library {
     },
 
     builtin("replace", "str1", "str2", "replacement") {
-      (pos, ev, str: String, str2: String, replacement: String) =>
+      (_, _, str: String, str2: String, replacement: String) =>
         str.replace(str2, replacement)
     },
 
@@ -318,7 +318,7 @@ object Xtr extends Library {
       "data" -> null,
       "mimeType" -> null,
       "params" -> Val.False(dummyPosition)) {
-      (args, pos, ev) =>
+      (args, _, ev) =>
         val data = args(0).cast[Val.Str].value
         val mimeType = args(1).cast[Val.Str].value
         val params = if (args(2).isInstanceOf[Val.False]) {
@@ -333,7 +333,7 @@ object Xtr extends Library {
       "url" -> null,
       "mimeType" -> null,
       "params" -> Val.False(dummyPosition)) {
-      (args, pos, ev) =>
+      (args, _, ev) =>
         val url = args(0).cast[Val.Str].value
         val mimeType = args(1).cast[Val.Str].value
         val params = if (args(2).isInstanceOf[Val.False]) {
@@ -346,7 +346,7 @@ object Xtr extends Library {
     },
 
     builtin("length", "value") {
-      (pos, ev, value: Val) =>
+      (_, _, value: Val) =>
         value match {
           case s: Val.Str => s.value.length()
           case s: Val.Obj => s.visibleKeyNames.length
@@ -362,19 +362,19 @@ object Xtr extends Library {
     },
 
     builtin("startsWith", "str1", "str2") {
-      (pos, ev, str1: String, str2: String) => str1.toUpperCase().startsWith(str2.toUpperCase());
+      (_, _, str1: String, str2: String) => str1.toUpperCase().startsWith(str2.toUpperCase());
     },
 
     builtin("toString", "value") {
-      (pos, ev, value: Val) => Materializer.stringify(value)(ev)
+      (_, ev, value: Val) => Materializer.stringify(value)(ev)
     },
 
     builtin("trim", "str") {
-      (pos, ev, str: String) => str.trim()
+      (_, _, str: String) => str.trim()
     },
 
     builtin("type", "value") {
-      (pos, ev, value: Val) =>
+      (_, _, value: Val) =>
         value match {
           case _: Val.Bool => "boolean"
           case _: Val.Null => "null"
@@ -387,12 +387,12 @@ object Xtr extends Library {
     },
 
     builtin("toUpperCase", "str") {
-      (pos, ev, str: String) =>
+      (_, _, str: String) =>
         str.toUpperCase()
     },
 
     builtin0("uuid") {
-      (pos, _) =>
+      (_, _) =>
         UUID.randomUUID().toString
     },
 
@@ -404,7 +404,7 @@ object Xtr extends Library {
     builtinWithDefaults("write",
       "data" -> Val.Null(dummyPosition),
       "mimeType" -> Val.Null(dummyPosition),
-      "params" -> emptyObj) { (args, pos, ev) =>
+      "params" -> emptyObj) { (args, _, ev) =>
       val data = args(0)
       val mimeType = args(1).cast[Val.Str].value
       val params = args(2).cast[Val.Obj]
@@ -412,27 +412,27 @@ object Xtr extends Library {
     },
 
     // funcs below taken from Std
-    builtin("isString", "v") { (pos, ev, v: Val) =>
+    builtin("isString", "v") { (_, _, v: Val) =>
       v.isInstanceOf[Val.Str]
     },
 
-    builtin("isBoolean", "v") { (pos, ev, v: Val) =>
+    builtin("isBoolean", "v") { (_, _, v: Val) =>
       v.isInstanceOf[Val.True] || v.isInstanceOf[Val.False]
     },
 
-    builtin("isNumber", "v") { (pos, ev, v: Val) =>
+    builtin("isNumber", "v") { (_, _, v: Val) =>
       v.isInstanceOf[Val.Num]
     },
 
-    builtin("isObject", "v") { (pos, ev, v: Val) =>
+    builtin("isObject", "v") { (_, _, v: Val) =>
       v.isInstanceOf[Val.Obj]
     },
 
-    builtin("isArray", "v") { (pos, ev, v: Val) =>
+    builtin("isArray", "v") { (_, _, v: Val) =>
       v.isInstanceOf[Val.Arr]
     },
 
-    builtin("isFunction", "v") { (pos, ev, v: Val) =>
+    builtin("isFunction", "v") { (_, _, v: Val) =>
       v.isInstanceOf[Val.Func]
     },
 
@@ -530,7 +530,7 @@ object Xtr extends Library {
     },
 
     builtin("indexOf", "container", "value") {
-      (pos, ev, container: Val, value: Val) =>
+      (_, ev, container: Val, value: Val) =>
         container match {
           case str: Val.Str => str.value.indexOf(value.cast[Val.Str].value)
           case array: Val.Arr => array.asLazyArray.indexWhere(lzy => ev.equal(lzy.force, value))
@@ -539,7 +539,7 @@ object Xtr extends Library {
     },
 
     builtin("lastIndexOf", "container", "value") {
-      (pos, ev, container: Val, value: Val) =>
+      (_, ev, container: Val, value: Val) =>
         container match {
           case str: Val.Str => str.value.lastIndexOf(value.cast[Val.Str].value)
           case array: Val.Arr => array.asLazyArray.lastIndexWhere(lzy => ev.equal(lzy.force, value))
@@ -547,7 +547,7 @@ object Xtr extends Library {
         }
     },
 
-    builtin("parseNum", "str") { (pos, ev, str: String) =>
+    builtin("parseNum", "str") { (_, _, str: String) =>
       str.toDouble
     }
   ).asJava
@@ -963,11 +963,11 @@ object Xtr extends Library {
 
     if (args.equals(2)) {
       Val.Obj.mk(pos,
-        m.toSeq.sortBy { case (k1, v1) => func.apply2(obj.value(k1, pos)(ev), Val.Str(pos, k1), pos.noOffset)(ev) }(ord = ValOrdering): _*
+        m.toSeq.sortBy { case (k1, _) => func.apply2(obj.value(k1, pos)(ev), Val.Str(pos, k1), pos.noOffset)(ev) }(ord = ValOrdering): _*
       )
     } else if (args == 1) {
       Val.Obj.mk(pos,
-        m.toSeq.sortBy { case (k1, v1) => func.apply1(obj.value(k1, pos)(ev), pos.noOffset)(ev) }(ord = ValOrdering): _*
+        m.toSeq.sortBy { case (k1, _) => func.apply1(obj.value(k1, pos)(ev), pos.noOffset)(ev) }(ord = ValOrdering): _*
       )
     } else {
       Error.fail("Expected embedded function to have 1 or 2 parameters, received: " + args)

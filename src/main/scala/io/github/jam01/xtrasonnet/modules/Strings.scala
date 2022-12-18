@@ -17,7 +17,7 @@ object Strings {
   val functions: Seq[(String, Val.Func)] = Seq(
 
     builtin("appendIfMissing", "str1", "str2") {
-      (pos, ev, str: String, append: String) =>
+      (_, _, str: String, append: String) =>
         var ret = str
         if (!ret.endsWith(append)) {
           ret = ret + append
@@ -26,7 +26,7 @@ object Strings {
     },
 
     builtin("toCamelCase", "str") {
-      (pos, ev, str: String) =>
+      (_, _, str: String) =>
         //regex fo _CHAR
         "([A-Z])|[\\s-_]+(\\w)".r("head", "tail").replaceAllIn(str, found => {
           if (found.group(2) != null) found.group(2).toUpperCase
@@ -35,7 +35,7 @@ object Strings {
     },
 
     builtin("capitalize", "str") {
-      (pos, ev, str: String) =>
+      (_, _, str: String) =>
         //regex fo _CHAR
         val regex = "([_\\s-]+)([0-9A-Za-z])([A-Z]+|)".r("one", "two", "three")
         val middleRegex = "([a-z])([A-Z])".r("end", "start")
@@ -52,17 +52,17 @@ object Strings {
     },
 
     builtin("charCode", "str") {
-      (pos, ev, str: String) =>
+      (_, _, str: String) =>
         str.codePointAt(0)
     },
 
     builtin("charCodeAt", "str", "num") {
-      (pos, ev, str: String, num: Int) =>
+      (_, _, str: String, num: Int) =>
         str.codePointAt(num)
     },
 
     builtin("toKebabCase", "str") {
-      (pos, ev, str: String) =>
+      (_, _, str: String) =>
         //regex fo _CHAR
         val regex = "([_\\s-]+)([0-9A-Za-z])([A-Z]+|)".r("one", "two", "three")
         val middleRegex = "([a-z])([A-Z])".r("end", "start")
@@ -78,12 +78,12 @@ object Strings {
     },
 
     builtin("ofCharCode", "num") {
-      (pos, ev, num: Int) =>
+      (_, _, num: Int) =>
         String.valueOf(num.asInstanceOf[Char])
     },
 
     builtin("isAlpha", "str") {
-      (pos, ev, str: Val) =>
+      (_, _, str: Val) =>
         str match {
           case value: Val.Str => "^[A-Za-z]+$".r.matches(value.value)
           case _: Val.Num => false
@@ -93,7 +93,7 @@ object Strings {
     },
 
     builtin("isAlphanumeric", "str") {
-      (pos, ev, str: Val) =>
+      (_, _, str: Val) =>
         str match {
           case value: Val.Str => "^[A-Za-z0-9]+$".r.matches(value.value)
           case _: Val.Num => true
@@ -103,11 +103,11 @@ object Strings {
     },
 
     builtin("isLowerCase", "str") {
-      (pos, ev, str: String) => "^[a-z]+$".r.matches(str)
+      (_, _, str: String) => "^[a-z]+$".r.matches(str)
     },
 
     builtin("isNumeric", "str") {
-      (pos, ev, str: Val) =>
+      (_, _, str: Val) =>
         str match {
           case value: Val.Str => "^[0-9]+$".r.matches(value.value)
           case _: Val.Num => true
@@ -117,11 +117,11 @@ object Strings {
     },
 
     builtin("isUpperCase", "str") {
-      (pos, ev, str: String) => "^[A-Z]+$".r.matches(str)
+      (_, _, str: String) => "^[A-Z]+$".r.matches(str)
     },
 
     builtin("leftPad", "str", "offset", "pad") {
-      (pos, ev, str: Val, size: Int, pad: String) =>
+      (_, _, str: Val, size: Int, pad: String) =>
         str match {
           case str: Val.Str => ("%" + size + "s").format(str.value).replace(" ", pad.substring(0, 1))
           //TODO change to use sjsonnet's Format and DecimalFormat
@@ -131,7 +131,7 @@ object Strings {
     },
 
     builtin("numOrdinalOf", "num") {
-      (pos, ev, num: Val) =>
+      (_, _, num: Val) =>
         val str = num match { //convert number value to string
           case value: Val.Str =>
             if ("^[0-9]+$".r.matches(value.value)) value.value
@@ -149,7 +149,7 @@ object Strings {
     },
 
     builtin("pluralize", "value") {
-      (pos, ev, str: String) =>
+      (_, _, str: String) =>
         val comparator = str.toLowerCase()
         val specialSList = List("monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday")
         if (specialSList.contains(comparator)) {
@@ -164,7 +164,7 @@ object Strings {
     },
 
     builtin("prependIfMissing", "str1", "str2") {
-      (pos, ev, str: String, append: String) =>
+      (_, _, str: String, append: String) =>
         var ret = str
         if (!ret.startsWith(append)) {
           ret = append + ret
@@ -173,7 +173,7 @@ object Strings {
     },
 
     builtin("repeat", "str", "num") {
-      (pos, ev, str: String, num: Int) =>
+      (_, _, str: String, num: Int) =>
         var i = 0
         val builder = new mutable.StringBuilder("")
         while (i < num) {
@@ -184,7 +184,7 @@ object Strings {
     },
 
     builtin("rightPad", "str", "offset", "pad") {
-      (pos, ev, value: Val, offset: Int, pad: String) =>
+      (_, _, value: Val, offset: Int, pad: String) =>
         value match {
           case str: Val.Str => str.value.padTo(offset, pad.charAt(0))
           //TODO change to use sjsonnet's Format and DecimalFormat
@@ -194,7 +194,7 @@ object Strings {
     },
 
     builtin("singularize", "value") {
-      (pos, ev, s: String) =>
+      (_, _, s: String) =>
         if (s.endsWith("ies"))
           s.substring(0, s.length - 3) + "y"
         else if (s.endsWith("es"))
@@ -204,7 +204,7 @@ object Strings {
     },
 
     builtin("substringAfter", "value", "sep") {
-      (pos, ev, s: String, sep: String) =>
+      (_, _, s: String, sep: String) =>
         s.substring(
           s.indexOf(sep) match {
             case -1 => s.length
@@ -214,7 +214,7 @@ object Strings {
     },
 
     builtin("substringAfterLast", "value", "sep") {
-      (pos, ev, s: String, sep: String) =>
+      (_, _, s: String, sep: String) =>
         val split = s.split(sep)
         if (sep.equals("")) ""
         else if (split.length == 1) ""
@@ -222,7 +222,7 @@ object Strings {
     },
 
     builtin("substringBefore", "value", "sep") {
-      (pos, ev, s: String, sep: String) =>
+      (_, _, s: String, sep: String) =>
         s.substring(0,
           s.indexOf(sep) match {
             case -1 => 0
@@ -232,7 +232,7 @@ object Strings {
     },
 
     builtin("substringBeforeLast", "value", "sep") {
-      (pos, ev, s: String, sep: String) =>
+      (_, _, s: String, sep: String) =>
         s.substring(0,
           s.lastIndexOf(sep) match {
             case -1 => 0
@@ -242,7 +242,7 @@ object Strings {
     },
 
     builtin("toSnakeCase", "str") {
-      (pos, ev, str: String) =>
+      (_, _, str: String) =>
         //regex fo _CHAR
         val regex = "([_\\s-]+)([0-9A-Za-z])([A-Z]+|)".r("one", "two", "three")
         val middleRegex = "([a-z])([A-Z])".r("end", "start")
@@ -259,7 +259,7 @@ object Strings {
     },
 
     builtin("unwrap", "value", "wrapper") {
-      (pos, ev, str: String, wrapper: String) =>
+      (_, _, str: String, wrapper: String) =>
         val starts = str.startsWith(wrapper)
         val ends = str.endsWith(wrapper)
         if (starts && ends) str.substring(0 + wrapper.length, str.length - wrapper.length)
@@ -269,7 +269,7 @@ object Strings {
     },
 
     builtin("wrapIfMissing", "value", "wrapper") {
-      (pos, ev, str: String, wrapper: String) =>
+      (_, _, str: String, wrapper: String) =>
         val ret = new mutable.StringBuilder(str)
         if (!str.startsWith(wrapper)) ret.insert(0, wrapper)
         if (!str.endsWith(wrapper)) ret.append(wrapper)
@@ -277,7 +277,7 @@ object Strings {
     },
 
     builtin("wrap", "value", "wrapper") {
-      (pos, ev, str: String, wrapper: String) => wrapper + str + wrapper
+      (_, _, str: String, wrapper: String) => wrapper + str + wrapper
     },
 
     // todo: and these?

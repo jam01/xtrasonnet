@@ -37,7 +37,7 @@ import sjsonnet.{Val, Error}
 object Numbers {
   val functions: Seq[(String, Val.Func)] = Seq(
     builtin("ofBinary", "value") {
-      (pos, ev, value: Val) =>
+      (_, _, value: Val) =>
         value match {
           case x: Val.Num =>
             if ("[^2-9]".r.matches(x.toString)) {
@@ -50,7 +50,7 @@ object Numbers {
     },
 
     builtin("ofHex", "value") {
-      (pos, ev, value: Val) =>
+      (_, _, value: Val) =>
         value match {
           case x: Val.Num =>
             if ("[^0-9a-f]".r.matches(x.value.toString.toLowerCase())) {
@@ -63,7 +63,7 @@ object Numbers {
     },
 
     builtin("ofRadix", "value", "num") {
-      (pos, ev, value: Val, num: Int) =>
+      (_, _, value: Val, num: Int) =>
         value match {
           case x: Val.Num => BigInt.apply(x.value.toLong.toString, num).bigInteger.doubleValue
           case x: Val.Str => BigInt.apply(x.value, num).bigInteger.doubleValue
@@ -72,7 +72,7 @@ object Numbers {
     },
 
     builtin("toBinary", "value") {
-      (pos, ev, value: Val) =>
+      (_, _, value: Val) =>
         value match {
           case x: Val.Num =>
             if (x.value < 0) "-" + x.value.toLong.abs.toBinaryString
@@ -85,7 +85,7 @@ object Numbers {
     },
 
     builtin("toHex", "value") {
-      (pos, ev, value: Val) =>
+      (_, _, value: Val) =>
         value match {
           case x: Val.Num =>
             if (x.value < 0) "-" + x.value.toLong.abs.toHexString.toUpperCase
@@ -98,7 +98,7 @@ object Numbers {
     },
 
     builtin("toRadix", "value", "num") {
-      (pos, ev, value: Val, num: Int) =>
+      (_, _, value: Val, num: Int) =>
         value match {
           case x: Val.Num =>
             if (x.value < 0) "-" + BigInt.apply(x.value.toLong).toString(num)
@@ -112,7 +112,7 @@ object Numbers {
         }
     },
 
-    builtin("ofOctal", "str") { (pos, ev, num: Val) =>
+    builtin("ofOctal", "str") { (_, _, num: Val) =>
       num match {
         case str: Val.Str => Integer.parseInt(str.asString, 8)
         case n: Val.Num => Integer.parseInt(n.asInt.toString, 8)

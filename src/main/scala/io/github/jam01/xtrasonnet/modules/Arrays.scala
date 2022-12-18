@@ -59,12 +59,12 @@ object Arrays {
     },
 
     builtin("chunksOf", "array", "size") { // TODO: better name?
-      (pos, ev, array: Val.Arr, size: Int) =>
+      (pos, _, array: Val.Arr, size: Int) =>
         new Val.Arr(pos, array.asLazyArray.sliding(size, size).map(item => new Val.Arr(pos, item)).toArray)
     },
 
     builtin("drop", "arr", "num") {
-      (pos, ev, arr: Val.Arr, num: Int) =>
+      (pos, _, arr: Val.Arr, num: Int) =>
         new Val.Arr(pos, arr.asLazyArray.drop(num))
     },
 
@@ -88,7 +88,7 @@ object Arrays {
     },
 
     builtin("find", "arr", "func") {
-      (pos, ev, arr: Val.Arr, func: Val.Func) =>
+      (_, ev, arr: Val.Arr, func: Val.Func) =>
         val pos = func.pos
         val args = func.params.names.length
 
@@ -108,7 +108,7 @@ object Arrays {
     },
 
     builtin("flat", "arr") {
-      (pos, ev, arr: Val.Arr) =>
+      (pos, _, arr: Val.Arr) =>
         new Val.Arr(pos, flat(arr.asLazyArray))
     },
 
@@ -123,7 +123,7 @@ object Arrays {
     },
 
     builtin("indicesWhere", "arr", "func") {
-      (pos, ev, array: Val.Arr, func: Val.Func) =>
+      (_, ev, array: Val.Arr, func: Val.Func) =>
         val pos = func.pos
         val args = func.params.names.length
         val out = new ArrayBuffer[Val.Num]()
@@ -170,7 +170,7 @@ object Arrays {
     },
 
     builtin("splitAt", "array", "index") {
-      (pos, ev, array: Val.Arr, index: Int) =>
+      (pos, _, array: Val.Arr, index: Int) =>
         val split = array.asLazyArray.splitAt(index)
         val out = new util.LinkedHashMap[String, Val.Obj.Member]()
 
@@ -195,7 +195,7 @@ object Arrays {
     },
 
     builtin("take", "array", "index") {
-      (pos, ev, array: Val.Arr, index: Int) =>
+      (pos, _, array: Val.Arr, index: Int) =>
         new Val.Arr(pos, array.asLazyArray.splitAt(index)._1)
     },
 
@@ -240,7 +240,7 @@ object Arrays {
       "arr2" -> null,
       "arr3" -> Val.False(dummyPosition),
       "arr4" -> Val.False(dummyPosition),
-      "arr5" -> Val.False(dummyPosition)) { (args, pos, ev) =>
+      "arr5" -> Val.False(dummyPosition)) { (args, pos, _) =>
       val lazyArr = args.filter {
         case _: Val.Arr => true
         case _: Val.False => false

@@ -17,12 +17,12 @@ import java.nio.charset.Charset
 object URL {
   val functions: Seq[(String, Val.Func)] = Seq(
     builtin("encode", "data") {
-      (pos, ev, data: String) =>
+      (_, _, data: String) =>
         URLEncoder.encode(data, Charset.defaultCharset())
     },
 
     builtin("decode", "data") {
-      (pos, ev, data: String) =>
+      (_, _, data: String) =>
         URLDecoder.decode(data, Charset.defaultCharset())
     },
   )

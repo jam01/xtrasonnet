@@ -19,17 +19,17 @@ import javax.crypto.spec.{IvParameterSpec, SecretKeySpec}
 object Crypto {
   val functions: Seq[(String, Val.Func)] = Seq(
     builtin("hash", "value", "algorithm") {
-      (pos, ev, value: String, algorithm: String) =>
+      (_, _, value: String, algorithm: String) =>
         Crypto.hash(value, algorithm)
     },
 
     builtin("hmac", "value", "secret", "algorithm") {
-      (pos, ev, value: String, secret: String, algorithm: String) =>
+      (_, _, value: String, secret: String, algorithm: String) =>
         Crypto.hmac(value, secret, algorithm)
     },
 
     builtin("encrypt", "value", "secret", "algorithm") {
-      (pos, ev, value: String, secret: String, transformation: String) =>
+      (_, _, value: String, secret: String, transformation: String) =>
         val cipher = Cipher.getInstance(transformation)
         val transformTokens = transformation.split("/")
 
@@ -63,7 +63,7 @@ object Crypto {
     },
 
     builtin("decrypt", "value", "secret", "algorithm") {
-      (pos, ev, value: String, secret: String, transformation: String) =>
+      (_, _, value: String, secret: String, transformation: String) =>
         val cipher = Cipher.getInstance(transformation)
         val transformTokens = transformation.split("/")
 

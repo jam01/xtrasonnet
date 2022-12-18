@@ -50,9 +50,9 @@ import scala.collection.mutable
 
 object Datetime {
   val functions: Seq[(String, Val.Func)] = Seq(
-    builtin0("now") { (pos, ev) => OffsetDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME) },
+    builtin0("now") { (_, _) => OffsetDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME) },
 
-    builtin("parse", "datetime", "inputFormat") { (pos, ev, datetime: Val, inputFormat: String) =>
+    builtin("parse", "datetime", "inputFormat") { (_, _, datetime: Val, inputFormat: String) =>
       var datetimeObj: OffsetDateTime = null
       inputFormat.toLowerCase match {
         case "unix" =>
@@ -73,19 +73,19 @@ object Datetime {
       datetimeObj.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
     },
 
-    builtin("format", "datetime", "outputFormat") { (pos, ev, datetime: String, outputFormat: String) =>
+    builtin("format", "datetime", "outputFormat") { (_, _, datetime: String, outputFormat: String) =>
       val datetimeObj = OffsetDateTime.parse(datetime)
       datetimeObj.format(DateTimeFormatter.ofPattern(outputFormat))
     },
 
-    builtin("compare", "datetime", "datetwo") { (pos, ev, datetimeone: String, datetimetwo: String) =>
+    builtin("compare", "datetime", "datetwo") { (_, _, datetimeone: String, datetimetwo: String) =>
       val datetimeObj1 = OffsetDateTime.parse(datetimeone)
       val datetimeObj2 = OffsetDateTime.parse(datetimetwo)
 
       java.lang.Math.max(-1, java.lang.Math.min(datetimeObj1.compareTo(datetimeObj2), 1))
     },
 
-    builtin("plus", "datetime", "duration") { (pos, ev, date: String, duration: String) =>
+    builtin("plus", "datetime", "duration") { (_, _, date: String, duration: String) =>
       var datetime = OffsetDateTime.parse(date)
       val timeIdx = duration.indexOf('T')
 
@@ -100,7 +100,7 @@ object Datetime {
       datetime.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
     },
 
-    builtin("minus", "datetime", "duration") { (pos, ev, date: String, duration: String) =>
+    builtin("minus", "datetime", "duration") { (_, _, date: String, duration: String) =>
       var datetime = OffsetDateTime.parse(date)
       val timeIdx = duration.indexOf('T')
 
@@ -116,24 +116,24 @@ object Datetime {
     },
 
     builtin("inOffset", "datetime", "offset") {
-      (pos, ev, datetime: String, offset: String) =>
+      (_, _, datetime: String, offset: String) =>
         val datetimeObj = OffsetDateTime.parse(datetime)
         val zoneId = ZoneOffset.of(offset)
         val newDateTimeObj = datetimeObj.withOffsetSameInstant(zoneId)
         newDateTimeObj.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
     },
 
-    builtin("toLocalDate", "datetime") { (pos, ev, datetime: String) =>
+    builtin("toLocalDate", "datetime") { (_, _, datetime: String) =>
       val datetimeObj = OffsetDateTime.parse(datetime)
       datetimeObj.toLocalDate.format(DateTimeFormatter.ISO_LOCAL_DATE)
     },
 
-    builtin("toLocalTime", "datetime") { (pos, ev, datetime: String) =>
+    builtin("toLocalTime", "datetime") { (_, _, datetime: String) =>
       val datetimeObj = OffsetDateTime.parse(datetime)
       datetimeObj.toLocalTime.format(DateTimeFormatter.ISO_LOCAL_TIME)
     },
 
-    builtin("toLocalDateTime", "datetime") { (pos, ev, datetime: String) =>
+    builtin("toLocalDateTime", "datetime") { (_, _, datetime: String) =>
       val datetimeObj = OffsetDateTime.parse(datetime)
       datetimeObj.toLocalDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
     },
@@ -169,7 +169,7 @@ object Datetime {
     },
 
     builtin("isLeapYear", "datetime") {
-      (pos, ev, datetime: String) =>
+      (_, _, datetime: String) =>
         OffsetDateTime
           .parse(datetime)
           .toLocalDate.isLeapYear;
@@ -279,7 +279,7 @@ object Datetime {
     },
 
     builtin("toParts", "datetime") {
-      (pos, ev, datetime: String) =>
+      (pos, _, datetime: String) =>
         val date = OffsetDateTime.parse(datetime)
         val out = new java.util.LinkedHashMap[String, Val.Obj.Member]
         out.put("year", memberOf(Val.Num(pos, date.getYear)))
