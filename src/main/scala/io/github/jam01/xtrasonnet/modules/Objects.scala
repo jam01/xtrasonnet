@@ -9,10 +9,11 @@ package io.github.jam01.xtrasonnet.modules
 
 import io.github.jam01.xtrasonnet.spi.Library.keyFrom
 import io.github.jam01.xtrasonnet.spi.Library.{dummyPosition, emptyObj, memberOf}
+import os.Generator
 import sjsonnet.Expr.Member.Visibility
 import sjsonnet.Std.{builtin, builtinWithDefaults}
 import sjsonnet.Val.Obj
-import sjsonnet.{Error, EvalScope, FileScope, Val}
+import sjsonnet.{Error, EvalScope, FileScope, Lazy, Val}
 
 import java.util
 import scala.collection.mutable.ArrayBuffer
@@ -100,33 +101,42 @@ object Objects {
       }
       val leftHash = new util.HashMap[String, ArrayBuffer[Val.Obj]]()
       val bothHash = new util.HashMap[String, ArrayBuffer[Val.Obj]]()
+      val leftUnjoined = new util.HashSet[String]()
 
       var i = 0
-      while (i < left.length) {
+      while (i < left.length) { // computing keys on the left with the corresponding array of values
         val k = keyFrom(funcIdL.apply1(left.asLazy(i), funcIdL.pos)(ev))
-        val toAdd = if (funcJoin == null) left.force(i).asObj else funcJoin.asFunc.apply2(left.force(i).asObj, emptyObj, funcJoin.pos)(ev).asObj
-        if (leftHash.containsKey(k)) leftHash.put(k, leftHash.get(k).addOne(toAdd))
-        else leftHash.put(k, ArrayBuffer[Obj](toAdd))
+        val toAdd = left.force(i).asObj
+        val arr = leftHash.computeIfAbsent(k, newArrBuff).addOne(toAdd)
+
+        // no custom func, already moving to both in case not to be joined
+        if (funcJoin == null) bothHash.put(k, arr)
+        leftUnjoined.add(k)
         i = i + 1
       }
 
       i = 0
-      while (i < right.length) {
+      while (i < right.length) { // computing keys on the right
         val k = keyFrom(funcIdR.apply1(right.asLazy(i), funcIdL.pos)(ev))
-        if (leftHash.containsKey(k)) {
-          leftHash.get(k).foreach(obj =>
-            bothHash.computeIfAbsent(k, _ => new ArrayBuffer[Obj]()).addOne(
+        if (leftHash.containsKey(k)) { // if also in left join them into bothHash
+          leftHash.get(k).foreach(obj => {
+            if (leftUnjoined.remove(k)) bothHash.remove(k) // 1st time seeing this one, clear it to join
+            bothHash.computeIfAbsent(k, newArrBuff).addOne(
               if (funcJoin == null) obj.asObj.addSuper(pos, right.force(i).asObj).asObj
               else funcJoin.asFunc.apply2(obj, right.force(i), funcJoin.pos)(ev).asObj
             )
-          )
+          })
         }
 
         i = i + 1
       }
 
-      leftHash.putAll(bothHash)
-      new Val.Arr(pos, leftHash.values().asScala.flatten.toArray)
+      // if custom join func, apply to the remaining unjoined ones (otherwise already in bothHash)
+      if (funcJoin != null) leftUnjoined.forEach(k => bothHash.put(k, leftHash.get(k).map(obj =>
+        funcJoin.asFunc.apply2(obj, emptyObj, funcJoin.pos)(ev).asObj
+      )))
+
+      new Val.Arr(pos, bothHash.values().asScala.flatten.toArray)
     },
 
     builtinWithDefaults("fullEqJoin",
@@ -147,37 +157,47 @@ object Objects {
       }
       val leftHash = new util.HashMap[String, ArrayBuffer[Val.Obj]]()
       val bothHash = new util.HashMap[String, ArrayBuffer[Val.Obj]]()
+      val leftUnjoined = new util.HashSet[String]()
 
       var i = 0
-      while (i < left.length) {
+      while (i < left.length) { // computing keys on the left with the corresponding array of values
         val k = keyFrom(funcIdL.apply1(left.asLazy(i), funcIdL.pos)(ev))
-        val toAdd = if (funcJoin == null) left.force(i).asObj else funcJoin.asFunc.apply2(left.force(i).asObj, emptyObj, funcJoin.pos)(ev).asObj
-        if (leftHash.containsKey(k)) leftHash.put(k, leftHash.get(k).addOne(toAdd))
-        else leftHash.put(k, ArrayBuffer[Obj](toAdd))
+        val toAdd = left.force(i).asObj
+        val arr = leftHash.computeIfAbsent(k, newArrBuff).addOne(toAdd)
+
+        // no custom func, already moving to both in case not to be joined
+        if (funcJoin == null) bothHash.put(k, arr)
+        leftUnjoined.add(k)
         i = i + 1
       }
 
       i = 0
-      while (i < right.length) {
+      while (i < right.length) { // computing keys on the right
         val k = keyFrom(funcIdR.apply1(right.asLazy(i), funcIdL.pos)(ev))
-        if (leftHash.containsKey(k)) {
-          leftHash.get(k).foreach(obj =>
-            bothHash.computeIfAbsent(k, _ => new ArrayBuffer[Obj]()).addOne(
+        if (leftHash.containsKey(k)) { // if also in left join them into bothHash
+          leftHash.get(k).foreach(obj => {
+            if (leftUnjoined.remove(k)) bothHash.remove(k) // 1st time seeing this one, clear it to join
+            bothHash.computeIfAbsent(k, newArrBuff).addOne(
               if (funcJoin == null) obj.asObj.addSuper(pos, right.force(i).asObj).asObj
               else funcJoin.asFunc.apply2(obj, right.force(i), funcJoin.pos)(ev).asObj
             )
-          )
-        } else {
-          val toAdd = if (funcJoin == null) right.force(i).asObj else funcJoin.asFunc.apply2(emptyObj, right.force(i).asObj, funcJoin.pos)(ev).asObj
-          if (leftHash.containsKey(k)) leftHash.put(k, leftHash.get(k).addOne(toAdd))
-          else leftHash.put(k, ArrayBuffer[Obj](toAdd))
+          })
+        } else { // else add it to bothHash
+          val toAdd =
+            if (funcJoin == null) right.force(i).asObj
+            else funcJoin.asFunc.apply2(emptyObj, right.force(i).asObj, funcJoin.pos)(ev).asObj
+          bothHash.computeIfAbsent(k, _ => new ArrayBuffer[Obj]()).addOne(toAdd)
         }
 
         i = i + 1
       }
 
-      leftHash.putAll(bothHash)
-      new Val.Arr(pos, leftHash.values().asScala.flatten.toArray)
+      // if custom join func, apply to the remaining unjoined ones (otherwise already in bothHash)
+      if (funcJoin != null) leftUnjoined.forEach(k => bothHash.put(k, leftHash.get(k).map(obj =>
+        funcJoin.asFunc.apply2(obj, emptyObj, funcJoin.pos)(ev).asObj
+      )))
+
+      new Val.Arr(pos, bothHash.values().asScala.flatten.toArray)
     },
 
     builtinWithDefaults("fromArray",
@@ -268,4 +288,6 @@ object Objects {
 
     Val.Obj.mk(pos, m.toArray: _*)
   }
+
+  private val newArrBuff: java.util.function.Function[String, ArrayBuffer[Val.Obj]] = _ => ArrayBuffer[Val.Obj]()
 }

@@ -114,6 +114,7 @@ public class ObjectsTest {
 
                 xtr.objects.innerEqJoin(customers, orders,
                     function(cust) cust.id, function(order) order.customerId)"""), true);
+
         assertEquals(transform("""
                 [
                     { id: 2, oId: 10308 },
@@ -136,6 +137,32 @@ public class ObjectsTest {
                 xtr.objects.innerEqJoin(customers, orders,
                     function(cust) cust.id, function(order) order.customerId,
                     function(cust, order) { id: cust.id, oId: order.orderId })"""));
+
+        assertEquals(transform("""
+                [
+                    {"l":{"id":2,"email":"joe@example.com","joined":"2021-07-30"},
+                        "r":{"orderId":10308,"customerId":2,"date":"2022-07-30"}},
+                    {"l":{"id":2,"email":"joe@example.com","joined":"2021-07-30"},
+                        "r":{"orderId":10309,"customerId":2,"date":"2022-07-30"}},
+                    {"l":{"id":77,"email":"jane@example.com","joined":"2019-07-30"},
+                        "r":{"orderId":10310,"customerId":77,"date":"2022-07-03"}}
+                ]"""), transform("""
+                local customers = [
+                    { id: 2, email: 'joe@example.com', joined: '2021-07-30' },
+                    { id: 77, email: 'jane@example.com', joined: '2019-07-30' },
+                    { id: 17, email: 'john@example.com', joined: '2002-07-03' }
+                ];
+
+                local orders = [
+                    { orderId: 10308, customerId: 2, date: '2022-07-30' },
+                    { orderId: 10309, customerId: 2, date: '2022-07-30' },
+                    { orderId: 10310, customerId: 77, date: '2022-07-03' },
+                    { orderId: 10311, customerId: 93, date: '2021-05-03' }
+                ];
+
+                xtr.objects.innerEqJoin(customers, orders,
+                    function(cust) cust.id, function(order) order.customerId,
+                    function(cust, order) { l: cust, r: order })"""));
     }
 
     @Test
@@ -165,6 +192,7 @@ public class ObjectsTest {
 
                 xtr.objects.leftEqJoin(customers, orders,
                     function(cust) cust.id, function(order) order.customerId)"""), true);
+
         assertEquals(transform("""
                 [
                     { id: 2, oId: 10308 },
@@ -188,6 +216,34 @@ public class ObjectsTest {
                 xtr.objects.leftEqJoin(customers, orders,
                     function(cust) cust.id, function(order) order.customerId,
                     function(cust, order) { id: cust.id, oId: order?.orderId })"""));
+
+        assertEquals(transform("""
+                [
+                    {"l":{"id":2,"email":"joe@example.com","joined":"2021-07-30"},
+                        "r":{"orderId":10308,"customerId":2,"date":"2022-07-30"}},
+                    {"l":{"id":2,"email":"joe@example.com","joined":"2021-07-30"},
+                        "r":{"orderId":10309,"customerId":2,"date":"2022-07-30"}},
+                    {"l":{"id":77,"email":"jane@example.com","joined":"2019-07-30"},
+                        "r":{"orderId":10310,"customerId":77,"date":"2022-07-03"}},
+                    {"l":{"id":17,"email":"john@example.com","joined":"2002-07-03"},
+                        "r":{}}
+                ]"""), transform("""
+                local customers = [
+                    { id: 2, email: 'joe@example.com', joined: '2021-07-30' },
+                    { id: 77, email: 'jane@example.com', joined: '2019-07-30' },
+                    { id: 17, email: 'john@example.com', joined: '2002-07-03' }
+                ];
+
+                local orders = [
+                    { orderId: 10308, customerId: 2, date: '2022-07-30' },
+                    { orderId: 10309, customerId: 2, date: '2022-07-30' },
+                    { orderId: 10310, customerId: 77, date: '2022-07-03' },
+                    { orderId: 10311, customerId: 93, date: '2021-05-03' }
+                ];
+
+                xtr.objects.leftEqJoin(customers, orders,
+                    function(cust) cust.id, function(order) order.customerId,
+                    function(cust, order) { l: cust, r: order })"""));
     }
 
     @Test
@@ -243,5 +299,35 @@ public class ObjectsTest {
                 xtr.objects.fullEqJoin(customers, orders,
                     function(cust) cust.id, function(order) order.customerId,
                     function(cust, order) { id: cust?.id, oId: order?.orderId })"""), false);
+
+        JSONAssert.assertEquals(transform("""
+                [
+                    {"l":{"id":2,"email":"joe@example.com","joined":"2021-07-30"},
+                        "r":{"orderId":10308,"customerId":2,"date":"2022-07-30"}},
+                    {"l":{"id":2,"email":"joe@example.com","joined":"2021-07-30"},
+                        "r":{"orderId":10309,"customerId":2,"date":"2022-07-30"}},
+                    {"l":{},
+                        "r":{"orderId":10311,"customerId":93,"date":"2021-05-03"}},
+                    {"l":{"id":77,"email":"jane@example.com","joined":"2019-07-30"},
+                        "r":{"orderId":10310,"customerId":77,"date":"2022-07-03"}},
+                    {"l":{"id":17,"email":"john@example.com","joined":"2002-07-03"},
+                        "r":{}}]
+                 """), transform("""
+                local customers = [
+                    { id: 2, email: 'joe@example.com', joined: '2021-07-30' },
+                    { id: 77, email: 'jane@example.com', joined: '2019-07-30' },
+                    { id: 17, email: 'john@example.com', joined: '2002-07-03' }
+                ];
+
+                local orders = [
+                    { orderId: 10308, customerId: 2, date: '2022-07-30' },
+                    { orderId: 10309, customerId: 2, date: '2022-07-30' },
+                    { orderId: 10310, customerId: 77, date: '2022-07-03' },
+                    { orderId: 10311, customerId: 93, date: '2021-05-03' }
+                ];
+
+                xtr.objects.fullEqJoin(customers, orders,
+                    function(cust) cust.id, function(order) order.customerId,
+                    function(cust, order) { l: cust, r: order })"""), false);
     }
 }
