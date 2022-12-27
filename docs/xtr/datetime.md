@@ -240,6 +240,9 @@ xtr.datetime.parse('12/31/1990 10:10:10', 'MM/dd/yyyy HH:mm:ss')
 
 Additionally, developers can parse Unix timestamps by passing `'unix'` as the `format`.
 
+!!! warning
+    Date strings without a time offset or a time zone identifier will be defaulted to UTC time. If more control is needed, developers may add append time zone information before parsing.
+
 <br/>
 ## plus
 `plus(datetime: String, duration: String): String`

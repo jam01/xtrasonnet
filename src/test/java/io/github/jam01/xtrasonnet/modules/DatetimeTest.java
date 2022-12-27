@@ -78,6 +78,7 @@ public class DatetimeTest {
     @Test
     public void parse() {
         Assertions.assertEquals(TestUtils.transform("'1990-12-31T10:10:10Z'"), TestUtils.transform("xtr.datetime.parse('12/31/1990 10:10:10', 'MM/dd/yyyy HH:mm:ss')"));
+        Assertions.assertEquals(TestUtils.transform("'1990-12-31T10:10:10-06:00'"), TestUtils.transform("xtr.datetime.parse('12/31/1990 10:10:10 -06:00', 'MM/dd/yyyy HH:mm:ss XXX')"));
     }
 
     @Test

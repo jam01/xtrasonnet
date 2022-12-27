@@ -63,12 +63,8 @@ object Datetime {
             case _ => Error.fail("Expected datetime to be a string or number, got: " + datetime.prettyName)
           }
           datetimeObj = OffsetDateTime.ofInstant(inst, ZoneOffset.UTC)
-        case _ => datetimeObj = try {
-          OffsetDateTime.parse(datetime.asString, DateTimeFormatter.ofPattern(inputFormat)) // parse will throw if there's no zone offset
-        } catch {
-          case _: DateTimeException =>
-            LocalDateTime.parse(datetime.asString, DateTimeFormatter.ofPattern(inputFormat)).atOffset(ZoneOffset.UTC) // default to UTC
-        }
+        case _ => datetimeObj =
+          OffsetDateTime.parse(datetime.asString, DateTimeFormatter.ofPattern(inputFormat).withZone(ZoneOffset.UTC)) // defaulting to UTC
       }
       datetimeObj.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
     },
