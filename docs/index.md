@@ -14,7 +14,7 @@ hide:
 ![xtrasonnet](assets/images/xtrasonnet.drawio.png)
 </figure>
 
-### xtrasonnet is an extension of databricks' [sjsonnet](https://github.com/databricks/sjsonnet), a Scala implementation of Google's [jsonnet](https://github.com/google/jsonnet). xtrasonnet enables extensibility, adds support for data formats other than JSON, and adds data transformation facilities through the `xtr` library and few additions to the jsonnet language itself.
+### xtrasonnet is an extension of databricks' [sjsonnet](https://github.com/databricks/sjsonnet), a Scala implementation of Google's [jsonnet](https://github.com/google/jsonnet). xtrasonnet enables extensibility, adds support for data formats other than JSON, and adds data transformation facilities through the `xtr` library and some additions to the jsonnet language itself.
 
 <div class="container p-0">
     <div class="row">

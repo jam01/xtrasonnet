@@ -11,14 +11,14 @@ GET /my-resource
 Accept: application/json
 ```
 
-or if we prefer an XMl document...
+or if we prefer an XML document...
 
 ```
 GET /my-resource
 Accept: application/xml
 ```
 
-These two requests would return a JSON and XMl document, respectively, if the server could indeed represent `/my-resource` in both formats.
+These two requests would return a JSON and XML document, respectively, if the server could indeed represent `/my-resource` in both formats.
 
 
 ## Writing JSON
