@@ -26,6 +26,7 @@ package io.github.jam01.xtrasonnet.spi
 /*-
  * Adopted:
  * - e6698ae51aed518a9c671ae39682d7068fa10deb: Merge pull request #62 from datasonnet/java-friendly-libraries
+ * moved makeSimpleFunc to companion object
  */
 
 import io.github.jam01.xtrasonnet.DataFormatService
@@ -55,6 +56,14 @@ object Library {
       case x => Error.fail("function expected to return Number, String, Null, or Boolean, got: " + x.prettyName)
     }
   }
+
+  def makeSimpleFunc(params: java.util.List[String], eval: java.util.function.Function[java.util.List[Val], Val]): Val.Func = {
+    val paramIndices = params.asScala.indices
+    new Val.Func(dummyPosition, ValScope.empty, Params(params.toArray(new Array[String](0)), new Array[Expr](params.size))) {
+      override def evalRhs(scope: ValScope, ev: EvalScope, fs: FileScope, pos: Position): Val =
+        eval.apply(paramIndices.map(i => scope.bindings(i).force).asJava)
+    }
+  }
 }
 
 abstract class Library {
@@ -66,18 +75,11 @@ abstract class Library {
   def modules(dataFormats: DataFormatService, header: Header, importer: Importer): java.util.Map[String, Val.Obj] =
     Collections.emptyMap()
 
-  def libsonnets(): java.util.Set[String]
+  def libsonnets(): java.util.Set[String] =
     Collections.emptySet()
 
   final def moduleFrom(functions: (String, Val.Func)*): Val.Obj = {
     Val.Obj.mk(dummyPosition, functions.map { case (k, v) => (k, memberOf(v)) }: _*)
-  }
-
-  final def makeSimpleFunc(params: java.util.List[String], eval: java.util.function.Function[java.util.List[Val], Val]): Val.Func = {
-    val paramIndices = params.asScala.indices
-    new Val.Func(dummyPosition, ValScope.empty, Params(params.toArray.asInstanceOf[Array[String]], new Array[Expr](params.size))) {
-      override def evalRhs(scope: ValScope, ev: EvalScope, fs: FileScope, pos: Position): Val = eval.apply(paramIndices.map(i => scope.bindings(i).force).asJava)
-    }
   }
 
   final def builtin0[R: ReadWriter](name: String)
