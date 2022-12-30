@@ -7,7 +7,6 @@ package io.github.jam01.xtrasonnet.plugins;
  * compliance with the Elastic License 2.0.
  */
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import io.github.jam01.xtrasonnet.Transformer;
 import io.github.jam01.xtrasonnet.document.Document;
 import io.github.jam01.xtrasonnet.document.Documents;
@@ -17,17 +16,13 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 
-import java.text.SimpleDateFormat;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Map;
 import java.util.Objects;
-import java.util.TimeZone;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -159,7 +154,7 @@ public class JavaPluginTest {
 
         doc = new Transformer("payload")
                 .transform(Document.of(new Dates(date, dateTime),
-                        MediaTypes.APPLICATION_JAVA.withParameter(DefaultJavaPlugin.DS_PARAM_DATE_FORMAT, "yyyy-MM-dd")));
+                        MediaTypes.APPLICATION_JAVA.withParameter(DefaultJavaPlugin.PARAM_DATE_FORMAT, "yyyy-MM-dd")));
 
         JSONAssert.assertEquals(datesJsonCustom1, doc.getContent(), true);
         assertEquals(MediaTypes.APPLICATION_JSON, doc.getMediaType());
@@ -167,7 +162,7 @@ public class JavaPluginTest {
 
         doc = new Transformer("payload")
                 .transform(Document.of(new Dates(date, dateTime),
-                        MediaTypes.APPLICATION_JAVA.withParameter(DefaultJavaPlugin.DS_PARAM_DATE_FORMAT, "yyyy-MM-dd HH:mm:ss")));
+                        MediaTypes.APPLICATION_JAVA.withParameter(DefaultJavaPlugin.PARAM_DATE_FORMAT, "yyyy-MM-dd HH:mm:ss")));
 
         JSONAssert.assertEquals(datesJsonCustom2, doc.getContent(), true);
         assertEquals(MediaTypes.APPLICATION_JSON, doc.getMediaType());
@@ -175,7 +170,7 @@ public class JavaPluginTest {
 
         doc = new Transformer("payload")
                 .transform(Document.of(new Dates(date, dateTime),
-                        MediaTypes.APPLICATION_JAVA.withParameter(DefaultJavaPlugin.DS_PARAM_DATE_FORMAT, "EEE, dd MMM yyyy HH:mm:ss z")));
+                        MediaTypes.APPLICATION_JAVA.withParameter(DefaultJavaPlugin.PARAM_DATE_FORMAT, "EEE, dd MMM yyyy HH:mm:ss z")));
 
         JSONAssert.assertEquals(datesJsonCustom3, doc.getContent(), true);
         assertEquals(MediaTypes.APPLICATION_JSON, doc.getMediaType());
@@ -192,7 +187,7 @@ public class JavaPluginTest {
 
         doc = new Transformer("payload")
                 .transform(Document.of(new Dates(date1, dateTime1),
-                        MediaTypes.APPLICATION_JAVA.withParameter(DefaultJavaPlugin.DS_PARAM_DATE_FORMAT, "yyyy-MM-dd")));
+                        MediaTypes.APPLICATION_JAVA.withParameter(DefaultJavaPlugin.PARAM_DATE_FORMAT, "yyyy-MM-dd")));
 
         JSONAssert.assertEquals(dates1JsonCustom1, doc.getContent(), true);
         assertEquals(MediaTypes.APPLICATION_JSON, doc.getMediaType());
@@ -200,7 +195,7 @@ public class JavaPluginTest {
 
         doc = new Transformer("payload")
                 .transform(Document.of(new Dates(date1, dateTime1),
-                        MediaTypes.APPLICATION_JAVA.withParameter(DefaultJavaPlugin.DS_PARAM_DATE_FORMAT, "yyyy-MM-dd HH:mm:ss")));
+                        MediaTypes.APPLICATION_JAVA.withParameter(DefaultJavaPlugin.PARAM_DATE_FORMAT, "yyyy-MM-dd HH:mm:ss")));
 
         JSONAssert.assertEquals(dates1JsonCustom2, doc.getContent(), true);
         assertEquals(MediaTypes.APPLICATION_JSON, doc.getMediaType());
@@ -208,7 +203,7 @@ public class JavaPluginTest {
 
         doc = new Transformer("payload")
                 .transform(Document.of(new Dates(date1, dateTime1),
-                        MediaTypes.APPLICATION_JAVA.withParameter(DefaultJavaPlugin.DS_PARAM_DATE_FORMAT, "EEE, dd MMM yyyy HH:mm:ss z")));
+                        MediaTypes.APPLICATION_JAVA.withParameter(DefaultJavaPlugin.PARAM_DATE_FORMAT, "EEE, dd MMM yyyy HH:mm:ss z")));
 
         JSONAssert.assertEquals(dates1JsonCustom3, doc.getContent(), true);
         assertEquals(MediaTypes.APPLICATION_JSON, doc.getMediaType());
@@ -228,7 +223,7 @@ public class JavaPluginTest {
 
         doc = new Transformer(datesJsonCustom1)
                 .transform(Documents.Null(), Collections.emptyMap(),
-                        MediaTypes.APPLICATION_JAVA.withParameter(DefaultJavaPlugin.DS_PARAM_DATE_FORMAT, "yyyy-MM-dd"),
+                        MediaTypes.APPLICATION_JAVA.withParameter(DefaultJavaPlugin.PARAM_DATE_FORMAT, "yyyy-MM-dd"),
                         Dates.class);
 
         assertEquals(new Dates(Date.from(date.toInstant().truncatedTo(ChronoUnit.DAYS)), dateTime), doc.getContent());
@@ -237,7 +232,7 @@ public class JavaPluginTest {
 
         doc = new Transformer(datesJsonCustom2)
                 .transform(Documents.Null(), Collections.emptyMap(),
-                        MediaTypes.APPLICATION_JAVA.withParameter(DefaultJavaPlugin.DS_PARAM_DATE_FORMAT, "yyyy-MM-dd HH:mm:ss"),
+                        MediaTypes.APPLICATION_JAVA.withParameter(DefaultJavaPlugin.PARAM_DATE_FORMAT, "yyyy-MM-dd HH:mm:ss"),
                         Dates.class);
 
         assertEquals(new Dates(Date.from(date.toInstant().truncatedTo(ChronoUnit.SECONDS)), dateTime), doc.getContent());
@@ -246,7 +241,7 @@ public class JavaPluginTest {
 
         doc = new Transformer(datesJsonCustom3)
                 .transform(Documents.Null(), Collections.emptyMap(),
-                        MediaTypes.APPLICATION_JAVA.withParameter(DefaultJavaPlugin.DS_PARAM_DATE_FORMAT, "EEE, dd MMM yyyy HH:mm:ss z"),
+                        MediaTypes.APPLICATION_JAVA.withParameter(DefaultJavaPlugin.PARAM_DATE_FORMAT, "EEE, dd MMM yyyy HH:mm:ss z"),
                         Dates.class);
 
         assertEquals(new Dates(date, dateTime), doc.getContent());
@@ -265,7 +260,7 @@ public class JavaPluginTest {
 
         doc = new Transformer(dates1JsonCustom1)
                 .transform(Documents.Null(), Collections.emptyMap(),
-                        MediaTypes.APPLICATION_JAVA.withParameter(DefaultJavaPlugin.DS_PARAM_DATE_FORMAT, "yyyy-MM-dd"),
+                        MediaTypes.APPLICATION_JAVA.withParameter(DefaultJavaPlugin.PARAM_DATE_FORMAT, "yyyy-MM-dd"),
                         Dates.class);
 
         assertEquals(new Dates(Date.from(date1.toInstant().truncatedTo(ChronoUnit.DAYS)), dateTime1), doc.getContent());
@@ -274,7 +269,7 @@ public class JavaPluginTest {
 
         doc = new Transformer(dates1JsonCustom2)
                 .transform(Documents.Null(), Collections.emptyMap(),
-                        MediaTypes.APPLICATION_JAVA.withParameter(DefaultJavaPlugin.DS_PARAM_DATE_FORMAT, "yyyy-MM-dd HH:mm:ss"),
+                        MediaTypes.APPLICATION_JAVA.withParameter(DefaultJavaPlugin.PARAM_DATE_FORMAT, "yyyy-MM-dd HH:mm:ss"),
                         Dates.class);
 
         assertEquals(new Dates(Date.from(date1.toInstant().truncatedTo(ChronoUnit.SECONDS)), dateTime1), doc.getContent());
@@ -283,7 +278,7 @@ public class JavaPluginTest {
 
         doc = new Transformer(dates1JsonCustom3)
                 .transform(Documents.Null(), Collections.emptyMap(),
-                        MediaTypes.APPLICATION_JAVA.withParameter(DefaultJavaPlugin.DS_PARAM_DATE_FORMAT, "EEE, dd MMM yyyy HH:mm:ss z"),
+                        MediaTypes.APPLICATION_JAVA.withParameter(DefaultJavaPlugin.PARAM_DATE_FORMAT, "EEE, dd MMM yyyy HH:mm:ss z"),
                         Dates.class);
 
         assertEquals(new Dates(date1, dateTime1), doc.getContent());

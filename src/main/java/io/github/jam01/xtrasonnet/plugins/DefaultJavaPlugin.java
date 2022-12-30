@@ -30,8 +30,8 @@ import java.util.TimeZone;
 
 public class DefaultJavaPlugin extends BaseJacksonPlugin {
     private final JsonMapper mapper;
-    public static final String DS_PARAM_DATE_FORMAT = "dateformat";
-    public static final String DS_PARAM_TYPE = "type";
+    public static final String PARAM_DATE_FORMAT = "dateformat";
+    public static final String PARAM_TYPE = "type";
 
     private static final Map<Map<String, String>, ObjectMapper> MAPPER_CACHE = new HashMap<>();
 
@@ -54,8 +54,8 @@ public class DefaultJavaPlugin extends BaseJacksonPlugin {
         supportedTypes.add(MediaTypes.APPLICATION_JAVA);
         supportedTypes.add(MediaType.parseMediaType("application/java"));
 
-        readerParams.add(DS_PARAM_DATE_FORMAT);
-        readerParams.add(DS_PARAM_TYPE);
+        readerParams.add(PARAM_DATE_FORMAT);
+        readerParams.add(PARAM_TYPE);
         writerParams.addAll(readerParams);
     }
 
@@ -103,15 +103,15 @@ public class DefaultJavaPlugin extends BaseJacksonPlugin {
             throw new PluginException("Unable to convert to target type", e);
         }
 
-        return new Document.BasicDocument<>(converted, mediaType.withParameter(DS_PARAM_TYPE, targetType.getName()));
+        return new Document.BasicDocument<>(converted, mediaType.withParameter(PARAM_TYPE, targetType.getName()));
     }
 
     private ObjectMapper mapperFor(MediaType mediaType) throws PluginException {
         Map<String, String> parameters = mediaType.getParameters();
-        if (parameters.containsKey(DS_PARAM_DATE_FORMAT)) {
+        if (parameters.containsKey(PARAM_DATE_FORMAT)) {
             return MAPPER_CACHE.computeIfAbsent(parameters, k -> {
                 JsonMapper.Builder builder = new JsonMapper.Builder(mapper.copy());
-                String datefmt = parameters.get(DS_PARAM_DATE_FORMAT);
+                String datefmt = parameters.get(PARAM_DATE_FORMAT);
 
                 if (datefmt != null) {
                     var df = new SimpleDateFormat(datefmt);
