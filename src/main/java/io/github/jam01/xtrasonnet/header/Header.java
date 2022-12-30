@@ -23,8 +23,8 @@ package io.github.jam01.xtrasonnet.header;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*-
- * Adopted:
+/*
+ * Work covered:
  * - 0b946df9667c64ac631934a77d2444700889accf: fix system-dependent header parsing; allow any standard line separators
  * - f3e2584ce6d2bf68f49d762503b876255cb29ac4: convert opaque array index exceptions to descriptive exceptions and i...
  *      mprove locating of invalid media format problems in commit

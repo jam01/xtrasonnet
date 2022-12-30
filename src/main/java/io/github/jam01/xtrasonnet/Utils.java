@@ -24,7 +24,7 @@ package io.github.jam01.xtrasonnet;
  * limitations under the License.
  */
 /*
- * Changed:
+ * Changes made:
  * - Combined hasText and nullSafeEquals from StringUtils and ObjectUtils
  * - Removed support for arrays in nullSafeEquals
  */

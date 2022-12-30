@@ -23,12 +23,8 @@ package io.github.jam01.xtrasonnet
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*-
- * Changed:
- * - d74e8ff8838292274aa0c386d39fece6db16916d: Encapsulates Library logic
- *      Reimplemented DS under the new Library interface
- *
- * Adopted:
+/*
+ * Work covered:
  * - 6b92da38753b0f8d00f12dc5859c644027d92cd1: Added operations for concatenation and removal
  *      Functions: remove, removeMatch
  * - 482b67a18b29a331cbb6366c81885ee35d9c9075: Fixed orderBy Functionality
@@ -40,7 +36,7 @@ package io.github.jam01.xtrasonnet
  * - 482b67a18b29a331cbb6366c81885ee35d9c9075: Fixed orderBy Functionality
  *      Functions: orderBy
  *
- * Changed:
+ * Changes made:
  * - d19a57dfcf4382669d55ac4427916c8440c1bac3: fixes orderBy comparison
  * - 2662d96cdfbd613d766830420a0b2a6920d07b52: changed remove to rmKey and filterNotEq, and removeMatch to rmKeyIn and filterNotIn
  * - d37ba4c860723b42cecfe20e381c302eef75b49e - 2213fec224b8cbd1302f0b15542d1699308d3d08: removed null support from adopted functions

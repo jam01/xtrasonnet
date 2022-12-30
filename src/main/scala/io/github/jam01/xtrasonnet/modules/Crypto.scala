@@ -7,6 +7,30 @@ package io.github.jam01.xtrasonnet.modules
  * compliance with the Elastic License 2.0.
  */
 
+/* datasonnet-mapper copyright/notice, per Apache-2.0 § 4.c */
+/*-
+ * Copyright 2019-2020 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+/*
+ * Work covered:
+ * - d74e8ff8838292274aa0c386d39fece6db16916d: Encapsulates Library logic
+ *      Functions: hash, hmac
+ * - fe3a37664adf49e21a4a80bdfdf6b4d1f72ee28a: extract xtr modules
+ *      Incorporated and auto-converted (IntelliJ IDEA) Java com.datasonnet.Crypto#hash and #hmac
+ */
+
 import org.bouncycastle.util.encoders.Hex
 import sjsonnet.Std.builtin
 import sjsonnet.Val
@@ -18,16 +42,6 @@ import javax.crypto.spec.{IvParameterSpec, SecretKeySpec}
 
 object Crypto {
   val functions: Seq[(String, Val.Func)] = Seq(
-    builtin("hash", "value", "algorithm") {
-      (_, _, value: String, algorithm: String) =>
-        Crypto.hash(value, algorithm)
-    },
-
-    builtin("hmac", "value", "secret", "algorithm") {
-      (_, _, value: String, secret: String, algorithm: String) =>
-        Crypto.hmac(value, secret, algorithm)
-    },
-
     builtin("encrypt", "value", "secret", "algorithm") {
       (_, _, value: String, secret: String, transformation: String) =>
         val cipher = Cipher.getInstance(transformation)
@@ -92,32 +106,34 @@ object Crypto {
 
           new String(cipher.doFinal(encryptedBytes))
         }
+    },
+
+
+    /*
+     * datasonnet-mapper: start
+     *
+     * Changes made:
+     * - fe3a37664adf49e21a4a80bdfdf6b4d1f72ee28a: extract xtr modules
+     */
+    builtin("hash", "value", "algorithm") {
+      (_, _, value: String, algorithm: String) =>
+        Crypto.hash(value, algorithm)
+    },
+
+    builtin("hmac", "value", "secret", "algorithm") {
+      (_, _, value: String, secret: String, algorithm: String) =>
+        Crypto.hmac(value, secret, algorithm)
     }
+    /*
+     * datasonnet-mapper: end
+     */
   )
 
-  /* datasonnet-mapper copyright/notice, per Apache-2.0 § 4.c */
-  /*-
-   * Copyright 2019-2020 the original author or authors.
-   *
-   * Licensed under the Apache License, Version 2.0 (the "License");
-   * you may not use this file except in compliance with the License.
-   * You may obtain a copy of the License at
-   *
-   *     http://www.apache.org/licenses/LICENSE-2.0
-   *
-   * Unless required by applicable law or agreed to in writing, software
-   * distributed under the License is distributed on an "AS IS" BASIS,
-   * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   * See the License for the specific language governing permissions and
-   * limitations under the License.
+  /*
+   * datasonnet-mapper: start
    */
   /*
-   * Changed:
-   * - Incorporated and auto-converted (IntelliJ IDEA) Java datasonnet.Crypto#hash and datasonnet.Crypto#hmac
-   */
-  /*
-   * datasonnet.Crypto: start
-   *  Algorithm can be one of MD2, MD5, SHA-1, SHA-256, SHA-384, SHA-512
+      Algorithm can be one of MD2, MD5, SHA-1, SHA-256, SHA-384, SHA-512
    */
   private def hash(value: String, algorithm: String): String = {
     val digest = MessageDigest.getInstance(algorithm)
@@ -136,6 +152,6 @@ object Crypto {
     new String(Hex.encode(hmac), StandardCharsets.UTF_8)
   }
   /*
-   * datasonnet.Crypto: end
+   * datasonnet-mapper: end
    */
 }

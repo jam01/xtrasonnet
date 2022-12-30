@@ -23,19 +23,13 @@ package io.github.jam01.xtrasonnet.modules
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*-
- * Adopted:
+/*
+ * Work covered:
  * - 5bb242721f728c00432234cd24f7256e21c4caac: Added some expanded functionality
  *      Functions: datetime.atBeginningOf*
  * - 78acf4ebf5545b88df4cf9f77434335fc857eaa1: Added date function and period module
  * - c20475cacff9b6790e85afaf7ae730d4aa9c4470: Merge pull request #86 from datasonnet/unix-timestamp
  *      Functions: datetime.parse
- *
- * Changed:
- * fc930f88524269cb6ddfa26b24f8c34df5502756: refactor datetime and period modules
- *  renamed datetime.date to datetime.of
- *  use OffsetDateTime instead of ZonedDatetime
- *  changed period functionality for ISO8601 Duration
  */
 
 import io.github.jam01.xtrasonnet.Xtr.builtin0
@@ -44,30 +38,13 @@ import sjsonnet.Std.builtin
 import sjsonnet.Val
 import sjsonnet.Error
 
-import java.time.{DateTimeException, Duration, Instant, LocalDateTime, OffsetDateTime, Period, ZoneOffset}
+import java.time.{Duration, Instant, OffsetDateTime, Period, ZoneOffset}
 import java.time.format.DateTimeFormatter
 import scala.collection.mutable
 
 object Datetime {
   val functions: Seq[(String, Val.Func)] = Seq(
     builtin0("now") { (_, _) => OffsetDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME) },
-
-    builtin("parse", "datetime", "inputFormat") { (_, _, datetime: Val, inputFormat: String) =>
-      var datetimeObj: OffsetDateTime = null
-      inputFormat.toLowerCase match {
-        case "unix" =>
-          var inst: Instant = null
-          datetime match {
-            case str: Val.Str => inst = Instant.ofEpochSecond(str.value.toLong)
-            case num: Val.Num => inst = Instant.ofEpochSecond(num.value.toLong)
-            case _ => Error.fail("Expected datetime to be a string or number, got: " + datetime.prettyName)
-          }
-          datetimeObj = OffsetDateTime.ofInstant(inst, ZoneOffset.UTC)
-        case _ => datetimeObj =
-          OffsetDateTime.parse(datetime.asString, DateTimeFormatter.ofPattern(inputFormat).withZone(ZoneOffset.UTC)) // defaulting to UTC
-      }
-      datetimeObj.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-    },
 
     builtin("format", "datetime", "outputFormat") { (_, _, datetime: String, outputFormat: String) =>
       val datetimeObj = OffsetDateTime.parse(datetime)
@@ -171,80 +148,6 @@ object Datetime {
           .toLocalDate.isLeapYear;
     },
 
-    builtin("atBeginningOfDay", "datetime") {
-      (_, _, datetime: String) =>
-        val date = OffsetDateTime.parse(datetime)
-        date.minusHours(date.getHour)
-          .minusMinutes(date.getMinute)
-          .minusSeconds(date.getSecond)
-          .minusNanos(date.getNano)
-          .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-    },
-
-    builtin("atBeginningOfHour", "datetime") {
-      (_, _, datetime: String) =>
-        val date = OffsetDateTime.parse(datetime)
-        date.minusMinutes(date.getMinute)
-          .minusSeconds(date.getSecond)
-          .minusNanos(date.getNano)
-          .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-    },
-
-    builtin("atBeginningOfMonth", "datetime") {
-      (_, _, datetime: String) =>
-        val date = OffsetDateTime
-          .parse(datetime)
-        date.minusDays(date.getDayOfMonth - 1)
-          .minusHours(date.getHour)
-          .minusMinutes(date.getMinute)
-          .minusSeconds(date.getSecond)
-          .minusNanos(date.getNano)
-          .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-    },
-
-    builtin("atBeginningOfWeek", "datetime") {
-      (_, _, datetime: String) =>
-        val date = OffsetDateTime
-          .parse(datetime)
-
-        date.minusDays(if (date.getDayOfWeek.getValue == 7) 0 else date.getDayOfWeek.getValue)
-          .minusHours(date.getHour)
-          .minusMinutes(date.getMinute)
-          .minusSeconds(date.getSecond)
-          .minusNanos(date.getNano)
-          .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-    },
-
-    builtin("atBeginningOfYear", "datetime") {
-      (_, _, datetime: String) =>
-        val date = OffsetDateTime
-          .parse(datetime)
-        date.minusMonths(date.getMonthValue - 1)
-          .minusDays(date.getDayOfMonth - 1)
-          .minusHours(date.getHour)
-          .minusMinutes(date.getMinute)
-          .minusSeconds(date.getSecond)
-          .minusNanos(date.getNano)
-          .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-    },
-
-    builtin("of", "obj") {
-      (pos, ev, obj: Val.Obj) =>
-        //year, month, dayOfMonth, hour, minute, second, nanoSecond, zoneId
-        val out = mutable.Map[String, Val]()
-        obj.visibleKeyNames.foreach(key => out.addOne(key, obj.value(key, pos)(ev)))
-        OffsetDateTime.of(
-          out.getOrElse("year", Val.Num(pos, 0)).asInt,
-          out.getOrElse("month", Val.Num(pos, 1)).asInt,
-          out.getOrElse("day", Val.Num(pos, 1)).asInt,
-          out.getOrElse("hour", Val.Num(pos, 0)).asInt,
-          out.getOrElse("minute", Val.Num(pos, 0)).asInt,
-          out.getOrElse("second", Val.Num(pos, 0)).asInt,
-          out.getOrElse("nanosecond", Val.Num(pos, 0)).asInt,
-          ZoneOffset.of(out.getOrElse("offset", Val.Str(pos, "Z")).cast[Val.Str].value)
-        ).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-    },
-
     builtin0("today") {
       (_, _) =>
         val date = OffsetDateTime.now()
@@ -288,6 +191,133 @@ object Datetime {
         out.put("offset", memberOf(Val.Str(pos, date.getOffset.getId)))
 
         new Val.Obj(pos, out, false, null, null)
+    },
+
+    /*
+     * datasonnet-mapper: start
+     *
+     * Changes made:
+     * - fc930f88524269cb6ddfa26b24f8c34df5502756: refactor datetime and period modules
+     */
+    builtin("atBeginningOfDay", "datetime") {
+      (_, _, datetime: String) =>
+        val date = OffsetDateTime.parse(datetime)
+        date.minusHours(date.getHour)
+          .minusMinutes(date.getMinute)
+          .minusSeconds(date.getSecond)
+          .minusNanos(date.getNano)
+          .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+    },
+
+    /*
+     * Changes made:
+     * - fc930f88524269cb6ddfa26b24f8c34df5502756: refactor datetime and period modules
+     */
+    builtin("atBeginningOfHour", "datetime") {
+      (_, _, datetime: String) =>
+        val date = OffsetDateTime.parse(datetime)
+        date.minusMinutes(date.getMinute)
+          .minusSeconds(date.getSecond)
+          .minusNanos(date.getNano)
+          .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+    },
+
+    /*
+     * Changes made:
+     * - fc930f88524269cb6ddfa26b24f8c34df5502756: refactor datetime and period modules
+     */
+    builtin("atBeginningOfMonth", "datetime") {
+      (_, _, datetime: String) =>
+        val date = OffsetDateTime
+          .parse(datetime)
+        date.minusDays(date.getDayOfMonth - 1)
+          .minusHours(date.getHour)
+          .minusMinutes(date.getMinute)
+          .minusSeconds(date.getSecond)
+          .minusNanos(date.getNano)
+          .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+    },
+
+    /*
+     * Changes made:
+     * - fc930f88524269cb6ddfa26b24f8c34df5502756: refactor datetime and period modules
+     */
+    builtin("atBeginningOfWeek", "datetime") {
+      (_, _, datetime: String) =>
+        val date = OffsetDateTime
+          .parse(datetime)
+
+        date.minusDays(if (date.getDayOfWeek.getValue == 7) 0 else date.getDayOfWeek.getValue)
+          .minusHours(date.getHour)
+          .minusMinutes(date.getMinute)
+          .minusSeconds(date.getSecond)
+          .minusNanos(date.getNano)
+          .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+    },
+
+    /*
+     * Changes made:
+     * - fc930f88524269cb6ddfa26b24f8c34df5502756: refactor datetime and period modules
+     */
+    builtin("atBeginningOfYear", "datetime") {
+      (_, _, datetime: String) =>
+        val date = OffsetDateTime
+          .parse(datetime)
+        date.minusMonths(date.getMonthValue - 1)
+          .minusDays(date.getDayOfMonth - 1)
+          .minusHours(date.getHour)
+          .minusMinutes(date.getMinute)
+          .minusSeconds(date.getSecond)
+          .minusNanos(date.getNano)
+          .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+    },
+
+    /*
+     * Changes made:
+     * - fc930f88524269cb6ddfa26b24f8c34df5502756: refactor datetime and period modules
+     * - a192423d89a9bdb898a3d3314db306a4a9d10773: rename epoch format to unix
+     */
+    builtin("parse", "datetime", "inputFormat") { (_, _, datetime: Val, inputFormat: String) =>
+      var datetimeObj: OffsetDateTime = null
+      inputFormat.toLowerCase match {
+        case "unix" =>
+          var inst: Instant = null
+          datetime match {
+            case str: Val.Str => inst = Instant.ofEpochSecond(str.value.toLong)
+            case num: Val.Num => inst = Instant.ofEpochSecond(num.value.toLong)
+            case _ => Error.fail("Expected datetime to be a string or number, got: " + datetime.prettyName)
+          }
+          datetimeObj = OffsetDateTime.ofInstant(inst, ZoneOffset.UTC)
+        case _ => datetimeObj =
+          OffsetDateTime.parse(datetime.asString, DateTimeFormatter.ofPattern(inputFormat).withZone(ZoneOffset.UTC)) // defaulting to UTC
+      }
+      datetimeObj.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+    },
+
+    /*
+     * Changes made:
+     * - 807cd78abf40551644067455338e5b2a683e86bd: upgraded sjsonnet
+     * - fc930f88524269cb6ddfa26b24f8c34df5502756: refactor datetime and period modules
+     * - a192423d89a9bdb898a3d3314db306a4a9d10773: rename epoch format to unix
+     */
+    builtin("of", "obj") {
+      (pos, ev, obj: Val.Obj) =>
+        //year, month, dayOfMonth, hour, minute, second, nanoSecond, zoneId
+        val out = mutable.Map[String, Val]()
+        obj.visibleKeyNames.foreach(key => out.addOne(key, obj.value(key, pos)(ev)))
+        OffsetDateTime.of(
+          out.getOrElse("year", Val.Num(pos, 0)).asInt,
+          out.getOrElse("month", Val.Num(pos, 1)).asInt,
+          out.getOrElse("day", Val.Num(pos, 1)).asInt,
+          out.getOrElse("hour", Val.Num(pos, 0)).asInt,
+          out.getOrElse("minute", Val.Num(pos, 0)).asInt,
+          out.getOrElse("second", Val.Num(pos, 0)).asInt,
+          out.getOrElse("nanosecond", Val.Num(pos, 0)).asInt,
+          ZoneOffset.of(out.getOrElse("offset", Val.Str(pos, "Z")).cast[Val.Str].value)
+        ).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
     }
+    /*
+     * datasonnet-mapper: end
+     */
   )
 }

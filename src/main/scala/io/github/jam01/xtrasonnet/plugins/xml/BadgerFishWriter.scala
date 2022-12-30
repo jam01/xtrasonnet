@@ -23,11 +23,11 @@ package io.github.jam01.xtrasonnet.plugins.xml
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*-
- * Adopted:
+/*
+ * Work covered:
  * - 12270ae72d5432b916359b3c1747936ffaf26be1: Merge pull request #73 from datasonnet/ordering-keys
  *
- * Changed:
+ * Changes made:
  * - 1570c045ab8e750305e1d86206f4cddeadabfedd: conformed badgerfish ordering behavior
  */
 

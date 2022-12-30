@@ -24,7 +24,7 @@ package io.github.jam01.xtrasonnet.document;
  * limitations under the License.
  */
 /*
- * Changed:
+ * Changes made:
  * - Collected declared MimeTypes and MediaTypes
  * - Added CSV and Java MediaTypes
  * - Rename ALL as ANY

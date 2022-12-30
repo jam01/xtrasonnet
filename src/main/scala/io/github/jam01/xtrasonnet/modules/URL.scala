@@ -7,8 +7,7 @@ package io.github.jam01.xtrasonnet.modules
  * compliance with the Elastic License 2.0.
  */
 
-import io.github.jam01.xtrasonnet.spi.Library.dummyPosition
-import sjsonnet.Std.{builtin, builtinWithDefaults}
+import sjsonnet.Std.builtin
 import sjsonnet.Val
 
 import java.net.{URLDecoder, URLEncoder}

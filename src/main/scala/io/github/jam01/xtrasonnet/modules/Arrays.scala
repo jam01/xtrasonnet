@@ -23,17 +23,10 @@ package io.github.jam01.xtrasonnet.modules
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*-
- * Adopted:
+/*
+ * Work covered:
  * - 386223447f864492ca4703a4d9eaa49eea9b64a3: Converted util functions to scala
  *      Functions: duplicates, deepFlatten, occurrences
- *
- * Changed:
- * - d37ba4c860723b42cecfe20e381c302eef75b49e - 2213fec224b8cbd1302f0b15542d1699308d3d08: removed null support from adopted functions
- * - 8a009fe5d1e7c0994a18a32faefae197c06f1168: refactor arrays module
- *    added identity func to duplicates, now duplicatesBy
- *    renamed occurrences to occurrencesBy
- * - 05edbc0165aff4849b9f142e153141d7a8204efd: rename deepflatten for flat
  */
 
 import io.github.jam01.xtrasonnet.spi.Library.keyFrom
@@ -73,16 +66,6 @@ object Arrays {
         new Val.Arr(pos, arr.asLazyArray.dropWhile(func.apply1(_, pos.noOffset)(ev).isInstanceOf[Val.True]))
     },
 
-    builtin("duplicatesBy", "array", "func") {
-      (pos, ev, array: Val.Arr, func: Val.Func) =>
-        val out = mutable.ArrayBuffer[Lazy]()
-        array.asLazyArray.collect({
-          case item if array.asLazyArray.count(lzy => ev.equal(lzy.force, func.apply1(item.force, func.pos)(ev))) >= 2 &&
-            !out.exists(lzy => ev.equal(lzy.force, item.force)) => out.append(item)
-        })
-        new Val.Arr(pos, out.toArray)
-    },
-
     builtin("all", "value", "func") {
       (pos, ev, arr: Val.Arr, func: Val.Func) => arr.forall(func.apply1(_, pos.noOffset)(ev).isInstanceOf[Val.True])
     },
@@ -105,11 +88,6 @@ object Arrays {
         } else {
           Error.fail("Expected embedded function to have 1 or 2 parameters, received: " + args)
         }
-    },
-
-    builtin("flat", "arr") {
-      (pos, _, arr: Val.Arr) =>
-        new Val.Arr(pos, flat(arr.asLazyArray))
     },
 
     builtin("indexWhere", "arr", "func") {
@@ -142,18 +120,6 @@ object Arrays {
           Error.fail("Expected embedded function to have 1 parameters, received: " + args)
         }
         new Val.Arr(pos, out.toArray)
-    },
-
-    builtin("occurrencesBy", "arr", "func") {
-      (pos, ev, array: Val.Arr, func: Val.Func) =>
-        // no idea why, but this sorts the result in the correct order
-        val ordered = mutable.Map.from(
-          array.asLazyArray
-            .groupBy(item => keyFrom(func.apply1(item, pos.noOffset)(ev)))
-            .map(item => item._1 -> memberOf(Val.Num(pos, item._2.length)))
-        )
-
-        Val.Obj.mk(pos, ordered.toSeq: _*)
     },
 
     builtin("partition", "arr", "func") {
@@ -267,7 +233,55 @@ object Arrays {
       }
 
       new Val.Arr(pos, out.toArray)
+    },
+
+    /*
+     * datasonnet-mapper: start
+     *
+     * Changes made:
+     * - 807cd78abf40551644067455338e5b2a683e86bd: upgraded sjsonnet
+     * - dcea607bf6846514f1d886588625fce6844e4f9d: refactor arrays module
+     * - 8a009fe5d1e7c0994a18a32faefae197c06f1168: added identity func to duplicates, now duplicatesBy
+     */
+    builtin("duplicatesBy", "array", "func") {
+      (pos, ev, array: Val.Arr, func: Val.Func) =>
+        val out = mutable.ArrayBuffer[Lazy]()
+        array.asLazyArray.collect({
+          case item if array.asLazyArray.count(lzy => ev.equal(lzy.force, func.apply1(item.force, func.pos)(ev))) >= 2 &&
+            !out.exists(lzy => ev.equal(lzy.force, item.force)) => out.append(item)
+        })
+        new Val.Arr(pos, out.toArray)
+    },
+
+    /*
+     * Changes made:
+     * - 807cd78abf40551644067455338e5b2a683e86bd: upgraded sjsonnet
+     * - dcea607bf6846514f1d886588625fce6844e4f9d: refactor arrays module
+     */
+    builtin("occurrencesBy", "arr", "func") {
+      (pos, ev, array: Val.Arr, func: Val.Func) =>
+        // no idea why, but this sorts the result in the correct order
+        val ordered = mutable.Map.from(
+          array.asLazyArray
+            .groupBy(item => keyFrom(func.apply1(item, pos.noOffset)(ev)))
+            .map(item => item._1 -> memberOf(Val.Num(pos, item._2.length)))
+        )
+
+        Val.Obj.mk(pos, ordered.toSeq: _*)
+    },
+
+    /*
+     * Changes made:
+     * - 807cd78abf40551644067455338e5b2a683e86bd: upgraded sjsonnet
+     * - 05edbc0165aff4849b9f142e153141d7a8204efd: rename deepflatten for flat
+     */
+    builtin("flat", "arr") {
+      (pos, _, arr: Val.Arr) =>
+        new Val.Arr(pos, flat(arr.asLazyArray))
     }
+    /*
+     * datasonnet-mapper: end
+     */
   )
 
   private def distinctBy(array: Array[Lazy], func: Val.Func, ev: EvalScope): Val = {
@@ -302,6 +316,14 @@ object Arrays {
     new Val.Arr(pos, out.toArray)
   }
 
+
+  /*
+   * datasonnet-mapper: start
+   *
+   * Changes made:
+   * - 807cd78abf40551644067455338e5b2a683e86bd: upgraded sjsonnet
+   * - 05edbc0165aff4849b9f142e153141d7a8204efd: rename deepflatten for flat
+   */
   // TODO: add depth parameter, guard for stackoverflow
   private def flat(array: Array[Lazy]): Array[Lazy] = {
     array.foldLeft(new ArrayBuffer[Lazy])((agg, curr) => {
@@ -311,4 +333,7 @@ object Arrays {
       }
     }).toArray
   }
+  /*
+   * datasonnet-mapper: end
+   */
 }

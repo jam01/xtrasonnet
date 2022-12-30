@@ -5,6 +5,9 @@ This product is a fork of datasonnet-mapper, therefore it includes software deve
 Copyright 2019-2021 ModusBox, Inc.
           2020-2021 Mountain State Software Solutions, Inc.
 
-The MediaType classes in src/main/java/io/github/jam01/xtrasonnet/document are derived from MediaType, and MimeType
-classes of the Spring Framework project (https://spring.io/projects/spring-framework).
-Copyright 2002 - 2020 Pivotal, Inc.
+The MediaType classes in xtrasonnet/src/main/java/io/github/jam01/xtrasonnet/document are derived from MediaType, and
+MimeType classes of the Spring Framework project (https://spring.io/projects/spring-framework).
+Copyright 2002-2020 the original author or authors.
+
+This product includes software developed at
+The Apache Software Foundation (http://www.apache.org/).

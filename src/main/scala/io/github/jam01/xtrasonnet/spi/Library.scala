@@ -23,8 +23,8 @@ package io.github.jam01.xtrasonnet.spi
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*-
- * Adopted:
+/*
+ * Work covered:
  * - e6698ae51aed518a9c671ae39682d7068fa10deb: Merge pull request #62 from datasonnet/java-friendly-libraries
  * moved makeSimpleFunc to companion object
  */

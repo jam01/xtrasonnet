@@ -23,12 +23,12 @@ package io.github.jam01.xtrasonnet.modules
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*-
- * Adopted:
+/*
+ * Work covered:
  * - 5666b472de694383231b043c8c7861833831db96: Fixed numbers module to allow long values
- *
- * Changed:
- * - d37ba4c860723b42cecfe20e381c302eef75b49e - 2213fec224b8cbd1302f0b15542d1699308d3d08: removed null support from adopted functions
+ *    Functions: of/toBinary, of/toHex, of/toRadix
+ * Changes made:
+ * - 2662d96cdfbd613d766830420a0b2a6920d07b52: change ds funtions and behaviors
  */
 
 import sjsonnet.Std.builtin
@@ -108,7 +108,6 @@ object Numbers {
             if (x.value.startsWith("-")) "-" + BigInt.apply(x.value.toLong).toString(num)
             else BigInt.apply(x.value.toLong).toString(num)
           case x => Error.fail("Expected Binary, got: " + x.prettyName)
-          //DW functions does not support null
         }
     },
 

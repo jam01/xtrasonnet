@@ -24,7 +24,7 @@ package io.github.jam01.xtrasonnet.document;
  * limitations under the License.
  */
 /*
- * Changed:
+ * Changes made:
  * - Handle escape chars when parsing params in parseMediaTypeInternal
  * - Unquote param values after parsing
  * - Check parameter validity when parsing params in parseMediaTypeInternal using MediaType.checkParametersParsed

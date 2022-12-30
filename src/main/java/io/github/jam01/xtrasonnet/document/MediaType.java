@@ -24,7 +24,7 @@ package io.github.jam01.xtrasonnet.document;
  * limitations under the License.
  */
 /*
- * Changed:
+ * Changes made:
  * - Combined MimeType and MediaType into single class
  * - Added null check to isQuotedString
  * - Replace escape chars from parameter values in unquote
