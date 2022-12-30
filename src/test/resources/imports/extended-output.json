@@ -1,0 +1,17 @@
+{
+  "lib1": {
+    "xtr": "hello",
+    "std": "hello",
+    "echo": "Hello"
+  },
+  "lib2": {
+    "xtr": "hello",
+    "std": "hello",
+    "echo": "Hello"
+  },
+  "lib3": {
+    "xtr": "HELLO",
+    "std": "HELLO",
+    "echo": "Hello world!"
+  }
+}

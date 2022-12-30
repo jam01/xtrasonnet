@@ -94,22 +94,12 @@ class Transformer(private var script: String,
   }
 
   private val evaluator = new Evaluator(resolver, Map.empty, wd, settings, null)
-  // reserving indices for Xtr and additional libraries, the reservations must be exactly the same in ValScope
-  private val optimizer = new StaticOptimizer(evaluator)
-  optimizer.scope = new Scope(immutable.HashMap.from(allLibs
-    .map(lib => (lib.namespace(), ScopedVal(Library.emptyObj, emptyScope, -1)))
-    .toMap), allLibs.size)
-
-  // reserving indices for DS and additional libraries
-  private val libsScope = ValScope.empty.extendBy(allLibs.size)
-  private val libMappingsMap: Map[String, ScopedVal] = allLibs
-    .map(composeLib)
-    .map { case (k, obj) => (k, ScopedVal(obj, emptyScope, -1)) }
-    .toMap
-
   // rely on StaticOptimizer to provide the libraries directly without VisitValidId, by populating its scope
   // see StaticOptimizer#transform{case e @ Id(pos, name)}
-  optimizer.scope = new Scope(immutable.HashMap.from(optimizer.scope.mappings).concat(libMappingsMap), optimizer.scope.size)
+  private val optimizer = new StaticOptimizer(evaluator)
+  optimizer.scope = new Scope(immutable.HashMap.from(allLibs
+    .map(lib => (lib.namespace(), ScopedVal(composeLib(lib)._2, emptyScope, -1)))
+    .toMap), 0)
 
   private val scriptFn: Val.Func = evaluate(script, ResourcePath(main)) match {
     case Right(value) => value match {
@@ -128,7 +118,7 @@ class Transformer(private var script: String,
     for {
       res <- resolver.parse(path, txt)(evaluator)
       (parsed, _) = res
-      res0 <- handleException(evaluator.visitExpr(parsed)(libsScope))
+      res0 <- handleException(evaluator.visitExpr(parsed)(ValScope.empty))
     } yield res0
   }
 

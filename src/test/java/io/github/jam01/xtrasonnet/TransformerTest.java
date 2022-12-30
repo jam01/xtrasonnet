@@ -29,7 +29,9 @@ import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.http.ssl.SSLContextBuilder;
 import com.github.tomakehurst.wiremock.http.ssl.TrustEverythingStrategy;
 import io.github.jam01.xtrasonnet.document.Document;
+import io.github.jam01.xtrasonnet.document.Documents;
 import io.github.jam01.xtrasonnet.document.MediaTypes;
+import io.github.jam01.xtrasonnet.spi.LibraryTest;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -215,5 +217,30 @@ public class TransformerTest {
     public void resource_script() throws JSONException {
         var res = transform("resource:resource.xtr");
         JSONAssert.assertEquals("{\"hello\": \"world!\"}", res, true);
+    }
+
+    @Test
+    public void imports_nested_customLib() throws JSONException {
+        var imports = """
+                local lib1 = import 'imports/lib-1.libsonnet';
+                local lib2 = import 'imports/nested/lib-2.libsonnet';
+
+                {
+                    lib1: {
+                        xtr: lib1.xtr('Hello'),
+                        std: lib1.std('Hello'),
+                        echo: lib1.echo('Hello')
+                    },
+                    lib2: {
+                        xtr: lib2.xtr('Hello'),
+                        std: lib2.std('Hello'),
+                        echo: lib2.echo('Hello')
+                    },
+                    lib3: lib2.lib3
+                }
+                """;
+
+        var res = Transformer.builder(imports).withLibrary(new LibraryTest.TestLib()).build().transform(Documents.Null());
+        JSONAssert.assertEquals(resourceAsString("imports/extended-output.json"), res.getContent(), true);
     }
 }
