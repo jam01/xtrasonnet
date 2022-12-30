@@ -52,7 +52,7 @@ class Transformer(private var script: String,
                   wd: Path = ResourcePath.root,
                   parseCache: ParseCache = new DefaultParseCache,
                   importer: Importer = ResourcePath.importer,
-                  private var settings: Settings = null) {
+                  private var settings: TransformerSettings = null) {
 
   def this(script: String,
            inputNames: java.util.Set[String],
@@ -85,7 +85,7 @@ class Transformer(private var script: String,
 
   val header: Header = Header.parseHeader(script)
   script = Transformer.asFunction(script, inputNames.asScala)
-  settings = if (settings != null) settings else new Settings(preserveOrder = header.isPreserveOrder)
+  settings = if (settings != null) settings else new TransformerSettings(preserveOrder = header.isPreserveOrder)
   private val allLibs: IndexedSeq[Library] = IndexedSeq(Xtr).appendedAll(libs.asScala)
 
   private val resolver: CachedResolver = new CachedResolver(importer, parseCache) {
@@ -133,7 +133,7 @@ class Transformer(private var script: String,
       return fromHeader.get()
     }
 
-    MediaTypes.APPLICATION_JSON
+    settings.defOutputMediaType
   }
 
   // If the input type is UNKNOWN then look in the header, default to JSON
@@ -147,7 +147,7 @@ class Transformer(private var script: String,
       return input.withMediaType(fromHeader.get())
     }
 
-    input.withMediaType(MediaTypes.APPLICATION_JSON)
+    input.withMediaType(settings.defInputMediaType)
   }
 
   // supports a Map[String, Document] to enable a scenario where documents are grouped into a single input

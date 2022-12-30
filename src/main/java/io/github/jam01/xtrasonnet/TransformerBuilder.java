@@ -9,6 +9,7 @@ package io.github.jam01.xtrasonnet;
 
 import io.github.jam01.xtrasonnet.spi.DataFormatPlugin;
 import io.github.jam01.xtrasonnet.spi.Library;
+import sjsonnet.DefaultParseCache;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,6 +26,7 @@ public class TransformerBuilder {
     private Set<String> inputNames = Collections.emptySet();
     private Set<Library> libs = Collections.emptySet();
     private DataFormatService service = DataFormatService.DEFAULT;
+    private TransformerSettings settings;
 
     public TransformerBuilder(String script) {
         this.script = script;
@@ -57,6 +59,12 @@ public class TransformerBuilder {
         return this;
     }
 
+    public TransformerBuilder withSettings(TransformerSettings settings) {
+        Objects.requireNonNull(settings);
+        this.settings = settings;
+        return this;
+    }
+
     public TransformerBuilder configurePlugins(Consumer<List<DataFormatPlugin>> configurer) {
         List<DataFormatPlugin> plugins = new ArrayList<>(4);
         configurer.accept(plugins);
@@ -72,6 +80,7 @@ public class TransformerBuilder {
     }
 
     public Transformer build() {
-        return new Transformer(script, inputNames, libs, service);
+        return new Transformer(script, inputNames, libs, service,
+                ResourcePath.root(), new DefaultParseCache(), ResourcePath.importer(), settings);
     }
 }
