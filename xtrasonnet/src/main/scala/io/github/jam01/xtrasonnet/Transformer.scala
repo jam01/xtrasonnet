@@ -7,7 +7,7 @@ package io.github.jam01.xtrasonnet
  * compliance with the Elastic License 2.0.
  */
 
-import io.github.jam01.xtrasonnet.Transformer.{ERROR_LINE_REGEX, handleException, main, resource}
+import io.github.jam01.xtrasonnet.Transformer.{ERROR_LINE_REGEX, handleException, main}
 import io.github.jam01.xtrasonnet.document.Document.BasicDocument
 import io.github.jam01.xtrasonnet.document.{Document, MediaType, MediaTypes}
 import io.github.jam01.xtrasonnet.header.Header
