@@ -215,7 +215,7 @@ public class TransformerTest {
 
     @Test
     public void resource_script() throws JSONException {
-        var res = transform("resource:resource.xtr");
+        var res = transform("import 'resource.xtr'");
         JSONAssert.assertEquals("{\"hello\": \"world!\"}", res, true);
     }
 

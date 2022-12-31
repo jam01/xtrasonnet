@@ -24,7 +24,6 @@ import scala.util.control.NonFatal
 
 object Transformer {
   val main = "(main)"
-  private val resource = "resource:"
 
   // We wrap the script as function in order to pass in payload, and named inputs
   // see the 'Top-level arguments' section in https://jsonnet.org/learning/tutorial.html#parameterize-entire-config
@@ -74,13 +73,6 @@ class Transformer(private var script: String,
 
   def this(script: String) = {
     this(script, Collections.emptySet())
-  }
-
-  if (script.startsWith(resource)) {
-    val res = script.substring(resource.length)
-    script = importer.resolveAndRead(wd, res)
-      .getOrElse(Error.fail("Couldn't load resource: " + res))
-      ._2
   }
 
   val header: Header = Header.parseHeader(script)
