@@ -102,6 +102,16 @@
     </dependencies>
 
     <build>
+        <resources>
+            <resource>
+                <directory>..</directory>
+                <targetPath>META-INF</targetPath>
+                <includes>
+                    <include>LICENSE</include>
+                    <include>NOTICE</include>
+                </includes>
+            </resource>
+        </resources>
         <pluginManagement>
             <plugins>
                 <plugin>
