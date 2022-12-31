@@ -155,11 +155,10 @@ public class XtrasonnetExpression extends ExpressionAdapter implements Expressio
             }
         }
 
-        Map<String, Document<?>> inputs = Collections.singletonMap("body", body);
         if (resultType == null || resultType.equals(Document.class)) {
-            return mapper.transform(body, inputs, outMT, Object.class);
+            return mapper.transform(body, Collections.emptyMap(), outMT, Object.class);
         } else {
-            return mapper.transform(body, inputs, outMT, resultType);
+            return mapper.transform(body, Collections.emptyMap(), outMT, resultType);
         }
     }
 
@@ -171,7 +170,6 @@ public class XtrasonnetExpression extends ExpressionAdapter implements Expressio
         // initialize mapper eager
         language.computeIfMiss(expression, () -> {
             TransformerBuilder builder = new TransformerBuilder(expression)
-                    .withInputNames("body")
                     .withLibrary(CML.getInstance())
                     .withSettings(new TransformerSettings(true, false, false,
                             MediaTypes.APPLICATION_JAVA, MediaTypes.APPLICATION_JAVA));
