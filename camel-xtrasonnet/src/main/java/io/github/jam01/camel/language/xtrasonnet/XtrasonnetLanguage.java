@@ -74,7 +74,7 @@ public class XtrasonnetLanguage extends LanguageSupport {
         expression = loadResource(expression);
         XtrasonnetExpression answer = new XtrasonnetExpression(expression);
 
-        answer.setResultType(property(Class.class, properties, 0, Document.class));
+        answer.setResultType(property(Class.class, properties, 0, null));
         String stringBodyMediaType = property(String.class, properties, 1, null);
         answer.setBodyMediaType(stringBodyMediaType != null ? MediaType.valueOf(stringBodyMediaType) : null);
         String stringOutputMediaType = property(String.class, properties, 2, null);

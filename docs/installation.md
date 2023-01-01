@@ -1,4 +1,4 @@
-## As a Library
+## As a dependency
 
 ### Maven
 

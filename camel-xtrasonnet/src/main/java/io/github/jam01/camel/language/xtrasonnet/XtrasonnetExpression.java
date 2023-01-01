@@ -64,17 +64,6 @@ public class XtrasonnetExpression extends ExpressionAdapter implements Expressio
         this.expression = expression;
     }
 
-    public static XtrasonnetExpression builder(String expression) {
-        XtrasonnetExpression answer = new XtrasonnetExpression(expression);
-        return answer;
-    }
-
-    public static XtrasonnetExpression builder(String expression, Class<?> resultType) {
-        XtrasonnetExpression answer = new XtrasonnetExpression(expression);
-        answer.setResultType(resultType);
-        return answer;
-    }
-
     @Override
     public boolean matches(Exchange exchange) {
         this.outputMediaType = MediaTypes.APPLICATION_JAVA;
@@ -219,6 +208,16 @@ public class XtrasonnetExpression extends ExpressionAdapter implements Expressio
 
     // Fluent builder methods
     // -------------------------------------------------------------------------
+    public static XtrasonnetExpression xtrasonnet(String expression) {
+        return new XtrasonnetExpression(expression);
+    }
+
+    public static XtrasonnetExpression xtrasonnet(String expression, Class<?> resultType) {
+        XtrasonnetExpression answer = new XtrasonnetExpression(expression);
+        answer.setResultType(resultType);
+        return answer;
+    }
+
     public XtrasonnetExpression bodyMediaType(MediaType bodyMediaType) {
         setBodyMediaType(bodyMediaType);
         return this;

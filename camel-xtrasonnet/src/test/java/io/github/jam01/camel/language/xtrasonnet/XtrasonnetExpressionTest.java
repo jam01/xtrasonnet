@@ -1,12 +1,11 @@
 package io.github.jam01.camel.language.xtrasonnet;
 
 /*-
- * Copyright 2022 Jose Montoya.
+ * Copyright 2022-2023 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
  */
-
 import io.github.jam01.xtrasonnet.DataFormatService;
 import io.github.jam01.xtrasonnet.document.Document;
 import io.github.jam01.xtrasonnet.document.Documents;
@@ -24,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import static io.github.jam01.camel.language.xtrasonnet.XtrasonnetBuilder.xtrasonnet;
+import static io.github.jam01.camel.language.xtrasonnet.XtrasonnetExpression.xtrasonnet;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -79,8 +78,7 @@ public class XtrasonnetExpressionTest extends CamelTestSupport {
     public void builder() {
         var exp = (XtrasonnetExpression) xtrasonnet("payload", Map.class)
                 .bodyMediaType(MediaTypes.APPLICATION_JSON)
-                .outputMediaType(MediaTypes.APPLICATION_JAVA)
-                .getExpression();
+                .outputMediaType(MediaTypes.APPLICATION_JAVA);
 
         assertEquals("payload", exp.getExpressionText());
         assertEquals(Map.class, exp.getResultType());
@@ -126,7 +124,7 @@ public class XtrasonnetExpressionTest extends CamelTestSupport {
         ex.setProperty("myExProp", "val3");
 
         var res = exp.evaluate(ex, Map.class);
-        assertEquals(Map.of("prop", "val1", "head", "val2" ,"ex_prop", "val3"), res);
+        assertEquals(Map.of("prop", "val1", "head", "val2", "ex_prop", "val3"), res);
     }
 
     @Override

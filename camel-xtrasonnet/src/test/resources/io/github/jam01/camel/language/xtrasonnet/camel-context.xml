@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+    <camelContext id="main" xmlns="http://camel.apache.org/schema/spring">
+        <route id="xml-filter">
+            <from uri="direct:xml-filter"/>
+            <filter>
+                <language language="xtrasonnet">
+                    xtr.arrays.any(payload.lineItems, function(item) item > 100)
+                </language>
+                <to uri="mock:xml-result"/>
+            </filter>
+        </route>
+        <route id="xml-transform">
+            <from uri="direct:xml-transform"/>
+            <setProperty name="CamelXtrasonnetBodyMediaType"><constant>application/xml</constant></setProperty>
+            <setProperty name="CamelXtrasonnetOutputMediaType"><constant>application/json</constant></setProperty>
+            <setProperty name="CamelXtrasonnetResultType"><constant>java.lang.String</constant></setProperty>
+            <transform>
+                <language language="xtrasonnet">payload.lineItems</language>
+            </transform>
+            <to uri="mock:xml-result"/>
+        </route>
+        <route id="xml-cml">
+            <from uri="direct:xml-cml"/>
+            <setProperty name="CamelXtrasonnetResultType"><constant>java.lang.String</constant></setProperty>
+            <setBody>
+                <language language="xtrasonnet">'hello ' + cml.properties('toGreet')</language>
+            </setBody>
+            <to uri="mock:xml-result"/>
+        </route>
+        <route id="xml-resource">
+            <from uri="direct:xml-resource"/>
+            <setProperty name="CamelXtrasonnetResultType"><constant>java.lang.String</constant></setProperty>
+            <setHeader name="myHeader">
+                <language language="xtrasonnet">resource:classpath:myXtrasonnet.xtr</language>
+            </setHeader>
+            <setHeader name="myHeader1">
+                <language language="xtrasonnet">resource:classpath:myXtrasonnet.xtr</language>
+            </setHeader>
+            <to uri="mock:xml-result"/>
+        </route>
+    </camelContext>
+</beans>
