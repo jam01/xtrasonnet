@@ -1,7 +1,7 @@
 package io.github.jam01.xtrasonnet.modules
 
 /*-
- * Copyright 2022 Jose Montoya.
+ * Copyright 2022-2023 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
@@ -80,11 +80,11 @@ object Arrays {
             .find(item => func.apply2(item._1, Val.Num(pos, item._2), pos.noOffset)(ev).isInstanceOf[Val.True])
             .map(_._1)
           if (found.nonEmpty) new Val.Arr(pos, Array(found.get))
-          else new Val.Arr(pos, Array.empty)
+          else new Val.Arr(pos, Array.empty[Lazy])
         } else if (args == 1) {
           val found = arr.asLazyArray.find(func.apply1(_, pos.noOffset)(ev).isInstanceOf[Val.True])
           if (found.nonEmpty) new Val.Arr(pos, Array(found.get))
-          else new Val.Arr(pos, Array.empty)
+          else new Val.Arr(pos, Array.empty[Lazy])
         } else {
           Error.fail("Expected embedded function to have 1 or 2 parameters, received: " + args)
         }
