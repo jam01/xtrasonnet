@@ -1,7 +1,7 @@
 package io.github.jam01.camel.language.xtrasonnet;
 
 /*-
- * Copyright 2022 Jose Montoya.
+ * Copyright 2022-2023 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
@@ -32,12 +32,13 @@ package io.github.jam01.camel.language.xtrasonnet;
  */
 
 import io.github.jam01.xtrasonnet.Transformer;
+import io.github.jam01.xtrasonnet.document.Document;
 import io.github.jam01.xtrasonnet.document.MediaType;
 import org.apache.camel.Expression;
 import org.apache.camel.Predicate;
 import org.apache.camel.spi.annotations.Language;
 import org.apache.camel.support.LRUCacheFactory;
-import org.apache.camel.support.TypedLanguageSupport;
+import org.apache.camel.support.LanguageSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,7 +47,7 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 @Language("xtrasonnet")
-public class XtrasonnetLanguage extends TypedLanguageSupport {
+public class XtrasonnetLanguage extends LanguageSupport {
     private static final Logger LOG = LoggerFactory.getLogger(XtrasonnetLanguage.class);
 
     // Cache used to stores the Mappers
@@ -71,10 +72,9 @@ public class XtrasonnetLanguage extends TypedLanguageSupport {
     @Override
     public Expression createExpression(String expression, Object[] properties) {
         expression = loadResource(expression);
-
         XtrasonnetExpression answer = new XtrasonnetExpression(expression);
-        answer.setResultType(property(Class.class, properties, 0, getResultType()));
 
+        answer.setResultType(property(Class.class, properties, 0, Document.class));
         String stringBodyMediaType = property(String.class, properties, 1, null);
         answer.setBodyMediaType(stringBodyMediaType != null ? MediaType.valueOf(stringBodyMediaType) : null);
         String stringOutputMediaType = property(String.class, properties, 2, null);
