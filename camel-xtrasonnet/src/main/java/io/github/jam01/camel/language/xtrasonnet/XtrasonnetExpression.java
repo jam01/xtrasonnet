@@ -1,7 +1,7 @@
 package io.github.jam01.camel.language.xtrasonnet;
 
 /*-
- * Copyright 2022 Jose Montoya.
+ * Copyright 2022-2023 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
@@ -33,7 +33,6 @@ package io.github.jam01.camel.language.xtrasonnet;
  */
 
 import java.util.Collections;
-import java.util.Map;
 import java.util.Set;
 
 import io.github.jam01.xtrasonnet.Transformer;
@@ -108,17 +107,9 @@ public class XtrasonnetExpression extends ExpressionAdapter implements Expressio
     }
 
     private Document<?> doEvaluate(Exchange exchange) {
-        Class<?> targetType = resultType;
-        if (targetType == null) {
-            String targetHeader = exchange.getProperty(XtrasonnetConstants.RESULT_TYPE,
-                    exchange.getMessage().getHeader(XtrasonnetConstants.RESULT_TYPE), String.class);
-            if (targetHeader != null) {
-                try {
-                    resultType = Class.forName(targetHeader);
-                } catch (ClassNotFoundException e) {
-                    throw new RuntimeExpressionException(e);
-                }
-            }
+        if (resultType == null) {
+            resultType = exchange.getProperty(XtrasonnetConstants.RESULT_TYPE,
+                    exchange.getMessage().getHeader(XtrasonnetConstants.RESULT_TYPE), Class.class);
         }
 
         MediaType bodyMT = bodyMediaType;
