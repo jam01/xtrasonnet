@@ -13,10 +13,16 @@ jobs:
           # needed for license-plugin to check last modified date of each file
           fetch-depth: 0
       - name: Set up JDK
-        uses: actions/setup-java@v3
+        uses: oracle-actions/setup-java@v1
         with:
-          distribution: 'temurin'
-          java-version: 17
-          cache: 'maven'
+          website: jdk.java.net
+          release: 19
+      - name: Cache local Maven repository
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
       - name: mvn clean verify
         run: mvn -V --no-transfer-progress --batch-mode clean verify
