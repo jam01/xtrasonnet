@@ -27,7 +27,7 @@ public class DocumentConverter {
     public static <T> T convertTo(Class<T> type, Exchange exchange, Object value, TypeConverterRegistry registry) {
         if (Document.class.isAssignableFrom(value.getClass())) {
             Document<?> doc = ((Document<?>) value);
-            if (type.isAssignableFrom(doc.getContent().getClass())) {
+            if (doc.getContent() != null && type.isAssignableFrom(doc.getContent().getClass())) {
                 return (T) doc.getContent();
             }
 
