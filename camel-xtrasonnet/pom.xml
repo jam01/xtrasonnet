@@ -316,6 +316,7 @@
                                 <exclude>pom.xml</exclude>
                                 <exclude>src/test/resources/**</exclude>
                                 <exclude>src/licenses/**</exclude>
+                                <exclude>src/generated/**</exclude>
                                 <exclude>**/target/**</exclude>
                             </excludes>
                         </licenseSet>

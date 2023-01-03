@@ -12,6 +12,7 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.model.language.ExpressionDefinition;
 
 public class XtrasonnetExpressionReifier extends TypedExpressionReifier<XtrasonnetExpression> {
+
     public XtrasonnetExpressionReifier(CamelContext camelContext, ExpressionDefinition definition) {
         super(camelContext, definition);
     }
@@ -20,8 +21,8 @@ public class XtrasonnetExpressionReifier extends TypedExpressionReifier<Xtrasonn
     protected Object[] createProperties() {
         Object[] properties = new Object[3];
         properties[0] = definition.getResultType();
-        properties[1] = parseString(definition.getBodyMediaType());
-        properties[2] = parseString(definition.getOutputMediaType());
+        properties[1] = definition.getBodyMediaType() != null ? definition.getBodyMediaType() : parseString(definition.getBodyMediaTypeString());
+        properties[2] = definition.getOutputMediaType() != null ? definition.getOutputMediaType() : parseString(definition.getOutputMediaTypeString());
         return properties;
     }
 }

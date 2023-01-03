@@ -6,6 +6,7 @@ package io.github.jam01.camel.language.xtrasonnet;
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
  */
+
 import io.github.jam01.xtrasonnet.DataFormatService;
 import io.github.jam01.xtrasonnet.document.Document;
 import io.github.jam01.xtrasonnet.document.Documents;
@@ -23,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import static io.github.jam01.camel.language.xtrasonnet.XtrasonnetExpression.xtrasonnet;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -72,18 +72,6 @@ public class XtrasonnetExpressionTest extends CamelTestSupport {
 
         var res = exp.matches(createExchangeWithBody(Documents.Null()));
         assertTrue(res);
-    }
-
-    @Test
-    public void builder() {
-        var exp = (XtrasonnetExpression) xtrasonnet("payload", Map.class)
-                .bodyMediaType(MediaTypes.APPLICATION_JSON)
-                .outputMediaType(MediaTypes.APPLICATION_JAVA);
-
-        assertEquals("payload", exp.getExpressionText());
-        assertEquals(Map.class, exp.getResultType());
-        assertEquals(MediaTypes.APPLICATION_JSON, exp.getBodyMediaType());
-        assertEquals(MediaTypes.APPLICATION_JAVA, exp.getOutputMediaType());
     }
 
     @Test

@@ -7,6 +7,7 @@ package io.github.jam01.camel.language.xtrasonnet;
  * compliance with the Elastic License 2.0.
  */
 
+import io.github.jam01.camel.model.language.XtrasonnetExpression;
 import io.github.jam01.xtrasonnet.document.MediaTypes;
 import org.apache.camel.RoutesBuilder;
 import org.apache.camel.builder.RouteBuilder;
@@ -22,6 +23,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import static io.github.jam01.camel.builder.XtrasonnetBuilder.xtrasonnet;
+
 public class RoutesTest extends CamelSpringTestSupport {
     MockEndpoint mock;
     MockEndpoint xmlMock;
@@ -91,6 +93,14 @@ public class RoutesTest extends CamelSpringTestSupport {
         xmlMock.assertIsSatisfied();
     }
 
+    @Override
+    protected Properties useOverridePropertiesWithPropertiesComponent() {
+        var props = new Properties(1);
+        props.put("toGreet", "world");
+
+        return props;
+    }
+
     @Test
     public void test_cml() throws InterruptedException {
         // java
@@ -115,7 +125,6 @@ public class RoutesTest extends CamelSpringTestSupport {
         // java
         mock.setExpectedMessageCount(1);
         mock.expectedHeaderReceived("myHeader", "hello world!");
-        mock.expectedHeaderReceived("myHeader1", "hello world!");
 
         template.sendBody("direct:resource", null);
 
@@ -124,19 +133,23 @@ public class RoutesTest extends CamelSpringTestSupport {
         // xml
         xmlMock.setExpectedMessageCount(1);
         xmlMock.expectedHeaderReceived("myHeader", "hello world!");
-        xmlMock.expectedHeaderReceived("myHeader1", "hello world!");
 
         template.sendBody("direct:xml-resource", null);
 
         xmlMock.assertIsSatisfied();
     }
 
-    @Override
-    protected Properties useOverridePropertiesWithPropertiesComponent() {
-        var props = new Properties(1);
-        props.put("toGreet", "world");
+    @Test
+    public void test_builders() throws InterruptedException {
+        // java
+        mock.setExpectedMessageCount(1);
+        mock.expectedHeaderReceived("valueBuilder", "hello world!");
+        mock.expectedHeaderReceived("expressionClause", "hello world!");
+        mock.expectedHeaderReceived("langDsl", "hello world!");
 
-        return props;
+        template.sendBody("direct:builders", null);
+
+        mock.assertIsSatisfied();
     }
 
     @Override
@@ -149,9 +162,9 @@ public class RoutesTest extends CamelSpringTestSupport {
                         .to("mock:result");
 
                 from("direct:transform")
-                        .transform(xtrasonnet("payload.lineItems", String.class,
-                                MediaTypes.APPLICATION_XML_VALUE,
-                                MediaTypes.APPLICATION_JSON_VALUE))
+                        .transform(xtrasonnet("payload.lineItems", String.class)
+                                    .bodyMediaType(MediaTypes.APPLICATION_XML)
+                                    .outputMediaType(MediaTypes.APPLICATION_JSON))
                         .to("mock:result");
 
                 from("direct:cml")
@@ -160,7 +173,12 @@ public class RoutesTest extends CamelSpringTestSupport {
 
                 from("direct:resource")
                         .setHeader("myHeader", xtrasonnet("resource:classpath:myXtrasonnet.xtr", String.class))
-                        .setHeader("myHeader1").expression(xtrasonnet("resource:classpath:myXtrasonnet.xtr", String.class))
+                        .to("mock:result");
+
+                from("direct:builders")
+                        .setHeader("valueBuilder", xtrasonnet("'hello world!'", String.class))
+                        .setHeader("expressionClause").expression(xtrasonnet("'hello world!'", String.class))
+                        .setHeader("langDsl", new XtrasonnetExpression.Builder().expression("'hello world!'").resultType(String.class).end())
                         .to("mock:result");
             }
         };

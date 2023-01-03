@@ -145,6 +145,7 @@ public class XtrasonnetExpression extends ExpressionAdapter implements Expressio
     @Override
     public void init(CamelContext context) {
         super.init(context);
+        if (language != null) return;
 
         language = (XtrasonnetLanguage) context.resolveLanguage("xtrasonnet");
         // initialize mapper eager
@@ -164,7 +165,6 @@ public class XtrasonnetExpression extends ExpressionAdapter implements Expressio
 
     // Getter/Setter methods
     // -------------------------------------------------------------------------
-
     public MediaType getBodyMediaType() {
         return bodyMediaType;
     }
@@ -204,28 +204,6 @@ public class XtrasonnetExpression extends ExpressionAdapter implements Expressio
      */
     public void setResultType(Class<?> targetType) {
         this.resultType = targetType;
-    }
-
-    // Fluent builder methods
-    // -------------------------------------------------------------------------
-    public static XtrasonnetExpression xtrasonnet(String expression) {
-        return new XtrasonnetExpression(expression);
-    }
-
-    public static XtrasonnetExpression xtrasonnet(String expression, Class<?> resultType) {
-        XtrasonnetExpression answer = new XtrasonnetExpression(expression);
-        answer.setResultType(resultType);
-        return answer;
-    }
-
-    public XtrasonnetExpression bodyMediaType(MediaType bodyMediaType) {
-        setBodyMediaType(bodyMediaType);
-        return this;
-    }
-
-    public XtrasonnetExpression outputMediaType(MediaType outputMediaType) {
-        setOutputMediaType(outputMediaType);
-        return this;
     }
 
     @Override

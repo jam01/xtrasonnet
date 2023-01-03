@@ -26,11 +26,14 @@ package io.github.jam01.camel.model.language;
  */
 /*
  * Work covered:
- * - 0a6a5767eb42ef072ff3ad6b1876c481fd57bea0:  CAMEL-18697: camel-core - Propose a DSL for languages (#8688)
+ * - 0a6a5767eb42ef072ff3ad6b1876c481fd57bea0: CAMEL-18697: camel-core - Propose a DSL for languages (#8688)
  */
 
+import io.github.jam01.xtrasonnet.document.MediaType;
 import org.apache.camel.Expression;
 import org.apache.camel.model.language.TypedExpressionDefinition;
+import org.apache.camel.reifier.language.ExpressionReifier;
+import org.apache.camel.reifier.language.XtrasonnetExpressionReifier;
 import org.apache.camel.spi.Metadata;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -47,10 +50,18 @@ import javax.xml.bind.annotation.XmlTransient;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class XtrasonnetExpression extends TypedExpressionDefinition {
 
+    static {
+        ExpressionReifier.registerReifier(XtrasonnetExpression.class, (XtrasonnetExpressionReifier::new));
+    }
+
     @XmlAttribute(name = "bodyMediaType")
-    private String bodyMediaType;
+    private String bodyMediaTypeString;
     @XmlAttribute(name = "outputMediaType")
-    private String outputMediaType;
+    private String outputMediaTypeString;
+    @XmlTransient
+    private MediaType bodyMediaType;
+    @XmlTransient
+    private MediaType outputMediaType;
 
     public XtrasonnetExpression() {
     }
@@ -74,26 +85,36 @@ public class XtrasonnetExpression extends TypedExpressionDefinition {
         return "xtrasonnet";
     }
 
-    public String getBodyMediaType() {
+    public String getBodyMediaTypeString() {
+        return bodyMediaTypeString;
+    }
+
+    public void setBodyMediaTypeString(String bodyMediaTypeString) {
+        this.bodyMediaTypeString = bodyMediaTypeString;
+    }
+
+    public String getOutputMediaTypeString() {
+        return outputMediaTypeString;
+    }
+
+    public MediaType getBodyMediaType() {
         return bodyMediaType;
     }
 
-    /**
-     * The String representation of the message's body MediaType
-     */
-    public void setBodyMediaType(String bodyMediaType) {
+    public void setBodyMediaType(MediaType bodyMediaType) {
         this.bodyMediaType = bodyMediaType;
     }
 
-    public String getOutputMediaType() {
+    public MediaType getOutputMediaType() {
         return outputMediaType;
     }
 
-    /**
-     * The String representation of the MediaType to output
-     */
-    public void setOutputMediaType(String outputMediaType) {
+    public void setOutputMediaType(MediaType outputMediaType) {
         this.outputMediaType = outputMediaType;
+    }
+
+    public void setOutputMediaTypeString(String outputMediaTypeString) {
+        this.outputMediaTypeString = outputMediaTypeString;
     }
 
     /**
@@ -101,22 +122,21 @@ public class XtrasonnetExpression extends TypedExpressionDefinition {
      */
     @XmlTransient
     public static class Builder extends AbstractBuilder<Builder, XtrasonnetExpression> {
-
-        private String bodyMediaType;
-        private String outputMediaType;
+        private MediaType bodyMediaType;
+        private MediaType outputMediaType;
 
         /**
-         * The String representation of the message's body MediaType
+         * The message's body MediaType
          */
-        public Builder bodyMediaType(String bodyMediaType) {
+        public Builder bodyMediaType(MediaType bodyMediaType) {
             this.bodyMediaType = bodyMediaType;
             return this;
         }
 
         /**
-         * The String representation of the MediaType to output
+         * The MediaType to output
          */
-        public Builder outputMediaType(String outputMediaType) {
+        public Builder outputMediaType(MediaType outputMediaType) {
             this.outputMediaType = outputMediaType;
             return this;
         }

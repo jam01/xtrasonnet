@@ -32,7 +32,6 @@ package io.github.jam01.camel.language.xtrasonnet;
  */
 
 import io.github.jam01.xtrasonnet.Transformer;
-import io.github.jam01.xtrasonnet.document.Document;
 import io.github.jam01.xtrasonnet.document.MediaType;
 import org.apache.camel.Expression;
 import org.apache.camel.Predicate;
@@ -75,10 +74,10 @@ public class XtrasonnetLanguage extends LanguageSupport {
         XtrasonnetExpression answer = new XtrasonnetExpression(expression);
 
         answer.setResultType(property(Class.class, properties, 0, null));
-        String stringBodyMediaType = property(String.class, properties, 1, null);
-        answer.setBodyMediaType(stringBodyMediaType != null ? MediaType.valueOf(stringBodyMediaType) : null);
-        String stringOutputMediaType = property(String.class, properties, 2, null);
-        answer.setOutputMediaType(stringOutputMediaType != null ? MediaType.valueOf(stringOutputMediaType) : null);
+        MediaType bodyMediaType = property(MediaType.class, properties, 1, null);
+        answer.setBodyMediaType(bodyMediaType);
+        MediaType outputMediaType = property(MediaType.class, properties, 2, null);
+        answer.setOutputMediaType(outputMediaType);
 
         return answer;
     }
