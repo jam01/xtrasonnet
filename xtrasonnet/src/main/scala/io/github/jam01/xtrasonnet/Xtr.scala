@@ -1,7 +1,7 @@
 package io.github.jam01.xtrasonnet
 
 /*-
- * Copyright 2022 Jose Montoya.
+ * Copyright 2022-2023 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
@@ -47,10 +47,10 @@ import io.github.jam01.xtrasonnet.document.{Document, MediaType}
 import io.github.jam01.xtrasonnet.header.Header
 import io.github.jam01.xtrasonnet.modules.{Arrays, Base64, Crypto, Datetime, Duration, Math, Numbers, Objects, Strings, URL}
 import io.github.jam01.xtrasonnet.spi.{Library, ValOrdering}
-import io.github.jam01.xtrasonnet.spi.Library.{dummyPosition, emptyObj, keyFrom, memberOf}
+import io.github.jam01.xtrasonnet.spi.Library.{builtinx, dummyPosition, emptyObj, keyFrom, memberOf, moduleFrom}
 import sjsonnet.ReadWriter.{ArrRead, ObjRead, ValRead}
 import sjsonnet.Std.{builtin, builtinWithDefaults}
-import sjsonnet.{Error, EvalScope, Importer, Lazy, Materializer, Val}
+import sjsonnet.{Error, EvalScope, Evaluator, Importer, Lazy, Materializer, Position, Val}
 import ujson.{Bool, Null, Num, Str}
 
 import java.util
@@ -73,8 +73,6 @@ import scala.jdk.CollectionConverters._
 object Xtr extends Library {
 
   override def namespace() = "xtr"
-
-  override def libsonnets(): java.util.Set[String] = Collections.emptySet()
 
   override def functions(dataFormats: DataFormatService,
                          header: Header, importer: Importer): java.util.Map[String, Val.Func] = Map(
@@ -314,7 +312,7 @@ object Xtr extends Library {
       "data" -> null,
       "mimeType" -> null,
       "params" -> Val.False(dummyPosition)) {
-      (args, _, ev) =>
+      (args, pos, ev) =>
         val data = args(0).cast[Val.Str].value
         val mimeType = args(1).cast[Val.Str].value
         val params = if (args(2).isInstanceOf[Val.False]) {
@@ -322,14 +320,14 @@ object Xtr extends Library {
         } else {
           args(2).cast[Val.Obj]
         }
-        read(dataFormats, data, mimeType, params, ev)
+        read(dataFormats, data, mimeType, params, ev, pos)
     },
 
     builtinWithDefaults("readUrl",
       "url" -> null,
       "mimeType" -> null,
       "params" -> Val.False(dummyPosition)) {
-      (args, _, ev) =>
+      (args, pos, ev) =>
         val url = args(0).cast[Val.Str].value
         val mimeType = args(1).cast[Val.Str].value
         val params = if (args(2).isInstanceOf[Val.False]) {
@@ -338,7 +336,7 @@ object Xtr extends Library {
           args(2).cast[Val.Obj]
         }
         val data = ResourceResolver.asString(url, null)
-        read(dataFormats, data, mimeType, params, ev)
+        read(dataFormats, data, mimeType, params, ev, pos)
     },
 
     builtin("length", "value") {
@@ -387,7 +385,7 @@ object Xtr extends Library {
         str.toUpperCase()
     },
 
-    builtin0("uuid") {
+    builtinx("uuid") {
       (_, _) =>
         UUID.randomUUID().toString
     },
@@ -572,7 +570,7 @@ object Xtr extends Library {
     "base64" -> moduleFrom(Base64.functions: _*)
   ).asJava
 
-  def read(dataFormats: DataFormatService, data: Object, mimeType: String, params: Val.Obj, ev: EvalScope): Val = {
+  def read(dataFormats: DataFormatService, data: String, mimeType: String, params: Val.Obj, ev: EvalScope, pos: Position): Val = {
     val paramsAsJava = ujson.read(Materializer.apply(params)(ev)).obj.map(keyVal => {
       (keyVal._1, keyVal._2 match {
         case Str(value) => value
@@ -583,7 +581,7 @@ object Xtr extends Library {
     }).asJava
 
     val doc = Document.of(data, MediaType.parseMediaType(mimeType).withParameters(paramsAsJava))
-    Materializer.reverse(dummyPosition, dataFormats.mandatoryRead(doc))
+    dataFormats.mandatoryRead(doc, pos)
   }
 
   def write(dataFormats: DataFormatService, json: Val, mimeType: String, params: Val.Obj, ev: EvalScope): String = {
@@ -596,10 +594,7 @@ object Xtr extends Library {
       })
     }).asJava
     val mediaType = MediaType.parseMediaType(mimeType).withParameters(paramsAsJava)
-    val plugin = dataFormats.thatCanWrite(mediaType, classOf[String])
-      .orElseThrow(() => Error.fail("No suitable plugin found for mime type: " + mimeType))
-
-    plugin.write(Materializer.apply(json)(ev), mediaType, classOf[String]).getContent
+    dataFormats.mandatoryWrite(json, mediaType, classOf[String], ev).getContent
   }
 
   // TODO: can we reference std.filter?

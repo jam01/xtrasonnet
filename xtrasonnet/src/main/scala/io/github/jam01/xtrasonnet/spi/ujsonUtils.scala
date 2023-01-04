@@ -1,7 +1,7 @@
 package io.github.jam01.xtrasonnet.spi
 
 /*-
- * Copyright 2022 Jose Montoya.
+ * Copyright 2022-2023 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
@@ -27,6 +27,7 @@ package io.github.jam01.xtrasonnet.spi
 
 import ujson.{Arr, Bool, Null, Num, Obj, Readable, Str, Value}
 
+import scala.collection.mutable.ArrayBuffer
 import scala.jdk.CollectionConverters.{MapHasAsJava, SeqHasAsJava}
 import scala.util.control.TailCalls.{TailRec, done, tailcall}
 
@@ -48,26 +49,26 @@ object ujsonUtils {
               indent: Int = -1,
               escapeUnicode: Boolean = false): Unit = ujson.writeTo(t, out, indent, escapeUnicode)
 
-  def javaObjectFrom(node: ujson.Value): java.lang.Object = node match {
+  def objectOf(node: ujson.Value): java.lang.Object = node match {
     case Null => null
     case Bool(value) => value.asInstanceOf[java.lang.Boolean]
     case Num(value) => value.asInstanceOf[java.lang.Double]
     case Str(value) => value
-    case Obj(value) => value.map(keyVal => (keyVal._1, javaObjectFrom(keyVal._2))).asJava
-    case Arr(value) => value.map(javaObjectFrom).asJava
+    case Obj(value) => value.map(keyVal => (keyVal._1, objectOf(keyVal._2))).asJava
+    case Arr(value) => value.map(objectOf).asJava
   }
 
   // Stack safe implementation using Trampolines for deeply nested objects
   // See: https://stackoverflow.com/a/37585818/4814697
   // https://stackoverflow.com/a/55047640/4814697
-  def deepJavaObjectFrom(node: Value): java.lang.Object = {
+  def deepObjectOf(node: Value): java.lang.Object = {
     def tailrecObjFrom(node: Value): TailRec[java.lang.Object] = {
       node match {
         case Null => done(null)
         case Bool(value) => done(value.asInstanceOf[java.lang.Boolean])
         case Num(value) => done(value.asInstanceOf[java.lang.Double])
         case Str(value) => done(value)
-        case Obj(value) => value.toList.foldRight(done(List.empty[(String, java.lang.Object)])) {
+        case Obj(value) => value.toList.foldRight(done(new ArrayBuffer[(String, java.lang.Object)])) {
           (keyVal, tailrecEntrySet) =>
             for {
               entrySet <- tailrecEntrySet

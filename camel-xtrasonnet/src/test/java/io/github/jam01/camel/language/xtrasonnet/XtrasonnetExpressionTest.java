@@ -20,7 +20,6 @@ import sjsonnet.Importer;
 import sjsonnet.Val;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -140,7 +139,7 @@ public class XtrasonnetExpressionTest extends CamelTestSupport {
         public Map<String, Val.Func> functions(DataFormatService dataFormats, Header header, Importer importer) {
             var res = new HashMap<String, Val.Func>();
 
-            res.put("echo", makeSimpleFunc(List.of("param"), (vals) -> new Val.Str(dummyPosition(), vals.get(0).asString() + " world!")));
+            res.put("echo", builtin(new String[]{"param"}, (vals, pos, ev) -> new Val.Str(dummyPosition(), vals[0].asString() + " world!")));
             return res;
         }
     }

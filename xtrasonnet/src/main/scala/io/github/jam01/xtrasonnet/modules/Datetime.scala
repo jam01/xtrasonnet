@@ -1,7 +1,7 @@
 package io.github.jam01.xtrasonnet.modules
 
 /*-
- * Copyright 2022 Jose Montoya.
+ * Copyright 2022-2023 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
@@ -32,8 +32,7 @@ package io.github.jam01.xtrasonnet.modules
  *      Functions: datetime.parse
  */
 
-import io.github.jam01.xtrasonnet.Xtr.builtin0
-import io.github.jam01.xtrasonnet.spi.Library.memberOf
+import io.github.jam01.xtrasonnet.spi.Library.{builtinx, memberOf}
 import sjsonnet.Std.builtin
 import sjsonnet.Val
 import sjsonnet.Error
@@ -44,7 +43,7 @@ import scala.collection.mutable
 
 object Datetime {
   val functions: Seq[(String, Val.Func)] = Seq(
-    builtin0("now") { (_, _) => OffsetDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME) },
+    builtinx("now") { (_, _) => OffsetDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME) },
 
     builtin("format", "datetime", "outputFormat") { (_, _, datetime: String, outputFormat: String) =>
       val datetimeObj = OffsetDateTime.parse(datetime)
@@ -148,7 +147,7 @@ object Datetime {
           .toLocalDate.isLeapYear;
     },
 
-    builtin0("today") {
+    builtinx("today") {
       (_, _) =>
         val date = OffsetDateTime.now()
         date.minusHours(date.getHour)
@@ -157,7 +156,7 @@ object Datetime {
           .minusNanos(date.getNano).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
     },
 
-    builtin0("tomorrow") {
+    builtinx("tomorrow") {
       (_, _) =>
         val date = OffsetDateTime.now()
         date.plusDays(1)
@@ -167,7 +166,7 @@ object Datetime {
           .minusNanos(date.getNano).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
     },
 
-    builtin0("yesterday") {
+    builtinx("yesterday") {
       (_, _) =>
         val date = OffsetDateTime.now()
         date.minusDays(1)

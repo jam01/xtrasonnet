@@ -1,14 +1,13 @@
 package io.github.jam01.xtrasonnet.modules
 
 /*-
- * Copyright 2022 Jose Montoya.
+ * Copyright 2022-2023 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
  */
 
-import io.github.jam01.xtrasonnet.Xtr.builtin0
-import io.github.jam01.xtrasonnet.spi.Library.dummyPosition
+import io.github.jam01.xtrasonnet.spi.Library.{builtinx, dummyPosition}
 import sjsonnet.Std.{builtin, builtinWithDefaults}
 import sjsonnet.Val
 import sjsonnet.Error
@@ -52,7 +51,7 @@ object Math {
         java.lang.Math.pow(num1, num2)
     },
 
-    builtin0("random") {
+    builtinx("random") {
       (_, _) =>
         (0.0 + (1.0 - 0.0) * Random.nextDouble()).doubleValue()
     },

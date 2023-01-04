@@ -1,7 +1,7 @@
 package io.github.jam01.xtrasonnet.plugins;
 
 /*-
- * Copyright 2022 Jose Montoya.
+ * Copyright 2022-2023 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
@@ -93,7 +93,7 @@ public class DefaultJavaPlugin extends BaseJacksonPlugin {
         T converted;
 
         try {
-            Object inputAsJava = ujsonUtils.javaObjectFrom(input);
+            Object inputAsJava = ujsonUtils.objectOf(input);
             if (targetType.isAssignableFrom(inputAsJava.getClass())) {
                 converted = (T) inputAsJava;
             } else {

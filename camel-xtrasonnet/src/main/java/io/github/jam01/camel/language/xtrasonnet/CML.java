@@ -1,16 +1,14 @@
 package io.github.jam01.camel.language.xtrasonnet;
 
 /*-
- * Copyright 2022 Jose Montoya.
+ * Copyright 2022-2023 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
  */
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 import io.github.jam01.xtrasonnet.document.Document;
 import io.github.jam01.xtrasonnet.document.MediaTypes;
@@ -20,7 +18,7 @@ import io.github.jam01.xtrasonnet.spi.Library;
 import io.github.jam01.xtrasonnet.spi.PluginException;
 import org.apache.camel.Exchange;
 import sjsonnet.Importer;
-import sjsonnet.Materializer$;
+import sjsonnet.Position;
 import sjsonnet.Val;
 
 public final class CML extends Library {
@@ -44,22 +42,17 @@ public final class CML extends Library {
     }
 
     @Override
-    public Set<String> libsonnets() {
-        return Collections.emptySet();
-    }
-
-    @Override
     public Map<String, Val.Func> functions(DataFormatService dataFormats, Header header, Importer importer) {
         Map<String, Val.Func> answer = new HashMap<>();
-        answer.put("properties", makeSimpleFunc(
-                Collections.singletonList("key"), //parameters list
-                params -> properties(params.get(0))));
-        answer.put("header", makeSimpleFunc(
-                Collections.singletonList("key"), //parameters list
-                params -> header(params.get(0), dataFormats)));
-        answer.put("exchangeProperty", makeSimpleFunc(
-                Collections.singletonList("key"), //parameters list
-                params -> exchangeProperty(params.get(0), dataFormats)));
+        answer.put("properties", builtin(
+                new String[]{"key"}, //parameters list
+                (params, pos, ev) -> properties(params[0])));
+        answer.put("header", builtin(
+                new String[]{"key"}, //parameters list
+                (params, pos, ev) -> header(params[0], dataFormats, pos)));
+        answer.put("exchangeProperty", builtin(
+                new String[]{"key"}, //parameters list
+                (params, pos, ev) -> exchangeProperty(params[0], dataFormats, pos)));
 
         return answer;
     }
@@ -71,21 +64,21 @@ public final class CML extends Library {
         throw new IllegalArgumentException("Expected String got: " + key.prettyName());
     }
 
-    private Val header(Val key, DataFormatService dataformats) {
+    private Val header(Val key, DataFormatService dataformats, Position pos) {
         if (key instanceof Val.Str) {
-            return valFrom(exchange.get().getMessage().getHeader(((Val.Str) key).value()), dataformats);
+            return valFrom(exchange.get().getMessage().getHeader(((Val.Str) key).value()), dataformats, pos);
         }
         throw new IllegalArgumentException("Expected String got: " + key.prettyName());
     }
 
-    private Val exchangeProperty(Val key, DataFormatService dataformats) {
+    private Val exchangeProperty(Val key, DataFormatService dataformats, Position pos) {
         if (key instanceof Val.Str) {
-            return valFrom(exchange.get().getProperty(((Val.Str) key).value()), dataformats);
+            return valFrom(exchange.get().getProperty(((Val.Str) key).value()), dataformats, pos);
         }
         throw new IllegalArgumentException("Expected String got: " + key.prettyName());
     }
 
-    private Val valFrom(Object obj, DataFormatService dataformats) {
+    private Val valFrom(Object obj, DataFormatService dataformats, Position pos) {
         Document<?> doc;
         if (obj instanceof Document) {
             doc = (Document<?>) obj;
@@ -94,7 +87,7 @@ public final class CML extends Library {
         }
 
         try {
-            return Materializer$.MODULE$.reverse(dummyPosition(), dataformats.mandatoryRead(doc));
+            return dataformats.mandatoryRead(doc, pos);
         } catch (PluginException e) {
             throw new IllegalStateException(e);
         }

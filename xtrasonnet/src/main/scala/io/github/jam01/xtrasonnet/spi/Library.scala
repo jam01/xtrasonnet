@@ -1,32 +1,10 @@
 package io.github.jam01.xtrasonnet.spi
 
 /*-
- * Copyright 2022 Jose Montoya.
+ * Copyright 2022-2023 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
- */
-
-/* datasonnet-mapper copyright/notice, per Apache-2.0 § 4.c */
-/*-
- * Copyright 2019-2020 the original author or authors.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-/*
- * Work covered:
- * - e6698ae51aed518a9c671ae39682d7068fa10deb: Merge pull request #62 from datasonnet/java-friendly-libraries
- * moved makeSimpleFunc to companion object
  */
 
 import io.github.jam01.xtrasonnet.DataFormatService
@@ -57,11 +35,40 @@ object Library {
     }
   }
 
-  def makeSimpleFunc(params: java.util.List[String], eval: java.util.function.Function[java.util.List[Val], Val]): Val.Func = {
-    val paramIndices = params.asScala.indices
-    new Val.Func(dummyPosition, ValScope.empty, Params(params.toArray(new Array[String](0)), new Array[Expr](params.size))) {
-      override def evalRhs(scope: ValScope, ev: EvalScope, fs: FileScope, pos: Position): Val =
-        eval.apply(paramIndices.map(i => scope.bindings(i).force).asJava)
+  def moduleFrom(functions: (String, Val.Func)*): Val.Obj = {
+    Val.Obj.mk(dummyPosition, functions.map { case (k, v) => (k, memberOf(v)) }: _*)
+  }
+
+  def builtinx[R: ReadWriter](name: String)
+                            (eval: (Position, EvalScope) => R): (String, Val.Func) = {
+    (name, new Builtin0() {
+      def evalRhs(ev: EvalScope, outerPos: Position): Val = {
+        //println("--- calling builtin: "+name)
+        implicitly[ReadWriter[R]].write(outerPos, eval(outerPos, ev))
+      }
+    })
+  }
+
+  def builtinx[R: ReadWriter, T1: ReadWriter, T2: ReadWriter, T3: ReadWriter, T4: ReadWriter](name: String, p1: String, p2: String, p3: String, p4: String)
+                                                                                            (eval: (Position, EvalScope, T1, T2, T3, T4) => R): (String, Val.Func) = {
+    (name, new Builtin4(p1, p2, p3, p4) {
+      def evalRhs(arg1: Val, arg2: Val, arg3: Val, arg4: Val, ev: EvalScope, outerPos: Position): Val = {
+        //println("--- calling builtin: "+name)
+        val v1: T1 = implicitly[ReadWriter[T1]].apply(arg1)
+        val v2: T2 = implicitly[ReadWriter[T2]].apply(arg2)
+        val v3: T3 = implicitly[ReadWriter[T3]].apply(arg3)
+        val v4: T4 = implicitly[ReadWriter[T4]].apply(arg4)
+        implicitly[ReadWriter[R]].write(outerPos, eval(outerPos, ev, v1, v2, v3, v4))
+      }
+    })
+  }
+
+  def builtin(params: Array[String], func: TriFunction[Array[Val], Position, EvalScope, Val]): Val.Func = {
+    val paramIndices = params.indices
+    new Val.Func(null, ValScope.empty, Params(params, null)) {
+      override def evalRhs(scope: ValScope, ev: EvalScope, fs: FileScope, pos: Position): Val = {
+        func.apply(paramIndices.map(i => scope.bindings(i).force).toArray, pos, ev)
+      }
     }
   }
 }
@@ -74,37 +81,6 @@ abstract class Library {
 
   def modules(dataFormats: DataFormatService, header: Header, importer: Importer): java.util.Map[String, Val.Obj] =
     Collections.emptyMap()
-
-  def libsonnets(): java.util.Set[String] =
-    Collections.emptySet()
-
-  final def moduleFrom(functions: (String, Val.Func)*): Val.Obj = {
-    Val.Obj.mk(dummyPosition, functions.map { case (k, v) => (k, memberOf(v)) }: _*)
-  }
-
-  final def builtin0[R: ReadWriter](name: String)
-                             (eval: (Position, EvalScope) => R): (String, Val.Func) = {
-    (name, new Builtin0() {
-      def evalRhs(ev: EvalScope, outerPos: Position): Val = {
-        //println("--- calling builtin: "+name)
-        implicitly[ReadWriter[R]].write(outerPos, eval(outerPos, ev))
-      }
-    })
-  }
-
-  final def builtin4[R: ReadWriter, T1: ReadWriter, T2: ReadWriter, T3: ReadWriter, T4: ReadWriter](name: String, p1: String, p2: String, p3: String, p4: String)
-                                                                                             (eval: (Position, EvalScope, T1, T2, T3, T4) => R): (String, Val.Func) = {
-    (name, new Builtin4(p1, p2, p3, p4) {
-      def evalRhs(arg1: Val, arg2: Val, arg3: Val, arg4: Val, ev: EvalScope, outerPos: Position): Val = {
-        //println("--- calling builtin: "+name)
-        val v1: T1 = implicitly[ReadWriter[T1]].apply(arg1)
-        val v2: T2 = implicitly[ReadWriter[T2]].apply(arg2)
-        val v3: T3 = implicitly[ReadWriter[T3]].apply(arg3)
-        val v4: T4 = implicitly[ReadWriter[T4]].apply(arg4)
-        implicitly[ReadWriter[R]].write(outerPos, eval(outerPos, ev, v1, v2, v3, v4))
-      }
-    })
-  }
 }
 
 // this assumes that we're comparing Vals of the same type
@@ -143,4 +119,9 @@ abstract class Builtin0() extends Builtin(Array.empty, null) {
   override def apply1(argVal: Lazy, outerPos: Position)(implicit ev: EvalScope): Val =
     if (params.names.length == 1) evalRhs(ev, outerPos)
     else super.apply(Array(argVal), null, outerPos)
+}
+
+@FunctionalInterface
+trait TriFunction[T, U, V, R] {
+  def apply(t: T, u: U, v: V): R
 }

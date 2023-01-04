@@ -1,7 +1,7 @@
 package io.github.jam01.xtrasonnet.spi;
 
 /*-
- * Copyright 2022 Jose Montoya.
+ * Copyright 2022-2023 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
@@ -9,9 +9,7 @@ package io.github.jam01.xtrasonnet.spi;
 
 import io.github.jam01.xtrasonnet.DataFormatService;
 import io.github.jam01.xtrasonnet.Transformer;
-import io.github.jam01.xtrasonnet.document.Document;
 import io.github.jam01.xtrasonnet.document.Documents;
-import io.github.jam01.xtrasonnet.document.MediaTypes;
 import io.github.jam01.xtrasonnet.header.Header;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
@@ -20,7 +18,6 @@ import sjsonnet.Importer;
 import sjsonnet.Val;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class LibraryTest {
@@ -35,7 +32,7 @@ public class LibraryTest {
         public Map<String, Val.Func> functions(DataFormatService dataFormats, Header header, Importer importer) {
             var res = new HashMap<String, Val.Func>();
 
-            res.put("echo", makeSimpleFunc(List.of("param"), (vals) -> new Val.Str(dummyPosition(), vals.get(0).asString() + " world!")));
+            res.put("echo", builtin(new String[]{"param"}, (vals, pos, ev) -> new Val.Str(dummyPosition(), vals[0].asString() + " world!")));
             return res;
         }
     }

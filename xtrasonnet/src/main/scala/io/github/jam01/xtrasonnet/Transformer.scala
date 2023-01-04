@@ -1,7 +1,7 @@
 package io.github.jam01.xtrasonnet
 
 /*-
- * Copyright 2022 Jose Montoya.
+ * Copyright 2022-2023 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
@@ -11,14 +11,14 @@ import io.github.jam01.xtrasonnet.Transformer.{ERROR_LINE_REGEX, handleException
 import io.github.jam01.xtrasonnet.document.Document.BasicDocument
 import io.github.jam01.xtrasonnet.document.{Document, MediaType, MediaTypes}
 import io.github.jam01.xtrasonnet.header.Header
-import io.github.jam01.xtrasonnet.spi.Library
+import io.github.jam01.xtrasonnet.spi.{Library, PluginException}
 import io.github.jam01.xtrasonnet.spi.Library.{dummyPosition, memberOf}
 import sjsonnet.Expr.Params
 import sjsonnet.ScopedExprTransform.{Scope, ScopedVal, emptyScope}
 import sjsonnet.{CachedResolver, DefaultParseCache, Error, EvalScope, Evaluator, Expr, FileScope, Importer, Materializer, ParseCache, ParseError, Path, Position, Settings, StaticOptimizer, Val, ValScope}
 
 import java.util.Collections
-import scala.collection.{Seq, immutable, mutable}
+import scala.collection.{Seq, immutable}
 import scala.jdk.CollectionConverters.{IterableHasAsScala, MapHasAsScala}
 import scala.util.control.NonFatal
 
@@ -90,7 +90,7 @@ class Transformer(private var script: String,
   // see StaticOptimizer#transform{case e @ Id(pos, name)}
   private val optimizer = new StaticOptimizer(evaluator)
   optimizer.scope = new Scope(immutable.HashMap.from(allLibs
-    .map(lib => (lib.namespace(), ScopedVal(composeLib(lib)._2, emptyScope, -1)))
+    .map(lib => (lib.namespace(), ScopedVal(composeLibs(lib)._2, emptyScope, -1)))
     .toMap), 0)
 
   private val scriptFn: Val.Func = evaluate(script, ResourcePath(main)) match {
@@ -143,52 +143,38 @@ class Transformer(private var script: String,
   }
 
   // supports a Map[String, Document] to enable a scenario where documents are grouped into a single input
-  private def resolveInput(name: String, input: Document[_]): ujson.Value = {
-    if (!input.getContent.isInstanceOf[java.util.Map[_, _]]) return formats.mandatoryRead(effectiveInput(name, input))
+  private def resolveInput(name: String, input: Document[_]): Expr = {
+    if (!input.getContent.isInstanceOf[java.util.Map[_, _]]) return formats.mandatoryRead(effectiveInput(name, input), evaluator.emptyMaterializeFileScopePos)
 
     val entrySet = input.getContent.asInstanceOf[java.util.Map[_, _]].entrySet()
-    if (entrySet.isEmpty) return formats.mandatoryRead(effectiveInput(name, input))
+    if (entrySet.isEmpty) return formats.mandatoryRead(effectiveInput(name, input), evaluator.emptyMaterializeFileScopePos)
 
     val it = entrySet.iterator
     val firstEntry = it.next
     if (!firstEntry.getKey.isInstanceOf[String] || !firstEntry.getValue.isInstanceOf[Document[_]])
-      return formats.mandatoryRead(effectiveInput(name, input))
+      return formats.mandatoryRead(effectiveInput(name, input), evaluator.emptyMaterializeFileScopePos)
 
-    val builder = mutable.LinkedHashMap.newBuilder[String, ujson.Value]
+    val builder = new java.util.LinkedHashMap[String, Val.Obj.Member]()
     val key = firstEntry.getKey.asInstanceOf[String]
-    builder.addOne((key, formats.mandatoryRead(effectiveInput(name + "." + key, firstEntry.getValue.asInstanceOf[Document[_]]))))
+    builder.put(key, memberOf(formats.mandatoryRead(effectiveInput(name + "." + key, firstEntry.getValue.asInstanceOf[Document[_]]), evaluator.emptyMaterializeFileScopePos)))
     while (it.hasNext) {
       val entry = it.next
       val key1 = entry.getKey.asInstanceOf[String]
-      builder.addOne((key1, formats.mandatoryRead(effectiveInput(name + "." + key1, entry.getValue.asInstanceOf[Document[_]]))))
+      builder.put(key1, memberOf(formats.mandatoryRead(effectiveInput(name + "." + key1, entry.getValue.asInstanceOf[Document[_]]), evaluator.emptyMaterializeFileScopePos)))
     }
-    ujson.Obj(builder.result)
+
+    new Val.Obj(dummyPosition, builder, false, null, null)
   }
 
-  private def composeLib(lib: Library): (String, Val.Obj) =
+  private def composeLibs(lib: Library): (String, Val.Obj) =
     (lib.namespace(), Val.Obj.mk(dummyPosition,
       lib.functions(formats, header, importer).asScala.toSeq.map {
         case (key, value) => (key, memberOf(value))
       }
         ++ lib.modules(formats, header, importer).asScala.toSeq.map {
         case (key, value) => (key, memberOf(value))
-      }
-        ++ lib.libsonnets().asScala.toSeq.map {
-        key => (key, memberOf(evalLibsonnet(key)))
       }: _*)
     )
-
-  private def evalLibsonnet(name: String): Val = {
-    val fName = s"$name.libsonnet"
-    val path = ResourcePath(fName)
-    importer.read(path) match {
-      case None => throw new IllegalArgumentException("libsonnet not found: " + fName)
-      case Some(txt) => evaluate(txt, path) match {
-        case Left(err) => throw new IllegalArgumentException("Error parsing libsonnet", processError(err))
-        case Right(value) => value
-      }
-    }
-  }
 
   private def processError(err: Error): Error = {
     val trace = err.getStackTrace
@@ -234,8 +220,8 @@ class Transformer(private var script: String,
                    inputs: java.util.Map[String, Document[_]],
                    output: MediaType,
                    target: Class[T]): Document[T] = {
-    val payloadExpr = Materializer.toExpr(formats.mandatoryRead(effectiveInput("payload", payload)))(evaluator)
-    val inputExprs = inputs.asScala.map { case (name, input) => Materializer.toExpr(resolveInput(name, input))(evaluator) }.toArray
+    val payloadExpr = formats.mandatoryRead(effectiveInput("payload", payload), evaluator.emptyMaterializeFileScopePos)
+    val inputExprs = inputs.asScala.map { case (name, input) => resolveInput(name, input) }.toArray
 
     val fnDefaultArgs = scriptFn.params.defaultExprs.clone()
 
@@ -253,16 +239,16 @@ class Transformer(private var script: String,
       override def evalDefault(expr: Expr, vs: ValScope, es: EvalScope): Val = scriptFn.evalDefault(expr, vs, es)
     }
 
-    val materialized = handleException(Materializer.apply(scriptFn2)(evaluator)) match {
+    val effectiveOut = effectiveOutput(output)
+
+    handleException(formats.mandatoryWrite(scriptFn2, effectiveOut, target, evaluator)) match {
       case Right(value) => value
       case Left(err) => err match {
         case pErr: ParseError => throw new IllegalArgumentException("Could not parse transformation script...", processError(pErr))
         case err: Error =>
+          if (err.getCause.isInstanceOf[PluginException]) throw err.getCause // materialization successful until this point, make this the root exc
           throw new IllegalArgumentException("Error evaluating xtrasonnet transformation...", processError(err))
       }
     }
-
-    val effectiveOut = effectiveOutput(output)
-    formats.mandatoryWrite(materialized, effectiveOut, target)
   }
 }
