@@ -85,3 +85,4 @@ nav:
     - application/x-java-object: dataformats/java.md
     - text/csv: dataformats/csv.md
     - text/plain: dataformats/plaintext.md
+  - Camel: camel.md
