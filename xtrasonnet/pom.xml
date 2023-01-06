@@ -13,8 +13,8 @@
     <artifactId>xtrasonnet</artifactId>
     <packaging>jar</packaging>
 
-    <name>xtrasonnet</name>
-    <description>jsonnet-based data transformation engine</description>
+    <name>extensible jsonnet transformations</name>
+    <description>An extensible, jsonnet-based data transformation engine</description>
 
     <dependencyManagement>
         <dependencies>
