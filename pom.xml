@@ -7,8 +7,11 @@
     <artifactId>xtrasonnet-parent</artifactId>
     <version>0.3.2-SNAPSHOT</version>
     <packaging>pom</packaging>
-    <description>A template-based, data transformation engine</description>
+
+    <name>xtrasonnet Parent</name>
+    <description>xtrasonnet Parent Pom</description>
     <url>https://github.com/jam01/xtrasonnet</url>
+
     <inceptionYear>2022</inceptionYear>
     <licenses>
         <license>

@@ -13,6 +13,9 @@
     <artifactId>camel-xtrasonnet</artifactId>
     <packaging>jar</packaging>
 
+    <name>Camel :: xtrasonnet</name>
+    <description>Camel xtrsaonnet support</description>
+
     <properties>
         <camel-version>3.20.0</camel-version>
 
