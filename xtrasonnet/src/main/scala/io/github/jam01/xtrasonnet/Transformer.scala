@@ -178,7 +178,7 @@ class Transformer(private var script: String,
 
   private def processError(err: Error): Error = {
     val trace = err.getStackTrace
-    val msg2 = if (!trace(0).getFileName.contains(main)) err.getMessage
+    val msg2 = if (trace.isEmpty || !trace(0).getFileName.contains(main)) err.getMessage
     else {
       ERROR_LINE_REGEX.replaceAllIn(err.getMessage, _ match {
         case ERROR_LINE_REGEX(fline, fcolumn) =>
