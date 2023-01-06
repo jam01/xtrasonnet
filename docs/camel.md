@@ -75,7 +75,7 @@ And the XML DSL:
 
 ## Specifying result type
 
-The xtrasonnet expression will return a `com.jam01.xtrasonnet.document.Document` by default. The document preserves the content type metadata along with the contents of the result of the transformation. In predicates, however, the `Document` will be automatically unwrapped and the boolean content will be returned. Similarly any time you want the content in a specific type, like a String, you have to instruct the xtrasonnet to do so.
+The xtrasonnet expression will return a `io.github.jam01.xtrasonnet.document.Document` by default. The document preserves the content type metadata along with the contents of the result of the transformation. In predicates, however, the `Document` will be automatically unwrapped and the boolean content will be returned. Similarly any time you want the content in a specific type, like a String, you have to instruct the xtrasonnet to do so.
 
 In Java DSL:
 
