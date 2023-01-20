@@ -1,9 +1,0 @@
-.highlight {
-  @extend .d-flex .flex-column .h-100;
-  + pre {
-    @extend .flex-grow-1;
-    > code {
-      @extend .h-100;
-    }
-  }
-}

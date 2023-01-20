@@ -9,7 +9,7 @@ repo_name: jam01/xtrasonnet
 repo_url: https://github.com/jam01/xtrasonnet
 
 # Copyright
-copyright: Copyright Jose Montoya 2022
+copyright: Copyright Jose Montoya 2023
 
 # Configuration
 theme:
@@ -38,6 +38,10 @@ extra:
 
 #extra_css:
 #  - stylesheets/extra.scss
+#  - stylesheets/extra.css
+
+#extra_javascript:
+#  - javascripts/editor.bundle.js
 
 # Extensions
 markdown_extensions:

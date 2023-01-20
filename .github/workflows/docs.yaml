@@ -20,4 +20,8 @@ jobs:
       - shell: bash
         run: |
           pip install mkdocs-material mkdocs-minify-plugin
+      - shell: bash
+        run: |
+          npm --prefix install
+          npm --prefix playground start
       - run: mkdocs gh-deploy --force

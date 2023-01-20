@@ -7,3 +7,5 @@ tmp
 .classpath
 .factorypath
 .project
+
+node_modules
