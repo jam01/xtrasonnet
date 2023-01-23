@@ -91,10 +91,9 @@ In XML DSL you use `CamelXtrasonnetResultType` as an exchange property or messag
 ```
 
 !!! note
-    If you wanted to specify result type through an exchange property or message header in the Java DSL, you can utilize the values in the  `XtrasonnetConstants`.
+    If you wanted to specify result type through an exchange property or message header in the Java DSL, you can utilize the values in `XtrasonnetConstants`.
 
-If the expression results in an Array, or an Object, you can instruct the expression to return you `List.class`
-or `Map.class`, respectively. However, the output media type must be `application/x-java-object` (default).
+If the expression results in an Array, or an Object, you can instruct the expression to return you `List.class` or `Map.class`, respectively. However, the output media type must be `application/x-java-object` (default).
 
 !!! note
     The default `Document` object is useful in situations where there are intermediate transformation steps, and so retaining the content metadata through a route execution is valuable.
@@ -119,7 +118,7 @@ And for output media type:
 
 
 !!! note
-    If you wanted to media types through an exchange property or message header in the Java DSL, you can use the values in the  `XtrasonnetConstants`.
+    If you wanted to specify media types through an exchange property or message header in the Java DSL, you can utilize the values in `XtrasonnetConstants`.
 
 ## cml Library
 
