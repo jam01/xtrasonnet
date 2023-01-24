@@ -19,6 +19,7 @@ theme:
     - content.code.annotate
     - navigation.indexes
     - navigation.tabs
+    - navigation.top
 docs_dir: docs
 
 # Plugins
