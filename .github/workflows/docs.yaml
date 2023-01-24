@@ -13,13 +13,15 @@ jobs:
     runs-on: [ ubuntu-latest ]
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+        uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
         with:
           python-version: 3.x
       - shell: bash
-        run: |
-          pip install mkdocs-material mkdocs-minify-plugin
+        run: pip install mkdocs-material mkdocs-minify-plugin
+      - uses: actions/setup-node@v3
+        with:
+          node-version: latest
       - shell: bash
         run: |
           npm --prefix install
