@@ -24,6 +24,6 @@ jobs:
           node-version: latest
       - shell: bash
         run: |
-          npm --prefix install
-          npm --prefix playground start
+          npm --prefix playground/ install
+          npm --prefix playground/ start
       - run: mkdocs gh-deploy --force
