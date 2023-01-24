@@ -91,3 +91,4 @@ nav:
     - text/csv: dataformats/csv.md
     - text/plain: dataformats/plaintext.md
   - Camel: camel.md
+  - Playground: playground.md
