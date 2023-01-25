@@ -45,7 +45,7 @@ async function transform(data) {
 const transformSubject = new Subject().pipe(debounceTime(1000));
 transformSubject.subscribe({
     error: _ => console.error("Error!"),
-    next: _ => {
+    next: view => {
         const out = document.getElementById("out-editor");
         out.style.filter = "blur(2px)";
 
@@ -56,9 +56,9 @@ transformSubject.subscribe({
         }).then((resp) => {
             return Promise.all([resp, resp.text()])
         }).then((resp) => {
-            var ctype = resp[0].headers.get("content-type");
-            var data = resp[1];
-            var lang = null;
+            const ctype = resp[0].headers.get("content-type");
+            let data = resp[1];
+            let lang = null;
             if (ctype.includes("xml")) {
                 data = html_beautify(resp[1]); // global functions through cdn w/o needing rollup 'external'
                 lang = xml();
@@ -83,6 +83,22 @@ transformSubject.subscribe({
             });
             outEditor.update([update]);
         }).finally(() => out.style.filter = "")
+
+        if (view.view === xtrEditor) {
+            const payload = view.state.doc.text.find(ln => ln.startsWith("input") && ln.includes("payload"));
+            let inLang = null;
+            if (payload.includes("xml")) {
+                inLang = xml();
+            } else if (payload.includes("json")) {
+                inLang = json();
+            }
+
+            if (inLang != null && inEditor.state.facet(language).name != inLang.language.name) {
+                inEditor.dispatch({
+                    effects: inFormat.reconfigure(inLang)
+                })
+            }
+        }
     }
 });
 
