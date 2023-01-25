@@ -178,6 +178,7 @@ public class DefaultCSVPlugin extends BaseJacksonPlugin {
 
     private CsvSchema.Builder baseBuilderFor(MediaType type) {
         CsvSchema.Builder builder = CsvSchema.builder();
+        builder.setLineSeparator("\r\n"); // https://www.ietf.org/rfc/rfc4180.html#section-2
 
         // no quotes or quote char
         if (type.isParameterEqual(PARAM_QUOTE_CHAR, "")) {

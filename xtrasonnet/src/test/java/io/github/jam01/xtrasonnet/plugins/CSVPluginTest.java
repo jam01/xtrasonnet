@@ -20,10 +20,11 @@ import java.util.Collections;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class CSVPluginTest {
+    // https://www.ietf.org/rfc/rfc4180.html#section-2
     String cars = """
-            color,type
-            blue,bus
-            yellow,truck
+            color,type\r
+            blue,bus\r
+            yellow,truck\r
             """;
 
     String carsNoheader = cars.substring(cars.indexOf('\n') + 1); // removed first line
