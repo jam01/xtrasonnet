@@ -1,7 +1,7 @@
 package io.github.jam01.xtrasonnet.plugins
 
 /*-
- * Copyright 2022 Jose Montoya.
+ * Copyright 2022-2023 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
@@ -9,6 +9,7 @@ package io.github.jam01.xtrasonnet.plugins
 
 import io.github.jam01.xtrasonnet.document.Document.BasicDocument
 import io.github.jam01.xtrasonnet.document.{Document, MediaType, MediaTypes}
+import io.github.jam01.xtrasonnet.plugins.DefaultXMLPlugin.Mode
 import io.github.jam01.xtrasonnet.plugins.xml.XML
 import io.github.jam01.xtrasonnet.spi.{BasePlugin, PluginException}
 import ujson.Value
@@ -162,7 +163,9 @@ object DefaultXMLPlugin extends BasePlugin {
   }
 
   object Mode extends Enumeration {
-    val simplified, extended, badger = Value
+    val simplified: Mode.Value = Value("simplified")
+    val extended: Mode.Value = Value("extended")
+    val badger: Mode.Value = Value("badger")
   }
 
   case class EffectiveParams(mode: Mode.Value,
