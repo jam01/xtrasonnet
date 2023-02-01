@@ -13,12 +13,14 @@
 // https://discuss.codemirror.net/t/listen-to-change-event/5095/1
 // https://codemirror.net/examples/styling/
 
-import {EditorView, basicSetup} from "codemirror"
+import {basicSetup} from "codemirror"
+import {EditorView, keymap} from "@codemirror/view"
 import {Compartment} from "@codemirror/state"
 import {json} from "@codemirror/lang-json"
 import {xml} from "@codemirror/lang-xml"
 import {language, syntaxHighlighting} from "@codemirror/language" // included by other lang deps
 import {classHighlighter} from "@lezer/highlight"
+import {indentWithTab} from "@codemirror/commands"
 
 // see: https://rollupjs.org/troubleshooting/#warning-treating-module-as-external-dependency
 import {Subject, debounceTime} from 'rxjs'; // external dep through cdn
@@ -110,7 +112,10 @@ let transformListener = EditorView.updateListener.of(view => {
 
 let outFormat = new Compartment
 let outEditor = new EditorView({
-    extensions: [basicSetup, EditorView.lineWrapping, outFormat.of(xml()), EditorView.editable.of(false)],
+    extensions: [
+      basicSetup, EditorView.lineWrapping, outFormat.of(xml()),
+      EditorView.editable.of(false)
+    ],
     parent: document.getElementById("out-editor"),
     doc: `<?xml version='1.0' encoding='UTF-8'?>
 <root>
@@ -120,7 +125,10 @@ let outEditor = new EditorView({
 
 let xtrEditor = new EditorView({
     parent: document.getElementById("xtr-editor"),
-    extensions: [basicSetup, EditorView.lineWrapping, transformListener],
+    extensions: [
+      basicSetup, EditorView.lineWrapping, transformListener,
+      keymap.of([indentWithTab])
+    ],
     doc: `/** xtrasonnet
 input payload application/json
 output application/xml
