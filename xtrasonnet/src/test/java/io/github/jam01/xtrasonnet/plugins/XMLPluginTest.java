@@ -298,4 +298,22 @@ public class XMLPluginTest {
                 .ignoreWhitespace().normalizeWhitespace().throwComparisonFailure()
                 .withNodeMatcher(new DefaultNodeMatcher(ElementSelectors.byNameAndText)));
     }
+
+    @Test
+    public void read_simple_repeated() throws JSONException {
+        var in = """
+                <xml>
+                  <repeat>1</repeat>
+                  <repeat>1</repeat>
+                  <repeat>1</repeat>
+                </xml>""";
+        var out = """
+                { "xml": { "repeat": ["1", "1", "1"] } }""";
+
+        var doc = new Transformer("payload").transform(Document.of(in,
+                MediaTypes.APPLICATION_XML.withParameter(DefaultXMLPlugin.PARAM_MODE(), DefaultXMLPlugin.SIMPLIFIED_MODE_VALUE())));
+
+        JSONAssert.assertEquals(out, doc.getContent(), true);
+        assertEquals(MediaTypes.APPLICATION_JSON, doc.getMediaType());
+    }
 }

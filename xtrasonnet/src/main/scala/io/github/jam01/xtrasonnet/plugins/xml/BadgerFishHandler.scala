@@ -1,7 +1,7 @@
 package io.github.jam01.xtrasonnet.plugins.xml
 
 /*-
- * Copyright 2022 Jose Montoya.
+ * Copyright 2022-2023 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
@@ -151,7 +151,7 @@ class BadgerFishHandler(params: EffectiveParams) extends DefaultHandler2 {
     var currVal: ujson.Value = current.obj
     if (Mode.simplified == params.mode) {
       if (current.obj.value.isEmpty) currVal = ujson.Null
-      else if (current.obj.value.size == 1 && current.hasText) currVal = current.obj.value.get(params.textKey).get
+      else if (current.obj.value.size == 1 && current.hasText) currVal = current.obj.value(params.textKey)
       else current.obj.value.remove(params.textKey)
     }
 
@@ -164,9 +164,9 @@ class BadgerFishHandler(params: EffectiveParams) extends DefaultHandler2 {
 
     if (parentObj.contains(currName)) {
       (parentObj(currName): @unchecked) match {
-        // added @unchecked to suppress non-exhaustive match warning, we will only see Arrs or Objs
         case ujson.Arr(arr) => arr.addOne(currVal)
         case ujson.Obj(existing) => parentObj.addOne(currName, ujson.Arr(existing, currVal))
+        case any => parentObj.addOne(currName, ujson.Arr(any, currVal)) // TODO: consider checking if we need to change simplified values to objects
       }
     } else {
       parentObj.addOne(currName, currVal)
