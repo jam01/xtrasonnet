@@ -111,10 +111,11 @@ let transformListener = EditorView.updateListener.of(view => {
 })
 
 let outFormat = new Compartment
+// see: https://discuss.codemirror.net/t/editable-of-false-with-ctrl-a/5642/2
 let outEditor = new EditorView({
     extensions: [
       basicSetup, EditorView.lineWrapping, outFormat.of(xml()),
-      EditorView.editable.of(false)
+      EditorView.editable.of(false), EditorView.contentAttributes.of({tabindex: "0"})
     ],
     parent: document.getElementById("out-editor"),
     doc: `<?xml version='1.0' encoding='UTF-8'?>
