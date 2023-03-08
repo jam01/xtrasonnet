@@ -356,7 +356,7 @@ object Xtr extends Library {
     },
 
     builtin("startsWith", "str1", "str2") {
-      (_, _, str1: String, str2: String) => str1.toUpperCase().startsWith(str2.toUpperCase());
+      (_, _, str1: String, str2: String) => str1.startsWith(str2);
     },
 
     builtin("toString", "value") {
