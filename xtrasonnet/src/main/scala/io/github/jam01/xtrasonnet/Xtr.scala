@@ -350,9 +350,9 @@ object Xtr extends Library {
         }
     },
 
-    builtin("split", "str", "regex") {
-      (pos, _, str: String, str2: String) =>
-        new Val.Arr(pos, str.split(str2.charAt(0)).toIndexedSeq.map(item => Val.Str(pos, item)).toArray)
+    builtin("split", "str1", "str2") {
+      (pos, _, str1: String, str2: String) =>
+        new Val.Arr(pos, Utils.split(str1, str2).map(s => Val.Str(pos, s)))
     },
 
     builtin("startsWith", "str1", "str2") {
