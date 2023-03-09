@@ -4,7 +4,7 @@
 
     <groupId>io.github.jam01</groupId>
     <artifactId>xtrasonnet-parent</artifactId>
-    <version>0.4.3-SNAPSHOT</version>
+    <version>0.4.3</version>
     <packaging>pom</packaging>
 
     <name>xtrasonnet Parent</name>
@@ -29,7 +29,7 @@
         <connection>scm:git:https://github.com/jam01/xtrasonnet.git</connection>
         <developerConnection>scm:git:https://github.com/jam01/xtrasonnet.git</developerConnection>
         <url>https://github.com/jam01/xtrasonnet.git</url>
-        <tag>HEAD</tag>
+        <tag>0.4.3</tag>
     </scm>
     <distributionManagement>
         <repository>
