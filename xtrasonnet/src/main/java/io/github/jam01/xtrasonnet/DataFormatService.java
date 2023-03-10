@@ -10,6 +10,7 @@ package io.github.jam01.xtrasonnet;
 import io.github.jam01.xtrasonnet.document.Document;
 import io.github.jam01.xtrasonnet.document.MediaType;
 import io.github.jam01.xtrasonnet.plugins.DefaultCSVPlugin;
+import io.github.jam01.xtrasonnet.plugins.DefaultExcelPlugin;
 import io.github.jam01.xtrasonnet.plugins.DefaultJSONPlugin;
 import io.github.jam01.xtrasonnet.plugins.DefaultJavaPlugin;
 import io.github.jam01.xtrasonnet.plugins.DefaultPlainTextPlugin;
@@ -29,7 +30,7 @@ public final class DataFormatService {
     private final List<DataFormatPlugin> plugins;
     public static final DataFormatService DEFAULT =
             new DataFormatService(Arrays.asList(new DefaultJSONPlugin(), new DefaultJavaPlugin(), DefaultXMLPlugin$.MODULE$,
-                    new DefaultCSVPlugin(), new DefaultPlainTextPlugin()));
+                    new DefaultCSVPlugin(), new DefaultPlainTextPlugin(), new DefaultExcelPlugin()));
 
     public DataFormatService(List<DataFormatPlugin> plugins) {
         this.plugins = plugins;

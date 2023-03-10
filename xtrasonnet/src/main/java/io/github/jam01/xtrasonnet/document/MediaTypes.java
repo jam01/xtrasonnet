@@ -1,7 +1,7 @@
 package io.github.jam01.xtrasonnet.document;
 
 /*-
- * Copyright 2022 Jose Montoya.
+ * Copyright 2022-2023 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
@@ -27,6 +27,7 @@ package io.github.jam01.xtrasonnet.document;
  * Changes made:
  * - Collected declared MimeTypes and MediaTypes
  * - Added CSV and Java MediaTypes
+ * - Added Excel and OOXML Spreadsheet MediaTypes
  * - Rename ALL as ANY
  */
 
@@ -294,6 +295,12 @@ public class MediaTypes {
 
     public static final String TEXT_CSV_VALUE = "text/csv";
 
+    public static final MediaType APPLICATION_EXCEL;
+    public static final String APPLICATION_EXCEL_VALUE = "application/vnd.ms-excel";
+
+    public static final MediaType APPLICATION_OOXML_SPREADSHEET_SHEET;
+    public static final String APPLICATION_OOXML_SPREADSHEET_SHEET_VALUE = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+
     // See Null Object pattern
     /**
      * Public constant media type for representing an unknown content type. This is meant to used to signal to xtrasonnet
@@ -336,6 +343,8 @@ public class MediaTypes {
         TEXT_XML = new MediaType("text", "xml");
         APPLICATION_JAVA = new MediaType("application", "x-java-object");
         TEXT_CSV = new MediaType("text", "csv");
+        APPLICATION_EXCEL = new MediaType("application", "vnd.ms-excel");
+        APPLICATION_OOXML_SPREADSHEET_SHEET = new MediaType("application", "vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         UNKNOWN = new MediaType("unknown", "unknown");
     }
 }

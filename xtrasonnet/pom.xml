@@ -55,6 +55,60 @@
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-csv</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+            <version>5.2.0</version>
+            <exclusions>
+                <!-- seemingly unnecessary deps, remove as necessary if test shows otherwise -->
+                <exclusion>
+                    <groupId>com.github.virtuald</groupId>
+                    <artifactId>curvesapi</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.santuario</groupId>
+                    <artifactId>xmlsec</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.bouncycastle</groupId>
+                    <artifactId>bcpkix-jdk15on</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.bouncycastle</groupId>
+                    <artifactId>bcutil-jdk15on</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.pdfbox</groupId>
+                    <artifactId>pdfbox</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>de.rototor.pdfbox</groupId>
+                    <artifactId>graphics2d</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.xmlgraphics</groupId>
+                    <artifactId>batik-svggen</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.xmlgraphics</groupId>
+                    <artifactId>batik-svgrasterizer</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.xmlgraphics</groupId>
+                    <artifactId>batik-codec</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.xmlgraphics</groupId>
+                    <artifactId>batik-bridge</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <!-- for POI dep -->
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-to-slf4j</artifactId>
+            <version>2.20.0</version>
+        </dependency>
         <!-- plugin deps: end -->
         <!-- crypto deps: start -->
         <!-- jce -->
@@ -97,6 +151,18 @@
             <groupId>com.github.tomakehurst</groupId>
             <artifactId>wiremock-jre8</artifactId>
             <version>2.35.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>2.0.5</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>2.0.5</version>
             <scope>test</scope>
         </dependency>
         <!-- test deps: end -->

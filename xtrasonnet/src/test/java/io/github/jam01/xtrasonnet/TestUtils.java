@@ -1,12 +1,13 @@
 package io.github.jam01.xtrasonnet;
 
 /*-
- * Copyright 2022 Jose Montoya.
+ * Copyright 2022-2023 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
  */
 
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -40,5 +41,10 @@ public class TestUtils {
         } catch (IOException | URISyntaxException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static File resourceAsFile(String filePath) {
+        String file = TestUtils.class.getClassLoader().getResource(filePath).getFile();
+        return new File(file);
     }
 }
