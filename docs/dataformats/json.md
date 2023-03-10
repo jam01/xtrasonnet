@@ -1,6 +1,8 @@
-# application/json
+# Javascript Object Notation
 
-JavaScript Object Notation
+## Supported MediaTypes
+* `application/json`
+* `application/*+json`
 
 ## Supported writer parameters
 ### `fmt`

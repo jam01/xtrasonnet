@@ -85,10 +85,10 @@ nav:
   - Header: header.md
   - Data formats:
     - dataformats/index.md
-    - application/json: dataformats/json.md
-    - application/xml: dataformats/xml.md
-    - application/x-java-object: dataformats/java.md
-    - text/csv: dataformats/csv.md
-    - text/plain: dataformats/plaintext.md
+    - JSON: dataformats/json.md
+    - XML: dataformats/xml.md
+    - Java Object: dataformats/java.md
+    - CSV: dataformats/csv.md
+    - Plain Text: dataformats/plaintext.md
   - Camel: camel.md
   - Playground: playground.md

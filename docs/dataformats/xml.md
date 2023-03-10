@@ -1,10 +1,11 @@
-# application/xml
+# eXtensible Markup Language
 
-eXtensible Markup Language
-
-Representing XML as JSON is not an obvious exercise, but a few conventions exist. Different conventions make different choices about what XML characteristics are important and which aren't, for example how they represent attributes or namespaces if they're kept at all. 
+## Supported MediaTypes 
+* `application/xml`
+* `application/*+xml`
 
 ## xtrasonnet convention
+Representing XML as JSON is not an obvious exercise, but a few conventions exist. Different conventions make different choices about what XML characteristics are important and which aren't, for example how they represent attributes or namespaces if they're kept at all.
 
 xtrasonnet's built in XML data format plugin is based on the BadgerFish convention, with some modifications and extensions. There are three conversion modes: `simplified`, `badger` (default), and `extended`.
 

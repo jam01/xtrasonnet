@@ -1,6 +1,8 @@
-# text/csv
+# Comma Separated Values
 
-Comma Separated Values
+## Supported MediaTypes
+* `text/csv`
+* `application/csv`
 
 ## Reader parameters
 ### `quotechar`
