@@ -7,7 +7,10 @@ Standardized format for representing spreadsheets, developed by Microsoft.
 * `application/vnd.ms-excel`
 
 !!! Warning
-At this time only reading Spreadsheet files is supported.
+    At this time only reading Spreadsheet files is supported.
+
+!!! Warning
+    This format is not supported in the xtrasonnet Playground
 
 ## Jsonnet representation
 

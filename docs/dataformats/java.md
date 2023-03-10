@@ -4,6 +4,9 @@
 * `application/x-java-object`
 * `application/java`
 
+!!! Warning
+    This format is not supported in the xtrasonnet Playground
+
 ## Custom `jackson.JsonMapper`
 xtrasonnet Java Object support is built on top of the popular FasterXML Jackson library. Being a general purpose transformation language some choices are made around Jackson's `JsonMapper` configuration, such as:
 
