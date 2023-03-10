@@ -18,7 +18,7 @@ In order to make different configurations or just further customize the mapper, 
 ```java
 var myJavaPlugin = new DefaultJavaPlugin(myJsonMapper);
 var myTransformer = Transformer.builder(myJsonnet)
-    .configurePlugins(plugins -> {
+    .extendPlugins(plugins -> {
         plugins.removeIf(plugin -> plugin instanceof DefaultJavaPlugin); // remove the default one
         plugins.add(0, myJavaPlugin);
     })
