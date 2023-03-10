@@ -6,22 +6,22 @@
 <dependency>
     <groupId>io.github.jam01</groupId>
     <artifactId>xtrasonnet</artifactId>
-    <version>0.4.2</version>
+    <version>0.5.0</version>
 </dependency>
 ```
 
 ### Gradle
 ``` groovy
-implementation "io.github.jam01:xtrasonnet:0.4.2"
+implementation "io.github.jam01:xtrasonnet:0.5.0"
 ```
 
 ### sbt
 ``` groovy
-libraryDependencies += "io.github.jam01" % "xtrasonnet" % "0.4.2"
+libraryDependencies += "io.github.jam01" % "xtrasonnet" % "0.5.0"
 ```
 
 [//]: # ()
 [//]: # (## Standalone)
 
 [//]: # ()
-[//]: # (Download the [xtrasonnet executable]&#40;https://github.com/jam01/xtrasonnet/releases/0.4.2/xtr.bin&#41;)
+[//]: # (Download the [xtrasonnet executable]&#40;https://github.com/jam01/xtrasonnet/releases/0.5.0/xtr.bin&#41;)
