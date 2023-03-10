@@ -90,5 +90,6 @@ nav:
     - Java Object: dataformats/java.md
     - CSV: dataformats/csv.md
     - Plain Text: dataformats/plaintext.md
+    - Office Spreadsheet: dataformats/spreadsheet.md
   - Camel: camel.md
   - Playground: playground.md
