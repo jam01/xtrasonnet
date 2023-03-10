@@ -48,12 +48,8 @@ import org.apache.camel.RuntimeExpressionException;
 import org.apache.camel.spi.ExpressionResultTypeAware;
 import org.apache.camel.support.ExchangeHelper;
 import org.apache.camel.support.ExpressionAdapter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class XtrasonnetExpression extends ExpressionAdapter implements ExpressionResultTypeAware {
-    private static final Logger LOG = LoggerFactory.getLogger(XtrasonnetExpression.class);
-
     private final String expression;
     private MediaType bodyMediaType;
     private MediaType outputMediaType;

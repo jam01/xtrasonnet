@@ -38,8 +38,6 @@ import org.apache.camel.Predicate;
 import org.apache.camel.spi.annotations.Language;
 import org.apache.camel.support.LRUCacheFactory;
 import org.apache.camel.support.LanguageSupport;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.Optional;
@@ -47,8 +45,6 @@ import java.util.function.Supplier;
 
 @Language("xtrasonnet")
 public class XtrasonnetLanguage extends LanguageSupport {
-    private static final Logger LOG = LoggerFactory.getLogger(XtrasonnetLanguage.class);
-
     // Cache used to stores the Mappers
     // See: {@link GroovyLanguage}
     private final Map<String, Transformer> mapperCache = LRUCacheFactory.newLRUSoftCache(16, 1000, true);
