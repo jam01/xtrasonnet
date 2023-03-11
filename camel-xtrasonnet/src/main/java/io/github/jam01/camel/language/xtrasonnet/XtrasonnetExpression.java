@@ -35,12 +35,14 @@ package io.github.jam01.camel.language.xtrasonnet;
 import java.util.Collections;
 import java.util.Set;
 
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import io.github.jam01.xtrasonnet.Transformer;
 import io.github.jam01.xtrasonnet.TransformerBuilder;
 import io.github.jam01.xtrasonnet.TransformerSettings;
 import io.github.jam01.xtrasonnet.document.Document;
 import io.github.jam01.xtrasonnet.document.MediaType;
 import io.github.jam01.xtrasonnet.document.MediaTypes;
+import io.github.jam01.xtrasonnet.plugins.DefaultJavaPlugin;
 import io.github.jam01.xtrasonnet.spi.Library;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
@@ -155,6 +157,16 @@ public class XtrasonnetExpression extends ExpressionAdapter implements Expressio
             for (Library lib : additionalLibraries) {
                 builder = builder.withLibrary(lib);
             }
+
+            Set<JsonMapper> mappers = context.getRegistry().findByType(JsonMapper.class);
+            if (mappers.size() == 1) {
+                JsonMapper mapper = mappers.iterator().next();
+                builder.extendPlugins(plugins -> {
+                    plugins.removeIf(plugin -> plugin instanceof DefaultJavaPlugin);
+                    plugins.add(0, new DefaultJavaPlugin(mapper));
+                });
+            }
+
             return builder.build();
         });
     }
