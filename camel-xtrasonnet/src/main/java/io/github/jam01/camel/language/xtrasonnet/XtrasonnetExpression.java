@@ -158,9 +158,8 @@ public class XtrasonnetExpression extends ExpressionAdapter implements Expressio
                 builder = builder.withLibrary(lib);
             }
 
-            Set<JsonMapper> mappers = context.getRegistry().findByType(JsonMapper.class);
-            if (mappers.size() == 1) {
-                JsonMapper mapper = mappers.iterator().next();
+            JsonMapper mapper = context.getRegistry().lookupByNameAndType("xtrasonnet", JsonMapper.class);
+            if (mapper != null) {
                 builder.extendPlugins(plugins -> {
                     plugins.removeIf(plugin -> plugin instanceof DefaultJavaPlugin);
                     plugins.add(0, new DefaultJavaPlugin(mapper));

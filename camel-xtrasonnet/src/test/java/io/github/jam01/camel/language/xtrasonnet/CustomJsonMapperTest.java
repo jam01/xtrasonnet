@@ -35,7 +35,7 @@ public class CustomJsonMapperTest extends CamelTestSupport {
 
     @Override
     protected void bindToRegistry(Registry registry) throws Exception {
-        registry.bind("customMapper", custom);
+        registry.bind("xtrasonnet", custom);
     }
 
     public static final String json = """
