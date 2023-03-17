@@ -70,6 +70,7 @@ nav:
       - installation.md
       - Programmatically: programmatic.md
 #      - Executable: cli.md
+      - Logging: logging.md
   - xtr:
     - xtr/index.md
     - arrays: xtr/arrays.md
