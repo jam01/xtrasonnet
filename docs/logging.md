@@ -3,12 +3,13 @@ Some of xtrasonnet dependencies leverage Log4J directly, instead of utilizing th
 
 ## Using Log4J
 
-If an application intends to use Log4J as the logging implementation it is required to exclude the `log4j-to-slf4j` bridge as a transitive dependency of xtrasonnet. In Maven this is done as follows:
+If an application intends to use Log4J as the logging implementation, it is required to exclude the `log4j-to-slf4j` bridge as a transitive dependency of xtrasonnet. In Maven this is done as follows:
 
 ```xml
 <dependency>
     <groupId>io.github.jam01</groupId>
-    <artifactId>xtrasonnet</artifactId>
+    <artifactId>xtrasonnet</artifactId> <!-- or camel-xtrasonnet -->
+    <version>0.5.2</version>
     <exclusions>
         <exclusion>
             <groupId>org.apache.logging.log4j</groupId>
