@@ -1,7 +1,7 @@
 package io.github.jam01.xtrasonnet.plugins.xml
 
 /*-
- * Copyright 2022 Jose Montoya.
+ * Copyright 2022-2023 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
@@ -61,16 +61,16 @@ class BadgerFishWriter(val params: EffectiveParams) {
 
   import Escapes.escMap
 
-  def serialize(name: String, value: ujson.Value, sb: Writer = new StringWriter()): Writer = {
-    sb.append('<')
-    val qname = name
-    sb.append(qname)
+  def serialize(qname: String, value: ujson.Value, sb: Writer = new StringWriter()): Writer = {
+    sb.append('<').append(qname)
 
     value match {
       case Null =>
         if (params.emptyTagsNull) sb.append("/>") else sb.append('>').append("</").append(qname).append('>')
       case Str(str) =>
-        if (str.isEmpty && params.emptyTagsStr) sb.append("/>") else sb.append('>'); escapeText(str, sb); sb.append("</").append(qname).append('>')
+        if (str.isEmpty && params.emptyTagsStr) sb.append("/>") else {
+          sb.append('>'); escapeText(str, sb); sb.append("</").append(qname).append('>')
+        }
       case Num(num) => sb.append('>').append(num.toString).append("</").append(qname).append('>')
       case bool: Bool => sb.append('>').append(bool.toString).append("</").append(qname).append('>')
       case Arr(arr) => sb.append('>'); arr.foreach(arrItm => serialize(qname, arrItm, sb)); sb.append("</").append(qname).append('>')
@@ -104,10 +104,14 @@ class BadgerFishWriter(val params: EffectiveParams) {
           }
         })
 
-        if ((children.isEmpty && params.emptyTagsObj) || (params.emptyTagsStr && children.size == 1 && {
+        if (children.isEmpty && params.emptyTagsObj) {
+          // if no children and emptytags includes object
+          sb append "/>"
+        } else if (params.emptyTagsStr && children.size == 1 && {
           val head = children.head
           head._1.startsWith(params.textKey) && head._2.str.isEmpty
-        })) { // if empty tags set, and empty object or string
+        }) {
+          // if only an empty string and emptytags includes string
           sb append "/>"
         } else {
           // children, so use long form: <xyz ...>...</xyz>
@@ -115,10 +119,11 @@ class BadgerFishWriter(val params: EffectiveParams) {
 
           children.toSeq
             // selectively flatten arrays
-            .foldLeft(new ArrayBuffer[(String, Value)])((acc, value) =>
+            .foldLeft(new ArrayBuffer[(String, Value)]) ((acc, value) =>
               if (!value._1.equals(params.posKey)) {
                 value._2 match {
-                  case ujson.Arr(arr) => acc.addAll(arr.map(it => value._1 -> it))
+                  case ujson.Arr(arr) =>
+                    if (arr.isEmpty ) acc.addOne(value._1, value._2) else acc.addAll(arr.map(it => value._1 -> it))
                   case _ => acc.addOne(value)
                 }
               } else acc)
@@ -153,9 +158,7 @@ class BadgerFishWriter(val params: EffectiveParams) {
                 }
             }
 
-          sb.append("</")
-          sb.append(qname)
-          sb.append('>')
+          sb.append("</").append(qname).append('>')
         }
 
         sb

@@ -41,10 +41,6 @@ public class XMLPluginTest {
     private final String escapedAsJson = """
             {"root":{"_attr":{"attr":"if a & b > c then \\"You're right\\""},"_text":"if a & b > c then \\"You're right\\""}}""";
 
-    private final String emptyTags = "<root><empty/><nil/><hasText>value</hasText><emptyText/></root>";
-    private final String emptyTagsAsJson = """
-            {"root":{"empty":{},"nil":null,"hasText":{"_text":"value"},"emptyText":{"_text":""}}}""";
-
     @Test
     public void read_comprehensive_simplified() throws JSONException {
         var doc = new Transformer("payload")
@@ -256,6 +252,10 @@ public class XMLPluginTest {
         assertEquals(escaped.replaceAll("\\n", ""), doc.getContent());
     }
 
+    private final String emptyTags = "<root><empty/><nil/><hasText>value</hasText><emptyText/></root>";
+    private final String emptyTagsAsJson = """
+            {"root":{"empty":{},"nil":null,"hasText":{"_text":"value"},"emptyText":{"_text":""}}}""";
+
     @Test
     public void write_emptytags_basic() {
         var doc = new Transformer(emptyTagsAsJson)
@@ -265,6 +265,27 @@ public class XMLPluginTest {
                                 .withParameter(DefaultXMLPlugin.PARAM_EXCLUDE(), DefaultXMLPlugin.EXCLUDE_XML_DECLARATION_VALUE()));
 
         assertEquals(emptyTags, doc.getContent());
+    }
+
+    private final String emptyTags_2 = "<root><nil/><str/><obj/><arr></arr></root>";
+    private final String emptyTagsAsJson_2 = """
+        {
+            "root": {
+                "nil": null,
+                "str": "",
+                "obj": {},
+                "arr": []
+            }
+        }""";
+
+    @Test
+    public void write_emptytags_basic_2() {
+        var doc = new Transformer(emptyTagsAsJson_2)
+                .transform(Documents.Null(), Collections.emptyMap(),
+                        MediaTypes.APPLICATION_XML.withParameter(DefaultXMLPlugin.PARAM_EMPTY_TAGS(), "null string object")
+                                .withParameter(DefaultXMLPlugin.PARAM_EXCLUDE(), DefaultXMLPlugin.EXCLUDE_XML_DECLARATION_VALUE()));
+
+        assertEquals(emptyTags_2, doc.getContent());
     }
 
     @Test

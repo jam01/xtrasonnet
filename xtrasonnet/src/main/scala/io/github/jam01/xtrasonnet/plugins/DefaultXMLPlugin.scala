@@ -214,7 +214,7 @@ object DefaultXMLPlugin extends BasePlugin {
         textKey, cdataKey, attrKey, posKey, xmlnsKey,
         xmlnsAware, declarations,
         omitDeclaration, xmlVer,
-        emptyTags.contains(EMPTY_TAGS_NULL_VALUE), emptyTags.contains(EMPTY_TAGS_STRING_VALUE), emptyTags.contains(EMPTY_TAGS_OBJECT_VALUE), Collections.emptyList(),
+        emptyTags.contains(EMPTY_TAGS_STRING_VALUE), emptyTags.contains(EMPTY_TAGS_NULL_VALUE), emptyTags.contains(EMPTY_TAGS_OBJECT_VALUE), Collections.emptyList(),
         nameForm, trimText)
     }
   }
