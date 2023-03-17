@@ -53,8 +53,9 @@ In the simplified mode the following rules apply:
 * Elements with only text result in a `String`
 * Elements with text and children elements result in an `Object`, with an entry for each child while ignoring the text
 * Elements with the same name result in an `Array`
-* Text fragments are concatenated, those are plain text content and cdata elements; equivalent to `trimtext=true`
 * Empty elements result in `Null`
+* Text fragments are concatenated, those are plain text content and cdata elements
+* Text content is trimmed; equivalent to `trimtext=true`
 
 ```json
 {
@@ -104,7 +105,8 @@ In the badger mode the following rules apply:
 * Attributes are included in an `_attr` entry
 * XML namespaces are included in an `_xmlns` entry, with the default namespace under a `_def` key 
 * Text content is included in a `_text` entry
-* Text fragments are concatenated, those are plain text content and cdata elements; equivalent to `trimtext=true`
+* Text fragments are concatenated, those are plain text content and cdata elements
+* Text content is trimmed; equivalent to `trimtext=true`
 * Empty elements result in an empty `Object`
 
 ```json
@@ -219,6 +221,7 @@ In the extended mode the following rules apply:
 * Plain text content is included in a `_text` entry
 * CData text is included in a `_cdata` entry
 * An element's position within its parent is included in an `_pos` entry, or as a suffix on its name if it's a plain or cdata text
+* Text content is not trimmed; equivalent to `trimtext=false`
 
 !!! hint
     Extended mode is recommended in scenarios where mixed content is expected in an element, that is multiple text fragments and child elements. Or if reading and writing XML and it's desirable to keep the structure as identical as possible, since extended mode will keep elements order even if there are arrays, and keep individual text and cdata elements separate. 
