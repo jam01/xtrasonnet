@@ -91,4 +91,20 @@ public class ExcelPluginTest {
         JSONAssert.assertEquals(simple_empty_cells, doc.getContent(), true);
         Assertions.assertEquals(MediaTypes.APPLICATION_JSON, doc.getMediaType());
     }
+
+    public String dates_xlsx_json = """
+            { "Sheet1": [
+                {"A":123,"B":456,"C":789},
+                {"A":123.456,"B":789.123,"C":456.789},
+                {"A":"2023-03-29T00:00","B":"2023-03-30T00:00","C":"2023-03-31T00:00"}
+            ]}""";
+
+    @Test
+    public void read_xlsx_dates() throws JSONException {
+        var doc = new Transformer("payload")
+                .transform(Document.of(TestUtils.resourceAsFile("dates.xlsx"), MediaTypes.APPLICATION_EXCEL));
+
+        JSONAssert.assertEquals(dates_xlsx_json, doc.getContent(), true);
+        Assertions.assertEquals(MediaTypes.APPLICATION_JSON, doc.getMediaType());
+    }
 }

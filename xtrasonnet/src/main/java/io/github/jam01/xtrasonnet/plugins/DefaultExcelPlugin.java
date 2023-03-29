@@ -13,6 +13,7 @@ import io.github.jam01.xtrasonnet.document.MediaTypes;
 import io.github.jam01.xtrasonnet.spi.BasePlugin;
 import io.github.jam01.xtrasonnet.spi.PluginException;
 import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.ss.util.CellReference;
@@ -74,7 +75,11 @@ public class DefaultExcelPlugin extends BasePlugin {
                             if (cell.getBooleanCellValue()) val = (Val.Literal) cVisitor.visitTrue(-1);
                             else cVisitor.visitFalse(-1);
                         } else if (CellType.NUMERIC == type) {
-                            val = (Val.Literal) cVisitor.visitFloat64(cell.getNumericCellValue(), -1);
+                            if (DateUtil.isCellDateFormatted(cell)) {
+                                val = (Val.Literal) cVisitor.visitString(cell.getLocalDateTimeCellValue().toString(), -1);
+                            } else {
+                                val = (Val.Literal) cVisitor.visitFloat64(cell.getNumericCellValue(), -1);
+                            }
                         } else if (CellType.STRING == type || CellType.FORMULA == type || CellType.BLANK == type) {
                             val = (Val.Literal) cVisitor.visitString(cell.getStringCellValue(), -1);
                         } else {
