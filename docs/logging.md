@@ -9,7 +9,7 @@ If an application intends to use Log4J as the logging implementation, it is requ
 <dependency>
     <groupId>io.github.jam01</groupId>
     <artifactId>xtrasonnet</artifactId> <!-- or camel-xtrasonnet -->
-    <version>0.5.2</version>
+    <version>0.5.3</version>
     <exclusions>
         <exclusion>
             <groupId>org.apache.logging.log4j</groupId>
