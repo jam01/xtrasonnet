@@ -18,6 +18,7 @@ public class RootTest {
     public void contains() {
         Assertions.assertEquals(TestUtils.transform("true"), TestUtils.transform("xtr.contains([1, 2, 3], 1)"));
         Assertions.assertEquals(TestUtils.transform("true"), TestUtils.transform("xtr.contains('Lorem ipsum', 'Lorem')"));
+        Assertions.assertEquals(TestUtils.transform("false"), TestUtils.transform("xtr.contains('Lorem ipsum', 'absent')"));
     }
 
     @Test

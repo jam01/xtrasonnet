@@ -83,7 +83,7 @@ object Xtr extends Library {
           case array: Val.Arr =>
             array.asLazyArray.exists(v => ev.equal(v.force, value))
           case str: Val.Str =>
-            str.value.contains(str.value)
+            str.value.contains(value.asString)
           case x => Error.fail("Expected Array or String, got: " + x.prettyName)
         }
     },
