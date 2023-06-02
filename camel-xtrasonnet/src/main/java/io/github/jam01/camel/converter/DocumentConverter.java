@@ -25,17 +25,24 @@ public class DocumentConverter {
     @SuppressWarnings("unchecked")
     @Converter(fallback = true)
     public static <T> T convertTo(Class<T> type, Exchange exchange, Object value, TypeConverterRegistry registry) {
-        if (Document.class.isAssignableFrom(value.getClass())) {
-            Document<?> doc = ((Document<?>) value);
-            if (doc.getContent() != null && type.isAssignableFrom(doc.getContent().getClass())) {
-                return (T) doc.getContent();
-            }
-
-            TypeConverter tc = registry.lookup(type, doc.getContent().getClass());
-            if (tc != null) {
-                return tc.convertTo(type, exchange, doc.getContent());
-            }
+        if (!Document.class.isAssignableFrom(value.getClass())) {
+            return null;
         }
+
+        Document<?> doc = ((Document<?>) value);
+        if (doc.getContent() == null) {
+            return null;
+        }
+
+        if (type.isAssignableFrom(doc.getContent().getClass())) {
+            return (T) doc.getContent();
+        }
+
+        TypeConverter tc = registry.lookup(type, doc.getContent().getClass());
+        if (tc != null) {
+            return tc.convertTo(type, exchange, doc.getContent());
+        }
+
         return null;
     }
 }
