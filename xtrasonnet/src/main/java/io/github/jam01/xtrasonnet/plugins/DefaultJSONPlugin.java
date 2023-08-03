@@ -17,10 +17,14 @@ import sjsonnet.Materializer$;
 import sjsonnet.Position;
 import sjsonnet.Val;
 import ujson.BytesRenderer;
+import ujson.InputStreamParser$;
+import ujson.Readable;
 import ujson.StringRenderer;
 import ujson.Value;
+import upickle.core.Visitor;
 
 import java.io.File;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
@@ -39,6 +43,7 @@ public class DefaultJSONPlugin extends BasePlugin {
         readerSupportedClasses.add(java.io.File.class);
         readerSupportedClasses.add(java.nio.ByteBuffer.class);
         readerSupportedClasses.add(byte[].class);
+        readerSupportedClasses.add(InputStream.class);
 
         writerSupportedClasses.add(java.lang.String.class);
         writerSupportedClasses.add(java.lang.CharSequence.class);
@@ -87,6 +92,10 @@ public class DefaultJSONPlugin extends BasePlugin {
 
         if (byte[].class.isAssignableFrom(targetType)) {
             return ujson.Readable.fromByteArray((byte[]) doc.getContent()).transform(new LiteralVisitor(pos));
+        }
+
+        if (InputStream.class.isAssignableFrom(targetType)) {
+            return InputStreamParser$.MODULE$.transform(((InputStream) doc.getContent()), new LiteralVisitor(pos));
         }
 
         throw new PluginException(new IllegalArgumentException("Unsupported document content class, use the test method canRead before invoking read"));

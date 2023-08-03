@@ -9,15 +9,20 @@ package io.github.jam01.camel.language.xtrasonnet;
 
 import io.github.jam01.camel.model.language.XtrasonnetExpression;
 import io.github.jam01.xtrasonnet.document.MediaTypes;
+import org.apache.camel.Exchange;
 import org.apache.camel.RoutesBuilder;
+import org.apache.camel.StreamCache;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
+import org.apache.camel.converter.stream.ByteArrayInputStreamCache;
+import org.apache.camel.converter.stream.InputStreamCache;
 import org.apache.camel.test.spring.junit5.CamelSpringTestSupport;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -152,6 +157,16 @@ public class RoutesTest extends CamelSpringTestSupport {
         mock.assertIsSatisfied();
     }
 
+    @Test
+    public void test_streamcache() throws InterruptedException {
+        mock.setExpectedMessageCount(1);
+        mock.expectedBodiesReceived(150);
+
+        template.sendBody("direct:streamcache", null);
+
+        mock.assertIsSatisfied();
+    }
+
     @Override
     protected RoutesBuilder createRouteBuilder() throws Exception {
         return new RouteBuilder() {
@@ -179,6 +194,21 @@ public class RoutesTest extends CamelSpringTestSupport {
                         .setHeader("valueBuilder", xtrasonnet("'hello world!'", String.class))
                         .setHeader("expressionClause").expression(xtrasonnet("'hello world!'", String.class))
                         .setHeader("langDsl", new XtrasonnetExpression.Builder().expression("'hello world!'").resultType(String.class).end())
+                        .to("mock:result");
+
+                var content = "resource:classpath:io/github/jam01/camel/language/xtrasonnet/streamcache.json";
+                from("direct:streamcache")
+                        .streamCaching()
+                        .setBody(constant(content))
+                        .convertBodyTo(InputStream.class, true)
+                        .process(ex -> {
+                            assert ex.getMessage().getBody() instanceof StreamCache;
+                            ex.getMessage().setBody(ex.getMessage().getBody(ByteArrayInputStreamCache.class).copy(ex));
+                            assert ex.getMessage().getBody() instanceof InputStreamCache;
+                        })
+                        .transform(xtrasonnet("xtr.length(payload)", Integer.class)
+                                .bodyMediaType(MediaTypes.APPLICATION_JSON)
+                                .outputMediaType(MediaTypes.APPLICATION_JAVA))
                         .to("mock:result");
             }
         };
