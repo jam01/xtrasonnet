@@ -1,13 +1,13 @@
 package io.github.jam01.xtrasonnet.modules
 
 /*-
- * Copyright 2022 Jose Montoya.
+ * Copyright 2022-2023 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
  */
 
-import sjsonnet.Std.builtin
+import io.github.jam01.xtrasonnet.spi.Library.Std.{builtin, builtinWithDefaults}
 import sjsonnet.{Val, Error}
 
 import java.text.DecimalFormat

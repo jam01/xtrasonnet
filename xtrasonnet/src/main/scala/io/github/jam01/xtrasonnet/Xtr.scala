@@ -48,8 +48,8 @@ import io.github.jam01.xtrasonnet.header.Header
 import io.github.jam01.xtrasonnet.modules.{Arrays, Base64, Crypto, Datetime, Duration, Math, Numbers, Objects, Strings, URL}
 import io.github.jam01.xtrasonnet.spi.{Library, ValOrdering}
 import io.github.jam01.xtrasonnet.spi.Library.{builtinx, dummyPosition, emptyObj, keyFrom, memberOf, moduleFrom}
+import io.github.jam01.xtrasonnet.spi.Library.Std.{builtin, builtinWithDefaults}
 import sjsonnet.ReadWriter.{ArrRead, ObjRead, ValRead}
-import sjsonnet.Std.{builtin, builtinWithDefaults}
 import sjsonnet.{Error, EvalScope, Evaluator, Importer, Lazy, Materializer, Position, Val}
 import ujson.{Bool, Null, Num, Str}
 
@@ -70,7 +70,7 @@ import scala.jdk.CollectionConverters._
 // further optimizations possible:
 // consider replacing memberOf(s) with lazy-invoke
 // prefer new Val.Obj() than Val.Obj.mk
-object Xtr extends Library {
+class Xtr extends Library {
 
   override def namespace() = "xtr"
 

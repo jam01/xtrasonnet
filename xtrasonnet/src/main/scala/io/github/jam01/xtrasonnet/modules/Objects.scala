@@ -1,7 +1,7 @@
 package io.github.jam01.xtrasonnet.modules
 
 /*-
- * Copyright 2022 Jose Montoya.
+ * Copyright 2022-2023 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
@@ -11,7 +11,7 @@ import io.github.jam01.xtrasonnet.spi.Library.keyFrom
 import io.github.jam01.xtrasonnet.spi.Library.{dummyPosition, emptyObj, memberOf}
 import os.Generator
 import sjsonnet.Expr.Member.Visibility
-import sjsonnet.Std.{builtin, builtinWithDefaults}
+import io.github.jam01.xtrasonnet.spi.Library.Std.{builtin, builtinWithDefaults}
 import sjsonnet.Val.Obj
 import sjsonnet.{Error, EvalScope, FileScope, Lazy, Val}
 

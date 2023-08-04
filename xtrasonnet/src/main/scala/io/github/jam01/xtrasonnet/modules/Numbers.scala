@@ -1,7 +1,7 @@
 package io.github.jam01.xtrasonnet.modules
 
 /*-
- * Copyright 2022 Jose Montoya.
+ * Copyright 2022-2023 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
@@ -31,7 +31,7 @@ package io.github.jam01.xtrasonnet.modules
  * - 2662d96cdfbd613d766830420a0b2a6920d07b52: change ds funtions and behaviors
  */
 
-import sjsonnet.Std.builtin
+import io.github.jam01.xtrasonnet.spi.Library.Std.{builtin, builtinWithDefaults}
 import sjsonnet.{Val, Error}
 
 object Numbers {

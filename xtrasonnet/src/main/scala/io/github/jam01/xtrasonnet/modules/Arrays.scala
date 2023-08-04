@@ -31,7 +31,7 @@ package io.github.jam01.xtrasonnet.modules
 
 import io.github.jam01.xtrasonnet.spi.Library.keyFrom
 import io.github.jam01.xtrasonnet.spi.Library.{dummyPosition, memberOf}
-import sjsonnet.Std.{builtin, builtinWithDefaults}
+import io.github.jam01.xtrasonnet.spi.Library.Std.{builtin, builtinWithDefaults}
 import sjsonnet.{Error, EvalScope, Lazy, Val}
 
 import scala.collection.mutable

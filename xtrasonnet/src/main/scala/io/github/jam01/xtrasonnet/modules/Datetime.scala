@@ -33,7 +33,7 @@ package io.github.jam01.xtrasonnet.modules
  */
 
 import io.github.jam01.xtrasonnet.spi.Library.{builtinx, memberOf}
-import sjsonnet.Std.builtin
+import io.github.jam01.xtrasonnet.spi.Library.Std.{builtin, builtinWithDefaults}
 import sjsonnet.Val
 import sjsonnet.Error
 

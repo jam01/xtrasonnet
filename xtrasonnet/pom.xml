@@ -4,7 +4,7 @@
     <parent>
         <groupId>io.github.jam01</groupId>
         <artifactId>xtrasonnet-parent</artifactId>
-        <version>0.5.5-SNAPSHOT</version>
+        <version>0.6.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -30,7 +30,7 @@
         <dependency>
             <groupId>io.github.jam01</groupId>
             <artifactId>sjsonnet_2.13</artifactId>
-            <version>0.4.3-03</version>
+            <version>0.4.5-03</version>
         </dependency>
         <dependency>
             <groupId>org.jetbrains</groupId>

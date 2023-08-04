@@ -21,6 +21,7 @@ import scala.jdk.CollectionConverters._
 object Library {
   val dummyPosition = new Position(null, 0)
   val emptyObj: Obj = Val.Obj.mk(dummyPosition, Seq.empty: _*)
+  val Std: Std = new Std
 
   def memberOf(value: Val): Obj.Member = new Obj.ConstMember(false, Visibility.Normal, value)
 

@@ -15,7 +15,7 @@ import io.github.jam01.xtrasonnet.spi.{Library, PluginException}
 import io.github.jam01.xtrasonnet.spi.Library.{dummyPosition, memberOf}
 import sjsonnet.Expr.Params
 import sjsonnet.ScopedExprTransform.{Scope, ScopedVal, emptyScope}
-import sjsonnet.{CachedResolver, DefaultParseCache, Error, EvalScope, Evaluator, Expr, FileScope, Importer, Materializer, ParseCache, ParseError, Path, Position, Settings, StaticOptimizer, Val, ValScope}
+import sjsonnet.{CachedResolver, DefaultParseCache, Error, EvalScope, Evaluator, Expr, FileScope, Importer, Materializer, ParseCache, ParseError, Path, Position, Settings, StaticOptimizer, Std, Val, ValScope}
 
 import java.util.Collections
 import scala.collection.{Seq, immutable}
@@ -51,7 +51,8 @@ class Transformer(private var script: String,
                   wd: Path = ResourcePath.root,
                   parseCache: ParseCache = new DefaultParseCache,
                   importer: Importer = ResourcePath.importer,
-                  private var settings: TransformerSettings = null) {
+                  private var settings: TransformerSettings = null,
+                  std: Val.Obj = new Std().Std) {
 
   def this(script: String,
            inputNames: java.util.Set[String],
@@ -78,9 +79,9 @@ class Transformer(private var script: String,
   val header: Header = Header.parseHeader(script)
   script = Transformer.asFunction(script, inputNames.asScala)
   settings = if (settings != null) settings else new TransformerSettings(preserveOrder = header.isPreserveOrder)
-  private val allLibs: IndexedSeq[Library] = IndexedSeq(Xtr).appendedAll(libs.asScala)
+  private val allLibs: IndexedSeq[Library] = IndexedSeq(new Xtr()).appendedAll(libs.asScala)
 
-  private val resolver: CachedResolver = new CachedResolver(importer, parseCache) {
+  private val resolver: CachedResolver = new CachedResolver(importer, parseCache, settings.strictImportSyntax) {
     override def process(expr: Expr, fs: FileScope): Either[Error, (Expr, FileScope)] =
       handleException((optimizer.optimize(expr), fs))
   }
@@ -88,7 +89,7 @@ class Transformer(private var script: String,
   private val evaluator = new Evaluator(resolver, Map.empty, wd, settings, null)
   // rely on StaticOptimizer to provide the libraries directly without VisitValidId, by populating its scope
   // see StaticOptimizer#transform{case e @ Id(pos, name)}
-  private val optimizer = new StaticOptimizer(evaluator)
+  private val optimizer = new StaticOptimizer(evaluator, std)
   optimizer.scope = new Scope(immutable.HashMap.from(allLibs
     .map(lib => (lib.namespace(), ScopedVal(composeLibs(lib)._2, emptyScope, -1)))
     .toMap), 0)
