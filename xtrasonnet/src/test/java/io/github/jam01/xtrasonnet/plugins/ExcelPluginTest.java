@@ -16,6 +16,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 
+import java.util.Collections;
+
 public class ExcelPluginTest {
     private final String simple_xlsx_json = """
             {
@@ -105,6 +107,18 @@ public class ExcelPluginTest {
                 .transform(Document.of(TestUtils.resourceAsFile("dates.xlsx"), MediaTypes.APPLICATION_EXCEL));
 
         JSONAssert.assertEquals(dates_xlsx_json, doc.getContent(), true);
+        Assertions.assertEquals(MediaTypes.APPLICATION_JSON, doc.getMediaType());
+    }
+
+    public String formula_xlsx_json = """
+            {"Sheet3":[{"A":"","B":"","C":"","D":"","E":""},{"A":"","B":60,"C":60,"D":3600,"E":""}]}""";
+
+    @Test
+    public void read_xlsx_formula() throws JSONException {
+        var doc = new Transformer("payload")
+                .transform(Document.of(TestUtils.resourceAsFile("formula.xlsx"), MediaTypes.APPLICATION_EXCEL));
+
+        JSONAssert.assertEquals(formula_xlsx_json, doc.getContent(), true);
         Assertions.assertEquals(MediaTypes.APPLICATION_JSON, doc.getMediaType());
     }
 }
