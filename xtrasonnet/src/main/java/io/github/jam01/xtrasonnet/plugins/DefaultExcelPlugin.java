@@ -12,6 +12,7 @@ import io.github.jam01.xtrasonnet.document.MediaType;
 import io.github.jam01.xtrasonnet.document.MediaTypes;
 import io.github.jam01.xtrasonnet.spi.BasePlugin;
 import io.github.jam01.xtrasonnet.spi.PluginException;
+import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -20,6 +21,7 @@ import org.apache.poi.ss.util.CellReference;
 import sjsonnet.EvalScope;
 import sjsonnet.Position;
 import sjsonnet.Val;
+import upickle.core.Visitor;
 
 import java.io.File;
 import java.io.IOException;
@@ -70,22 +72,7 @@ public class DefaultExcelPlugin extends BasePlugin {
                         var cVisitor = rVisitor.subVisitor();
 
                         var type = cell.getCellType();
-                        Val.Literal val = null;
-                        if (CellType.BOOLEAN == type) {
-                            if (cell.getBooleanCellValue()) val = (Val.Literal) cVisitor.visitTrue(-1);
-                            else cVisitor.visitFalse(-1);
-                        } else if (CellType.NUMERIC == type) {
-                            if (DateUtil.isCellDateFormatted(cell)) {
-                                val = (Val.Literal) cVisitor.visitString(cell.getLocalDateTimeCellValue().toString(), -1);
-                            } else {
-                                val = (Val.Literal) cVisitor.visitFloat64(cell.getNumericCellValue(), -1);
-                            }
-                        } else if (CellType.STRING == type || CellType.FORMULA == type || CellType.BLANK == type) {
-                            val = (Val.Literal) cVisitor.visitString(cell.getStringCellValue(), -1);
-                        } else {
-                            throw new IllegalArgumentException("Cannot represent type: " + type.toString() + " as a jsonnet element");
-                        }
-
+                        Val.Literal val = literalOf(type, cell, cVisitor);
                         rVisitor.visitValue(val, -1);
                     }
                     sVisitor.visitValue(rVisitor.visitEnd(-1), -1);
@@ -97,6 +84,25 @@ public class DefaultExcelPlugin extends BasePlugin {
         }
 
         return bVisitor.visitEnd(-1);
+    }
+
+    private static Val.Literal literalOf(CellType type, Cell cell, Visitor<?, ?> cVisitor) {
+        if (CellType.BOOLEAN == type) {
+            if (cell.getBooleanCellValue()) return (Val.Literal) cVisitor.visitTrue(-1);
+            else return (Val.Literal) cVisitor.visitFalse(-1);
+        } else if (CellType.NUMERIC == type) {
+            if (DateUtil.isCellDateFormatted(cell)) {
+                return (Val.Literal) cVisitor.visitString(cell.getLocalDateTimeCellValue().toString(), -1);
+            } else {
+                return (Val.Literal) cVisitor.visitFloat64(cell.getNumericCellValue(), -1);
+            }
+        } else if (CellType.STRING == type || CellType.BLANK == type) {
+            return (Val.Literal) cVisitor.visitString(cell.getStringCellValue(), -1);
+        } else if (CellType.FORMULA == type) {
+            return literalOf(cell.getCachedFormulaResultType(), cell, cVisitor);
+        } else {
+            throw new IllegalArgumentException("Cannot represent type: " + type.toString() + " as a jsonnet element");
+        }
     }
 
     @Override
