@@ -53,6 +53,9 @@ public final class CML extends Library {
         answer.put("exchangeProperty", builtin(
                 new String[]{"key"}, //parameters list
                 (params, pos, ev) -> exchangeProperty(params[0], dataFormats, pos)));
+        answer.put("variable", builtin(
+                new String[]{"key"}, // parameters list
+                (params, pos, ev) -> variable(params[0], dataFormats, pos)));
 
         return answer;
     }
@@ -74,6 +77,13 @@ public final class CML extends Library {
     private Val exchangeProperty(Val key, DataFormatService dataformats, Position pos) {
         if (key instanceof Val.Str) {
             return valFrom(exchange.get().getProperty(((Val.Str) key).value()), dataformats, pos);
+        }
+        throw new IllegalArgumentException("Expected String got: " + key.prettyName());
+    }
+
+    private Val variable(Val key, DataFormatService dataformats, Position pos){
+        if (key instanceof Val.Str) {
+            return valFrom(exchange.get().getVariable(((Val.Str) key).value()), dataformats, pos);
         }
         throw new IllegalArgumentException("Expected String got: " + key.prettyName());
     }
