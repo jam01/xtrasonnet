@@ -15,7 +15,9 @@
     <description>Camel xtrsaonnet support</description>
 
     <properties>
-        <camel-version>3.20.0</camel-version>
+        <camel-version>4.8.0</camel-version>
+        <maven.complier.source>21</maven.complier.source>
+        <maven.complier.target>21</maven.complier.target>
 
         <!-- matching camel -->
         <maven-failsafe-plugin-version>3.0.0-M4</maven-failsafe-plugin-version>
@@ -75,13 +77,13 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>2.0.6</version>
+            <version>2.0.16</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
-            <version>2.0.6</version>
+            <version>2.0.16</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -99,13 +101,13 @@
         <dependency>
             <groupId>org.skyscreamer</groupId>
             <artifactId>jsonassert</artifactId>
-            <version>1.5.1</version>
+            <version>1.5.3</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.hamcrest</groupId>
             <artifactId>hamcrest</artifactId>
-            <version>2.2</version>
+            <version>3.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
