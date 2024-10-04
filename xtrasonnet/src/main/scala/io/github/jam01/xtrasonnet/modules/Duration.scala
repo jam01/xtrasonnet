@@ -1,7 +1,7 @@
 package io.github.jam01.xtrasonnet.modules
 
 /*-
- * Copyright 2022-2023 Jose Montoya.
+ * Copyright 2022-2024 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
@@ -43,7 +43,7 @@ object Duration {
           dduration = java.time.Duration.parse('P' + duration.substring(timeIdx))
           period = Period.parse(duration.substring(0, timeIdx))
         } else {
-          period = Period.parse(duration.substring(0, timeIdx))
+          period = Period.parse(duration.substring(0))
         }
 
         out.put("years", memberOf(Val.Num(pos, period.getYears)))
