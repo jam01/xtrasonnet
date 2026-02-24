@@ -1,16 +1,16 @@
 package io.github.jam01.xtrasonnet.spi;
 
 /*-
- * Copyright 2022 Jose Montoya.
+ * Copyright 2022-2026 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
  */
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.github.jam01.xtrasonnet.document.Document;
 import io.github.jam01.xtrasonnet.document.MediaType;
 import io.github.jam01.xtrasonnet.document.MediaTypes;
-import ujson.Value;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -25,12 +25,12 @@ public abstract class BasePlugin implements DataFormatPlugin {
     protected final Set<Class<?>> writerSupportedClasses = new LinkedHashSet<>();
 
     @Override
-    public Value read(Document<?> doc) throws PluginException {
+    public JsonNode read(Document<?> doc) throws PluginException {
         throw new UnsupportedOperationException("not implemented!");
     }
 
     @Override
-    public <T> Document<T> write(Value input, MediaType mediaType, Class<T> targetType) throws PluginException {
+    public <T> Document<T> write(JsonNode input, MediaType mediaType, Class<T> targetType) throws PluginException {
         throw new UnsupportedOperationException("not implemented!");
     }
 

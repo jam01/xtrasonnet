@@ -1,30 +1,23 @@
 package io.github.jam01.camel.language.xtrasonnet;
 
 /*-
- * Copyright 2022-2023 Jose Montoya.
+ * Copyright 2022-2026 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
  */
 
-import io.github.jam01.xtrasonnet.DataFormatService;
-import io.github.jam01.xtrasonnet.document.Document;
 import io.github.jam01.xtrasonnet.document.Documents;
-import io.github.jam01.xtrasonnet.document.MediaTypes;
-import io.github.jam01.xtrasonnet.header.Header;
-import io.github.jam01.xtrasonnet.spi.Library;
+import io.github.jam01.xtrasonnet.spi.JLibrary;
 import org.apache.camel.spi.Registry;
 import org.apache.camel.test.junit5.CamelTestSupport;
 import org.junit.jupiter.api.Test;
-import sjsonnet.Importer;
 import sjsonnet.Val;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class AdditionalLibsTest extends CamelTestSupport {
     @Override
@@ -41,18 +34,18 @@ public class AdditionalLibsTest extends CamelTestSupport {
         assertEquals("hello world!", res);
     }
 
-    public static class TestLib extends Library {
+    public static class TestLib extends JLibrary {
 
         @Override
-        public String namespace() {
+        public String name() {
             return "testlib";
         }
 
         @Override
-        public Map<String, Val.Func> functions(DataFormatService dataFormats, Header header, Importer importer) {
+        public Map<String, Val.Func> functions() {
             var res = new HashMap<String, Val.Func>();
 
-            res.put("echo", builtin(new String[]{"param"}, (vals, pos, ev) -> new Val.Str(dummyPosition(), vals[0].asString() + " world!")));
+            res.put("echo", jbuiltin(new String[]{"param"}, (vals, pos, ev) -> new Val.Str(position(), vals[0].asString() + " world!")));
             return res;
         }
     }

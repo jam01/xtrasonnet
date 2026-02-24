@@ -1,7 +1,7 @@
 package io.github.jam01.camel.language.xtrasonnet;
 
 /*-
- * Copyright 2022-2023 Jose Montoya.
+ * Copyright 2022-2026 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
@@ -9,7 +9,6 @@ package io.github.jam01.camel.language.xtrasonnet;
 
 import io.github.jam01.camel.model.language.XtrasonnetExpression;
 import io.github.jam01.xtrasonnet.document.MediaTypes;
-import org.apache.camel.Exchange;
 import org.apache.camel.RoutesBuilder;
 import org.apache.camel.StreamCache;
 import org.apache.camel.builder.RouteBuilder;

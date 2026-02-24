@@ -1,13 +1,13 @@
 package io.github.jam01.xtrasonnet;
 
 /*-
- * Copyright 2022 Jose Montoya.
+ * Copyright 2022-2026 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
  */
 
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 import scala.io.Codec;
 import scala.io.Source;
 

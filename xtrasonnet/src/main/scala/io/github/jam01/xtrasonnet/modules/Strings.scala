@@ -1,19 +1,21 @@
 package io.github.jam01.xtrasonnet.modules
 
 /*-
- * Copyright 2022-2023 Jose Montoya.
+ * Copyright 2022-2026 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
  */
 
-import io.github.jam01.xtrasonnet.spi.Library.Std.{builtin, builtinWithDefaults}
-import sjsonnet.{Val, Error}
+import sjsonnet.functions.AbstractFunctionModule
+import sjsonnet.{Error, Val}
 
 import java.text.DecimalFormat
 import scala.collection.mutable
 
-object Strings {
+object Strings extends AbstractFunctionModule {
+  override def name: String = "strings"
+  
   val functions: Seq[(String, Val.Func)] = Seq(
 
     builtin("appendIfMissing", "str1", "str2") {
@@ -125,7 +127,7 @@ object Strings {
         str match {
           case str: Val.Str => ("%" + size + "s").format(str.value).replace(" ", pad.substring(0, 1))
           //TODO change to use sjsonnet's Format and DecimalFormat
-          case x: Val.Num => ("%" + size + "s").format(new DecimalFormat("0.#").format(x.value)).replace(" ", pad.substring(0, 1))
+          case x: Val.Num => ("%" + size + "s").format(new DecimalFormat("0.#").format(x.asInt)).replace(" ", pad.substring(0, 1))
           case x => Error.fail("Expected String, got: " + x.prettyName)
         }
     },
@@ -136,7 +138,7 @@ object Strings {
           case value: Val.Str =>
             if ("^[0-9]+$".r.matches(value.value)) value.value
             else Error.fail("Expected Number, got: " + value.value)
-          case value: Val.Num => value.value.toInt.toString
+          case value: Val.Num => value.asInt.toString
           case _ => Error.fail("Expected Number, got: " + num.prettyName)
         }
         if (str.endsWith("11") || str.endsWith("12") || str.endsWith("13")) str + "th"
@@ -188,7 +190,7 @@ object Strings {
         value match {
           case str: Val.Str => str.value.padTo(offset, pad.charAt(0))
           //TODO change to use sjsonnet's Format and DecimalFormat
-          case x: Val.Num => new DecimalFormat("0.#").format(x.value).padTo(offset, pad.charAt(0))
+          case x: Val.Num => new DecimalFormat("0.#").format(x.asInt).padTo(offset, pad.charAt(0))
           case x => Error.fail("Expected String, got: " + x.prettyName)
         }
     },

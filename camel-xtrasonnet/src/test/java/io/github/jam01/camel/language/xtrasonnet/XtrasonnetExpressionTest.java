@@ -1,12 +1,11 @@
 package io.github.jam01.camel.language.xtrasonnet;
 
 /*-
- * Copyright 2022-2023 Jose Montoya.
+ * Copyright 2022-2026 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
  */
-
 import io.github.jam01.xtrasonnet.document.Document;
 import io.github.jam01.xtrasonnet.document.Documents;
 import io.github.jam01.xtrasonnet.document.MediaTypes;
@@ -94,7 +93,8 @@ public class XtrasonnetExpressionTest extends CamelTestSupport {
                 {
                     prop: cml.properties('myProp'),
                     head: cml.header('myHeader'),
-                    ex_prop: cml.exchangeProperty('myExProp')
+                    ex_prop: cml.exchangeProperty('myExProp'),
+                    var: cml.variable('myVar')
                 }
                 """);
         exp.init(context());
@@ -102,8 +102,9 @@ public class XtrasonnetExpressionTest extends CamelTestSupport {
         var ex = createExchangeWithBody(Documents.Null());
         ex.getMessage().setHeader("myHeader", "val2");
         ex.setProperty("myExProp", "val3");
+        ex.setVariable("myVar", "val4");
 
         var res = exp.evaluate(ex, Map.class);
-        assertEquals(Map.of("prop", "val1", "head", "val2", "ex_prop", "val3"), res);
+        assertEquals(Map.of("prop", "val1", "head", "val2", "ex_prop", "val3", "var", "val4"), res);
     }
 }

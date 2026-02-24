@@ -1,7 +1,7 @@
 package io.github.jam01.xtrasonnet.modules
 
 /*-
- * Copyright 2022-2023 Jose Montoya.
+ * Copyright 2022-2026 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
@@ -32,18 +32,18 @@ package io.github.jam01.xtrasonnet.modules
  *      Functions: datetime.parse
  */
 
-import io.github.jam01.xtrasonnet.spi.Library.{builtinx, memberOf}
-import io.github.jam01.xtrasonnet.spi.Library.Std.{builtin, builtinWithDefaults}
-import sjsonnet.Val
-import sjsonnet.Error
+import sjsonnet.functions.AbstractFunctionModule
+import sjsonnet.{Error, Val}
 
-import java.time.{Duration, Instant, OffsetDateTime, Period, ZoneOffset}
 import java.time.format.DateTimeFormatter
+import java.time.{Duration, Instant, OffsetDateTime, Period, ZoneOffset}
 import scala.collection.mutable
 
-object Datetime {
+object Datetime extends AbstractFunctionModule {
+  override def name: String = "datetime"
+
   val functions: Seq[(String, Val.Func)] = Seq(
-    builtinx("now") { (_, _) => OffsetDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME) },
+    builtin("now") { (_, _) => OffsetDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME) },
 
     builtin("format", "datetime", "outputFormat") { (_, _, datetime: String, outputFormat: String) =>
       val datetimeObj = OffsetDateTime.parse(datetime)
@@ -147,7 +147,7 @@ object Datetime {
           .toLocalDate.isLeapYear;
     },
 
-    builtinx("today") {
+    builtin("today") {
       (_, _) =>
         val date = OffsetDateTime.now()
         date.minusHours(date.getHour)
@@ -156,7 +156,7 @@ object Datetime {
           .minusNanos(date.getNano).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
     },
 
-    builtinx("tomorrow") {
+    builtin("tomorrow") {
       (_, _) =>
         val date = OffsetDateTime.now()
         date.plusDays(1)
@@ -166,7 +166,7 @@ object Datetime {
           .minusNanos(date.getNano).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
     },
 
-    builtinx("yesterday") {
+    builtin("yesterday") {
       (_, _) =>
         val date = OffsetDateTime.now()
         date.minusDays(1)
@@ -283,7 +283,7 @@ object Datetime {
           var inst: Instant = null
           datetime match {
             case str: Val.Str => inst = Instant.ofEpochSecond(str.value.toLong)
-            case num: Val.Num => inst = Instant.ofEpochSecond(num.value.toLong)
+            case num: Val.Num => inst = Instant.ofEpochSecond(num.asLong)
             case _ => Error.fail("Expected datetime to be a string or number, got: " + datetime.prettyName)
           }
           datetimeObj = OffsetDateTime.ofInstant(inst, ZoneOffset.UTC)

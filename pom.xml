@@ -4,7 +4,7 @@
 
     <groupId>io.github.jam01</groupId>
     <artifactId>xtrasonnet-parent</artifactId>
-    <version>0.6.2-SNAPSHOT</version>
+    <version>0.7.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>xtrasonnet Parent</name>
@@ -90,7 +90,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>3.0.0-M7</version>
+                    <version>3.2.5</version>
                 </plugin>
                 <plugin>
                     <groupId>com.mycila</groupId>
@@ -107,7 +107,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>3.4.0</version>
+                    <version>3.6.3</version>
                     <configuration>
                         <source>17</source>
                         <encoding>UTF-8</encoding>
@@ -116,12 +116,12 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-jar-plugin</artifactId>
-                    <version>3.2.2</version>
+                    <version>3.3.0</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-release-plugin</artifactId>
-                    <version>3.0.0-M6</version>
+                    <version>3.3.0</version>
                     <configuration>
                         <localCheckout>true</localCheckout>
                         <releaseProfiles>release</releaseProfiles>
@@ -131,7 +131,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-gpg-plugin</artifactId>
-                    <version>3.0.1</version>
+                    <version>3.2.7</version>
                     <configuration>
                         <gpgArguments>
                             <arg>--pinentry-mode</arg>
@@ -142,7 +142,7 @@
                 <plugin>
                     <groupId>org.sonatype.plugins</groupId>
                     <artifactId>nexus-staging-maven-plugin</artifactId>
-                    <version>1.6.13</version>
+                    <version>1.7.0</version>
                     <extensions>true</extensions>
                     <configuration>
                         <serverId>sonatype-ossrh</serverId>

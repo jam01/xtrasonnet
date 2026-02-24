@@ -1,7 +1,7 @@
 package io.github.jam01.xtrasonnet.modules
 
 /*-
- * Copyright 2022-2023 Jose Montoya.
+ * Copyright 2022-2026 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
@@ -32,15 +32,17 @@ package io.github.jam01.xtrasonnet.modules
  */
 
 import org.bouncycastle.util.encoders.Hex
-import io.github.jam01.xtrasonnet.spi.Library.Std.{builtin, builtinWithDefaults}
 import sjsonnet.Val
+import sjsonnet.functions.AbstractFunctionModule
 
 import java.nio.charset.StandardCharsets
 import java.security.{MessageDigest, SecureRandom}
-import javax.crypto.{Cipher, Mac}
 import javax.crypto.spec.{IvParameterSpec, SecretKeySpec}
+import javax.crypto.{Cipher, Mac}
 
-object Crypto {
+object Crypto extends AbstractFunctionModule {
+  override def name: String = "crypto"
+  
   val functions: Seq[(String, Val.Func)] = Seq(
     builtin("encrypt", "value", "secret", "algorithm") {
       (_, _, value: String, secret: String, transformation: String) =>

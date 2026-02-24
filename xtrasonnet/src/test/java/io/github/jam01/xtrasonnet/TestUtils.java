@@ -1,11 +1,14 @@
 package io.github.jam01.xtrasonnet;
 
 /*-
- * Copyright 2022-2023 Jose Montoya.
+ * Copyright 2022-2026 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
  */
+
+import io.github.jam01.xtrasonnet.document.MediaTypes;
+import sjsonnet.Settings;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,7 +25,9 @@ public class TestUtils {
     }
 
     public static String transform(String script, String payload) {
-        return new Transformer(script).transform(payload);
+        return Transformer.builder(script)
+                .withSettings(new TransformerSettings(new Settings(true, false, false, false, 1000, false), MediaTypes.APPLICATION_JSON, MediaTypes.APPLICATION_JSON))
+                .build().transform(payload);
     }
 
     public static String stacktraceFrom(Exception ex) {

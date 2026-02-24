@@ -1,7 +1,7 @@
 package io.github.jam01.xtrasonnet
 
 /*-
- * Copyright 2022-2023 Jose Montoya.
+ * Copyright 2022-2026 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
@@ -12,13 +12,13 @@ import io.github.jam01.xtrasonnet.document.Document.BasicDocument
 import io.github.jam01.xtrasonnet.document.{Document, MediaType, MediaTypes}
 import io.github.jam01.xtrasonnet.header.Header
 import io.github.jam01.xtrasonnet.spi.{Library, PluginException}
-import io.github.jam01.xtrasonnet.spi.Library.{dummyPosition, memberOf}
+import sjsonnet.Expr.Member.Visibility
 import sjsonnet.Expr.Params
-import sjsonnet.ScopedExprTransform.{Scope, ScopedVal, emptyScope}
-import sjsonnet.{CachedResolver, DefaultParseCache, Error, EvalScope, Evaluator, Expr, FileScope, Importer, Materializer, ParseCache, ParseError, Path, Position, Settings, StaticOptimizer, Std, Val, ValScope}
+import sjsonnet.Val.Obj
+import sjsonnet.stdlib.StdLibModule
+import sjsonnet.{DefaultParseCache, Error, EvalScope, Evaluator, Expr, FileScope, Importer, Interpreter, ParseCache, ParseError, Path, Position, Settings, StaticResolvedFile, TailstrictModeDisabled, Val, ValScope}
 
 import java.util.Collections
-import scala.collection.{Seq, immutable}
 import scala.jdk.CollectionConverters.{IterableHasAsScala, MapHasAsScala}
 import scala.util.control.NonFatal
 
@@ -27,7 +27,7 @@ object Transformer {
 
   // We wrap the script as function in order to pass in payload, and named inputs
   // see the 'Top-level arguments' section in https://jsonnet.org/learning/tutorial.html#parameterize-entire-config
-  private def asFunction(script: String, argumentNames: Iterable[String]) =
+  private def asFunction(script: String, argumentNames: Iterable[String]): String =
     (Seq("payload") ++ argumentNames).mkString("function(", ", ", ")\n") + script
 
   private val ERROR_LINE_REGEX = raw":(\d+):(\d+)".r
@@ -52,7 +52,7 @@ class Transformer(private var script: String,
                   parseCache: ParseCache = new DefaultParseCache,
                   importer: Importer = ResourcePath.importer,
                   private var settings: TransformerSettings = null,
-                  std: Val.Obj = new Std().Std) {
+                  std: Val.Obj = StdLibModule.Default.module) {
 
   def this(script: String,
            inputNames: java.util.Set[String],
@@ -78,21 +78,24 @@ class Transformer(private var script: String,
 
   val header: Header = Header.parseHeader(script)
   script = Transformer.asFunction(script, inputNames.asScala)
-  settings = if (settings != null) settings else new TransformerSettings(preserveOrder = header.isPreserveOrder)
-  private val allLibs: IndexedSeq[Library] = IndexedSeq(new Xtr()).appendedAll(libs.asScala)
+  settings = if (settings != null) settings else new TransformerSettings(Settings(preserveOrder = header.isPreserveOrder))
 
-  private val resolver: CachedResolver = new CachedResolver(importer, parseCache, settings.strictImportSyntax) {
-    override def process(expr: Expr, fs: FileScope): Either[Error, (Expr, FileScope)] =
-      handleException((optimizer.optimize(expr), fs))
-  }
+  private val allLibs: IndexedSeq[Library] = IndexedSeq(new Xtr(formats, header)).appendedAll(libs.asScala)
+  private val allLibsMap: Map[String, Val.Obj] = allLibs.map(lib => (lib.name, lib.module)).toMap
 
-  private val evaluator = new Evaluator(resolver, Map.empty, wd, settings, null)
-  // rely on StaticOptimizer to provide the libraries directly without VisitValidId, by populating its scope
-  // see StaticOptimizer#transform{case e @ Id(pos, name)}
-  private val optimizer = new StaticOptimizer(evaluator, std)
-  optimizer.scope = new Scope(immutable.HashMap.from(allLibs
-    .map(lib => (lib.namespace(), ScopedVal(composeLibs(lib)._2, emptyScope, -1)))
-    .toMap), 0)
+  private val interpreter = Interpreter(
+    Map.empty,
+    Map.empty,
+    ResourcePath(main),
+    importer,
+    parseCache,
+    settings.sjsSettings,
+    std = std,
+    variableResolver = ext => {
+      allLibsMap.get(ext)
+    }
+  )
+  private val evaluator: Evaluator = interpreter.evaluator
 
   private val scriptFn: Val.Func = evaluate(script, ResourcePath(main)) match {
     case Right(value) => value match {
@@ -107,13 +110,12 @@ class Transformer(private var script: String,
   }
 
   def evaluate(txt: String, path: Path): Either[Error, Val] = {
-    resolver.cache(path) = txt
-    for {
-      res <- resolver.parse(path, txt)(evaluator)
-      (parsed, _) = res
-      res0 <- handleException(evaluator.visitExpr(parsed)(ValScope.empty))
-    } yield res0
-  }
+      val resolvedImport = StaticResolvedFile(txt)
+      interpreter.resolver.cache(path) = resolvedImport
+      interpreter.resolver.parse(path, resolvedImport)(evaluator) flatMap { case (expr, x) =>
+        handleException(evaluator.visitExpr(expr)(ValScope.empty))
+      }
+    }
 
   // If the requested type is ANY then look in the header, default to JSON
   private def effectiveOutput(output: MediaType): MediaType = {
@@ -164,18 +166,12 @@ class Transformer(private var script: String,
       builder.put(key1, memberOf(formats.mandatoryRead(effectiveInput(name + "." + key1, entry.getValue.asInstanceOf[Document[_]]), evaluator.emptyMaterializeFileScopePos)))
     }
 
-    new Val.Obj(dummyPosition, builder, false, null, null)
+    new Val.Obj(Position(null, 0), builder, false, null, null)
   }
 
-  private def composeLibs(lib: Library): (String, Val.Obj) =
-    (lib.namespace(), Val.Obj.mk(dummyPosition,
-      lib.functions(formats, header, importer).asScala.toSeq.map {
-        case (key, value) => (key, memberOf(value))
-      }
-        ++ lib.modules(formats, header, importer).asScala.toSeq.map {
-        case (key, value) => (key, memberOf(value))
-      }: _*)
-    )
+  private def memberOf(value: Val): Obj.Member = new Obj.ConstMember(false, Visibility.Normal, value)
+
+  private def composeLibs(lib: Library): (String, Val.Obj) = (lib.name, lib.module)
 
   private def processError(err: Error): Error = {
     val trace = err.getStackTrace
@@ -235,14 +231,16 @@ class Transformer(private var script: String,
     }
 
     val scriptFn2 = new Val.Func(scriptFn.pos, scriptFn.defSiteValScope, Params(scriptFn.params.names, fnDefaultArgs)) {
-      override def evalRhs(vs: ValScope, es: EvalScope, fs: FileScope, pos: Position): Val = scriptFn.evalRhs(vs, es, fs, pos)
+      override def evalRhs(vs: ValScope, es: EvalScope, fs: FileScope, pos: Position): Val =
+        scriptFn.evalRhs(vs, es, fs, pos)
 
-      override def evalDefault(expr: Expr, vs: ValScope, es: EvalScope): Val = scriptFn.evalDefault(expr, vs, es)
+      override def evalDefault(expr: Expr, vs: ValScope, es: EvalScope): Val =
+        scriptFn.evalDefault(expr, vs, es)
     }
 
     val effectiveOut = effectiveOutput(output)
 
-    handleException(formats.mandatoryWrite(scriptFn2, effectiveOut, target, evaluator)) match {
+    handleException(formats.mandatoryWrite(scriptFn2.apply0(scriptFn.pos)(evaluator, TailstrictModeDisabled), effectiveOut, target, evaluator)) match {
       case Right(value) => value
       case Left(err) => err match {
         case pErr: ParseError => throw new IllegalArgumentException("Could not parse transformation script...", processError(pErr))

@@ -1,7 +1,7 @@
 package io.github.jam01.xtrasonnet.plugins
 
 /*-
- * Copyright 2022-2023 Jose Montoya.
+ * Copyright 2022-2026 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
@@ -9,16 +9,14 @@ package io.github.jam01.xtrasonnet.plugins
 
 import io.github.jam01.xtrasonnet.document.Document.BasicDocument
 import io.github.jam01.xtrasonnet.document.{Document, MediaType, MediaTypes}
-import io.github.jam01.xtrasonnet.plugins.DefaultXMLPlugin.Mode
 import io.github.jam01.xtrasonnet.plugins.xml.XML
 import io.github.jam01.xtrasonnet.spi.{BasePlugin, PluginException}
-import ujson.Value
+import sjsonnet.{EvalScope, Position, Val}
 
-import java.io._
+import java.io.*
 import java.net.URL
 import java.nio.charset.Charset
 import java.util.Collections
-import scala.collection.mutable
 import scala.jdk.CollectionConverters.MapHasAsScala
 
 // See: http://wiki.open311.org/JSON_and_XML_Conversion/#the-badgerfish-convention
@@ -111,8 +109,8 @@ object DefaultXMLPlugin extends BasePlugin {
   writerSupportedClasses.add(classOf[OutputStream].asInstanceOf[java.lang.Class[_]])
 
   @throws[PluginException]
-  override def read(doc: Document[_]): Value = {
-    if (doc.getContent == null) return ujson.Null
+  override def read(doc: Document[_], pos: Position): Val.Literal = {
+    if (doc.getContent == null) return Val.Null(pos)
 
     val effectiveParams = EffectiveParams(doc.getMediaType)
 
@@ -126,9 +124,9 @@ object DefaultXMLPlugin extends BasePlugin {
   }
 
   @throws[PluginException]
-  override def write[T](input: Value, mediaType: MediaType, targetType: Class[T]): Document[T] = {
-    if (!input.isInstanceOf[ujson.Obj]) {
-      throw new PluginException("Input for XML writer must be an Object, got " + input.getClass)
+  override def write[T](input: Val, mediaType: MediaType, targetType: Class[T], ev: EvalScope): Document[T] = {
+    if (!input.isInstanceOf[Val.Obj]) {
+      throw new PluginException("Input for XML writer must be an Object, got " + input.prettyName)
     }
 
     val effectiveParams = EffectiveParams(mediaType)
@@ -137,22 +135,23 @@ object DefaultXMLPlugin extends BasePlugin {
       charset = Charset.defaultCharset
     }
 
-    val inputAsObj: mutable.Map[String, Value] = input.obj.asInstanceOf[mutable.Map[String, Value]]
-
-    if (inputAsObj.keys.size > 1) {
+    val inputAsObj: Val.Obj = input.asObj
+    if (inputAsObj.visibleKeyNames.length > 1) {
       throw new PluginException("Object must have only one root element")
     }
 
+    val name = inputAsObj.visibleKeyNames.head
     if (targetType.isAssignableFrom(classOf[String])) {
       val writer = new StringWriter()
-      XML.writeXML(writer, inputAsObj.head, effectiveParams)
+      XML.writeXML(writer, (name, inputAsObj.value(name, ev.emptyMaterializeFileScopePos)(ev)), effectiveParams)(ev)
 
       new BasicDocument(writer.toString, MediaTypes.APPLICATION_XML).asInstanceOf[Document[T]]
     }
 
     else if (targetType.isAssignableFrom(classOf[OutputStream])) {
       val out = new BufferedOutputStream(new ByteArrayOutputStream)
-      XML.writeXML(new OutputStreamWriter(out, charset), inputAsObj.head.asInstanceOf[(String, ujson.Obj)], effectiveParams)
+      XML.writeXML(new OutputStreamWriter(out, charset),
+        (name, inputAsObj.value(name, ev.emptyMaterializeFileScopePos)(ev)), effectiveParams)(ev)
 
       new BasicDocument(out, MediaTypes.APPLICATION_XML).asInstanceOf[Document[T]]
     }

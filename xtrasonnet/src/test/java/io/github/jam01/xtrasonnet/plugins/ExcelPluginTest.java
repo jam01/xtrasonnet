@@ -1,7 +1,7 @@
 package io.github.jam01.xtrasonnet.plugins;
 
 /*-
- * Copyright 2022-2023 Jose Montoya.
+ * Copyright 2022-2026 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
@@ -15,8 +15,6 @@ import org.json.JSONException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
-
-import java.util.Collections;
 
 public class ExcelPluginTest {
     private final String simple_xlsx_json = """

@@ -11,7 +11,7 @@ Add the following maven dependency
 <dependency>
   <groupId>io.github.jam01</groupId>
   <artifactId>camel-xtrasonnet</artifactId>
-  <version>0.6.1</version>
+  <version>0.7.0</version>
 </dependency>
 ```
 
@@ -124,11 +124,12 @@ And for output media type:
 
 The Camel xtrasonnet component adds the following xtrasonnet functions that can be used to access the exchange:
 
-| Function             | Argument     | Type   | Description                                                                                                                                     |
-|----------------------|--------------|--------|-------------------------------------------------------------------------------------------------------------------------------------------------|
-| cml.properties       | property key | String | Lookup a property using the [Properties component](https://camel.apache.org/components/3.20.x/properties-component.html) (property placeholder) |
-| cml.header           | header name  | String | Lookup a message header                                                                                                                         |
-| cml.exchangeProperty | property key | String | Lookup an exchange property                                                                                                                     |
+| Function             | Argument      | Type   | Description                                                                                                                                     |
+|----------------------|---------------|--------|-------------------------------------------------------------------------------------------------------------------------------------------------|
+| cml.properties       | property key  | String | Lookup a property using the [Properties component](https://camel.apache.org/components/3.20.x/properties-component.html) (property placeholder) |
+| cml.header           | header name   | String | Lookup a message header                                                                                                                         |
+| cml.exchangeProperty | property key  | String | Lookup an exchange property                                                                                                                     |
+| cml.variable         | variable name | String | Lookup an exchange variable                                                                                                                     |
 
 Here's an example showing some of these functions in use:
 

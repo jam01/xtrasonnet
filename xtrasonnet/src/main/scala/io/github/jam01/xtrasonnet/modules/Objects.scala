@@ -1,35 +1,35 @@
 package io.github.jam01.xtrasonnet.modules
 
 /*-
- * Copyright 2022-2023 Jose Montoya.
+ * Copyright 2022-2026 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
  */
 
-import io.github.jam01.xtrasonnet.spi.Library.keyFrom
-import io.github.jam01.xtrasonnet.spi.Library.{dummyPosition, emptyObj, memberOf}
-import os.Generator
+import io.github.jam01.xtrasonnet.spi.Library.{emptyObj, keyFrom}
 import sjsonnet.Expr.Member.Visibility
-import io.github.jam01.xtrasonnet.spi.Library.Std.{builtin, builtinWithDefaults}
 import sjsonnet.Val.Obj
-import sjsonnet.{Error, EvalScope, FileScope, Lazy, Val}
+import sjsonnet.functions.AbstractFunctionModule
+import sjsonnet.{Error, EvalScope, FileScope, TailstrictModeDisabled, Val}
 
 import java.util
 import scala.collection.mutable.ArrayBuffer
 import scala.jdk.CollectionConverters.CollectionHasAsScala
 
-object Objects {
+object Objects extends AbstractFunctionModule {
+  override def name: String = "objects"
+  
   val functions: Seq[(String, Val.Func)] = Seq(
     builtin("all", "value", "func") {
       (pos, ev, obj: Val.Obj, func: Val.Func) =>
-        obj.visibleKeyNames.toSeq.forall(key => func.apply2(obj.value(key, pos)(ev), Val.Str(pos, key), pos.noOffset)(ev).isInstanceOf[Val.True])
+        obj.visibleKeyNames.toSeq.forall(key => func.apply2(obj.value(key, pos)(ev), Val.Str(pos, key), pos.noOffset)(ev, TailstrictModeDisabled).isInstanceOf[Val.True])
     },
 
     builtin("any", "value", "func") {
       (pos, ev, obj: Val.Obj, func: Val.Func) =>
         obj.visibleKeyNames.exists(
-          item => func.apply2(obj.value(item, pos)(ev), Val.Str(pos, item), pos.noOffset)(ev).isInstanceOf[Val.True]
+          item => func.apply2(obj.value(item, pos)(ev), Val.Str(pos, item), pos.noOffset)(ev, TailstrictModeDisabled).isInstanceOf[Val.True]
         )
     },
 
@@ -43,7 +43,7 @@ object Objects {
       "arrR" -> null,
       "funcIdL" -> null,
       "funcIdR" -> null,
-      "funcJoin" -> Val.False(dummyPosition)) { (args, pos, ev) =>
+      "funcJoin" -> Val.False(position)) { (args, pos, ev) =>
 
       val left = args(0).asArr
       val right = args(1).asArr
@@ -59,7 +59,7 @@ object Objects {
 
       var i = 0
       while (i < left.length) {
-        val k = keyFrom(funcIdL.apply1(left.asLazy(i), funcIdL.pos)(ev))
+        val k = keyFrom(funcIdL.apply1(left.asLazyArray(i), funcIdL.pos)(ev, TailstrictModeDisabled))
         if (leftHash.containsKey(k)) leftHash.put(k, leftHash.get(k).addOne(left.force(i).asObj))
         else leftHash.put(k, ArrayBuffer[Obj](left.force(i).asObj))
         i = i + 1
@@ -67,12 +67,12 @@ object Objects {
 
       i = 0
       while (i < right.length) {
-        val k = keyFrom(funcIdR.apply1(right.asLazy(i), funcIdL.pos)(ev))
+        val k = keyFrom(funcIdR.apply1(right.asLazyArray(i), funcIdL.pos)(ev, TailstrictModeDisabled))
         if (leftHash.containsKey(k)) {
           leftHash.get(k).foreach(obj =>
             out.addOne(
               if (funcJoin == null) obj.asObj.addSuper(pos, right.force(i).asObj).asObj
-              else funcJoin.asFunc.apply2(obj, right.force(i), funcJoin.pos)(ev).asObj
+              else funcJoin.asFunc.apply2(obj, right.force(i), funcJoin.pos)(ev, TailstrictModeDisabled).asObj
             )
           )
         }
@@ -80,7 +80,7 @@ object Objects {
         i = i + 1
       }
 
-      new Val.Arr(pos, out.toArray)
+      Val.Arr(pos, out.toArray)
     },
 
     builtinWithDefaults("leftEqJoin",
@@ -88,7 +88,7 @@ object Objects {
       "arrR" -> null,
       "funcIdL" -> null,
       "funcIdR" -> null,
-      "funcJoin" -> Val.False(dummyPosition)) { (args, pos, ev) =>
+      "funcJoin" -> Val.False(position)) { (args, pos, ev) =>
 
       val left = args(0).asArr
       val right = args(1).asArr
@@ -99,44 +99,44 @@ object Objects {
         case f: Val.Func => f
         case x => Error.fail("Expected function, got: " + x.prettyName)
       }
-      val leftHash = new util.HashMap[String, ArrayBuffer[Val.Obj]]()
-      val bothHash = new util.HashMap[String, ArrayBuffer[Val.Obj]]()
-      val leftUnjoined = new util.HashSet[String]()
 
+      // 1. Index the RIGHT side so we can look them up by key
+      val rightHash = new util.HashMap[String, ArrayBuffer[Val.Obj]]()
       var i = 0
-      while (i < left.length) { // computing keys on the left with the corresponding array of values
-        val k = keyFrom(funcIdL.apply1(left.asLazy(i), funcIdL.pos)(ev))
-        val toAdd = left.force(i).asObj
-        val arr = leftHash.computeIfAbsent(k, newArrBuff).addOne(toAdd)
-
-        // no custom func, already moving to both in case not to be joined
-        if (funcJoin == null) bothHash.put(k, arr)
-        leftUnjoined.add(k)
-        i = i + 1
+      while (i < right.length) {
+        val k = keyFrom(funcIdR.apply1(right.asLazyArray(i), funcIdR.pos)(ev, TailstrictModeDisabled))
+        rightHash.computeIfAbsent(k, _ => new ArrayBuffer[Val.Obj]()).addOne(right.force(i).asObj)
+        i += 1
       }
 
+      val result = new ArrayBuffer[Val]()
+
+      // 2. Iterate through the LEFT side in their original order
       i = 0
-      while (i < right.length) { // computing keys on the right
-        val k = keyFrom(funcIdR.apply1(right.asLazy(i), funcIdL.pos)(ev))
-        if (leftHash.containsKey(k)) { // if also in left join them into bothHash
-          leftHash.get(k).foreach(obj => {
-            if (leftUnjoined.remove(k)) bothHash.remove(k) // 1st time seeing this one, clear it to join
-            bothHash.computeIfAbsent(k, newArrBuff).addOne(
-              if (funcJoin == null) obj.asObj.addSuper(pos, right.force(i).asObj).asObj
-              else funcJoin.asFunc.apply2(obj, right.force(i), funcJoin.pos)(ev).asObj
-            )
-          })
-        }
+      while (i < left.length) {
+        val leftObj = left.force(i).asObj
+        val k = keyFrom(funcIdL.apply1(left.asLazyArray(i), funcIdL.pos)(ev, TailstrictModeDisabled))
 
-        i = i + 1
+        val matches = rightHash.get(k)
+        if (matches != null && !matches.isEmpty) {
+          // For every match in orders, create a joined row
+          matches.foreach { rightObj =>
+            val joined = if (funcJoin == null) leftObj.addSuper(pos, rightObj).asObj
+            else
+              funcJoin.asFunc.apply2(leftObj, rightObj, funcJoin.pos)(ev, TailstrictModeDisabled).asObj
+            result.addOne(joined)
+          }
+        } else {
+          // No match found? Still add the left object (Left Join behavior)
+          val unjoined = if (funcJoin == null) leftObj
+          else
+            funcJoin.asFunc.apply2(leftObj, emptyObj, funcJoin.pos)(ev, TailstrictModeDisabled).asObj
+          result.addOne(unjoined)
+        }
+        i += 1
       }
 
-      // if custom join func, apply to the remaining unjoined ones (otherwise already in bothHash)
-      if (funcJoin != null) leftUnjoined.forEach(k => bothHash.put(k, leftHash.get(k).map(obj =>
-        funcJoin.asFunc.apply2(obj, emptyObj, funcJoin.pos)(ev).asObj
-      )))
-
-      new Val.Arr(pos, bothHash.values().asScala.flatten.toArray)
+      Val.Arr(pos, result.toArray)
     },
 
     builtinWithDefaults("fullEqJoin",
@@ -144,7 +144,7 @@ object Objects {
       "arrR" -> null,
       "funcIdL" -> null,
       "funcIdR" -> null,
-      "funcJoin" -> Val.False(dummyPosition)) { (args, pos, ev) =>
+      "funcJoin" -> Val.False(position)) { (args, pos, ev) =>
 
       val left = args(0).asArr
       val right = args(1).asArr
@@ -161,7 +161,7 @@ object Objects {
 
       var i = 0
       while (i < left.length) { // computing keys on the left with the corresponding array of values
-        val k = keyFrom(funcIdL.apply1(left.asLazy(i), funcIdL.pos)(ev))
+        val k = keyFrom(funcIdL.apply1(left.asLazyArray(i), funcIdL.pos)(ev, TailstrictModeDisabled))
         val toAdd = left.force(i).asObj
         val arr = leftHash.computeIfAbsent(k, newArrBuff).addOne(toAdd)
 
@@ -173,19 +173,19 @@ object Objects {
 
       i = 0
       while (i < right.length) { // computing keys on the right
-        val k = keyFrom(funcIdR.apply1(right.asLazy(i), funcIdL.pos)(ev))
+        val k = keyFrom(funcIdR.apply1(right.asLazyArray(i), funcIdL.pos)(ev, TailstrictModeDisabled))
         if (leftHash.containsKey(k)) { // if also in left join them into bothHash
           leftHash.get(k).foreach(obj => {
             if (leftUnjoined.remove(k)) bothHash.remove(k) // 1st time seeing this one, clear it to join
             bothHash.computeIfAbsent(k, newArrBuff).addOne(
               if (funcJoin == null) obj.asObj.addSuper(pos, right.force(i).asObj).asObj
-              else funcJoin.asFunc.apply2(obj, right.force(i), funcJoin.pos)(ev).asObj
+              else funcJoin.asFunc.apply2(obj, right.force(i), funcJoin.pos)(ev, TailstrictModeDisabled).asObj
             )
           })
         } else { // else add it to bothHash
           val toAdd =
             if (funcJoin == null) right.force(i).asObj
-            else funcJoin.asFunc.apply2(emptyObj, right.force(i).asObj, funcJoin.pos)(ev).asObj
+            else funcJoin.asFunc.apply2(emptyObj, right.force(i).asObj, funcJoin.pos)(ev, TailstrictModeDisabled).asObj
           bothHash.computeIfAbsent(k, _ => new ArrayBuffer[Obj]()).addOne(toAdd)
         }
 
@@ -194,16 +194,16 @@ object Objects {
 
       // if custom join func, apply to the remaining unjoined ones (otherwise already in bothHash)
       if (funcJoin != null) leftUnjoined.forEach(k => bothHash.put(k, leftHash.get(k).map(obj =>
-        funcJoin.asFunc.apply2(obj, emptyObj, funcJoin.pos)(ev).asObj
+        funcJoin.asFunc.apply2(obj, emptyObj, funcJoin.pos)(ev, TailstrictModeDisabled).asObj
       )))
 
-      new Val.Arr(pos, bothHash.values().asScala.flatten.toArray)
+      Val.Arr(pos, bothHash.values().asScala.flatten.toArray)
     },
 
     builtinWithDefaults("fromArray",
       "arr" -> null,
       "keyF" -> null,
-      "valueF" -> Val.False(dummyPosition)) { (args, pos, ev) =>
+      "valueF" -> Val.False(position)) { (args, pos, ev) =>
       val lzyArr = args(0) match {
         case arr: Val.Arr => arr.asLazyArray
         case x => Error.fail("Expected Array, got: " + x.prettyName)
@@ -219,7 +219,7 @@ object Objects {
       var i = 0
       if (fArgs == 2) {
         while (i < lzyArr.length) {
-          val k = kFunc.apply2(lzyArr(i), Val.Num(kFunc.pos, i), pos.noOffset)(ev)
+          val k = kFunc.apply2(lzyArr(i), Val.Num(kFunc.pos, i), pos.noOffset)(ev, TailstrictModeDisabled)
           if (!k.isInstanceOf[Val.Str]) Error.fail("Key Function should return a String, got: " + k.prettyName)
           val j = i.intValue // ints are objects in Scala??, so we set a 'final' reference
 
@@ -227,13 +227,13 @@ object Objects {
             if (vFunc.isInstanceOf[Val.False]) new Obj.Member(false, Visibility.Normal) {
               override def invoke(self: Obj, sup: Obj, fs: FileScope, ev: EvalScope): Val = lzyArr(j).force
             } else new Obj.Member(false, Visibility.Normal) {
-              override def invoke(self: Obj, sup: Obj, fs: FileScope, ev: EvalScope): Val = vFunc.asFunc.apply1(lzyArr(j), pos.noOffset)(ev)
+              override def invoke(self: Obj, sup: Obj, fs: FileScope, ev: EvalScope): Val = vFunc.asFunc.apply1(lzyArr(j), pos.noOffset)(ev, TailstrictModeDisabled)
             })
           i = i + 1
         }
       } else if (fArgs == 1) {
         while (i < lzyArr.length) {
-          val k = kFunc.apply1(lzyArr(i), pos.noOffset)(ev)
+          val k = kFunc.apply1(lzyArr(i), pos.noOffset)(ev, TailstrictModeDisabled)
           if (!k.isInstanceOf[Val.Str]) Error.fail("Key Function should return a String, got: " + k.prettyName)
           val j = i.intValue // ints are objects in Scala??, so we set a 'final' reference
 
@@ -241,7 +241,7 @@ object Objects {
             if (vFunc.isInstanceOf[Val.False]) new Obj.Member(false, Visibility.Normal) {
               override def invoke(self: Obj, sup: Obj, fs: FileScope, ev: EvalScope): Val = lzyArr(j).force
             } else new Obj.Member(false, Visibility.Normal) {
-              override def invoke(self: Obj, sup: Obj, fs: FileScope, ev: EvalScope): Val = vFunc.asFunc.apply1(lzyArr(j), pos.noOffset)(ev)
+              override def invoke(self: Obj, sup: Obj, fs: FileScope, ev: EvalScope): Val = vFunc.asFunc.apply1(lzyArr(j), pos.noOffset)(ev, TailstrictModeDisabled)
             })
           i = i + 1
         }
@@ -264,7 +264,7 @@ object Objects {
       while (i < obj.visibleKeyNames.length) {
         val k = obj.visibleKeyNames(i)
         val v = obj.value(k, pos.noOffset)(ev)
-        val test = func.apply2(v, Val.Str(pos, k), pos.noOffset)(ev)
+        val test = func.apply2(v, Val.Str(pos, k), pos.noOffset)(ev, TailstrictModeDisabled)
         if (!tests.exists(uniq => ev.equal(uniq, test))) {
           tests.append(test)
           m.append((k, memberOf(v)))
@@ -275,7 +275,7 @@ object Objects {
       while (i < obj.visibleKeyNames.length) {
         val k = obj.visibleKeyNames(i)
         val v = obj.value(k, pos.noOffset)(ev)
-        val test = func.apply1(v, pos.noOffset)(ev)
+        val test = func.apply1(v, pos.noOffset)(ev, TailstrictModeDisabled)
         if (!tests.exists(uniq => ev.equal(uniq, test))) {
           tests.append(test)
           m.append((k, memberOf(v)))

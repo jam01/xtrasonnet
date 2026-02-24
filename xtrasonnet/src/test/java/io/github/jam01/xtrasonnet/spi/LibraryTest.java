@@ -1,38 +1,34 @@
 package io.github.jam01.xtrasonnet.spi;
 
 /*-
- * Copyright 2022-2023 Jose Montoya.
+ * Copyright 2022-2026 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
  */
 
-import io.github.jam01.xtrasonnet.DataFormatService;
 import io.github.jam01.xtrasonnet.Transformer;
 import io.github.jam01.xtrasonnet.document.Documents;
-import io.github.jam01.xtrasonnet.header.Header;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
-import sjsonnet.Importer;
 import sjsonnet.Val;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class LibraryTest {
-    public static class TestLib extends Library {
+    public static class TestLib extends JLibrary {
 
         @Override
-        public String namespace() {
+        public String name() {
             return "testlib";
         }
 
         @Override
-        public Map<String, Val.Func> functions(DataFormatService dataFormats, Header header, Importer importer) {
+        public Map<String, Val.Func> functions() {
             var res = new HashMap<String, Val.Func>();
-
-            res.put("echo", builtin(new String[]{"param"}, (vals, pos, ev) -> new Val.Str(dummyPosition(), vals[0].asString() + " world!")));
+            res.put("echo", jbuiltin(new String[]{"param"}, (vals, pos, ev) -> new Val.Str(position(), vals[0].asString() + " world!")));
             return res;
         }
     }

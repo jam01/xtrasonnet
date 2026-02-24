@@ -1,7 +1,7 @@
 package io.github.jam01.xtrasonnet.plugins;
 
 /*-
- * Copyright 2022-2023 Jose Montoya.
+ * Copyright 2022-2026 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
@@ -63,7 +63,7 @@ public class DefaultExcelPlugin extends BasePlugin {
                 while (rows.hasNext()) {
                     var row = rows.next();
                     var cells = row.iterator();
-                    var rVisitor = sVisitor.subVisitor().visitObject(-1, -1).narrow();
+                    var rVisitor = sVisitor.subVisitor().visitObject(-1, true, -1).narrow();
 
                     while (cells.hasNext()) {
                         var cell = cells.next();

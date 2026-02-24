@@ -1,7 +1,7 @@
 package io.github.jam01.xtrasonnet.plugins;
 
 /*-
- * Copyright 2022-2023 Jose Montoya.
+ * Copyright 2022-2026 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
@@ -11,6 +11,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.node.NullNode;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvParser;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
@@ -18,8 +19,6 @@ import io.github.jam01.xtrasonnet.document.Document;
 import io.github.jam01.xtrasonnet.document.MediaType;
 import io.github.jam01.xtrasonnet.document.MediaTypes;
 import io.github.jam01.xtrasonnet.spi.PluginException;
-import ujson.Null$;
-import ujson.Value;
 
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
@@ -70,9 +69,9 @@ public class DefaultCSVPlugin extends BaseJacksonPlugin {
     }
 
     @Override
-    public Value read(Document<?> doc) throws PluginException {
+    public JsonNode read(Document<?> doc) throws PluginException {
         if (doc.getContent() == null) {
-            return Null$.MODULE$;
+            return NullNode.getInstance();
         }
 
         ObjectReader reader = READER_CACHE.computeIfAbsent(doc.getMediaType().getParameters(), (p) -> {
@@ -87,7 +86,7 @@ public class DefaultCSVPlugin extends BaseJacksonPlugin {
                 builder.setUseHeader(false);
                 char separator = doc.getMediaType().getParameterAsChar(PARAM_SEPARATOR_CHAR, CsvSchema.DEFAULT_COLUMN_SEPARATOR);
                 List<String> columns = doc.getMediaType().getParameterAsList(PARAM_COLUMNS, separator, Collections.emptyList());
-                if (columns.size() > 0) { // columns found in param, return Obj with param columns
+                if (!columns.isEmpty()) { // columns found in param, return Obj with param columns
                     for (String column : columns) {
                         builder.addColumn(column);
                     }
@@ -100,26 +99,24 @@ public class DefaultCSVPlugin extends BaseJacksonPlugin {
         // Read data from CSV file
         try {
             if (String.class.isAssignableFrom(doc.getContent().getClass())) {
-                JsonNode result = reader.readTree((String) doc.getContent());
-                return ujsonFrom(result);
+                return reader.readTree((String) doc.getContent());
             } else if (byte[].class.isAssignableFrom(doc.getContent().getClass())) {
-                JsonNode result = reader.readTree((String) doc.getContent());
-                return ujsonFrom(result);
+                return reader.readTree(((byte[]) doc.getContent()));
             } else if (InputStream.class.isAssignableFrom(doc.getContent().getClass())) {
-                JsonNode result = reader.readTree((String) doc.getContent());
-                return ujsonFrom(result);
+                return reader.readTree((String) doc.getContent());
             } else {
                 throw new PluginException(new IllegalArgumentException("Unsupported document content class, use the test method canRead before invoking read"));
             }
         } catch (JsonProcessingException jpe) {
             throw new PluginException("Unable to convert CSV to JSON", jpe);
+        } catch (IOException e) {
+            throw new PluginException("Unable to read the byte array", e);
         }
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T> Document<T> write(Value input, MediaType mediaType, Class<T> targetType) throws PluginException {
-        JsonNode node = jsonNodeOf(input);
+    public <T> Document<T> write(JsonNode node, MediaType mediaType, Class<T> targetType) throws PluginException {
         assertArrayNode(node, "Writing CSV requires an Array, found: " + node.getNodeType().name());
         JsonNode first = node.elements().next();
 

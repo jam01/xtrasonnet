@@ -1,7 +1,7 @@
 package io.github.jam01.xtrasonnet.modules
 
 /*-
- * Copyright 2022-2023 Jose Montoya.
+ * Copyright 2022-2026 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
@@ -30,21 +30,22 @@ package io.github.jam01.xtrasonnet.modules
  */
 
 import io.github.jam01.xtrasonnet.spi.Library.keyFrom
-import io.github.jam01.xtrasonnet.spi.Library.{dummyPosition, memberOf}
-import io.github.jam01.xtrasonnet.spi.Library.Std.{builtin, builtinWithDefaults}
-import sjsonnet.{Error, EvalScope, Lazy, Val}
+import sjsonnet.functions.AbstractFunctionModule
+import sjsonnet.{Error, EvalScope, Lazy, NumberMath, TailstrictModeDisabled, Val}
 
+import java.util
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
-import java.util
 
-object Arrays {
+object Arrays extends AbstractFunctionModule {
+  override def name: String = "arrays"
+
   val functions: Seq[(String, Val.Func)] = Seq(
     builtin("countBy", "arr", "func") {
       (pos, ev, arr: Val.Arr, func: Val.Func) =>
         var total = 0
         for (x <- arr.asLazyArray) {
-          if (func.apply1(x, pos.noOffset)(ev).isInstanceOf[Val.True]) {
+          if (func.apply1(x, pos.noOffset)(ev, TailstrictModeDisabled).isInstanceOf[Val.True]) {
             total += 1
           }
         }
@@ -53,21 +54,21 @@ object Arrays {
 
     builtin("chunksOf", "array", "size") { // TODO: better name?
       (pos, _, array: Val.Arr, size: Int) =>
-        new Val.Arr(pos, array.asLazyArray.sliding(size, size).map(item => new Val.Arr(pos, item)).toArray)
+        Val.Arr(pos, array.asLazyArray.sliding(size, size).map(item => Val.Arr(pos, item)).toArray)
     },
 
     builtin("drop", "arr", "num") {
       (pos, _, arr: Val.Arr, num: Int) =>
-        new Val.Arr(pos, arr.asLazyArray.drop(num))
+        Val.Arr(pos, arr.asLazyArray.drop(num))
     },
 
     builtin("dropWhile", "arr", "func") {
       (pos, ev, arr: Val.Arr, func: Val.Func) =>
-        new Val.Arr(pos, arr.asLazyArray.dropWhile(func.apply1(_, pos.noOffset)(ev).isInstanceOf[Val.True]))
+        Val.Arr(pos, arr.asLazyArray.dropWhile(func.apply1(_, pos.noOffset)(ev, TailstrictModeDisabled).isInstanceOf[Val.True]))
     },
 
     builtin("all", "value", "func") {
-      (pos, ev, arr: Val.Arr, func: Val.Func) => arr.forall(func.apply1(_, pos.noOffset)(ev).isInstanceOf[Val.True])
+      (pos, ev, arr: Val.Arr, func: Val.Func) => arr.forall(func.apply1(_, pos.noOffset)(ev, TailstrictModeDisabled).isInstanceOf[Val.True])
     },
 
     builtin("find", "arr", "func") {
@@ -77,14 +78,14 @@ object Arrays {
 
         if (args == 2) {
           val found = arr.asLazyArray.zipWithIndex
-            .find(item => func.apply2(item._1, Val.Num(pos, item._2), pos.noOffset)(ev).isInstanceOf[Val.True])
+            .find(item => func.apply2(item._1, Val.Num(pos, item._2), pos.noOffset)(ev, TailstrictModeDisabled).isInstanceOf[Val.True])
             .map(_._1)
-          if (found.nonEmpty) new Val.Arr(pos, Array(found.get))
-          else new Val.Arr(pos, Array.empty[Lazy])
+          if (found.nonEmpty) Val.Arr(pos, Array(found.get))
+          else Val.Arr(pos, Array.empty[Lazy])
         } else if (args == 1) {
-          val found = arr.asLazyArray.find(func.apply1(_, pos.noOffset)(ev).isInstanceOf[Val.True])
-          if (found.nonEmpty) new Val.Arr(pos, Array(found.get))
-          else new Val.Arr(pos, Array.empty[Lazy])
+          val found = arr.asLazyArray.find(func.apply1(_, pos.noOffset)(ev, TailstrictModeDisabled).isInstanceOf[Val.True])
+          if (found.nonEmpty) Val.Arr(pos, Array(found.get))
+          else Val.Arr(pos, Array.empty[Lazy])
         } else {
           Error.fail("Expected embedded function to have 1 or 2 parameters, received: " + args)
         }
@@ -92,12 +93,12 @@ object Arrays {
 
     builtin("indexWhere", "arr", "func") {
       (pos, ev, array: Val.Arr, func: Val.Func) =>
-        array.asLazyArray.indexWhere(func.apply1(_, pos.noOffset)(ev).isInstanceOf[Val.True])
+        array.asLazyArray.indexWhere(func.apply1(_, pos.noOffset)(ev, TailstrictModeDisabled).isInstanceOf[Val.True])
     },
 
     builtin("lastIndexWhere", "arr", "func") {
       (pos, ev, array: Val.Arr, func: Val.Func) =>
-        array.asLazyArray.lastIndexWhere(func.apply1(_, pos.noOffset)(ev).isInstanceOf[Val.True])
+        array.asLazyArray.lastIndexWhere(func.apply1(_, pos.noOffset)(ev, TailstrictModeDisabled).isInstanceOf[Val.True])
     },
 
     builtin("indicesWhere", "arr", "func") {
@@ -110,7 +111,7 @@ object Arrays {
         var i = 0
         if (args == 1) { // 1 arg
           while (i < array.length) {
-            val test = func.apply1(lazyArr(i), pos.noOffset)(ev)
+            val test = func.apply1(lazyArr(i), pos.noOffset)(ev, TailstrictModeDisabled)
             if (test.asBoolean.booleanValue()) {
               out.append(Val.Num(pos, i))
             }
@@ -119,20 +120,20 @@ object Arrays {
         } else {
           Error.fail("Expected embedded function to have 1 parameters, received: " + args)
         }
-        new Val.Arr(pos, out.toArray)
+        Val.Arr(pos, out.toArray)
     },
 
     builtin("partition", "arr", "func") {
       (pos, ev, array: Val.Arr, func: Val.Func) =>
         val out = new util.LinkedHashMap[String, Val.Obj.Member]()
-        val part = array.asLazyArray.partition(func.apply1(_, pos.noOffset)(ev).isInstanceOf[Val.True])
-        out.put("pass", memberOf(new Val.Arr(pos, part._1)))
-        out.put("fail", memberOf(new Val.Arr(pos, part._2)))
+        val part = array.asLazyArray.partition(func.apply1(_, pos.noOffset)(ev, TailstrictModeDisabled).isInstanceOf[Val.True])
+        out.put("pass", memberOf(Val.Arr(pos, part._1)))
+        out.put("fail", memberOf(Val.Arr(pos, part._2)))
         new Val.Obj(pos, out, false, null, null)
     },
 
     builtin("any", "value", "func") {
-      (pos, ev, array: Val.Arr, func: Val.Func) => array.asLazyArray.exists(item => func.apply1(item, pos.noOffset)(ev).isInstanceOf[Val.True])
+      (pos, ev, array: Val.Arr, func: Val.Func) => array.asLazyArray.exists(item => func.apply1(item, pos.noOffset)(ev, TailstrictModeDisabled).isInstanceOf[Val.True])
     },
 
     builtin("splitAt", "array", "index") {
@@ -140,34 +141,34 @@ object Arrays {
         val split = array.asLazyArray.splitAt(index)
         val out = new util.LinkedHashMap[String, Val.Obj.Member]()
 
-        out.put("left", memberOf(new Val.Arr(pos, split._1)))
-        out.put("right", memberOf(new Val.Arr(pos, split._2)))
+        out.put("left", memberOf(Val.Arr(pos, split._1)))
+        out.put("right", memberOf(Val.Arr(pos, split._2)))
         new Val.Obj(pos, out, false, null, null)
     },
 
     builtin("break", "arr", "func") {
       (pos, ev, arr: Val.Arr, func: Val.Func) =>
-        val split = arr.asLazyArray.splitAt(arr.asLazyArray.indexWhere(func.apply1(_, pos.noOffset)(ev).isInstanceOf[Val.True]))
+        val split = arr.asLazyArray.splitAt(arr.asLazyArray.indexWhere(func.apply1(_, pos.noOffset)(ev, TailstrictModeDisabled).isInstanceOf[Val.True]))
         val out = new util.LinkedHashMap[String, Val.Obj.Member]()
 
-        out.put("left", memberOf(new Val.Arr(pos, split._1)))
-        out.put("right", memberOf(new Val.Arr(pos, split._2)))
+        out.put("left", memberOf(Val.Arr(pos, split._1)))
+        out.put("right", memberOf(Val.Arr(pos, split._2)))
         new Val.Obj(pos, out, false, null, null)
     },
 
     builtin("sumBy", "array", "func") {
       (pos, ev, array: Val.Arr, func: Val.Func) =>
-        array.asLazyArray.foldLeft(0.0)((sum, num) => sum + func.apply1(num, pos.noOffset)(ev).asDouble)
+        array.asLazyArray.foldLeft(Val.Num(position, 0))((sum, num) => NumberMath.add(position, sum, func.apply1(num, pos.noOffset)(ev, TailstrictModeDisabled).asNum)(ev))
     },
 
     builtin("take", "array", "index") {
       (pos, _, array: Val.Arr, index: Int) =>
-        new Val.Arr(pos, array.asLazyArray.splitAt(index)._1)
+        Val.Arr(pos, array.asLazyArray.splitAt(index)._1)
     },
 
     builtin("takeWhile", "array", "func") {
       (pos, ev, array: Val.Arr, func: Val.Func) =>
-        new Val.Arr(pos, array.asLazyArray.takeWhile(item => func.apply1(item, pos.noOffset)(ev).isInstanceOf[Val.True]))
+        Val.Arr(pos, array.asLazyArray.takeWhile(item => func.apply1(item, pos.noOffset)(ev, TailstrictModeDisabled).isInstanceOf[Val.True]))
     },
 
     builtin("distinctBy", "container", "func") {
@@ -194,19 +195,19 @@ object Arrays {
             current.append(lazyArr(j).force.asArr.asLazyArray(i))
             j = j + 1
           }
-          out.append(new Val.Arr(pos, current.toArray))
+          out.append(Val.Arr(pos, current.toArray))
           i = i + 1
         }
 
-        new Val.Arr(pos, out.toArray)
+        Val.Arr(pos, out.toArray)
     },
 
     builtinWithDefaults("zip",
       "arr1" -> null,
       "arr2" -> null,
-      "arr3" -> Val.False(dummyPosition),
-      "arr4" -> Val.False(dummyPosition),
-      "arr5" -> Val.False(dummyPosition)) { (args, pos, _) =>
+      "arr3" -> Val.False(position),
+      "arr4" -> Val.False(position),
+      "arr5" -> Val.False(position)) { (args, pos, _) =>
       val lazyArr = args.filter {
         case _: Val.Arr => true
         case _: Val.False => false
@@ -228,11 +229,11 @@ object Arrays {
           current.append(lazyArr(j).force.asArr.asLazyArray(i))
           j = j + 1
         }
-        out.append(new Val.Arr(pos, current.toArray))
+        out.append(Val.Arr(pos, current.toArray))
         i = i + 1
       }
 
-      new Val.Arr(pos, out.toArray)
+      Val.Arr(pos, out.toArray)
     },
 
     /*
@@ -247,10 +248,10 @@ object Arrays {
       (pos, ev, array: Val.Arr, func: Val.Func) =>
         val out = mutable.ArrayBuffer[Lazy]()
         array.asLazyArray.collect({
-          case item if array.asLazyArray.count(lzy => ev.equal(lzy.force, func.apply1(item.force, func.pos)(ev))) >= 2 &&
+          case item if array.asLazyArray.count(lzy => ev.equal(lzy.force, func.apply1(item.force, func.pos)(ev, TailstrictModeDisabled))) >= 2 &&
             !out.exists(lzy => ev.equal(lzy.force, item.force)) => out.append(item)
         })
-        new Val.Arr(pos, out.toArray)
+        Val.Arr(pos, out.toArray)
     },
 
     /*
@@ -263,7 +264,7 @@ object Arrays {
         // no idea why, but this sorts the result in the correct order
         val ordered = mutable.Map.from(
           array.asLazyArray
-            .groupBy(item => keyFrom(func.apply1(item, pos.noOffset)(ev)))
+            .groupBy(item => keyFrom(func.apply1(item, pos.noOffset)(ev, TailstrictModeDisabled)))
             .map(item => item._1 -> memberOf(Val.Num(pos, item._2.length)))
         )
 
@@ -277,7 +278,7 @@ object Arrays {
      */
     builtin("flat", "arr") {
       (pos, _, arr: Val.Arr) =>
-        new Val.Arr(pos, flat(arr.asLazyArray))
+        Val.Arr(pos, flat(arr.asLazyArray))
     }
     /*
      * datasonnet-mapper: end
@@ -294,7 +295,7 @@ object Arrays {
     var i = 0
     if (args == 2) { // 2 args
       while (i < array.length) {
-        val test = func.apply2(array(i), Val.Num(pos, i), pos.noOffset)(ev)
+        val test = func.apply2(array(i), Val.Num(pos, i), pos.noOffset)(ev, TailstrictModeDisabled)
         if (!tests.exists(uniq => ev.equal(uniq, test))) {
           tests.append(test)
           out.append(array(i))
@@ -303,7 +304,7 @@ object Arrays {
       }
     } else if (args == 1) { // 1 arg
       while (i < array.length) {
-        val test = func.apply1(array(i), pos.noOffset)(ev)
+        val test = func.apply1(array(i), pos.noOffset)(ev, TailstrictModeDisabled)
         if (!tests.exists(uniq => ev.equal(uniq, test))) {
           tests.append(test)
           out.append(array(i))
@@ -313,7 +314,7 @@ object Arrays {
     } else {
       Error.fail("Expected embedded function to have 1 or 2 parameters, received: " + args)
     }
-    new Val.Arr(pos, out.toArray)
+    Val.Arr(pos, out.toArray)
   }
 
 

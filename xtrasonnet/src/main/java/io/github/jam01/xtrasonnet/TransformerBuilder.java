@@ -1,7 +1,7 @@
 package io.github.jam01.xtrasonnet;
 
 /*-
- * Copyright 2022-2023 Jose Montoya.
+ * Copyright 2022-2026 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
@@ -10,7 +10,7 @@ package io.github.jam01.xtrasonnet;
 import io.github.jam01.xtrasonnet.spi.DataFormatPlugin;
 import io.github.jam01.xtrasonnet.spi.Library;
 import sjsonnet.DefaultParseCache;
-import sjsonnet.Std;
+import sjsonnet.stdlib.StdLibModule$;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -83,6 +83,6 @@ public class TransformerBuilder {
     public Transformer build() {
         return new Transformer(script, inputNames, libs, service,
                 ResourcePath.root(), new DefaultParseCache(), ResourcePath.importer(), settings,
-                new Std().Std());
+                StdLibModule$.MODULE$.Default().module());
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2023 Jose Montoya.
+ * Copyright 2022-2026 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
@@ -18,12 +18,11 @@ import {EditorView, keymap} from "@codemirror/view"
 import {Compartment} from "@codemirror/state"
 import {json} from "@codemirror/lang-json"
 import {xml} from "@codemirror/lang-xml"
-import {language, syntaxHighlighting} from "@codemirror/language" // included by other lang deps
-import {classHighlighter} from "@lezer/highlight"
+import {language} from "@codemirror/language" // included by other lang deps
 import {indentWithTab} from "@codemirror/commands"
 
 // see: https://rollupjs.org/troubleshooting/#warning-treating-module-as-external-dependency
-import {Subject, debounceTime} from 'rxjs'; // external dep through cdn
+import {debounceTime, Subject} from 'rxjs'; // external dep through cdn
 
 // HTTP request to transformer app
 async function transform(data) {

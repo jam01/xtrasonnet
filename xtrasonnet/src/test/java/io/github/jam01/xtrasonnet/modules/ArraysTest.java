@@ -1,7 +1,7 @@
 package io.github.jam01.xtrasonnet.modules;
 
 /*-
- * Copyright 2022 Jose Montoya.
+ * Copyright 2022-2026 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
@@ -35,7 +35,7 @@ public class ArraysTest {
     @Test
     public void distinctBy() {
         Assertions.assertEquals(TestUtils.transform("[1, 2, 3]"), TestUtils.transform("xtr.arrays.distinctBy([1, 2, 3, 4, 5, 6], function(item) item % 3)"));
-        Assertions.assertEquals(TestUtils.transform("[1, 2, 3, 4, 5, 6]"), TestUtils.transform("xtr.arrays.distinctBy([1, 2, 3, 4, 5, 6], function(item, idx) item % (3 * idx))"));
+        Assertions.assertEquals(TestUtils.transform("[1, 2, 3, 4, 5, 6]"), TestUtils.transform("xtr.arrays.distinctBy([1, 2, 3, 4, 5, 6], function(item, idx) item % (3 * idx + 1))"));
     }
 
     @Test

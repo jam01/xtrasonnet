@@ -1,7 +1,7 @@
 package io.github.jam01.xtrasonnet.header;
 
 /*-
- * Copyright 2022 Jose Montoya.
+ * Copyright 2022-2026 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
@@ -36,7 +36,7 @@ package io.github.jam01.xtrasonnet.header;
 import io.github.jam01.xtrasonnet.document.InvalidMediaTypeException;
 import io.github.jam01.xtrasonnet.document.MediaType;
 import io.github.jam01.xtrasonnet.document.MediaTypes;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -68,7 +68,7 @@ public class Header {
         this.output = output;
     }
 
-    private static final Header EMPTY =
+    public static final Header EMPTY =
             new Header(true, Collections.emptyMap(), MediaTypes.ANY);
 
     public static Header parseHeader(String script) throws HeaderParseException {
@@ -80,7 +80,7 @@ public class Header {
         return doParseHeader(headerSection);
     }
 
-    @NotNull
+    @NonNull
     private static String extractHeader(String script) throws HeaderParseException {
         int terminus = script.indexOf("*/");
         if (terminus == -1) {
@@ -93,7 +93,7 @@ public class Header {
                 .trim();
     }
 
-    @NotNull
+    @NonNull
     private static Header doParseHeader(String headerSection) throws HeaderParseException {
         boolean preserve = true;
         MediaType output = null;

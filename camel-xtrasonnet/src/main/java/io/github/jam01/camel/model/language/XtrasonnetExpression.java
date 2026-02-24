@@ -1,7 +1,7 @@
 package io.github.jam01.camel.model.language;
 
 /*-
- * Copyright 2022-2023 Jose Montoya.
+ * Copyright 2022-2026 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
@@ -30,17 +30,16 @@ package io.github.jam01.camel.model.language;
  */
 
 import io.github.jam01.xtrasonnet.document.MediaType;
+import jakarta.xml.bind.annotation.XmlAccessType;
+import jakarta.xml.bind.annotation.XmlAccessorType;
+import jakarta.xml.bind.annotation.XmlAttribute;
+import jakarta.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlTransient;
 import org.apache.camel.Expression;
 import org.apache.camel.model.language.TypedExpressionDefinition;
 import org.apache.camel.reifier.language.ExpressionReifier;
 import org.apache.camel.reifier.language.XtrasonnetExpressionReifier;
 import org.apache.camel.spi.Metadata;
-
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
 
 /**
  * To use xtrasonnet scripts for message transformations.

@@ -1,7 +1,7 @@
 package io.github.jam01.xtrasonnet.modules;
 
 /*-
- * Copyright 2022 Jose Montoya.
+ * Copyright 2022-2026 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
@@ -25,8 +25,8 @@ public class NumbersTest {
     @Test
     public void to() {
         assertEquals(transform("'1100100'"), transform("xtr.numbers.toBinary(100)"));
-        assertEquals(transform("'F'"), transform("xtr.numbers.toHex(15)"));
-//        assertEquals(transform("'107136'"), transform("xtr.numbers.toOctal(36446)"));
+        assertEquals(transform("'f'"), transform("xtr.numbers.toHex(15)"));
+        assertEquals(transform("'107136'"), transform("xtr.numbers.toOctal(36446)"));
         assertEquals(transform("'10'"), transform("xtr.numbers.toRadix('3', 3)"));
     }
 }

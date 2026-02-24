@@ -1,7 +1,7 @@
 package io.github.jam01.xtrasonnet.modules;
 
 /*-
- * Copyright 2022-2023 Jose Montoya.
+ * Copyright 2022-2026 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
@@ -579,6 +579,6 @@ public class RootTest {
     @Test
     public void write() {
         Assertions.assertEquals(TestUtils.transform("'{\"hello\":\"world\",\"arr\":[],\"nil\":null}'"), TestUtils.transform("xtr.write({ hello: 'world', arr: [], nil: null }, 'application/json')"));
-        Assertions.assertEquals(TestUtils.transform("'{\\n    \"hello\": \"world\",\\n    \"arr\": [\\n        \\n    ]\\n}'"), TestUtils.transform("xtr.write({ hello: 'world', arr: [] }, 'application/json', { fmt: true })"));
+        Assertions.assertEquals(TestUtils.transform("'{\\n    \"hello\": \"world\",\\n    \"arr\": []\\n}'"), TestUtils.transform("xtr.write({ hello: 'world', arr: [] }, 'application/json', { fmt: true })"));
     }
 }

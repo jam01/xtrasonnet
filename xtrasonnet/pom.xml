@@ -4,7 +4,7 @@
     <parent>
         <groupId>io.github.jam01</groupId>
         <artifactId>xtrasonnet-parent</artifactId>
-        <version>0.6.2-SNAPSHOT</version>
+        <version>0.7.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -19,7 +19,7 @@
             <dependency>
                 <groupId>com.fasterxml.jackson</groupId>
                 <artifactId>jackson-bom</artifactId>
-                <version>2.14.2</version>
+                <version>2.19.4</version>
                 <scope>import</scope>
                 <type>pom</type>
             </dependency>
@@ -29,13 +29,13 @@
     <dependencies>
         <dependency>
             <groupId>io.github.jam01</groupId>
-            <artifactId>sjsonnet_2.13</artifactId>
-            <version>0.4.5-03</version>
+            <artifactId>sjsonnet_3</artifactId>
+            <version>0.6.90004</version>
         </dependency>
         <dependency>
-            <groupId>org.jetbrains</groupId>
-            <artifactId>annotations</artifactId>
-            <version>23.0.0</version>
+            <groupId>org.jspecify</groupId>
+            <artifactId>jspecify</artifactId>
+            <version>1.0.0</version>
         </dependency>
 
         <!-- plugin deps: start -->
@@ -58,7 +58,7 @@
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-ooxml</artifactId>
-            <version>5.2.0</version>
+            <version>5.5.1</version>
             <exclusions>
                 <!-- seemingly unnecessary deps, remove as necessary if test shows otherwise -->
                 <exclusion>
@@ -115,7 +115,7 @@
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcprov-jdk18on</artifactId>
-            <version>1.77</version>
+            <version>1.83</version>
         </dependency>
         <!-- crypto deps: end -->
         <!-- test deps: start -->
@@ -138,7 +138,7 @@
         <dependency>
             <groupId>org.xmlunit</groupId>
             <artifactId>xmlunit-matchers</artifactId>
-            <version>2.9.0</version>
+            <version>2.11.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -150,19 +150,19 @@
         <dependency>
             <groupId>com.github.tomakehurst</groupId>
             <artifactId>wiremock-jre8</artifactId>
-            <version>2.35.0</version>
+            <version>2.35.2</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>2.0.6</version>
+            <version>2.0.13</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
-            <version>2.0.6</version>
+            <version>2.0.13</version>
             <scope>test</scope>
         </dependency>
         <!-- test deps: end -->

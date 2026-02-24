@@ -1,7 +1,7 @@
 package io.github.jam01.xtrasonnet.plugins;
 
 /*-
- * Copyright 2022 Jose Montoya.
+ * Copyright 2022-2026 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
@@ -12,8 +12,9 @@ import io.github.jam01.xtrasonnet.document.MediaType;
 import io.github.jam01.xtrasonnet.document.MediaTypes;
 import io.github.jam01.xtrasonnet.spi.BasePlugin;
 import io.github.jam01.xtrasonnet.spi.PluginException;
-import io.github.jam01.xtrasonnet.spi.ujsonUtils;
-import ujson.Value;
+import sjsonnet.EvalScope;
+import sjsonnet.Position;
+import sjsonnet.Val;
 
 public class DefaultPlainTextPlugin extends BasePlugin {
     public DefaultPlainTextPlugin() {
@@ -23,23 +24,28 @@ public class DefaultPlainTextPlugin extends BasePlugin {
         writerSupportedClasses.add(String.class);
     }
 
-    public Value read(Document<?> doc) throws PluginException {
+    @Override
+    public Val.Literal read(Document<?> doc, Position pos) throws PluginException {
         if (doc.getContent() == null) {
-            return ujson.Null$.MODULE$;
+            return new Val.Null(pos);
         }
 
         if (String.class.isAssignableFrom(doc.getContent().getClass())) {
-            return ujsonUtils.strValueOf((String) doc.getContent());
+            return new Val.Str(pos, (String) doc.getContent());
         } else {
-            throw new PluginException(new IllegalArgumentException("Unsupported document content class, use the test method canRead before invoking read"));
+            throw new PluginException("Unsupported document content class, use the test method canRead before invoking read");
         }
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T> Document<T> write(Value input, MediaType mediaType, Class<T> targetType) throws PluginException {
+    public <T> Document<T> write(Val input, MediaType mediaType, Class<T> targetType, EvalScope ev) throws PluginException {
+        if (!(input instanceof Val.Str)) {
+            throw new PluginException("Input for Plain Text writer must be a String, got " + input.prettyName());
+        }
+
         if (targetType.isAssignableFrom(String.class)) {
-            return (Document<T>) new Document.BasicDocument<>(ujsonUtils.stringValueOf(input), MediaTypes.TEXT_PLAIN);
+            return (Document<T>) new Document.BasicDocument<>(input.asString(), MediaTypes.TEXT_PLAIN);
         } else {
             throw new IllegalArgumentException("Only strings can be written as plain text.");
         }

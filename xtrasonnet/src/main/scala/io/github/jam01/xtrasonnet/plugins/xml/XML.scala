@@ -1,7 +1,7 @@
 package io.github.jam01.xtrasonnet.plugins.xml
 
 /*-
- * Copyright 2022 Jose Montoya.
+ * Copyright 2022-2026 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
@@ -9,8 +9,9 @@ package io.github.jam01.xtrasonnet.plugins.xml
 
 import io.github.jam01.xtrasonnet.plugins.DefaultXMLPlugin.EffectiveParams
 import org.xml.sax.InputSource
+import sjsonnet.{EvalScope, Val}
 
-import java.io._
+import java.io.*
 import java.nio.charset.Charset
 import javax.xml.parsers.SAXParser
 
@@ -33,9 +34,9 @@ object XML extends XMLLoader {
       override def parser(params: EffectiveParams): SAXParser = p
     }
 
-  def writeXML(sb: java.io.Writer, root: (String, ujson.Value), effParams: EffectiveParams): Unit = {
+  def writeXML(sb: java.io.Writer, root: (String, Val), effParams: EffectiveParams)(implicit ev: EvalScope): Unit = {
     // TODO: get charset from params
     if (!effParams.omitDeclaration) sb.append("<?xml version='" + effParams.xmlVer + "' encoding='" + Charset.defaultCharset().displayName() + "'?>")
-    new BadgerFishWriter(effParams).serialize(root._1, root._2, sb).toString
+    new BadgerFishVisitor(effParams).serialize(root._1, root._2, sb).toString
   }
 }

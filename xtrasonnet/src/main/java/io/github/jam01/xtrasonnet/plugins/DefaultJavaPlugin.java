@@ -1,7 +1,7 @@
 package io.github.jam01.xtrasonnet.plugins;
 
 /*-
- * Copyright 2022-2023 Jose Montoya.
+ * Copyright 2022-2026 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.databind.node.NullNode;
 import com.fasterxml.jackson.databind.util.StdDateFormat;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.github.jam01.xtrasonnet.document.Document;
@@ -19,8 +20,6 @@ import io.github.jam01.xtrasonnet.document.Documents;
 import io.github.jam01.xtrasonnet.document.MediaType;
 import io.github.jam01.xtrasonnet.document.MediaTypes;
 import io.github.jam01.xtrasonnet.spi.PluginException;
-import io.github.jam01.xtrasonnet.spi.ujsonUtils;
-import ujson.Value;
 
 import java.text.SimpleDateFormat;
 import java.time.ZoneOffset;
@@ -28,7 +27,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TimeZone;
 
-public class DefaultJavaPlugin extends BaseJacksonPlugin {
+public final class DefaultJavaPlugin extends BaseJacksonPlugin {
     private final JsonMapper mapper;
     public static final String PARAM_DATE_FORMAT = "dateformat";
     public static final String PARAM_TYPE = "type";
@@ -70,22 +69,20 @@ public class DefaultJavaPlugin extends BaseJacksonPlugin {
     }
 
     @Override
-    public Value read(Document<?> doc) throws PluginException {
+    public JsonNode read(Document<?> doc) throws PluginException {
         if (doc.getContent() == null) {
-            return ujson.Null$.MODULE$;
+            return NullNode.getInstance();
         }
 
         ObjectMapper mapper = mapperFor(doc.getMediaType());
         // TODO: 8/11/22 can we go direct to ujson somehow?
-        JsonNode inputAsNode = mapper.valueToTree(doc.getContent());
-        return ujsonFrom(inputAsNode);
+        return mapper.valueToTree(doc.getContent());
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T> Document<T> write(Value input, MediaType mediaType, Class<T> targetType) throws PluginException {
-        // TODO: 8/11/22 should throw instead? null a valid result when requesting anything?
-        if (input == ujson.Null$.MODULE$) {
+    public <T> Document<T> write(JsonNode input, MediaType mediaType, Class<T> targetType) throws PluginException {
+        if (input.isNull()) {
             return (Document<T>) Documents.Null();
         }
 
@@ -93,7 +90,7 @@ public class DefaultJavaPlugin extends BaseJacksonPlugin {
         T converted;
 
         try {
-            Object inputAsJava = ujsonUtils.objectOf(input);
+            Object inputAsJava = objectOfJsonNode(input);
             if (targetType.isAssignableFrom(inputAsJava.getClass())) {
                 converted = (T) inputAsJava;
             } else {

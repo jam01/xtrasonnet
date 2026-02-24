@@ -1,7 +1,7 @@
 package io.github.jam01.xtrasonnet
 
 /*-
- * Copyright 2022-2023 Jose Montoya.
+ * Copyright 2022-2026 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
@@ -46,18 +46,18 @@ package io.github.jam01.xtrasonnet
 import io.github.jam01.xtrasonnet.document.{Document, MediaType}
 import io.github.jam01.xtrasonnet.header.Header
 import io.github.jam01.xtrasonnet.modules.{Arrays, Base64, Crypto, Datetime, Duration, Math, Numbers, Objects, Strings, URL}
-import io.github.jam01.xtrasonnet.spi.{Library, ValOrdering}
-import io.github.jam01.xtrasonnet.spi.Library.{builtinx, dummyPosition, emptyObj, keyFrom, memberOf, moduleFrom}
-import io.github.jam01.xtrasonnet.spi.Library.Std.{builtin, builtinWithDefaults}
+import io.github.jam01.xtrasonnet.spi.Library
+import io.github.jam01.xtrasonnet.spi.Library.{emptyObj, keyFrom}
 import sjsonnet.ReadWriter.{ArrRead, ObjRead, ValRead}
-import sjsonnet.{Error, EvalScope, Evaluator, Importer, Lazy, Materializer, Position, Val}
+import sjsonnet.functions.FunctionModule
+import sjsonnet.{Error, EvalScope, Lazy, Materializer, Position, TailstrictModeDisabled, Val}
 import ujson.{Bool, Null, Num, Str}
 
 import java.util
-import java.util.{Collections, UUID}
+import java.util.UUID
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 
 // re: performance of while-loops vs foreach see:
 // https://www.theguardian.com/info/2021/oct/19/pondering-some-scala-performance-questions
@@ -69,28 +69,24 @@ import scala.jdk.CollectionConverters._
 
 // further optimizations possible:
 // consider replacing memberOf(s) with lazy-invoke
-// prefer new Val.Obj() than Val.Obj.mk
-class Xtr extends Library {
+// prefer Val.Obj() than Val.Obj.mk
+final class Xtr(dataFormats: DataFormatService, header: Header) extends Library {
+  override def name: String = "xtr"
 
-  override def namespace() = "xtr"
-
-  override def functions(dataFormats: DataFormatService,
-                         header: Header, importer: Importer): java.util.Map[String, Val.Func] = Map(
+  private val functions: Map[String, Val.Func] = Map(
     builtin("contains", "container", "value") {
       (_, ev, container: Val, value: Val) =>
         container match {
           // See: scala.collection.IterableOnceOps.exists
-          case array: Val.Arr =>
-            array.asLazyArray.exists(v => ev.equal(v.force, value))
-          case str: Val.Str =>
-            str.value.contains(value.asString)
+          case str: Val.Str => str.value.contains(value.asString)
+          case array: Val.Arr => array.asLazyArray.exists(v => ev.equal(v.force, value))
           case x => Error.fail("Expected Array or String, got: " + x.prettyName)
         }
     },
 
     builtin("entries", "obj") {
       (pos, ev, obj: Val.Obj) =>
-        new Val.Arr(pos, obj.visibleKeyNames.collect({
+        Val.Arr(pos, obj.visibleKeyNames.collect({
           case key => Val.Obj.mk(pos,
             ("key", memberOf(Val.Str(pos, key))),
             ("value", memberOf(obj.value(key, pos)(ev)))
@@ -111,7 +107,7 @@ class Xtr extends Library {
         container match {
           case str: Val.Str =>
             val sub = value.cast[Val.Str].value
-            new Val.Arr(pos, sub.r.findAllMatchIn(str.value).map(_.start).map(item => Val.Num(pos, item)).toArray)
+            Val.Arr(pos, sub.r.findAllMatchIn(str.value).map(_.start).map(item => Val.Num(pos, item)).toArray)
           case array: Val.Arr =>
             val out = new ArrayBuffer[Val.Num]()
             val lazArr = array.asLazyArray
@@ -122,7 +118,7 @@ class Xtr extends Library {
               }
               i = i + 1
             }
-            new Val.Arr(pos, out.toArray)
+            Val.Arr(pos, out.toArray)
           case x => Error.fail("Expected Array or String, got: " + x.prettyName)
         }
     },
@@ -143,7 +139,7 @@ class Xtr extends Library {
           out.appendAll(value.asLazyArray(i).force.asArr.asLazyArray) // should we report we expected arr[arr]?
           i = i + 1
         }
-        new Val.Arr(pos, out.toArray)
+        Val.Arr(pos, out.toArray)
     },
 
     builtin("endsWith", "main", "sub") {
@@ -165,44 +161,45 @@ class Xtr extends Library {
     },
 
     builtin("isDecimal", "value") {
-      (_, _, value: Double) =>
-        (java.lang.Math.ceil(value) != java.lang.Math.floor(value)).booleanValue()
+      (pos, _, num: Val.Num) =>
+        num match {
+          case Val.Int64(pos, value) => false
+          case Val.Float64(pos, value) => !value.isWhole
+          case Val.Dec128(pos, value) => !value.isWhole
+        }
     },
 
     builtin("isEmpty", "container") {
       (_, _, container: Val) =>
         container match {
+          case s: Val.Obj => !s.hasKeys.booleanValue()
           case s: Val.Str => s.value.isEmpty.booleanValue()
           case array: Val.Arr => array.asLazyArray.isEmpty.booleanValue()
-          case s: Val.Obj => !s.hasKeys.booleanValue()
           case x => Error.fail("Expected String, Array, or Object, got: " + x.prettyName)
         }
     },
 
     builtin("isInteger", "value") {
-      (_, _, value: Double) =>
-        (java.lang.Math.ceil(value) == java.lang.Math.floor(value)).booleanValue()
+      (_, _, num: Val.Num) =>
+        num match {
+          case Val.Int64(pos, value) => true
+          case Val.Float64(pos, value) => value.isWhole
+          case Val.Dec128(pos, value) => value.isWhole
+        }
     },
 
     builtin("join", "array", "sep") {
       (_, _, array: Val.Arr, sep: String) =>
-        array.asLazyArray.map({
-          _.force match {
-            case str: Val.Str => str.value
-            case num: Val.Num => if (!num.value.isWhole) num.value.toString else num.value.intValue().toString
-            case x => Error.fail("Expected String, Number, or Boolean, got: " + x.prettyName)
-          }
-        }).mkString(sep)
+        array.asLazyArray.map(v => keyFrom(v.force)).mkString(sep)
     },
 
     builtin("keys", "obj") {
       (pos, _, obj: Val.Obj) =>
-        new Val.Arr(pos, obj.visibleKeyNames.map(item => Val.Str(pos, item)))
+        Val.Arr(pos, obj.visibleKeyNames.map(item => Val.Str(pos, item)))
     },
 
     builtin("toLowerCase", "str") {
-      (_, _, str: String) =>
-        str.toLowerCase();
+      (_, _, str: String) => str.toLowerCase();
     },
 
     builtin("map", "value", "func") {
@@ -219,73 +216,22 @@ class Xtr extends Library {
 
     // TODO: optimize with while-loop
     builtin("max", "array") {
-      (_, _, array: Val.Arr) =>
-        var value = array.asLazyArray.head
-        for (x <- array.asLazyArray) {
-          // TODO: avoid string comparison
-          value.force.prettyName match {
-            case "string" =>
-              if (value.force.cast[Val.Str].value < x.force.cast[Val.Str].value) {
-                value = x
-              }
-            case "boolean" => if (x.isInstanceOf[Val.True]) {
-              value = x
-            }
-            case "number" =>
-              if (value.force.cast[Val.Num].value < x.force.cast[Val.Num].value) {
-                value = x
-              }
-            case x => Error.fail("Expected Array of type String, Boolean, or Number, got: Array of type " + x)
-          }
-        }
-        value.force
+      (_, ev, array: Val.Arr) => array.asLazyArray.view.map(_.force).max(ev)
     },
 
     builtin("maxBy", "array", "func") {
       (pos, ev, array: Val.Arr, func: Val.Func) =>
-        val lazyArr = array.asLazyArray
-        func.apply1(lazyArr.head, pos.noOffset)(ev) match {
-          case _: Val.Str => lazyArr.maxBy(item => func.apply1(item, pos.noOffset)(ev).asString).force
-          case _: Val.Bool => lazyArr.find(it => func.apply1(it, pos.noOffset)(ev).asBoolean).getOrElse(lazyArr.head).force
-          case _: Val.Num => lazyArr.maxBy(it => func.apply1(it, pos.noOffset)(ev).asDouble).force
-          case x => Error.fail("Expected Array of type String, Boolean, or Number, got: Array of type " + x)
-        }
+        array.asLazyArray.view.map(_.force).maxBy(it => func.apply1(it, pos.noOffset)(ev, TailstrictModeDisabled))(ev)
     },
 
     // TODO: optimize with while-loop
     builtin("min", "array") {
-      (_, _, array: Val.Arr) =>
-        var value = array.asLazyArray.head
-        for (x <- array.asLazyArray) {
-          // TODO: avoid string comparison
-          value.force.prettyName match {
-            case "string" =>
-              if (value.force.cast[Val.Str].value > x.force.cast[Val.Str].value) {
-                value = x
-              }
-            case "boolean" =>
-              if (x.force.isInstanceOf[Val.False]) {
-                value = x
-              }
-            case "number" =>
-              if (value.force.cast[Val.Num].value > x.force.cast[Val.Num].value) {
-                value = x
-              }
-            case x => Error.fail("Expected Array of type String, Boolean, or Number, got: Array of type " + x)
-          }
-        }
-        value.force
+      (_, ev, array: Val.Arr) => array.asLazyArray.view.map(_.force).min(ev)
     },
 
     builtin("minBy", "array", "func") {
       (pos, ev, array: Val.Arr, func: Val.Func) =>
-        val lazyArr = array.asLazyArray
-        func.apply1(lazyArr.head, pos.noOffset)(ev) match {
-          case _: Val.Str => lazyArr.minBy(item => func.apply1(item, pos.noOffset)(ev).asString).force
-          case _: Val.Bool => lazyArr.find(it => !func.apply1(it, pos.noOffset)(ev).asBoolean).getOrElse(lazyArr.head).force
-          case _: Val.Num => lazyArr.minBy(item => func.apply1(item, pos.noOffset)(ev).asDouble).force
-          case x => Error.fail("Expected Array of type String, Boolean, or Number, got: Array of type " + x)
-        }
+        array.asLazyArray.view.map(_.force).minBy(it => func.apply1(it, pos.noOffset)(ev, TailstrictModeDisabled))(ev)
     },
 
     builtin("sortBy", "value", "func") {
@@ -300,7 +246,7 @@ class Xtr extends Library {
     // TODO: add step param
     builtin("range", "begin", "end") {
       (pos, _, begin: Int, end: Int) =>
-        new Val.Arr(pos, (begin to end).map(i => Val.Num(pos, i)).toArray)
+        Val.Arr(pos, (begin to end).map(i => Val.Num(pos, i)).toArray)
     },
 
     builtin("replace", "str1", "str2", "replacement") {
@@ -311,7 +257,7 @@ class Xtr extends Library {
     builtinWithDefaults("read",
       "data" -> null,
       "mimeType" -> null,
-      "params" -> Val.False(dummyPosition)) {
+      "params" -> Val.False(position)) {
       (args, pos, ev) =>
         val data = args(0).cast[Val.Str].value
         val mimeType = args(1).cast[Val.Str].value
@@ -326,7 +272,7 @@ class Xtr extends Library {
     builtinWithDefaults("readUrl",
       "url" -> null,
       "mimeType" -> null,
-      "params" -> Val.False(dummyPosition)) {
+      "params" -> Val.False(position)) {
       (args, pos, ev) =>
         val url = args(0).cast[Val.Str].value
         val mimeType = args(1).cast[Val.Str].value
@@ -352,7 +298,7 @@ class Xtr extends Library {
 
     builtin("split", "str1", "str2") {
       (pos, _, str1: String, str2: String) =>
-        new Val.Arr(pos, Utils.split(str1, str2).map(s => Val.Str(pos, s)))
+        Val.Arr(pos, Utils.split(str1, str2).map(s => Val.Str(pos, s)))
     },
 
     builtin("startsWith", "str1", "str2") {
@@ -368,16 +314,7 @@ class Xtr extends Library {
     },
 
     builtin("type", "value") {
-      (_, _, value: Val) =>
-        value match {
-          case _: Val.Bool => "boolean"
-          case _: Val.Null => "null"
-          case _: Val.Obj => "object"
-          case _: Val.Arr => "array"
-          case _: Val.Func => "function"
-          case _: Val.Num => "number"
-          case _: Val.Str => "string"
-        }
+      (_, _, value: Val) => value.prettyName
     },
 
     builtin("toUpperCase", "str") {
@@ -385,19 +322,19 @@ class Xtr extends Library {
         str.toUpperCase()
     },
 
-    builtinx("uuid") {
+    builtin("uuid") {
       (_, _) =>
         UUID.randomUUID().toString
     },
 
     builtin("values", "obj") {
       (pos, ev, obj: Val.Obj) =>
-        new Val.Arr(pos, obj.visibleKeyNames.map(key => obj.value(key, pos)(ev)))
+        Val.Arr(pos, obj.visibleKeyNames.map(key => obj.value(key, pos)(ev)))
     },
 
     builtinWithDefaults("write",
-      "data" -> Val.Null(dummyPosition),
-      "mimeType" -> Val.Null(dummyPosition),
+      "data" -> Val.Null(position),
+      "mimeType" -> Val.Null(position),
       "params" -> emptyObj) { (args, _, ev) =>
       val data = args(0)
       val mimeType = args(1).cast[Val.Str].value
@@ -431,24 +368,26 @@ class Xtr extends Library {
     },
 
     builtin("foldLeft", "arr", "init", "func") {
-      (pos, ev, arr: Val.Arr, init: Val, func: Val.Func) =>
+      (pos, ev, arr0: Val.Arr, init: Val, func: Val.Func) =>
+        val arr = arr0.asLazyArray
         var current = init
         var i = 0
-        while (i < arr.asLazyArray.length) {
+        while (i < arr.length) {
           val c = current
-          current = func.apply2(arr.asLazy(i), c, pos.noOffset)(ev)
+          current = func.apply2(arr(i), c, pos.noOffset)(ev, TailstrictModeDisabled)
           i = i + 1
         }
         current
     },
 
     builtin("foldRight", "arr", "init", "func") {
-      (pos, ev, arr: Val.Arr, init: Val, func: Val.Func) =>
+      (pos, ev, arr0: Val.Arr, init: Val, func: Val.Func) =>
+        val arr = arr0.asLazyArray
         var current = init
-        var i = arr.asLazyArray.length - 1
+        var i = arr.length - 1
         while (i >= 0) {
           val c = current
-          current = func.apply2(arr.asLazy(i), c, pos.noOffset)(ev)
+          current = func.apply2(arr(i), c, pos.noOffset)(ev, TailstrictModeDisabled)
           i = i - 1
         }
         current
@@ -481,7 +420,7 @@ class Xtr extends Library {
 
     builtin("filterNotEq", "collection", "value") {
       (pos, ev, arr: Val.Arr, value: Val) =>
-        new Val.Arr(pos, arr.asLazyArray.filter(x => !ev.equal(x.force, value)))
+        Val.Arr(pos, arr.asLazyArray.filter(x => !ev.equal(x.force, value)))
     },
 
     builtin("filterNotIn", "first", "second") {
@@ -491,7 +430,7 @@ class Xtr extends Library {
             second match {
               case arr2: Val.Arr =>
                 // unfortunately cannot use diff here because of lazy values
-                new Val.Arr(pos, arr.asLazyArray
+                Val.Arr(pos, arr.asLazyArray
                   .filter(arrItem => !arr2.asLazyArray.exists(arr2Item => ev.equal(arrItem.force, arr2Item.force)))).asInstanceOf[Val]
               case x => Error.fail("Expected Array, got: " + x.prettyName)
             }
@@ -512,7 +451,7 @@ class Xtr extends Library {
       (pos, ev, collection: Val) =>
         collection match {
           case str: Val.Str => Val.Str(pos, str.value.reverse).asInstanceOf[Val]
-          case arr: Val.Arr => new Val.Arr(pos, arr.asLazyArray.reverse).asInstanceOf[Val]
+          case arr: Val.Arr => Val.Arr(pos, arr.asLazyArray.reverse).asInstanceOf[Val]
           case obj: Val.Obj =>
             var result: Seq[(String, Val.Obj.Member)] = Seq()
             obj.visibleKeyNames.foreach(key => result = result.prepended(
@@ -544,31 +483,13 @@ class Xtr extends Library {
     builtin("parseNum", "str") { (_, _, str: String) =>
       str.toDouble
     }
-  ).asJava
+  )
 
-  override def modules(dataFormats: DataFormatService,
-                       header: Header, importer: Importer): java.util.Map[String, Val.Obj] = Map(
-    "datetime" -> moduleFrom(Datetime.functions: _*),
-
-    "duration" -> moduleFrom(Duration.functions: _*),
-
-    "crypto" -> moduleFrom(Crypto.functions: _*),
-
-    "url" -> moduleFrom(URL.functions: _*),
-
-    "math" -> moduleFrom(Math.functions: _*),
-
-    "arrays" -> moduleFrom(Arrays.functions: _*),
-
-    "objects" -> moduleFrom(Objects.functions: _*),
-
-    "numbers" -> moduleFrom(Numbers.functions: _*),
-
-    // TODO: review regexs
-    "strings" -> moduleFrom(Strings.functions: _*),
-
-    "base64" -> moduleFrom(Base64.functions: _*)
-  ).asJava
+  override def module: Val.Obj = {
+    Val.Obj.mk(position,
+      functions.toSeq.map{ case (name, func) => (name, memberOf(func)) } ++
+        Xtr.allModules.map(mod => (mod.name, memberOf(mod.module))): _*)
+  }
 
   def read(dataFormats: DataFormatService, data: String, mimeType: String, params: Val.Obj, ev: EvalScope, pos: Position): Val = {
     val paramsAsJava = ujson.read(Materializer.apply(params)(ev)).obj.map(keyVal => {
@@ -607,7 +528,7 @@ class Xtr extends Library {
     if (args == 2) {
       while (i < array.length) {
         val item = array(i)
-        if (func.apply2(array(i), Val.Num(pos, i), pos.noOffset)(ev).isInstanceOf[Val.True]) {
+        if (func.apply2(array(i), Val.Num(pos, i), pos.noOffset)(ev, TailstrictModeDisabled).isInstanceOf[Val.True]) {
           out.append(item)
         }
         i = i + 1
@@ -615,7 +536,7 @@ class Xtr extends Library {
     } else if (args == 1) {
       while (i < array.length) {
         val item = array(i)
-        if (func.apply1(array(i), pos.noOffset)(ev).isInstanceOf[Val.True]) {
+        if (func.apply1(array(i), pos.noOffset)(ev, TailstrictModeDisabled).isInstanceOf[Val.True]) {
           out.append(item)
         }
         i = i + 1
@@ -624,7 +545,7 @@ class Xtr extends Library {
       Error.fail("Expected embedded function to have 1 or 2 parameters, received: " + args)
     }
 
-    new Val.Arr(pos, out.toArray)
+    Val.Arr(pos, out.toArray)
   }
 
   private def map(array: Array[Lazy], func: Val.Func, ev: EvalScope): Val.Arr = {
@@ -635,19 +556,19 @@ class Xtr extends Library {
     var i = 0
     if (args == 2) { //2 args
       while (i < array.length) {
-        out(i) = func.apply2(array(i), Val.Num(pos, i), pos.noOffset)(ev)
+        out(i) = func.apply2(array(i), Val.Num(pos, i), pos.noOffset)(ev, TailstrictModeDisabled)
         i = i + 1
       }
     } else if (args == 1) { // 1 arg
       while (i < array.length) {
-        out(i) = func.apply1(array(i), pos.noOffset)(ev)
+        out(i) = func.apply1(array(i), pos.noOffset)(ev, TailstrictModeDisabled)
         i = i + 1
       }
     } else {
       Error.fail("Expected embedded function to have 1 or 2 parameters, received: " + args)
     }
 
-    new Val.Arr(pos, out)
+    Val.Arr(pos, out)
   }
 
   private def filterObject(obj: Val.Obj, func: Val.Func, ev: EvalScope): Val.Obj = {
@@ -660,7 +581,7 @@ class Xtr extends Library {
       while (i < obj.visibleKeyNames.length) {
         val k = obj.visibleKeyNames(i)
         val v = obj.value(k, pos.noOffset)(ev)
-        if (func.apply3(v, Val.Str(pos, k), Val.Num(pos, i), pos.noOffset)(ev).isInstanceOf[Val.True]) {
+        if (func.apply3(v, Val.Str(pos, k), Val.Num(pos, i), pos.noOffset)(ev, TailstrictModeDisabled).isInstanceOf[Val.True]) {
           m.append((k, memberOf(v)))
         }
         i = i + 1
@@ -669,7 +590,7 @@ class Xtr extends Library {
       while (i < obj.visibleKeyNames.length) {
         val k = obj.visibleKeyNames(i)
         val v = obj.value(k, pos.noOffset)(ev)
-        if (func.apply2(v, Val.Str(pos, k), pos.noOffset)(ev).isInstanceOf[Val.True]) {
+        if (func.apply2(v, Val.Str(pos, k), pos.noOffset)(ev, TailstrictModeDisabled).isInstanceOf[Val.True]) {
           m.append((k, memberOf(v)))
         }
         i = i + 1
@@ -678,7 +599,7 @@ class Xtr extends Library {
       while (i < obj.visibleKeyNames.length) {
         val k = obj.visibleKeyNames(i)
         val v = obj.value(k, pos.noOffset)(ev)
-        if (func.apply1(v, pos.noOffset)(ev).isInstanceOf[Val.True]) {
+        if (func.apply1(v, pos.noOffset)(ev, TailstrictModeDisabled).isInstanceOf[Val.True]) {
           m.append((k, memberOf(v)))
         }
         i = i + 1
@@ -698,7 +619,7 @@ class Xtr extends Library {
     var i = 0
     if (args == 2) { // 2 args
       while (i < array.length) {
-        val inner = func.apply2(array(i).force, Val.Num(pos, i), pos.noOffset)(ev).asArr
+        val inner = func.apply2(array(i).force, Val.Num(pos, i), pos.noOffset)(ev, TailstrictModeDisabled).asArr
         var j = 0
         while (j < inner.length) {
           out.append(inner.asLazyArray(j))
@@ -708,7 +629,7 @@ class Xtr extends Library {
       }
     } else if (args == 1) { //  1 arg
       while (i < array.length) {
-        val inner = func.apply1(array(i).force, pos.noOffset)(ev).asArr
+        val inner = func.apply1(array(i).force, pos.noOffset)(ev, TailstrictModeDisabled).asArr
         var j = 0
         while (j < inner.length) {
           out.append(inner.asLazyArray(j))
@@ -720,7 +641,7 @@ class Xtr extends Library {
       Error.fail("Expected embedded function to have 1 or 2 parameters, received: " + args)
     }
 
-    new Val.Arr(pos, out.toArray)
+    Val.Arr(pos, out.toArray)
   }
 
   private def groupBy(array: Array[Lazy], func: Val.Func, ev: EvalScope): Val = {
@@ -733,14 +654,14 @@ class Xtr extends Library {
     if (args == 2) {
       while (i < array.length) {
         val v = array(i)
-        val k = keyFrom(func.apply2(v, Val.Num(pos, i), pos.noOffset)(ev))
+        val k = keyFrom(func.apply2(v, Val.Num(pos, i), pos.noOffset)(ev, TailstrictModeDisabled))
         mScala.getOrElseUpdate(k, mutable.ArrayBuffer[Lazy]()).addOne(v)
         i = i + 1
       }
     } else if (args == 1) {
       while (i < array.length) {
         val v = array(i)
-        val k = keyFrom(func.apply1(v, pos.noOffset)(ev))
+        val k = keyFrom(func.apply1(v, pos.noOffset)(ev, TailstrictModeDisabled))
         mScala.getOrElseUpdate(k, mutable.ArrayBuffer[Lazy]()).addOne(v)
         i = i + 1
       }
@@ -749,7 +670,7 @@ class Xtr extends Library {
       Error.fail("Expected embedded function to have 1 or 2 parameters, received: " + args)
     }
 
-    Val.Obj.mk(pos, m.asScala.toSeq.map { case (k, buff) => (k, memberOf(new Val.Arr(pos, buff.toArray))) }.toArray: _*)
+    Val.Obj.mk(pos, m.asScala.toSeq.map { case (k, buff) => (k, memberOf(Val.Arr(pos, buff.toArray))) }.toArray: _*)
   }
 
   private def groupBy(obj: Val.Obj, func: Val.Func, ev: EvalScope): Val = {
@@ -763,7 +684,7 @@ class Xtr extends Library {
       while (i < obj.visibleKeyNames.length) {
         val k = obj.visibleKeyNames(i)
         val v = obj.value(k, pos)(ev)
-        val funcKey = keyFrom(func.apply2(v, Val.Str(pos, k), pos.noOffset)(ev))
+        val funcKey = keyFrom(func.apply2(v, Val.Str(pos, k), pos.noOffset)(ev, TailstrictModeDisabled))
         mScala.getOrElseUpdate(funcKey, new util.LinkedHashMap[String, Val.Obj.Member]()).put(k, memberOf(v))
         i = i + 1
       }
@@ -771,7 +692,7 @@ class Xtr extends Library {
       while (i < obj.visibleKeyNames.length) {
         val k = obj.visibleKeyNames(i)
         val v = obj.value(k, pos)(ev)
-        val funcKey = keyFrom(func.apply1(v, pos.noOffset)(ev))
+        val funcKey = keyFrom(func.apply1(v, pos.noOffset)(ev, TailstrictModeDisabled))
         mScala.getOrElseUpdate(funcKey, new util.LinkedHashMap[String, Val.Obj.Member]()).put(k, memberOf(v))
         i = i + 1
       }
@@ -779,7 +700,7 @@ class Xtr extends Library {
       Error.fail("Expected embedded function to have 1 or 2 parameters, received: " + args)
     }
 
-    Val.Obj.mk(pos, m.asScala.toSeq.map { case (k, map) => (k, memberOf(new Val.Obj(pos, map, false, null, null))) }.toArray: _*)
+    Val.Obj.mk(pos, m.asScala.toSeq.map { case (k, map) => (k, memberOf(Val.Obj(pos, map, false, null, null))) }.toArray: _*)
   }
 
   private def mapEntries(obj: Val.Obj, func: Val.Func, ev: EvalScope): Val = {
@@ -794,28 +715,28 @@ class Xtr extends Library {
       while (i < obj.visibleKeyNames.length) {
         k = obj.visibleKeyNames(i)
         v = obj.value(k, pos)(ev)
-        out.append(func.apply3(v, Val.Str(pos, k), Val.Num(pos, i), pos.noOffset)(ev))
+        out.append(func.apply3(v, Val.Str(pos, k), Val.Num(pos, i), pos.noOffset)(ev, TailstrictModeDisabled))
         i = i + 1
       }
     } else if (args.equals(2)) {
       while (i < obj.visibleKeyNames.length) {
         k = obj.visibleKeyNames(i)
         v = obj.value(k, pos)(ev)
-        out.append(func.apply2(v, Val.Str(pos, k), pos.noOffset)(ev))
+        out.append(func.apply2(v, Val.Str(pos, k), pos.noOffset)(ev, TailstrictModeDisabled))
         i = i + 1
       }
     } else if (args.equals(1)) {
       while (i < obj.visibleKeyNames.length) {
         k = obj.visibleKeyNames(i)
         v = obj.value(k, pos)(ev)
-        out.append(func.apply1(v, pos.noOffset)(ev))
+        out.append(func.apply1(v, pos.noOffset)(ev, TailstrictModeDisabled))
         i = i + 1
       }
     } else {
       Error.fail("Expected embedded function to have between 1 and 3 parameters, received: " + args)
     }
 
-    new Val.Arr(pos, out.toArray)
+    Val.Arr(pos, out.toArray)
   }
 
   private def mapObject(obj: Val.Obj, func: Val.Func, ev: EvalScope): Val = {
@@ -830,10 +751,10 @@ class Xtr extends Library {
       while (i < obj.visibleKeyNames.length) {
         k = obj.visibleKeyNames(i)
         v = obj.value(k, pos)(ev)
-        func.apply3(v, Val.Str(pos, k), Val.Num(pos, i), pos.noOffset)(ev) match {
+        func.apply3(v, Val.Str(pos, k), Val.Num(pos, i), pos.noOffset)(ev, TailstrictModeDisabled) match {
           case s: Val.Obj =>
             if (s.visibleKeyNames.length > 1) Error.fail("Function must return a single key-value pair, otherwise consider flatMapObject.")
-            out.put(s.visibleKeyNames.head, memberOf(s.value(s.visibleKeyNames.head, dummyPosition)(ev)))
+            out.put(s.visibleKeyNames.head, memberOf(s.value(s.visibleKeyNames.head, position)(ev)))
           case x => Error.fail("function must return an Object, got: " + x.prettyName)
         }
         i = i + 1
@@ -842,10 +763,10 @@ class Xtr extends Library {
       while (i < obj.visibleKeyNames.length) {
         k = obj.visibleKeyNames(i)
         v = obj.value(k, pos)(ev)
-        func.apply2(v, Val.Str(pos, k), pos.noOffset)(ev) match {
+        func.apply2(v, Val.Str(pos, k), pos.noOffset)(ev, TailstrictModeDisabled) match {
           case s: Val.Obj =>
             if (s.visibleKeyNames.length > 1) Error.fail("Function must return a single key-value pair, otherwise consider flatMapObject.")
-            out.put(s.visibleKeyNames.head, memberOf(s.value(s.visibleKeyNames.head, dummyPosition)(ev)))
+            out.put(s.visibleKeyNames.head, memberOf(s.value(s.visibleKeyNames.head, position)(ev)))
           case x => Error.fail("function must return an Object, got: " + x.prettyName)
         }
         i = i + 1
@@ -854,10 +775,10 @@ class Xtr extends Library {
       while (i < obj.visibleKeyNames.length) {
         k = obj.visibleKeyNames(i)
         v = obj.value(k, pos)(ev)
-        func.apply1(v, pos.noOffset)(ev) match {
+        func.apply1(v, pos.noOffset)(ev, TailstrictModeDisabled) match {
           case s: Val.Obj =>
             if (s.visibleKeyNames.length > 1) Error.fail("Function must return a single key-value pair, otherwise consider flatMapObject.")
-            out.put(s.visibleKeyNames.head, memberOf(s.value(s.visibleKeyNames.head, dummyPosition)(ev)))
+            out.put(s.visibleKeyNames.head, memberOf(s.value(s.visibleKeyNames.head, position)(ev)))
           case x => Error.fail("function must return an Object, got: " + x.prettyName)
         }
         i = i + 1
@@ -865,7 +786,7 @@ class Xtr extends Library {
     } else {
       Error.fail("Expected embedded function to have between 1 and 3 parameters, received: " + args)
     }
-    new Val.Obj(pos, out, false, null, null)
+    Val.Obj(pos, out, false, null, null)
   }
 
   private def flatMapObject(obj: Val.Obj, func: Val.Func, ev: EvalScope): Val = {
@@ -880,9 +801,9 @@ class Xtr extends Library {
       while (i < obj.visibleKeyNames.length) {
         k = obj.visibleKeyNames(i)
         v = obj.value(k, pos)(ev)
-        func.apply3(v, Val.Str(pos, k), Val.Num(pos, i), pos.noOffset)(ev) match {
+        func.apply3(v, Val.Str(pos, k), Val.Num(pos, i), pos.noOffset)(ev, TailstrictModeDisabled) match {
           case s: Val.Obj => s.visibleKeyNames.foreach(
-            sKey => out.put(sKey, memberOf(s.value(sKey, dummyPosition)(ev)))
+            sKey => out.put(sKey, memberOf(s.value(sKey, position)(ev)))
           )
           case x => Error.fail("function must return an Object, got: " + x.prettyName)
         }
@@ -892,9 +813,9 @@ class Xtr extends Library {
       while (i < obj.visibleKeyNames.length) {
         k = obj.visibleKeyNames(i)
         v = obj.value(k, pos)(ev)
-        func.apply2(v, Val.Str(pos, k), pos.noOffset)(ev) match {
+        func.apply2(v, Val.Str(pos, k), pos.noOffset)(ev, TailstrictModeDisabled) match {
           case s: Val.Obj => s.visibleKeyNames.foreach(
-            sKey => out.put(sKey, memberOf(s.value(sKey, dummyPosition)(ev)))
+            sKey => out.put(sKey, memberOf(s.value(sKey, position)(ev)))
           )
           case x => Error.fail("function must return an Object, got: " + x.prettyName)
         }
@@ -904,9 +825,9 @@ class Xtr extends Library {
       while (i < obj.visibleKeyNames.length) {
         k = obj.visibleKeyNames(i)
         v = obj.value(k, pos)(ev)
-        func.apply1(v, pos.noOffset)(ev) match {
+        func.apply1(v, pos.noOffset)(ev, TailstrictModeDisabled) match {
           case s: Val.Obj => s.visibleKeyNames.foreach(
-            sKey => out.put(sKey, memberOf(s.value(sKey, dummyPosition)(ev)))
+            sKey => out.put(sKey, memberOf(s.value(sKey, position)(ev)))
           )
           case x => Error.fail("function must return an Object, got: " + x.prettyName)
         }
@@ -915,7 +836,7 @@ class Xtr extends Library {
     } else {
       Error.fail("Expected embedded function to have between 1 and 3 parameters, received: " + args)
     }
-    new Val.Obj(pos, out, false, null, null)
+    Val.Obj(pos, out, false, null, null)
   }
 
   // TODO: optimize with while-loop
@@ -924,12 +845,12 @@ class Xtr extends Library {
     val args = func.params.names.length
 
     if (args == 2) {
-      new Val.Arr(pos,
+      Val.Arr(pos,
         array.zipWithIndex.sortBy(
-          it => func.apply2(it._1, Val.Num(pos, it._2), pos.noOffset)(ev)
-        )(ord = ValOrdering).map(_._1))
+          it => func.apply2(it._1, Val.Num(pos, it._2), pos.noOffset)(ev, TailstrictModeDisabled)
+        )(ord = ev).map(_._1))
     } else if (args == 1) {
-      new Val.Arr(pos, array.sortBy(it => func.apply1(it, pos.noOffset)(ev))(ord = ValOrdering))
+      Val.Arr(pos, array.sortBy(it => func.apply1(it, pos.noOffset)(ev, TailstrictModeDisabled))(ord = ev))
     } else {
       Error.fail("Expected embedded function to have 1 or 2 parameters, received: " + args)
     }
@@ -954,14 +875,31 @@ class Xtr extends Library {
 
     if (args.equals(2)) {
       Val.Obj.mk(pos,
-        m.toSeq.sortBy { case (k1, _) => func.apply2(obj.value(k1, pos)(ev), Val.Str(pos, k1), pos.noOffset)(ev) }(ord = ValOrdering): _*
+        m.toSeq.sortBy { case (k1, _) => func.apply2(obj.value(k1, pos)(ev), Val.Str(pos, k1), pos.noOffset)(ev, TailstrictModeDisabled) }(ord = ev): _*
       )
     } else if (args == 1) {
       Val.Obj.mk(pos,
-        m.toSeq.sortBy { case (k1, _) => func.apply1(obj.value(k1, pos)(ev), pos.noOffset)(ev) }(ord = ValOrdering): _*
+        m.toSeq.sortBy { case (k1, _) => func.apply1(obj.value(k1, pos)(ev), pos.noOffset)(ev, TailstrictModeDisabled) }(ord = ev): _*
       )
     } else {
       Error.fail("Expected embedded function to have 1 or 2 parameters, received: " + args)
     }
   }
+}
+
+object Xtr {
+  private val allModules: Seq[FunctionModule] = Seq(
+    Datetime,
+    Duration,
+    Crypto,
+    URL,
+    Math,
+    Arrays,
+    Objects,
+    Numbers,
+    Strings, // TODO: review regexs
+    Base64
+  )
+
+  val Default: Xtr = Xtr(DataFormatService.DEFAULT, Header.EMPTY)
 }

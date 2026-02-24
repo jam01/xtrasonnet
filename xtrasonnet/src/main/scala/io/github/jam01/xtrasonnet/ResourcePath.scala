@@ -1,14 +1,14 @@
 package io.github.jam01.xtrasonnet
 
 /*-
- * Copyright 2022 Jose Montoya.
+ * Copyright 2022-2026 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
  */
 
 import io.github.jam01.xtrasonnet.ResourcePath.root
-import sjsonnet.{Importer, Path}
+import sjsonnet.{Importer, Path, ResolvedFile, StaticResolvedFile}
 
 import scala.collection.mutable
 
@@ -26,9 +26,11 @@ object ResourcePath {
           Some(docBase / importName)
     }
 
-    override def read(path: Path): Option[String] = {
+    override def read(path: Path, binaryData: Boolean): Option[ResolvedFile] = {
+      if (binaryData) throw UnsupportedOperationException("Binary imports are unsupported")
+
       val p = path.asInstanceOf[ResourcePath].path
-      Some(ResourceResolver.asString(p, null))
+      Some(StaticResolvedFile(ResourceResolver.asString(p, null)))
     }
   }
 }

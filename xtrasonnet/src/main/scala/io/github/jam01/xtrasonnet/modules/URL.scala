@@ -1,19 +1,21 @@
 package io.github.jam01.xtrasonnet.modules
 
 /*-
- * Copyright 2022-2023 Jose Montoya.
+ * Copyright 2022-2026 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
  */
 
-import io.github.jam01.xtrasonnet.spi.Library.Std.{builtin, builtinWithDefaults}
 import sjsonnet.Val
+import sjsonnet.functions.AbstractFunctionModule
 
 import java.net.{URLDecoder, URLEncoder}
 import java.nio.charset.Charset
 
-object URL {
+object URL extends AbstractFunctionModule {
+  override def name: String = "url"
+
   val functions: Seq[(String, Val.Func)] = Seq(
     builtin("encode", "data") {
       (_, _, data: String) =>

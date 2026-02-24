@@ -1,34 +1,35 @@
 package io.github.jam01.xtrasonnet.modules
 
 /*-
- * Copyright 2022-2023 Jose Montoya.
+ * Copyright 2022-2026 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
  */
 
-import io.github.jam01.xtrasonnet.spi.Library.memberOf
-import io.github.jam01.xtrasonnet.spi.Library.Std.{builtin, builtinWithDefaults}
-import sjsonnet.{Error, Val}
+import sjsonnet.Val
+import sjsonnet.functions.AbstractFunctionModule
 
-import java.time._
+import java.time.*
 import scala.collection.mutable
 
-object Duration {
+object Duration extends AbstractFunctionModule {
+  override def name: String = "duration"
+  
   val functions: Seq[(String, Val.Func)] = Seq(
     builtin("of", "obj") {
       (pos, ev, obj: Val.Obj) =>
         val out = mutable.Map[String, Val]()
         obj.visibleKeyNames.foreach(key => out.addOne(key, obj.value(key, pos)(ev)))
         Period.ZERO
-          .plusYears(out.getOrElse("years", Val.Num(pos, 0)).cast[Val.Num].value.toLong)
-          .plusMonths(out.getOrElse("months", Val.Num(pos, 0)).cast[Val.Num].value.toLong)
-          .plusDays(out.getOrElse("days", Val.Num(pos, 0)).cast[Val.Num].value.toLong)
+          .plusYears(out.getOrElse("years", Val.Num(pos, 0)).asInt)
+          .plusMonths(out.getOrElse("months", Val.Num(pos, 0)).asInt)
+          .plusDays(out.getOrElse("days", Val.Num(pos, 0)).asInt)
           .toString +
           java.time.Duration.ZERO
-            .plusHours(out.getOrElse("hours", Val.Num(pos, 0)).cast[Val.Num].value.toLong)
-            .plusMinutes(out.getOrElse("minutes", Val.Num(pos, 0)).cast[Val.Num].value.toLong)
-            .plusSeconds(out.getOrElse("seconds", Val.Num(pos, 0)).cast[Val.Num].value.toLong)
+            .plusHours(out.getOrElse("hours", Val.Num(pos, 0)).asLong)
+            .plusMinutes(out.getOrElse("minutes", Val.Num(pos, 0)).asLong)
+            .plusSeconds(out.getOrElse("seconds", Val.Num(pos, 0)).asLong)
             .toString.substring(1)
     },
 

@@ -1,7 +1,7 @@
 package io.github.jam01.xtrasonnet.plugins.xml
 
 /*-
- * Copyright 2022-2023 Jose Montoya.
+ * Copyright 2022-2026 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
@@ -37,13 +37,20 @@ import io.github.jam01.xtrasonnet.plugins.DefaultXMLPlugin
 import io.github.jam01.xtrasonnet.plugins.DefaultXMLPlugin.{EffectiveParams, Mode}
 import org.xml.sax.ext.DefaultHandler2
 import org.xml.sax.{Attributes, SAXParseException}
+import sjsonnet.Expr.Member.Visibility
+import sjsonnet.Val.Obj
+import sjsonnet.{Position, Val}
 
+import java.util
 import scala.collection.mutable
-import scala.jdk.CollectionConverters.MapHasAsJava
+import scala.jdk.CollectionConverters.MapHasAsJava;
 
 // See {@link scala.xml.parsing.FactoryAdapter}
 class BadgerFishHandler(params: EffectiveParams) extends DefaultHandler2 {
-  def result: ujson.Obj = badgerStack.top.obj
+  private val dummyPos: Position = Position(null, -1)
+  def memberOf(value: Val): Obj.Member = new Obj.ConstMember(false, Visibility.Normal, value)
+
+  def result: Val.Obj = freezeObj(badgerStack.top.obj)
   private val COLON = ":"
 
   val buffer = new mutable.StringBuilder()
@@ -52,21 +59,21 @@ class BadgerFishHandler(params: EffectiveParams) extends DefaultHandler2 {
 
   private var startContext = true // start a new context at the first xmlns declaration in doc
   private val overrides = new NamespaceDeclarations(params.declarations.asJava)
-  private var declaredXmlns: mutable.LinkedHashMap[String, ujson.Str] = mutable.LinkedHashMap()
+  private var declaredXmlns: util.LinkedHashMap[String, Val.Obj.Member] = util.LinkedHashMap()
 
   // root
-  badgerStack.push(BadgerFish(ujson.Obj()))
+  badgerStack.push(BadgerFish(mutable.LinkedHashMap.empty))
 
   // called before startElement when xmlns attributes are present
   override def startPrefixMapping(prefix: String, uri: String): Unit = {
     if (startContext) { // should be true at first xmlns declaration found in doc, or after a new start tag
       overrides.pushContext() // start new context
       startContext = false
-      if (declaredXmlns.nonEmpty) declaredXmlns = declaredXmlns.empty // re-use map of xmlns -- tradeoff of speed for memory(clear map values)
+      if (!declaredXmlns.isEmpty) declaredXmlns = new util.LinkedHashMap() // re-use map of xmlns -- tradeoff of speed for memory(clear map values)
     }
 
     val newPrefix = if (prefix.equals("xmlns")) DefaultXMLPlugin.DEFAULT_NS_KEY else overrides.prefix(prefix, uri)
-    if (!params.excludeXmlns) declaredXmlns.put(newPrefix, ujson.Str(uri))
+    if (!params.excludeXmlns) declaredXmlns.put(newPrefix, memberOf(Val.Str(dummyPos, uri)))
   }
 
   override def startElement(uri: String,
@@ -77,16 +84,16 @@ class BadgerFishHandler(params: EffectiveParams) extends DefaultHandler2 {
     capture = true // enable capture after we see any start tag; only needed for the first one, but less expensive to always set it
     startContext = true // signal to startPrefixMapping to start a new context
 
-    val current = ujson.Obj() // the current Obj to compose for this element
+    val current = mutable.LinkedHashMap.empty[String, BFValue] // builder for this element
 
-    if (declaredXmlns.nonEmpty) {
-      current.value.addOne((params.xmlnsKey, declaredXmlns))
-      declaredXmlns = declaredXmlns.empty
+    if (!declaredXmlns.isEmpty) {
+      current.put(params.xmlnsKey, BFSingle(Val.Obj(dummyPos, declaredXmlns, false, null, null)))
+      declaredXmlns = new util.LinkedHashMap()
     }
 
     // add attributes
     if (!params.excludeAttrs && attributes.getLength > 0) {
-      val attrs = mutable.ListBuffer[(String, ujson.Str)]()
+      val attrs = new util.LinkedHashMap[String, Val.Obj.Member]
 
       // TODO: optimize with while-loop
       for (i <- 0 until attributes.getLength) {
@@ -102,9 +109,9 @@ class BadgerFishHandler(params: EffectiveParams) extends DefaultHandler2 {
           attrName = if (params.xmlnsAware) overrides.name(attrName, true) else attrName
         }
 
-        attrs.addOne(attrName, ujson.Str(value))
+        attrs.put(attrName, memberOf(Val.Str(dummyPos, value)))
       }
-      current.value.addOne(params.attrKey, attrs.toList)
+      current.put(params.attrKey, BFSingle(Val.Obj(dummyPos, attrs, false, null, null)))
     }
 
     badgerStack.push(BadgerFish(current)) // the current Obj to use in other parser events
@@ -121,12 +128,17 @@ class BadgerFishHandler(params: EffectiveParams) extends DefaultHandler2 {
   override def endCDATA(): Unit = { // like captureText, but uses cdata key
     if (buffer.nonEmpty) {
       val idx = badgerStack.top.nextPos
+      val string = buffer.toString
       if (params.mode == Mode.extended) { // only extended keeps individual text elements
-        badgerStack.top.obj.value.addOne(params.cdataKey + idx, ujson.Str(buffer.toString))
+        badgerStack.top.obj.put(params.cdataKey + idx, BFSingle(Val.Str(dummyPos, string)))
         badgerStack.top.nextPos = idx + 1
       } else {
-        val text = badgerStack.top.obj.value.get(params.textKey)
-        badgerStack.top.obj.value.addOne(params.textKey, if (text.isEmpty) buffer.toString else text.get.str + buffer.toString)
+        val existingText = badgerStack.top.obj.get(params.textKey).map(_.finalizeVal)
+        val merged = existingText match {
+          case Some(Val.Str(pos, s)) => Val.Str(pos, s + string)
+          case _                => Val.Str(dummyPos, string)
+        }
+        badgerStack.top.obj.put(params.textKey, BFSingle(merged))
       }
       badgerStack.top.hasText = true
     }
@@ -148,32 +160,30 @@ class BadgerFishHandler(params: EffectiveParams) extends DefaultHandler2 {
     }
 
     val current = badgerStack.pop
-    var currVal: ujson.Value = current.obj
-    if (Mode.simplified == params.mode) {
-      if (current.obj.value.isEmpty) currVal = ujson.Null
-      else if (current.obj.value.size == 1 && current.hasText) currVal = current.obj.value(params.textKey)
-      else current.obj.value.remove(params.textKey)
-    }
-
     val parent = badgerStack.top
-    val parentObj = parent.obj.value
 
     val pos = parent.nextPos
-    if (params.mode == Mode.extended) current.obj.value.addOne(params.posKey, ujson.Num(pos)) // only extended supports positions
+    if (params.mode == Mode.extended) current.obj.put(params.posKey, BFSingle(Val.Num(dummyPos, pos))) // only extended supports positions
     parent.nextPos = pos + 1
 
-    if (parentObj.contains(currName)) {
-      (parentObj(currName): @unchecked) match {
-        case ujson.Arr(arr) => arr.addOne(currVal)
-        case ujson.Obj(existing) => parentObj.addOne(currName, ujson.Arr(existing, currVal))
-        case any => parentObj.addOne(currName, ujson.Arr(any, currVal)) // TODO: consider checking if we need to change simplified values to objects
-      }
-    } else {
-      parentObj.addOne(currName, currVal)
+    val currVal: Val = {
+      if (Mode.simplified == params.mode) {
+        if (current.obj.isEmpty) Val.Null(dummyPos)
+        else if (current.obj.size == 1 && current.hasText) current.obj(params.textKey).finalizeVal
+        else {
+          current.obj.remove(params.textKey)
+          freezeObj(current.obj)
+        }
+      } else freezeObj(current.obj)
+    }
+
+    parent.obj.get(currName) match {
+      case Some(existing) => parent.obj.put(currName, existing.add(currVal)) // no Val.Arr created yet
+      case None => parent.obj.put(currName, BFSingle(currVal))
     }
 
     capture = badgerStack.size != 1 // stop capturing at root level
-    if (declaredXmlns.nonEmpty) { // some xmlns were found
+    if (!declaredXmlns.isEmpty) { // some xmlns were found
       overrides.popContext()
     }
   }
@@ -186,11 +196,15 @@ class BadgerFishHandler(params: EffectiveParams) extends DefaultHandler2 {
       if (trimmed.nonEmpty) {
         string = if (params.trimText) trimmed else string
         if (params.mode == Mode.extended) { // only extended keeps individual text elements
-          badgerStack.top.obj.value.addOne(params.textKey + idx, string)
+          badgerStack.top.obj.put(params.textKey + idx, BFSingle(Val.Str(dummyPos, string)))
           badgerStack.top.nextPos = idx + 1
         } else {
-          val text = badgerStack.top.obj.value.get(params.textKey)
-          badgerStack.top.obj.value.addOne(params.textKey, if (text.isEmpty) string else text.get.str + string)
+          val existingText = badgerStack.top.obj.get(params.textKey).map(_.finalizeVal)
+          val merged = existingText match {
+            case Some(Val.Str(pos, s)) => Val.Str(pos, s + string)
+            case _                => Val.Str(dummyPos, string)
+          }
+          badgerStack.top.obj.put(params.textKey, BFSingle(merged))
         }
         badgerStack.top.hasText = true
       }
@@ -213,6 +227,28 @@ class BadgerFishHandler(params: EffectiveParams) extends DefaultHandler2 {
       Console.println(s)
       Console.flush()
     }
+
+  private def freezeObj(fields: mutable.LinkedHashMap[String, BFValue]): Val.Obj = {
+    Val.Obj.mk(dummyPos, fields.iterator.map { case (k, v) => (k, memberOf(v.finalizeVal)) }.toArray)
+  }
 }
 
-case class BadgerFish(obj: ujson.Obj, var hasText: Boolean = false, var nextPos: Int = 1)
+private sealed trait BFValue {
+  def add(v: Val): BFValue
+  def finalizeVal: Val
+}
+
+private final case class BFSingle(v: Val) extends BFValue {
+  override def add(v2: Val): BFValue = BFMany(v.pos, mutable.ArrayBuffer(v, v2))
+  override def finalizeVal: Val = v
+}
+
+private final case class BFMany(pos: Position, buf: mutable.ArrayBuffer[Val]) extends BFValue {
+  override def add(v: Val): BFValue = {
+    buf.addOne(v)
+    this
+  }
+  override def finalizeVal: Val = Val.Arr(pos, buf.toArray)
+}
+
+case class BadgerFish(obj: mutable.LinkedHashMap[String, BFValue], var hasText: Boolean = false, var nextPos: Int = 1)

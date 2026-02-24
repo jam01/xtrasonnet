@@ -1,7 +1,7 @@
 package io.github.jam01.xtrasonnet.document;
 
 /*-
- * Copyright 2022 Jose Montoya.
+ * Copyright 2022-2026 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
@@ -36,7 +36,7 @@ package io.github.jam01.xtrasonnet.document;
  */
 
 import io.github.jam01.xtrasonnet.Utils;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import java.io.Serializable;
 import java.nio.charset.Charset;

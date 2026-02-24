@@ -1,7 +1,7 @@
 package io.github.jam01.camel.language.xtrasonnet;
 
 /*-
- * Copyright 2022-2023 Jose Montoya.
+ * Copyright 2022-2026 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
@@ -32,9 +32,6 @@ package io.github.jam01.camel.language.xtrasonnet;
  * - 92138ec1b4796ae6f1fe8cb6f75e6cb4a8517c3e: Datasonnet libraries autodiscovery (#7374)
  */
 
-import java.util.Collections;
-import java.util.Set;
-
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import io.github.jam01.xtrasonnet.Transformer;
 import io.github.jam01.xtrasonnet.TransformerBuilder;
@@ -50,6 +47,10 @@ import org.apache.camel.RuntimeExpressionException;
 import org.apache.camel.spi.ExpressionResultTypeAware;
 import org.apache.camel.support.ExchangeHelper;
 import org.apache.camel.support.ExpressionAdapter;
+import sjsonnet.Settings;
+
+import java.util.Collections;
+import java.util.Set;
 
 public class XtrasonnetExpression extends ExpressionAdapter implements ExpressionResultTypeAware {
     private final String expression;
@@ -74,7 +75,6 @@ public class XtrasonnetExpression extends ExpressionAdapter implements Expressio
         try {
             // pass exchange to CML lib using thread as context
             CML.getInstance().getExchange().set(exchange);
-
             Document<?> result = doEvaluate(exchange);
 
             if (type.equals(Document.class)) {
@@ -150,7 +150,13 @@ public class XtrasonnetExpression extends ExpressionAdapter implements Expressio
         language.computeIfMiss(expression, () -> {
             TransformerBuilder builder = new TransformerBuilder(expression)
                     .withLibrary(CML.getInstance())
-                    .withSettings(new TransformerSettings(true, false, false,
+                    .withSettings(new TransformerSettings(
+                            new Settings(true,
+                                    false,
+                                    false,
+                                    false,
+                                    1000,
+                                    false),
                             MediaTypes.APPLICATION_JAVA, MediaTypes.APPLICATION_JAVA));
 
             Set<Library> additionalLibraries = context.getRegistry().findByType(Library.class);
