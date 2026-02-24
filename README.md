@@ -73,6 +73,43 @@ xtrasonnet includes a `DataFormatPlugin` for each of the following:
 ## What kind of additions to the jsonnet language?
 There are two main additions motivated to facilitate data transformation applications:
 
+
+### Fluent transformation syntax (since 0.7.0)
+
+This allows developers to write transformations in a more intuitive, fluent style by using infix notation for function calls.
+
+For example, instead of `xtr.map(payload, function(...))`, you can write `payload xtr.map(function(...))`.
+
+```jsonnet
+local data = [1, 2, 3];
+data xtr.map(function(it) it * 2)
+```
+
+⬇
+
+```jsonnet
+[2, 4, 6]
+```
+
+The infix syntax works with any function that takes at least one argument; the left-hand side becomes the first argument, and the right-hand side (if any) becomes the second argument. You can also chain multiple infix calls for more complex transformations.
+
+For example, instead of
+```jsonnet
+xtr.map(
+    xtr.filter(payload, function(...)), 
+    function(...)
+)
+```
+
+you can write:
+
+```jsonnet
+payload
+    xtr.filter(function(it) ...)
+    xtr.map(function(it) ...)
+```
+
+
 ### Null-safe select `?.`
 This allows developers to select, and chain, properties arbitrarily without testing existence.
 

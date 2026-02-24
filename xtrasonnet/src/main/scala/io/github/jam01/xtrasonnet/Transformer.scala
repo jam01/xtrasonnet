@@ -16,7 +16,7 @@ import sjsonnet.Expr.Member.Visibility
 import sjsonnet.Expr.Params
 import sjsonnet.Val.Obj
 import sjsonnet.stdlib.StdLibModule
-import sjsonnet.{DefaultParseCache, Error, EvalScope, Evaluator, Expr, FileScope, Importer, Interpreter, ParseCache, ParseError, Path, Position, Settings, StaticResolvedFile, TailstrictModeDisabled, Val, ValScope}
+import sjsonnet.{CachedResolver, DefaultParseCache, Error, EvalScope, Evaluator, Expr, FileScope, Importer, Interpreter, ParseCache, ParseError, Parser, Path, Position, Settings, StaticResolvedFile, TailstrictModeDisabled, Val, ValScope}
 
 import java.util.Collections
 import scala.jdk.CollectionConverters.{IterableHasAsScala, MapHasAsScala}
@@ -32,7 +32,7 @@ object Transformer {
 
   private val ERROR_LINE_REGEX = raw":(\d+):(\d+)".r
 
-  private def handleException[T](f: => T): Either[Error, T] = {
+  private[xtrasonnet] def handleException[T](f: => T): Either[Error, T] = {
     try Right(f) catch {
       case e: Error => Left(e)
       case NonFatal(e) =>
@@ -83,9 +83,7 @@ class Transformer(private var script: String,
   private val allLibs: IndexedSeq[Library] = IndexedSeq(new Xtr(formats, header)).appendedAll(libs.asScala)
   private val allLibsMap: Map[String, Val.Obj] = allLibs.map(lib => (lib.name, lib.module)).toMap
 
-  private val interpreter = Interpreter(
-    Map.empty,
-    Map.empty,
+  private val interpreter = FluentInterpreter(
     ResourcePath(main),
     importer,
     parseCache,
@@ -93,8 +91,8 @@ class Transformer(private var script: String,
     std = std,
     variableResolver = ext => {
       allLibsMap.get(ext)
-    }
-  )
+    })
+
   private val evaluator: Evaluator = interpreter.evaluator
 
   private val scriptFn: Val.Func = evaluate(script, ResourcePath(main)) match {
@@ -249,5 +247,40 @@ class Transformer(private var script: String,
           throw new IllegalArgumentException("Error evaluating xtrasonnet transformation...", processError(err))
       }
     }
+  }
+}
+
+final class FluentInterpreter(path: Path,
+                importer: Importer,
+                parseCache: ParseCache,
+                settings: Settings,
+                std: Val.Obj,
+                variableResolver: String => Option[Expr]) extends Interpreter(
+  Map.empty,
+  Map.empty,
+  path,
+  importer,
+  parseCache,
+  settings,
+  std = std,
+  variableResolver = variableResolver) {
+  override def createResolver(parseCache: ParseCache): CachedResolver = new CachedResolver(
+    importer,
+    parseCache,
+    internedStrings,
+    internedStaticFieldSets,
+    settings
+  ) {
+    override def process(expr: Expr, fs: FileScope): Either[Error, (Expr, FileScope)] = {
+      handleException(
+        (
+          createOptimizer(evaluator, std, internedStrings, internedStaticFieldSets).optimize(expr),
+          fs
+        )
+      )
+    }
+
+    override protected def parser(path: Path): Parser =
+      new FluentParser(path, internedStrings, internedStaticFieldSets, settings)
   }
 }

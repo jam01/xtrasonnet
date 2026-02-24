@@ -44,6 +44,7 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -87,6 +88,25 @@ public class TransformerTest {
                 new String[] { "{ [name]: payload.user_id }", "{ \"user_id\": 7 }", "name", "\"variable\"", "{\"variable\":7}"},
                 new String[] { "{ \"uid\": payload.user_id + offset }", "{ \"user_id\": 8 }", "offset", "3", "{\"uid\":11}"}
         );
+    }
+
+    @Test
+    void fluent() {
+        Transformer transformer = new Transformer("""
+                payload xtr.map(function(it) {wrap: it})
+                """);
+        assertEquals("""
+                [{"wrap":1}]""", transformer.transform(Document.of(List.of(1), MediaTypes.APPLICATION_JAVA)).getContent());
+    }
+
+    @Test
+    void fluentBadInfixParens() {
+        try {
+            new Transformer("payload xtr.map(function(it) it");
+            fail("Must fail to parse");
+        } catch(IllegalArgumentException e) {
+            assertTrue(e.getCause().getMessage().contains("Expected \")\":1:32, found \"\""), "Found message: " + e.getCause().getMessage());
+        }
     }
 
     @Test
@@ -156,7 +176,7 @@ public class TransformerTest {
     public void imports() throws JSONException {
         var imports = """
                 local martinis = import 'imports/martinis.libsonnet';
-                                
+                
                 {
                   'Vodka Martini': martinis['Vodka Martini'],
                   Manhattan: {
