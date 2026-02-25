@@ -44,7 +44,7 @@ object Duration extends AbstractFunctionModule {
           dduration = java.time.Duration.parse('P' + duration.substring(timeIdx))
           period = Period.parse(duration.substring(0, timeIdx))
         } else {
-          period = Period.parse(duration.substring(0, timeIdx))
+          period = Period.parse(duration)
         }
 
         out.put("years", memberOf(Val.Num(pos, period.getYears)))
