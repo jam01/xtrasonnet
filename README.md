@@ -110,6 +110,41 @@ payload
 ```
 
 
+### Improved Numeric Semantics (since 0.7.0)
+
+xtrasonnet provides improved numeric semantics to make computations more precise and deterministic, and safe for business calculations (e.g., financial or accounting logic).. Instead of representing all non-integer numbers as IEEE-754 doubles, the runtime supports three numeric representations:
+
+* Int64 — exact 64-bit integers
+* Float64 — IEEE-754 double precision (fast but inexact)
+* Dec128 — decimal numbers using `BigDecimal` with `DECIMAL128` precision (34 digits)
+
+By default:
+* Floating-point literals are parsed as Dec128
+* Arithmetic promotes values to the most precise representation
+* Comparisons work safely across numeric types
+* This avoids silent precision loss and produces predictable results.
+
+```jsonnet
+{
+  precise: 0.1 + 0.2,
+  largeNumber: 12345678901234567890,
+}
+```
+
+⬇
+
+```jsonnet
+{
+  precise: 0.3,
+  largeNumber: 12345678901234567890
+}
+```
+
+**Performance opt-out**
+
+For performance-sensitive workloads, users may opt into Float64-based evaluation, which behaves closer to traditional JSON/JavaScript numeric semantics.
+
+
 ### Null-safe select `?.`
 This allows developers to select, and chain, properties arbitrarily without testing existence.
 
