@@ -41,7 +41,7 @@ object Duration extends AbstractFunctionModule {
         var dduration: Duration = null
 
         if (timeIdx != -1) {
-          dduration = java.time.Duration.parse('P' + duration.substring(timeIdx))
+          dduration = java.time.Duration.parse("P" + duration.substring(timeIdx))
           period = Period.parse(duration.substring(0, timeIdx))
         } else {
           period = Period.parse(duration)

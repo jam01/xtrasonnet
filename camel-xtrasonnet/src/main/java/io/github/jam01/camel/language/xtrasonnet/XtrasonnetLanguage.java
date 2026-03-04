@@ -1,7 +1,7 @@
 package io.github.jam01.camel.language.xtrasonnet;
 
 /*-
- * Copyright 2022-2023 Jose Montoya.
+ * Copyright 2022-2026 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
@@ -43,6 +43,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+/**
+ * Xtrasonnet language implementation for Apache Camel.
+ * <p>
+ * Provides expression and predicate creation for xtrasonnet scripts with caching of compiled transformers.
+ * </p>
+ */
 @Language("xtrasonnet")
 public class XtrasonnetLanguage extends LanguageSupport {
     // Cache used to stores the Mappers
@@ -78,10 +84,23 @@ public class XtrasonnetLanguage extends LanguageSupport {
         return answer;
     }
 
+    /**
+     * Look up a cached transformer for the given script.
+     *
+     * @param script the xtrasonnet script
+     * @return an Optional containing the transformer if cached, otherwise empty
+     */
     Optional<Transformer> lookup(String script) {
         return Optional.ofNullable(mapperCache.get(script));
     }
 
+    /**
+     * Compute and cache a transformer if not already present.
+     *
+     * @param script the xtrasonnet script
+     * @param mapperSupplier supplier to create a new transformer if missing
+     * @return the cached or newly created transformer
+     */
     Transformer computeIfMiss(String script, Supplier<Transformer> mapperSupplier) {
         return mapperCache.computeIfAbsent(script, k -> mapperSupplier.get());
     }

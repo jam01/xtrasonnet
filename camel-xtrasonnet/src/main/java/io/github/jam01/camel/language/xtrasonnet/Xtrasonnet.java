@@ -24,5 +24,9 @@ import java.lang.annotation.Target;
 @Target({ ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER })
 @LanguageAnnotation(language = "xtrasonnet")
 public @interface Xtrasonnet {
+    /**
+     * The xtrasonnet expression
+     * @return transformation script
+     */
     String value();
 }

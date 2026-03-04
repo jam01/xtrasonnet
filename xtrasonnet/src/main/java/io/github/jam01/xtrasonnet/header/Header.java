@@ -68,8 +68,12 @@ public class Header {
         this.output = output;
     }
 
-    public static final Header EMPTY =
+    private static final Header EMPTY =
             new Header(true, Collections.emptyMap(), MediaTypes.ANY);
+
+    public static Header Empty() {
+        return EMPTY;
+    }
 
     public static Header parseHeader(String script) throws HeaderParseException {
         if (!script.trim().startsWith(HEADER)) {

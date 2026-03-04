@@ -63,7 +63,7 @@ object Datetime extends AbstractFunctionModule {
 
       if (timeIdx != -1) {
         datetime = datetime
-          .plus(Duration.parse('P' + duration.substring(timeIdx)))
+          .plus(Duration.parse("P" + duration.substring(timeIdx)))
           .plus(Period.parse(duration.substring(0, timeIdx)))
       } else {
         datetime = datetime.plus(Period.parse(duration))
@@ -78,7 +78,7 @@ object Datetime extends AbstractFunctionModule {
 
       if (timeIdx != -1) {
         datetime = datetime
-          .minus(Duration.parse('P' + duration.substring(timeIdx)))
+          .minus(Duration.parse("P" + duration.substring(timeIdx)))
           .minus(Period.parse(duration.substring(0, timeIdx)))
       } else {
         datetime = datetime.minus(Period.parse(duration))
@@ -134,7 +134,7 @@ object Datetime extends AbstractFunctionModule {
               if (hours == 0 && durStr.endsWith("H")) "" // only had hours and now 0, remove
               else "T" +
                 (if (hours == 0) durStr.substring(hoursIdx + 1) // hours are now 0, remove hours
-                else hours + durStr.substring(hoursIdx)) // some hours remaining
+                else hours.toString + durStr.substring(hoursIdx)) // some hours remaining
               )
           }
         }

@@ -335,11 +335,11 @@ final class Xtr(dataFormats: DataFormatService, header: Header) extends Library 
     builtinWithDefaults("write",
       "data" -> Val.Null(position),
       "mimeType" -> Val.Null(position),
-      "params" -> emptyObj) { (args, _, ev) =>
+      "params" -> emptyObj) { (args, pos, ev) =>
       val data = args(0)
       val mimeType = args(1).cast[Val.Str].value
       val params = args(2).cast[Val.Obj]
-      write(dataFormats, data, mimeType, params, ev)
+      write(dataFormats, data, mimeType, params, ev, pos)
     },
 
     // funcs below taken from Std
@@ -498,6 +498,7 @@ final class Xtr(dataFormats: DataFormatService, header: Header) extends Library 
         case Num(value) => String.valueOf(value)
         case bool: Bool => String.valueOf(bool)
         case Null => "null"
+        case x => Error.fail("function expected to return Number, String, Null, or Boolean, got: " + x, pos)(ev)
       })
     }).asJava
 
@@ -505,13 +506,14 @@ final class Xtr(dataFormats: DataFormatService, header: Header) extends Library 
     dataFormats.mandatoryRead(doc, pos)
   }
 
-  def write(dataFormats: DataFormatService, json: Val, mimeType: String, params: Val.Obj, ev: EvalScope): String = {
+  def write(dataFormats: DataFormatService, json: Val, mimeType: String, params: Val.Obj, ev: EvalScope, pos: Position): String = {
     val paramsAsJava = ujson.read(Materializer.apply(params)(ev)).obj.map(keyVal => {
       (keyVal._1, keyVal._2 match {
         case Str(value) => value
         case Num(value) => String.valueOf(value)
         case bool: Bool => String.valueOf(bool)
         case Null => "null"
+        case x => Error.fail("function expected to return Number, String, Null, or Boolean, got: " + x, pos)(ev)
       })
     }).asJava
     val mediaType = MediaType.parseMediaType(mimeType).withParameters(paramsAsJava)
@@ -901,5 +903,5 @@ object Xtr {
     Base64
   )
 
-  val Default: Xtr = Xtr(DataFormatService.DEFAULT, Header.EMPTY)
+  val Default: Xtr = Xtr(DataFormatService.DEFAULT, Header.Empty())
 }

@@ -52,6 +52,13 @@ import sjsonnet.Settings;
 import java.util.Collections;
 import java.util.Set;
 
+/**
+ * Xtrasonnet expression for Apache Camel.
+ * <p>
+ * Evaluates a datasonnet/xtrasonnet transformation within a Camel exchange.
+ * Supports configurable body media type, output media type, and result type.
+ * </p>
+ */
 public class XtrasonnetExpression extends ExpressionAdapter implements ExpressionResultTypeAware {
     private final String expression;
     private MediaType bodyMediaType;
@@ -59,6 +66,11 @@ public class XtrasonnetExpression extends ExpressionAdapter implements Expressio
     private Class<?> resultType;
     private transient XtrasonnetLanguage language;
 
+    /**
+     * Constructs a new xtrasonnet expression.
+     *
+     * @param expression the xtrasonnet expression string
+     */
     public XtrasonnetExpression(String expression) {
         this.expression = expression;
     }
@@ -178,23 +190,33 @@ public class XtrasonnetExpression extends ExpressionAdapter implements Expressio
 
     // Getter/Setter methods
     // -------------------------------------------------------------------------
+    /**
+     * Gets the body media type (programmatic).
+     * @return the body media type
+     */
     public MediaType getBodyMediaType() {
         return bodyMediaType;
     }
 
     /**
-     * The message's body MediaType
+     * Set the message's body MediaType
+     * @param inputMimeType the media type
      */
     public void setBodyMediaType(MediaType inputMimeType) {
         this.bodyMediaType = inputMimeType;
     }
 
+    /**
+     * The MediaType to output
+     * @return the output MediaType
+     */
     public MediaType getOutputMediaType() {
         return outputMediaType;
     }
 
     /**
-     * The MediaType to output
+     * Set the MediaType to output
+     * @param outputMimeType the media type
      */
     public void setOutputMediaType(MediaType outputMimeType) {
         this.outputMediaType = outputMimeType;
@@ -211,9 +233,11 @@ public class XtrasonnetExpression extends ExpressionAdapter implements Expressio
     }
 
     /**
-     * Sets the class of the result type (type from output).
-     * <p/>
-     * The default result type is io.github.jam01.xtrasonnet.document.Document
+     * Sets the type of the result object.
+     * <p>
+     * The default result type is {@link Document}
+     * </p>
+     * @param targetType the object type
      */
     public void setResultType(Class<?> targetType) {
         this.resultType = targetType;

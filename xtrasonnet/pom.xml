@@ -14,6 +14,10 @@
     <name>extensible jsonnet transformations</name>
     <description>An extensible, jsonnet-based data transformation engine</description>
 
+    <properties>
+        <maven.javadoc.skip>true</maven.javadoc.skip><!-- in favor of scaladocs -->
+    </properties>
+
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -184,7 +188,7 @@
                 <plugin>
                     <groupId>net.alchim31.maven</groupId>
                     <artifactId>scala-maven-plugin</artifactId>
-                    <version>4.6.3</version>
+                    <version>4.9.9</version>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -219,6 +223,14 @@
                 </configuration>
             </plugin>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                    <skipMain>true</skipMain>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>net.alchim31.maven</groupId>
                 <artifactId>scala-maven-plugin</artifactId>
                 <executions>
@@ -238,6 +250,13 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <args>
+                        <arg>-deprecation</arg>
+                        <arg>-feature</arg>
+                        <arg>-unchecked</arg>
+                    </args>
+                </configuration>
             </plugin>
         </plugins>
     </build>
@@ -250,30 +269,32 @@
                     <plugin>
                         <groupId>net.alchim31.maven</groupId>
                         <artifactId>scala-maven-plugin</artifactId>
-                        <!-- overriding plugin to generate Java files with javadocs from Scala files -->
-                        <configuration>
-                            <args>
-                                <arg>-P:genjavadoc:out=${project.build.directory}/genjavadoc</arg>
-                            </args>
-                            <compilerPlugins>
-                                <compilerPlugin>
-                                    <groupId>com.typesafe.genjavadoc</groupId>
-                                    <artifactId>genjavadoc-plugin_2.13.4</artifactId>
-                                    <version>0.18</version>
-                                </compilerPlugin>
-                            </compilerPlugins>
-                        </configuration>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-javadoc-plugin</artifactId>
-                        <configuration>
-                            <sourcepath>${project.build.sourceDirectory}:${project.build.directory}/genjavadoc
-                            </sourcepath>
-                            <quiet>true</quiet>
-                            <!-- genjavadoc is currently generating some invalid javadoc, but it's something -->
-                            <failOnError>false</failOnError>
-                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>attach-scaladocs</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>doc-jar</goal>
+                                </goals>
+                                <configuration>
+                                    <args>
+                                        <arg>-nobootcp</arg>
+                                    </args>
+                                    <scaladocClassName>dotty.tools.scaladoc.Main</scaladocClassName><!-- Scala 3 scaladoc -->
+                                    <sourceDir>${project.build.outputDirectory}</sourceDir>
+                                    <includes>
+                                        <include>**/*.tasty</include>
+                                    </includes>
+                                    <dependencies>
+                                        <dependency>
+                                            <groupId>org.scala-lang</groupId>
+                                            <artifactId>scaladoc_3</artifactId>
+                                            <version>3.3.7</version>
+                                        </dependency>
+                                    </dependencies>
+                                </configuration>
+                            </execution>
+                        </executions>
                     </plugin>
                 </plugins>
             </build>

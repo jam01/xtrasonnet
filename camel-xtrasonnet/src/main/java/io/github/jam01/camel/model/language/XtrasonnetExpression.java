@@ -42,7 +42,7 @@ import org.apache.camel.reifier.language.XtrasonnetExpressionReifier;
 import org.apache.camel.spi.Metadata;
 
 /**
- * To use xtrasonnet scripts for message transformations.
+ * To use xtrasonnet transformations.
  */
 @Metadata(firstVersion = "3.20.0", label = "language,transformation", title = "xtrasonnet")
 @XmlRootElement(name = "xtrasonnet")
@@ -53,65 +53,128 @@ public class XtrasonnetExpression extends TypedExpressionDefinition {
         ExpressionReifier.registerReifier(XtrasonnetExpression.class, (XtrasonnetExpressionReifier::new));
     }
 
+    /**
+     * Media type of the message body as a string (for XML serialization).
+     */
     @XmlAttribute(name = "bodyMediaType")
     private String bodyMediaTypeString;
+    /**
+     * Media type of the output as a string (for XML serialization).
+     */
     @XmlAttribute(name = "outputMediaType")
     private String outputMediaTypeString;
+    /**
+     * Media type of the message body (programmatic).
+     */
     @XmlTransient
     private MediaType bodyMediaType;
+    /**
+     * Media type of the output (programmatic).
+     */
     @XmlTransient
     private MediaType outputMediaType;
 
+    /**
+     * Default constructor.
+     */
     public XtrasonnetExpression() {
     }
 
+    /**
+     * Constructs an expression with the given xtrasonnet transformation.
+     * @param expression the xtrasonnet transformation
+     */
     public XtrasonnetExpression(String expression) {
         super(expression);
     }
 
+    /**
+     * Constructs an expression with the given Camel expression.
+     * @param expression the Camel expression
+     */
     public XtrasonnetExpression(Expression expression) {
         super(expression);
     }
 
+    /**
+     * Private constructor used by the builder.
+     * @param builder the builder instance
+     */
     private XtrasonnetExpression(Builder builder) {
         super(builder);
         this.bodyMediaType = builder.bodyMediaType;
         this.outputMediaType = builder.outputMediaType;
     }
 
+    /**
+     * Returns the language name "xtrasonnet".
+     * @return "xtrasonnet"
+     */
     @Override
     public String getLanguage() {
         return "xtrasonnet";
     }
 
+    /**
+     * Gets the body media type as a string (for XML serialization).
+     * @return the body media type string
+     */
     public String getBodyMediaTypeString() {
         return bodyMediaTypeString;
     }
 
+    /**
+     * Sets the body media type as a string (for XML serialization).
+     * @param bodyMediaTypeString the body media type string
+     */
     public void setBodyMediaTypeString(String bodyMediaTypeString) {
         this.bodyMediaTypeString = bodyMediaTypeString;
     }
 
+    /**
+     * Gets the output media type as a string (for XML serialization).
+     * @return the output media type string
+     */
     public String getOutputMediaTypeString() {
         return outputMediaTypeString;
     }
 
+    /**
+     * Gets the body media type (programmatic).
+     * @return the body media type
+     */
     public MediaType getBodyMediaType() {
         return bodyMediaType;
     }
 
+    /**
+     * Sets the body media type (programmatic).
+     * @param bodyMediaType the body media type
+     */
     public void setBodyMediaType(MediaType bodyMediaType) {
         this.bodyMediaType = bodyMediaType;
     }
 
+    /**
+     * Gets the output media type (programmatic).
+     * @return the output media type
+     */
     public MediaType getOutputMediaType() {
         return outputMediaType;
     }
 
+    /**
+     * Sets the output media type (programmatic).
+     * @param outputMediaType the output media type
+     */
     public void setOutputMediaType(MediaType outputMediaType) {
         this.outputMediaType = outputMediaType;
     }
 
+    /**
+     * Sets the output media type as a string (for XML serialization).
+     * @param outputMediaTypeString the output media type string
+     */
     public void setOutputMediaTypeString(String outputMediaTypeString) {
         this.outputMediaTypeString = outputMediaTypeString;
     }
@@ -121,11 +184,19 @@ public class XtrasonnetExpression extends TypedExpressionDefinition {
      */
     @XmlTransient
     public static class Builder extends AbstractBuilder<Builder, XtrasonnetExpression> {
+        /**
+         * The message's body MediaType (programmatic).
+         */
         private MediaType bodyMediaType;
+        /**
+         * The MediaType to output (programmatic).
+         */
         private MediaType outputMediaType;
 
         /**
          * The message's body MediaType
+         * @param bodyMediaType the media type
+         * @return fluent Builder
          */
         public Builder bodyMediaType(MediaType bodyMediaType) {
             this.bodyMediaType = bodyMediaType;
@@ -134,12 +205,18 @@ public class XtrasonnetExpression extends TypedExpressionDefinition {
 
         /**
          * The MediaType to output
+         * @param outputMediaType the media type
+         * @return fluent Builder
          */
         public Builder outputMediaType(MediaType outputMediaType) {
             this.outputMediaType = outputMediaType;
             return this;
         }
 
+        /**
+         * Builds the XtrasonnetExpression instance.
+         * @return a new XtrasonnetExpression
+         */
         @Override
         public XtrasonnetExpression end() {
             return new XtrasonnetExpression(this);

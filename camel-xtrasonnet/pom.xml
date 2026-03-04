@@ -146,9 +146,7 @@
                         <quiet>true</quiet>
                         <bottom>Camel xtrasonnet</bottom>
                         <detectOfflineLinks>false</detectOfflineLinks>
-                        <javadocVersion>1.8.0</javadocVersion>
-                        <!-- todo: add necessary docs -->
-                        <failOnError>false</failOnError>
+                        <javadocVersion>21</javadocVersion>
                     </configuration>
                 </plugin>
                 <plugin>
