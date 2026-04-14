@@ -95,6 +95,16 @@ public class XtrasonnetLanguage extends LanguageSupport {
     }
 
     /**
+     * Get a cached transformer for the given script.
+     *
+     * @param script the xtrasonnet script
+     * @return the transformer if cached, otherwise null
+     */
+    Transformer get(String script) {
+        return mapperCache.get(script);
+    }
+
+    /**
      * Compute and cache a transformer if not already present.
      *
      * @param script the xtrasonnet script
