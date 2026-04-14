@@ -84,6 +84,10 @@ public class XtrasonnetExpression extends ExpressionAdapter implements Expressio
     @SuppressWarnings("unchecked")
     @Override
     public <T> T evaluate(Exchange exchange, Class<T> type) {
+        if (language == null) {
+            throw new IllegalStateException("xtrasonnet expression not initialized");
+        }
+
         try {
             // pass exchange to CML lib using thread as context
             CML.getInstance().getExchange().set(exchange);
@@ -130,8 +134,8 @@ public class XtrasonnetExpression extends ExpressionAdapter implements Expressio
         }
 
         // the mapper is pre initialized
-        Transformer mapper = language.lookup(expression)
-                .orElseThrow(() -> new IllegalStateException("xtrasonnet expression not initialized"));
+        Transformer mapper = language.get(expression);
+        if (mapper == null) mapper = createTransformer(language.getCamelContext());
 
         MediaType outMT = outputMediaType;
         if (outMT == null) {
@@ -152,40 +156,41 @@ public class XtrasonnetExpression extends ExpressionAdapter implements Expressio
         }
     }
 
+    private Transformer createTransformer(CamelContext context) {
+        TransformerBuilder builder = new TransformerBuilder(expression)
+                .withLibrary(CML.getInstance())
+                .withSettings(new TransformerSettings(
+                        new Settings(true,
+                                false,
+                                false,
+                                false,
+                                1000,
+                                false),
+                        MediaTypes.APPLICATION_JAVA, MediaTypes.APPLICATION_JAVA));
+
+        Set<Library> additionalLibraries = context.getRegistry().findByType(Library.class);
+        for (Library lib : additionalLibraries) {
+            builder = builder.withLibrary(lib);
+        }
+
+        JsonMapper mapper = context.getRegistry().lookupByNameAndType("xtrasonnet", JsonMapper.class);
+        if (mapper != null) {
+            builder.extendPlugins(plugins -> {
+                plugins.removeIf(plugin -> plugin instanceof DefaultJavaPlugin);
+                plugins.add(0, new DefaultJavaPlugin(mapper));
+            });
+        }
+
+        return builder.build();
+    }
+
     @Override
     public void init(CamelContext context) {
         super.init(context);
         if (language != null) return;
 
         language = (XtrasonnetLanguage) context.resolveLanguage("xtrasonnet");
-        // initialize mapper eager
-        language.computeIfMiss(expression, () -> {
-            TransformerBuilder builder = new TransformerBuilder(expression)
-                    .withLibrary(CML.getInstance())
-                    .withSettings(new TransformerSettings(
-                            new Settings(true,
-                                    false,
-                                    false,
-                                    false,
-                                    1000,
-                                    false),
-                            MediaTypes.APPLICATION_JAVA, MediaTypes.APPLICATION_JAVA));
-
-            Set<Library> additionalLibraries = context.getRegistry().findByType(Library.class);
-            for (Library lib : additionalLibraries) {
-                builder = builder.withLibrary(lib);
-            }
-
-            JsonMapper mapper = context.getRegistry().lookupByNameAndType("xtrasonnet", JsonMapper.class);
-            if (mapper != null) {
-                builder.extendPlugins(plugins -> {
-                    plugins.removeIf(plugin -> plugin instanceof DefaultJavaPlugin);
-                    plugins.add(0, new DefaultJavaPlugin(mapper));
-                });
-            }
-
-            return builder.build();
-        });
+        language.computeIfMiss(expression, () -> createTransformer(context)); // initialize mapper eagerZ
     }
 
     // Getter/Setter methods
