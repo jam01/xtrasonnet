@@ -6,10 +6,13 @@ package io.github.jam01.xtrasonnet.modules;
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
  */
+import io.github.jam01.xtrasonnet.XtrasonnetException;
 import org.junit.jupiter.api.Test;
 
 import static io.github.jam01.xtrasonnet.TestUtils.transform;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class StringsTest {
     @Test
@@ -52,6 +55,54 @@ public class StringsTest {
     public void pad() {
         assertEquals(transform("'     Hello'"), transform("xtr.strings.leftPad('Hello', 10, ' ')"));
         assertEquals(transform("'Hello     '"), transform("xtr.strings.rightPad('Hello', 10, ' ')"));
+    }
+
+    @Test
+    public void leftPad_doesNotRewriteTheValue() {
+        assertEquals(transform("'00a b'"), transform("xtr.strings.leftPad('a b', 5, '0')"));
+        assertEquals(transform("'****hello world'"), transform("xtr.strings.leftPad('hello world', 15, '*')"));
+    }
+
+    @Test
+    public void pad_returnsTheValueWhenNoPaddingIsDue() {
+        assertEquals(transform("'a b'"), transform("xtr.strings.leftPad('a b', 1, '0')"));
+        assertEquals(transform("'a'"), transform("xtr.strings.leftPad('a', -3, '0')"));
+        assertEquals(transform("'a'"), transform("xtr.strings.leftPad('a', 0, '0')"));
+        assertEquals(transform("'a b'"), transform("xtr.strings.rightPad('a b', 1, '0')"));
+        assertEquals(transform("'a'"), transform("xtr.strings.rightPad('a', -3, '0')"));
+    }
+
+    @Test
+    public void pad_rejectsAnEmptyPad() {
+        assertMessageContains("Expected a non-empty pad", () -> transform("xtr.strings.leftPad('a', 5, '')"));
+        assertMessageContains("Expected a non-empty pad", () -> transform("xtr.strings.rightPad('a', 5, '')"));
+    }
+
+    @Test
+    public void pad_usesTheFirstCharacterOfTheGivenPad() {
+        assertEquals(transform("'xxa'"), transform("xtr.strings.leftPad('a', 3, 'xyz')"));
+        assertEquals(transform("'axx'"), transform("xtr.strings.rightPad('a', 3, 'xyz')"));
+    }
+
+    @Test
+    public void capitalize_withoutAnyAlphanumericCharacter() {
+        assertEquals(transform("'---'"), transform("xtr.strings.capitalize('---')"));
+        assertEquals(transform("''"), transform("xtr.strings.capitalize('')"));
+        assertEquals(transform("'---'"), transform("xtr.strings.toSnakeCase('---')"));
+        assertEquals(transform("''"), transform("xtr.strings.toSnakeCase('')"));
+    }
+
+    @Test
+    public void charCode_outOfRange() {
+        assertMessageContains("Expected a non-empty String", () -> transform("xtr.strings.charCode('')"));
+        assertMessageContains("Expected an index within [0, 3), got: 3", () -> transform("xtr.strings.charCodeAt('abc', 3)"));
+        assertMessageContains("Expected an index within [0, 3), got: -1", () -> transform("xtr.strings.charCodeAt('abc', -1)"));
+    }
+
+    private static void assertMessageContains(String expected, org.junit.jupiter.api.function.Executable call) {
+        var thrown = assertThrows(XtrasonnetException.class, call);
+        assertTrue(thrown.getMessage().contains(expected),
+                "expected a message containing <" + expected + "> but was <" + thrown.getMessage() + ">");
     }
 
     @Test
