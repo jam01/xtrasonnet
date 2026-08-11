@@ -322,27 +322,6 @@ object Strings extends AbstractFunctionModule {
       (_, _, str: String, wrapper: String) => wrapper + str + wrapper
     },
 
-    // todo: and these?
-    //      builtin("scan", "str", "regex") {
-    //        (pos, ev, str: String, regex: String) =>
-    //          new Val.Arr(pos, regex.r.findAllMatchIn(str).map(item => {
-    //            new Val.Arr(pos, (0 to item.groupCount).map(i => Val.Str(pos, item.group(i))).toArray)
-    //          }).toArray
-    //          )
-    //      },
-    //
-    //      builtin("match", "string", "regex") {
-    //        (pos, _, string: String, regex: String) =>
-    //          val out = new ArrayBuffer[Lazy]
-    //          regex.r.findAllMatchIn(string).foreach(
-    //            word => (0 to word.groupCount).foreach(index => out += Val.Str(pos, word.group(index)))
-    //          )
-    //          new Val.Arr(pos, out.toArray)
-    //      },
-    //
-    //      builtin("matches", "string", "regex") {
-    //        (pos, ev, string: String, regex: String) =>
-    //          regex.r.matches(string);
-    //      }
+    // todo: regex functions -- scan, match, matches -- are still missing from this module
   )
 }

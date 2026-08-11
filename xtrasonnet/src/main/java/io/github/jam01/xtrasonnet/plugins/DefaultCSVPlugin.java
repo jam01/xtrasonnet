@@ -159,7 +159,7 @@ public class DefaultCSVPlugin extends BaseJacksonPlugin {
             // name what was actually considered; the previous text was a dead end for the user
             throw new IllegalArgumentException(("Cannot write CSV from an Array of %s with %s=%s and %s=%s. "
                     + "Writing an Array of Arr with a header line requires %s to name the columns.").formatted(
-                    first.getNodeType().name().toLowerCase(), PARAM_HEADER_LINE, headerln ? "present" : "absent",
+                    first.getNodeType().name().toLowerCase(), PARAM_HEADER_LINE, headerln ? HEADER_LN_PRESENT_VALUE : HEADER_LN_ABSENT_VALUE,
                     PARAM_COLUMNS, paramColumns.isEmpty() ? "<unset>" : paramColumns, PARAM_COLUMNS));
         }
 

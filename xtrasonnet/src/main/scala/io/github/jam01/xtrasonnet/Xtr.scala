@@ -48,7 +48,6 @@ import io.github.jam01.xtrasonnet.header.Header
 import io.github.jam01.xtrasonnet.modules.{Arrays, Base64, Crypto, Datetime, Duration, Math, Numbers, Objects, Strings, URL}
 import io.github.jam01.xtrasonnet.spi.Library
 import io.github.jam01.xtrasonnet.spi.Library.{emptyObj, keyFrom}
-import sjsonnet.ReadWriter.{ArrRead, ObjRead, ValRead}
 import sjsonnet.functions.FunctionModule
 import sjsonnet.{Error, EvalScope, Lazy, Materializer, Position, TailstrictModeDisabled, Val}
 import ujson.{Bool, Null, Num, Str}
