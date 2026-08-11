@@ -261,17 +261,34 @@ class Transformer(private var script: String,
 
     val effectiveOut = effectiveOutput(output)
 
-    handleException(formats.mandatoryWrite(scriptFn2.apply0(scriptFn.pos)(evaluator, TailstrictModeDisabled), effectiveOut, target, evaluator)) match {
-      case Right(value) => value
-      case Left(err) => err match {
-        case pErr: ParseError =>
-          val processed = processError(pErr)
-          throw new XtrasonnetParseException("Could not parse transformation script: " + processed.getMessage, processed)
-        case err: Error =>
-          if (err.getCause.isInstanceOf[PluginException]) throw err.getCause // materialization successful until this point, make this the root exc
-          val processed = processError(err)
-          throw new XtrasonnetEvaluationException("Error evaluating xtrasonnet transformation: " + processed.getMessage, processed)
-      }
+    val result = unwrap(handleException(scriptFn2.apply0(scriptFn.pos)(evaluator, TailstrictModeDisabled)))
+
+    // Checked before materializing. sjsonnet has a good message for this ("Couldn't manifest
+    // function..."), but builds the error frame from the value's position, and its builtins carry a
+    // null one -- so materializing a builtin throws NullPointerException from inside the error
+    // reporting and the real message never appears. Referencing a builtin without calling it is an
+    // easy typo, so name it here.
+    result match {
+      case f: Val.Func =>
+        throw new XtrasonnetEvaluationException(
+          "The transformation produced a function, which cannot be written as " + effectiveOut +
+            ". If you meant to call it, add parentheses: xtr.datetime.now() rather than xtr.datetime.now.")
+      case _ =>
+    }
+
+    unwrap(handleException(formats.mandatoryWrite(result, effectiveOut, target, evaluator)))
+  }
+
+  private def unwrap[T](result: Either[Error, T]): T = result match {
+    case Right(value) => value
+    case Left(err) => err match {
+      case pErr: ParseError =>
+        val processed = processError(pErr)
+        throw new XtrasonnetParseException("Could not parse transformation script: " + processed.getMessage, processed)
+      case err: Error =>
+        if (err.getCause.isInstanceOf[PluginException]) throw err.getCause // materialization successful until this point, make this the root exc
+        val processed = processError(err)
+        throw new XtrasonnetEvaluationException("Error evaluating xtrasonnet transformation: " + processed.getMessage, processed)
     }
   }
 }

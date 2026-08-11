@@ -145,6 +145,15 @@ public class TransformerTest {
     }
 
     @Test
+    void builtinReferencedWithoutCallingIsExplained() {
+        // sjsonnet builtins carry a null position, which its own error reporting cannot format
+        var ex = assertThrows(XtrasonnetEvaluationException.class, () -> transform("xtr.datetime.now"));
+
+        assertTrue(ex.getMessage().contains("function"), "Found message: " + ex.getMessage());
+        assertTrue(ex.getMessage().contains("parentheses"), "Found message: " + ex.getMessage());
+    }
+
+    @Test
     void nonJsonArguments() {
         Transformer transformer = new Transformer("argument", Set.of("argument"));
 
