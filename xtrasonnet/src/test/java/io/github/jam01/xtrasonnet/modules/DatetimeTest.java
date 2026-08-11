@@ -8,8 +8,10 @@ package io.github.jam01.xtrasonnet.modules;
  */
 import io.github.jam01.xtrasonnet.TestUtils;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
 
 public class DatetimeTest {
 
@@ -41,12 +43,24 @@ public class DatetimeTest {
         Assertions.assertEquals(TestUtils.transform("1"), TestUtils.transform("xtr.datetime.compare('2020-12-31T23:19:35Z','2020-01-01T00:00:00Z')"));
     }
 
-    @Disabled
     @Test
     public void current() {
-        Assertions.assertEquals(TestUtils.transform("'2021-01-05T13:09:45.476375-05:00'"), TestUtils.transform("xtr.datetime.now()"));
-        Assertions.assertEquals(TestUtils.transform("'2021-01-05T00:00:00-05:00'"), TestUtils.transform("xtr.datetime.today"));
-        Assertions.assertEquals(TestUtils.transform("'2021-01-06T00:00:00-05:00'"), TestUtils.transform("xtr.datetime.tomorrow"));
+        // clock dependent, so assert shape and relationships rather than a fixed instant -- the
+        // previous version compared against a hardcoded 2021 timestamp and could only ever be
+        // @Disabled, leaving now/today/tomorrow with no coverage at all
+        // note the parens: today and tomorrow are functions, and referencing one without calling it
+        // fails inside sjsonnet's own error reporting, since builtins carry a null position
+        var now = OffsetDateTime.parse(unquote(TestUtils.transform("xtr.datetime.now()")));
+        var today = OffsetDateTime.parse(unquote(TestUtils.transform("xtr.datetime.today()")));
+        var tomorrow = OffsetDateTime.parse(unquote(TestUtils.transform("xtr.datetime.tomorrow()")));
+
+        Assertions.assertEquals(LocalTime.MIDNIGHT, today.toLocalTime(), "today should be the start of the day");
+        Assertions.assertEquals(today.plusDays(1), tomorrow);
+        Assertions.assertFalse(now.isBefore(today));
+    }
+
+    private static String unquote(String json) {
+        return json.substring(1, json.length() - 1);
     }
 
     @Test

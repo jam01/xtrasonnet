@@ -9,8 +9,9 @@ package io.github.jam01.xtrasonnet.modules;
 
 import io.github.jam01.xtrasonnet.TestUtils;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+
+import java.util.UUID;
 
 public class RootTest {
 
@@ -583,10 +584,17 @@ public class RootTest {
         Assertions.assertEquals(TestUtils.transform("'HELLO WORLD!'"), TestUtils.transform("xtr.toUpperCase('Hello World!')"));
     }
 
-    @Disabled
     @Test
     public void uuid() {
-        Assertions.assertEquals(TestUtils.transform("'8eae62af-d2dc-4759-8316-ce6eeca0b61c'"), TestUtils.transform("xtr.uuid()"));
+        // random by definition, so assert the shape and that successive calls differ -- comparing
+        // against a hardcoded UUID could only ever be @Disabled
+        var raw = TestUtils.transform("xtr.uuid()");
+        var first = UUID.fromString(raw.substring(1, raw.length() - 1));
+
+        var raw2 = TestUtils.transform("xtr.uuid()");
+        var second = UUID.fromString(raw2.substring(1, raw2.length() - 1));
+
+        Assertions.assertNotEquals(first, second);
     }
 
     @Test
