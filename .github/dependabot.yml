@@ -1,0 +1,32 @@
+version: 2
+updates:
+  - package-ecosystem: maven
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      # these move in lockstep; separate PRs for each would only create conflicts
+      jackson:
+        patterns:
+          - "com.fasterxml.jackson*"
+      junit:
+        patterns:
+          - "org.junit*"
+      maven-plugins:
+        patterns:
+          - "org.apache.maven.plugins:*"
+    ignore:
+      # the engine depends on a fork published under this groupId, not on upstream releases
+      - dependency-name: "io.github.jam01:sjsonnet_3"
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+
+  - package-ecosystem: npm
+    directory: "/playground"
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 3
