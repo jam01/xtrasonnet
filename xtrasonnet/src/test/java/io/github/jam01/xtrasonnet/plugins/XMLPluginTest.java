@@ -25,6 +25,7 @@ import java.util.Collections;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -105,6 +106,26 @@ public class XMLPluginTest {
 
         // local name form drops the ns: prefix from the element name
         JSONAssert.assertEquals("{\"root\":{\"_text\":\"value\"}}", doc.getContent(), false);
+    }
+
+    @Test
+    public void read_rejectsDoctypeAndExternalEntities() {
+        // XMLLoader disables DTDs and both external entity classes. Nothing asserted that, so a
+        // regression would have shipped silently; this is one line away at all times.
+        String xxe = """
+                <?xml version="1.0"?>
+                <!DOCTYPE foo [<!ENTITY xxe SYSTEM "file:///etc/passwd">]>
+                <root>&xxe;</root>""";
+
+        Throwable thrown = assertThrows(Throwable.class, () -> new Transformer("payload")
+                .transform(Document.of(xxe, MediaTypes.APPLICATION_XML)));
+
+        var chain = new StringBuilder();
+        for (Throwable t = thrown; t != null; t = t.getCause()) {
+            chain.append(t.getClass().getSimpleName()).append(": ").append(t.getMessage()).append(" | ");
+        }
+        assertTrue(chain.toString().toUpperCase().contains("DOCTYPE"),
+                "expected the parser to reject the DOCTYPE declaration, got: " + chain);
     }
 
     @Test
