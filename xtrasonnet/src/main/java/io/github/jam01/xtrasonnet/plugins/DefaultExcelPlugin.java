@@ -86,7 +86,8 @@ public class DefaultExcelPlugin extends BasePlugin {
         return bVisitor.visitEnd(-1);
     }
 
-    private static Val.Literal literalOf(CellType type, Cell cell, Visitor<?, ?> cVisitor) {
+    // package private so MatrixExcelPlugin shares one cell conversion instead of its own copy
+    static Val.Literal literalOf(CellType type, Cell cell, Visitor<?, ?> cVisitor) {
         if (CellType.BOOLEAN == type) {
             if (cell.getBooleanCellValue()) return (Val.Literal) cVisitor.visitTrue(-1);
             else return (Val.Literal) cVisitor.visitFalse(-1);

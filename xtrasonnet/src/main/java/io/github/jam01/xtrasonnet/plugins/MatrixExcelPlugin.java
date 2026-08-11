@@ -1,12 +1,11 @@
 package io.github.jam01.xtrasonnet.plugins;
 
 /*-
- * Copyright 2022-2023 Jose Montoya.
+ * Copyright 2022-2026 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
  */
-
 import io.github.jam01.xtrasonnet.document.Document;
 import io.github.jam01.xtrasonnet.document.MediaType;
 import io.github.jam01.xtrasonnet.document.MediaTypes;
@@ -62,20 +61,9 @@ public class MatrixExcelPlugin extends BasePlugin {
                         var cell = cells.next();
                         var cVisitor = rVisitor.subVisitor();
 
-                        var type = cell.getCellType();
-                        Val.Literal val = null;
-                        if (CellType.BOOLEAN == type) {
-                            if (cell.getBooleanCellValue()) val = (Val.Literal) cVisitor.visitTrue(-1);
-                            else cVisitor.visitFalse(-1);
-                        } else if (CellType.NUMERIC == type) {
-                            val = (Val.Literal) cVisitor.visitFloat64(cell.getNumericCellValue(), -1);
-                        } else if (CellType.STRING == type || CellType.FORMULA == type || CellType.BLANK == type) {
-                            val = (Val.Literal) cVisitor.visitString(cell.getStringCellValue(), -1);
-                        } else {
-                            throw new IllegalArgumentException("Cannot represent type: " + type.toString() + " as a jsonnet element");
-                        }
-
-                        rVisitor.visitValue(val, -1);
+                        // shared with DefaultExcelPlugin: the copy here dropped false booleans and
+                        // sent formula cells to getStringCellValue, which throws on numeric formulas
+                        rVisitor.visitValue(DefaultExcelPlugin.literalOf(cell.getCellType(), cell, cVisitor), -1);
                     }
                     sVisitor.visitValue(rVisitor.visitEnd(-1), -1);
                 }

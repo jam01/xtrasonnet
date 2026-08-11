@@ -119,4 +119,23 @@ public class ExcelPluginTest {
         JSONAssert.assertEquals(formula_xlsx_json, doc.getContent(), true);
         Assertions.assertEquals(MediaTypes.APPLICATION_JSON, doc.getMediaType());
     }
+
+    /**
+     * MatrixExcelPlugin is not part of DataFormatService.DEFAULT and registers the same media type
+     * as DefaultExcelPlugin, so it has to be configured as the only Excel reader to be reachable.
+     */
+    @Test
+    public void read_xlsx_formula_matrix() throws JSONException {
+        var doc = Transformer.builder("payload")
+                .configurePlugins(plugins -> {
+                    plugins.add(new MatrixExcelPlugin());
+                    plugins.add(new DefaultJSONPlugin());
+                })
+                .build()
+                .transform(Document.of(TestUtils.resourceAsFile("formula.xlsx"), MediaTypes.APPLICATION_EXCEL));
+
+        JSONAssert.assertEquals("""
+                [[["","","","",""],["",60,60,3600,""]]]""", doc.getContent(), true);
+        Assertions.assertEquals(MediaTypes.APPLICATION_JSON, doc.getMediaType());
+    }
 }
