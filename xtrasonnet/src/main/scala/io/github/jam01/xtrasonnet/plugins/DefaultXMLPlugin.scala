@@ -16,7 +16,7 @@ import sjsonnet.{EvalScope, Position, Val}
 
 import java.io.*
 import java.net.URL
-import java.nio.charset.Charset
+import java.nio.charset.{Charset, StandardCharsets}
 import java.util.Collections
 import scala.jdk.CollectionConverters.MapHasAsScala
 
@@ -142,11 +142,6 @@ object DefaultXMLPlugin extends BasePlugin {
     }
 
     val effectiveParams = EffectiveParams(mediaType)
-    var charset = mediaType.getCharset
-    if (charset == null) {
-      charset = Charset.defaultCharset
-    }
-
     val inputAsObj: Val.Obj = input.asObj
     if (inputAsObj.visibleKeyNames.length > 1) {
       throw new PluginException("Object must have only one root element")
@@ -155,7 +150,10 @@ object DefaultXMLPlugin extends BasePlugin {
     val name = inputAsObj.visibleKeyNames.head
     if (targetType.isAssignableFrom(classOf[String])) {
       val writer = new StringWriter()
-      XML.writeXML(writer, (name, inputAsObj.value(name, ev.emptyMaterializeFileScopePos)(ev)), effectiveParams)(ev)
+      // UTF-8 regardless of any requested charset: a String carries no encoding, so this branch
+      // cannot honour one, and naming it would declare an encoding nothing has applied
+      XML.writeXML(writer, (name, inputAsObj.value(name, ev.emptyMaterializeFileScopePos)(ev)),
+        effectiveParams, StandardCharsets.UTF_8)(ev)
 
       new BasicDocument(writer.toString, MediaTypes.APPLICATION_XML).asInstanceOf[Document[T]]
     }
@@ -165,9 +163,10 @@ object DefaultXMLPlugin extends BasePlugin {
       // stream must be the ByteArrayOutputStream itself: wrapping it hands back a stream whose
       // bytes the caller has no way to reach
       val out = new ByteArrayOutputStream
-      val writer = new OutputStreamWriter(out, charset)
+      val writer = new OutputStreamWriter(out, effectiveParams.writeCharset)
       XML.writeXML(writer,
-        (name, inputAsObj.value(name, ev.emptyMaterializeFileScopePos)(ev)), effectiveParams)(ev)
+        (name, inputAsObj.value(name, ev.emptyMaterializeFileScopePos)(ev)), effectiveParams,
+        effectiveParams.writeCharset)(ev)
       writer.flush()
 
       new BasicDocument(out, MediaTypes.APPLICATION_XML).asInstanceOf[Document[T]]
@@ -190,7 +189,13 @@ object DefaultXMLPlugin extends BasePlugin {
                              xmlnsAware: Boolean, declarations: Map[String, String],
                              omitDeclaration: Boolean, xmlVer: String,
                              emptyTagsStr: Boolean, emptyTagsNull: Boolean, emptyTagsObj: Boolean,
-                             nameform: String, trimText: Boolean)
+                             nameform: String, trimText: Boolean,
+                             // None when the media type declared no charset. Writing then defaults to
+                             // UTF-8; reading leaves detection to the parser, which honours the
+                             // document's own declaration -- forcing an encoding there would override it.
+                             charset: Option[Charset]) {
+    def writeCharset: Charset = charset.getOrElse(StandardCharsets.UTF_8)
+  }
 
   object EffectiveParams {
     def apply(mediaType: MediaType): EffectiveParams = {
@@ -231,7 +236,8 @@ object DefaultXMLPlugin extends BasePlugin {
         xmlnsAware, declarations,
         omitDeclaration, xmlVer,
         emptyTags.contains(EMPTY_TAGS_STRING_VALUE), emptyTags.contains(EMPTY_TAGS_NULL_VALUE), emptyTags.contains(EMPTY_TAGS_OBJECT_VALUE),
-        nameForm, trimText)
+        nameForm, trimText,
+        Option(mediaType.getCharset))
     }
   }
 }
