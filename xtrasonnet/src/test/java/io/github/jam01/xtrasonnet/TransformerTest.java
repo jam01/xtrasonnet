@@ -55,6 +55,7 @@ import static io.github.jam01.xtrasonnet.TestUtils.resourceAsString;
 import static io.github.jam01.xtrasonnet.TestUtils.stacktraceFrom;
 import static io.github.jam01.xtrasonnet.TestUtils.transform;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -104,8 +105,9 @@ public class TransformerTest {
         try {
             new Transformer("payload xtr.map(function(it) it");
             fail("Must fail to parse");
-        } catch(IllegalArgumentException e) {
-            assertTrue(e.getCause().getMessage().contains("Expected \")\":1:32, found \"\""), "Found message: " + e.getCause().getMessage());
+        } catch (XtrasonnetParseException e) {
+            // the detail is in getMessage() itself now, not only reachable via getCause()
+            assertTrue(e.getMessage().contains("Expected \")\":1:32, found \"\""), "Found message: " + e.getMessage());
         }
     }
 
@@ -114,8 +116,8 @@ public class TransformerTest {
         try {
             Transformer transformer = new Transformer("xtr.time.now() a");
             fail("Must fail to parse");
-        } catch(IllegalArgumentException e) {
-            assertTrue(e.getCause().getMessage().contains("Expected end-of-input:1:16"), "Found message: " + e.getCause().getMessage());
+        } catch (XtrasonnetParseException e) {
+            assertTrue(e.getMessage().contains("Expected end-of-input:1:16"), "Found message: " + e.getMessage());
         }
     }
 
@@ -124,10 +126,22 @@ public class TransformerTest {
         try {
             transform("payload.foo");
             fail("Must fail to execute");
-        } catch (IllegalArgumentException e) {
-            assertTrue(e.getCause().getMessage().contains("attempted to index a null with string foo"), "Found message: " + e.getCause().getMessage());
+        } catch (XtrasonnetEvaluationException e) {
+            assertTrue(e.getMessage().contains("attempted to index a null with string foo"), "Found message: " + e.getMessage());
             assertTrue(stacktraceFrom(e).contains("(main):1:8"), "Stacktrace does not indicate the issue");
         }
+    }
+
+    @Test
+    void distinguishesParseFromEvaluationFailures() {
+        // a malformed script is a defect in the template; a script that breaks on its input may be
+        // the input's fault. Callers could not tell these apart when both were IllegalArgumentException.
+        assertThrows(XtrasonnetParseException.class, () -> new Transformer("{ a: "));
+        assertThrows(XtrasonnetEvaluationException.class, () -> transform("payload.missing.deeper"));
+
+        // and both are catchable as one type
+        assertThrows(XtrasonnetException.class, () -> new Transformer("{ a: "));
+        assertThrows(XtrasonnetException.class, () -> transform("payload.missing.deeper"));
     }
 
     @Test

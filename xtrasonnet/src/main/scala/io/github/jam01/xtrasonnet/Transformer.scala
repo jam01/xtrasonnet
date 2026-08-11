@@ -7,7 +7,7 @@ package io.github.jam01.xtrasonnet
  * compliance with the Elastic License 2.0.
  */
 
-import io.github.jam01.xtrasonnet.Transformer.{ERROR_LINE_REGEX, handleException, main}
+import io.github.jam01.xtrasonnet.Transformer.{ERROR_LINE_REGEX, INTERNAL_ERROR_PREFIX, handleException, main}
 import io.github.jam01.xtrasonnet.document.Document.BasicDocument
 import io.github.jam01.xtrasonnet.document.{Document, MediaType, MediaTypes}
 import io.github.jam01.xtrasonnet.header.Header
@@ -32,11 +32,13 @@ object Transformer {
 
   private val ERROR_LINE_REGEX = raw":(\d+):(\d+)".r
 
+  private[xtrasonnet] val INTERNAL_ERROR_PREFIX = "Internal error: "
+
   private[xtrasonnet] def handleException[T](f: => T): Either[Error, T] = {
     try Right(f) catch {
       case e: Error => Left(e)
       case NonFatal(e) =>
-        Left(new Error("Internal error: " + e.toString, Nil, Some(e)))
+        Left(new Error(INTERNAL_ERROR_PREFIX + e.toString, Nil, Some(e)))
     }
   }
 
@@ -98,12 +100,20 @@ class Transformer(private var script: String,
   private val scriptFn: Val.Func = evaluate(script, ResourcePath(main)) match {
     case Right(value) => value match {
       case func: Val.Func => func
-      case _ => throw new IllegalArgumentException("Not a valid script. Transformation scripts must be a Top Level Function.") // shouldn't happen since we're wrapping in Top Level Func
+      case _ => throw new XtrasonnetParseException("Not a valid script. Transformation scripts must be a Top Level Function.") // shouldn't happen since we're wrapping in Top Level Func
     }
     case Left(error) => error match {
-      case pErr: ParseError => throw new IllegalArgumentException("Could not parse transformation script...", processError(pErr))
-      case err: Error if err.getMessage.contains("Internal Error") => throw new IllegalArgumentException("Unexpected internal error while evaluating the transformation script", processError(err))
-      case err: Error => throw new IllegalArgumentException("Could not evaluate transformation script... ", err)
+      case pErr: ParseError =>
+        val processed = processError(pErr)
+        throw new XtrasonnetParseException("Could not parse transformation script: " + processed.getMessage, processed)
+      // handleException produces "Internal error: ", so testing for "Internal Error" never matched
+      // and internal failures fell through to the generic message below
+      case err: Error if err.getMessage != null && err.getMessage.startsWith(INTERNAL_ERROR_PREFIX) =>
+        val processed = processError(err)
+        throw new XtrasonnetException("Unexpected internal error while compiling the transformation script: " + processed.getMessage, processed)
+      case err: Error =>
+        val processed = processError(err)
+        throw new XtrasonnetEvaluationException("Could not evaluate transformation script: " + processed.getMessage, processed)
     }
   }
 
@@ -172,11 +182,14 @@ class Transformer(private var script: String,
 
   private def memberOf(value: Val): Obj.Member = new Obj.ConstMember(false, Visibility.Normal, value)
 
-  private def composeLibs(lib: Library): (String, Val.Obj) = (lib.name, lib.module)
+  // getFileName is nullable, and an unguarded call here meant a NullPointerException while
+  // formatting an error -- losing the original failure entirely
+  private def inMainScript(el: StackTraceElement): Boolean =
+    el.getFileName != null && el.getFileName.contains(main)
 
   private def processError(err: Error): Error = {
     val trace = err.getStackTrace
-    val msg2 = if (trace.isEmpty || !trace(0).getFileName.contains(main)) err.getMessage
+    val msg2 = if (err.getMessage == null || trace.isEmpty || !inMainScript(trace(0))) err.getMessage
     else {
       ERROR_LINE_REGEX.replaceAllIn(err.getMessage, _ match {
         case ERROR_LINE_REGEX(fline, fcolumn) =>
@@ -186,7 +199,7 @@ class Transformer(private var script: String,
 
     val err2 = new Error(msg2, underlying = Option(err.getCause))
     val trace2 = trace.map(el => {
-      if (!el.getFileName.contains(main)) el
+      if (!inMainScript(el)) el
       else {
         val lineIdx = el.getFileName.lastIndexOf(":")
         new StackTraceElement(el.getClassName,
@@ -227,11 +240,11 @@ class Transformer(private var script: String,
     inputs.asScala.foreach { case (name, input) =>
       // "payload" names the first parameter, bound above from the payload argument. It is never a
       // declared input either: the wrapper prepends the parameter, so withInputNames cannot introduce it.
-      if (name == "payload") throw new IllegalArgumentException(
+      if (name == "payload") throw new XtrasonnetException(
         "'payload' is not a named input: it is the payload argument of transform. Pass it there, or " +
           "rename this input.")
 
-      val idx = paramIndices.getOrElse(name, throw new IllegalArgumentException(
+      val idx = paramIndices.getOrElse(name, throw new XtrasonnetException(
         "Unknown input '" + name + "'. Declared inputs are: " +
           scriptFn.params.names.drop(1).mkString(", ") +
           ". Declare it with TransformerBuilder.withInputNames before transforming."))
@@ -251,10 +264,13 @@ class Transformer(private var script: String,
     handleException(formats.mandatoryWrite(scriptFn2.apply0(scriptFn.pos)(evaluator, TailstrictModeDisabled), effectiveOut, target, evaluator)) match {
       case Right(value) => value
       case Left(err) => err match {
-        case pErr: ParseError => throw new IllegalArgumentException("Could not parse transformation script...", processError(pErr))
+        case pErr: ParseError =>
+          val processed = processError(pErr)
+          throw new XtrasonnetParseException("Could not parse transformation script: " + processed.getMessage, processed)
         case err: Error =>
           if (err.getCause.isInstanceOf[PluginException]) throw err.getCause // materialization successful until this point, make this the root exc
-          throw new IllegalArgumentException("Error evaluating xtrasonnet transformation...", processError(err))
+          val processed = processError(err)
+          throw new XtrasonnetEvaluationException("Error evaluating xtrasonnet transformation: " + processed.getMessage, processed)
       }
     }
   }

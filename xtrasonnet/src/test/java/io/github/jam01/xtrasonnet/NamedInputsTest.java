@@ -96,7 +96,7 @@ public class NamedInputsTest {
         inputs.put("bravo", doc("B"));
         inputs.put("delta", doc("D")); // never declared
 
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> transformWith(inputs));
+        XtrasonnetException ex = assertThrows(XtrasonnetException.class, () -> transformWith(inputs));
         assertTrue(ex.getMessage().contains("delta"), "should name the offending input: " + ex.getMessage());
         assertTrue(ex.getMessage().contains("alpha"), "should list the declared inputs: " + ex.getMessage());
     }
@@ -121,7 +121,7 @@ public class NamedInputsTest {
     @Test
     public void payloadIsNotAcceptedAsANamedInput() {
         // the payload argument owns that parameter; accepting the name here would overwrite it
-        var ex = assertThrows(IllegalArgumentException.class, () -> new Transformer("payload")
+        var ex = assertThrows(XtrasonnetException.class, () -> new Transformer("payload")
                 .transform(Document.of("1", MediaTypes.APPLICATION_JSON),
                         Map.of("payload", Document.of("2", MediaTypes.APPLICATION_JSON)),
                         MediaTypes.APPLICATION_JSON));
