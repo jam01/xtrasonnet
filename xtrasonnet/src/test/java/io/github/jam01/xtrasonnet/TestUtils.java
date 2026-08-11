@@ -8,7 +8,6 @@ package io.github.jam01.xtrasonnet;
  */
 
 import io.github.jam01.xtrasonnet.document.MediaTypes;
-import sjsonnet.Settings;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,7 +26,9 @@ public class TestUtils {
 
     public static String transform(String script, String payload) {
         return Transformer.builder(script)
-                .withSettings(new TransformerSettings(new Settings(true, false, false, false, 1000, false), MediaTypes.APPLICATION_JSON, MediaTypes.APPLICATION_JSON))
+                .withPreserveOrder(true)
+                .withDefaultInput(MediaTypes.APPLICATION_JSON)
+                .withDefaultOutput(MediaTypes.APPLICATION_JSON)
                 .build().transform(payload);
     }
 

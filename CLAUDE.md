@@ -35,7 +35,8 @@ mvn -pl xtrasonnet test -Dtest=DatetimeTest#someMethodName
 Test sources live under `xtrasonnet/src/test/java/...` (JUnit 5, one class roughly per `xtr` module or
 plugin, e.g. `ArraysTest`, `DatetimeTest`, `XMLPluginTest`, `HeaderTest`) and `xtrasonnet/src/test/scala/...`.
 `TestUtils.transform(script, payload)` is the common entry point used across tests — it builds a
-`Transformer` with fixed settings (JSON in/out, order not preserved) and returns the transformed string.
+`Transformer` with fixed settings (JSON in/out, field order preserved) and returns the transformed
+string.
 
 CI (`.github/workflows/ci.yaml`) runs `mvn clean verify` on JDK 25 for every push; it also enforces license
 headers via the `license-maven-plugin` (`mvn com.mycila:license-maven-plugin:check` locally). New source
@@ -59,8 +60,11 @@ cross the boundary.
 
 ### Transformation pipeline
 
-1. **`TransformerBuilder`** (Java) — fluent builder for input names, `Library` extensions, `TransformerSettings`,
-   and `DataFormatService` (via `configurePlugins`/`extendPlugins`). Produces a `Transformer`.
+1. **`TransformerBuilder`** (Java) — fluent builder for input names, `Library` extensions, `TransformerSettings`
+   (Java, built by name — `withPreserveOrder`/`withDefaultInput`/`withDefaultOutput` cover the common knobs, and
+   `TransformerSettings.builder()` the rest), and `DataFormatService` (via `configurePlugins`/`extendPlugins`).
+   Produces a `Transformer`. `preserveOrder` is left unset by default so the script's header decides; an
+   explicit value overrides it.
 2. **`Transformer`** (Scala, `Transformer.scala`) — the core engine, heavily based on `sjsonnet.Interpreter`:
    - Parses the `/** xtrasonnet ... */` header comment (`Header.parseHeader`) to learn declared input/output
      media types and `preserveOrder`.

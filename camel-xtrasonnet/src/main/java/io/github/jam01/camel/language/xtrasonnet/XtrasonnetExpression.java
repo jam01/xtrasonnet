@@ -35,7 +35,6 @@ package io.github.jam01.camel.language.xtrasonnet;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import io.github.jam01.xtrasonnet.Transformer;
 import io.github.jam01.xtrasonnet.TransformerBuilder;
-import io.github.jam01.xtrasonnet.TransformerSettings;
 import io.github.jam01.xtrasonnet.document.Document;
 import io.github.jam01.xtrasonnet.document.MediaType;
 import io.github.jam01.xtrasonnet.document.MediaTypes;
@@ -47,7 +46,6 @@ import org.apache.camel.RuntimeExpressionException;
 import org.apache.camel.spi.ExpressionResultTypeAware;
 import org.apache.camel.support.ExchangeHelper;
 import org.apache.camel.support.ExpressionAdapter;
-import sjsonnet.Settings;
 
 import java.util.Collections;
 import java.util.Queue;
@@ -186,14 +184,9 @@ public class XtrasonnetExpression extends ExpressionAdapter implements Expressio
     private Transformer createTransformer(CamelContext context) {
         TransformerBuilder builder = new TransformerBuilder(expression)
                 .withLibrary(CML.getInstance())
-                .withSettings(new TransformerSettings(
-                        new Settings(true,
-                                false,
-                                false,
-                                false,
-                                1000,
-                                false),
-                        MediaTypes.APPLICATION_JAVA, MediaTypes.APPLICATION_JAVA));
+                .withPreserveOrder(true)
+                .withDefaultInput(MediaTypes.APPLICATION_JAVA)
+                .withDefaultOutput(MediaTypes.APPLICATION_JAVA);
 
         Set<Library> additionalLibraries = context.getRegistry().findByType(Library.class);
         for (Library lib : additionalLibraries) {

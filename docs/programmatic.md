@@ -34,12 +34,47 @@ var myTransformer = Transformer.builder(myJsonnet)
         .withInputNames("second", "third") // (1)
         .withLibrary(myCustomLib) // (2)
         .extendPlugins((plugins) -> plugins.add(myCustomPlugin)) // (3)
+        .withDefaultOutput(MediaTypes.APPLICATION_XML) // (4)
         .build();
 ```
 
 1. Signal to the transformer to expect inputs other than the `payload` input
 2. Extend the available functions with a custom `Library`
 3. Extend the supported data formats with a custom `DataFormatPlugin`
+4. What to write when neither the caller nor the header names an output format
+
+### Settings
+
+`withPreserveOrder`, `withDefaultInput` and `withDefaultOutput` cover the common cases. For anything
+else, build a `TransformerSettings` by name and hand it over:
+
+```java
+var mySettings = TransformerSettings.builder()
+        .preserveOrder(true)
+        .strict(true)
+        .maxParserRecursionDepth(500)
+        .defaultInput(MediaTypes.APPLICATION_XML)
+        .build();
+
+var myTransformer = Transformer.builder(myJsonnet)
+        .withSettings(mySettings)
+        .build();
+```
+
+`withSettings` and the convenience methods write to the same place, so convenience calls made *after* a
+`withSettings` layer onto it rather than being discarded.
+
+Order matters in one direction, though. A `TransformerSettings` is a complete configuration — it holds a
+value for every option and does not record which of them you set deliberately — so `withSettings` replaces
+everything set before it, including a `withDefaultOutput` you may have meant to keep. Call it first.
+
+`preserveOrder` is worth a word. Leave it alone and the script's
+[`preserveOrder` header directive](../header) decides, which is the point of the directive; set it
+explicitly and your value wins, so configuring an unrelated option leaves your field ordering alone.
+
+If you need an engine setting that isn't surfaced, `TransformerSettings.Builder.sjsonnetSettings`
+takes a raw `sjsonnet.Settings`. Note that it is taken whole, `preserveOrder` included, so passing one
+does override the header.
 
 ## Fine tuning the transformation
 

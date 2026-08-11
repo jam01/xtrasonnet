@@ -97,7 +97,11 @@ class Transformer(script: String,
   // as null by a thread that observes a racily-published Transformer
   private val fnScript: String = Transformer.asFunction(script, inputNames.asScala)
   private val effSettings: TransformerSettings =
-    if (settings != null) settings else new TransformerSettings(Settings(preserveOrder = header.isPreserveOrder))
+    if (settings != null) settings else TransformerSettings.DEFAULT
+
+  // preserveOrder is resolved here rather than by the caller: an explicit setting wins, otherwise
+  // the script's header decides, so configuring an unrelated knob leaves field ordering alone.
+  private val sjsSettings: Settings = effSettings.sjsSettings(header.isPreserveOrder)
 
   private val allLibs: IndexedSeq[Library] = IndexedSeq(new Xtr(formats, header)).appendedAll(libs.asScala)
   private val allLibsMap: Map[String, Val.Obj] = allLibs.map(lib => (lib.name, lib.module)).toMap
@@ -106,7 +110,7 @@ class Transformer(script: String,
     ResourcePath(main),
     importer,
     parseCache,
-    effSettings.sjsSettings,
+    sjsSettings,
     std = std,
     variableResolver = ext => {
       allLibsMap.get(ext)
