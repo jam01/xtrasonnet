@@ -40,20 +40,25 @@ import org.apache.camel.support.LRUCacheFactory;
 import org.apache.camel.support.LanguageSupport;
 
 import java.util.Map;
-import java.util.Optional;
-import java.util.function.Supplier;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Xtrasonnet language implementation for Apache Camel.
  * <p>
- * Provides expression and predicate creation for xtrasonnet scripts with caching of compiled transformers.
+ * Provides expression and predicate creation for xtrasonnet scripts, pooling the compiled
+ * transformers for each script.
  * </p>
  */
 @Language("xtrasonnet")
 public class XtrasonnetLanguage extends LanguageSupport {
-    // Cache used to stores the Mappers
-    // See: {@link GroovyLanguage}
-    private final Map<String, Transformer> mapperCache = LRUCacheFactory.newLRUSoftCache(16, 1000, true);
+    // A pool per script rather than a single shared Transformer. A Transformer is expensive to build
+    // but is not safe to share between threads, which is the same situation
+    // org.apache.camel.language.xpath.XPathBuilder is in ("thread safe by using thread locals and
+    // pooling to allow concurrency") -- so the same answer: borrow one for the duration of an
+    // evaluation and hand it back. Keyed by script so that two routes running the same script share
+    // a pool.
+    private final Map<String, Queue<Transformer>> pools = LRUCacheFactory.newLRUSoftCache(16, 1000, true);
 
     @Override
     public Predicate createPredicate(String expression) {
@@ -85,33 +90,13 @@ public class XtrasonnetLanguage extends LanguageSupport {
     }
 
     /**
-     * Look up a cached transformer for the given script.
+     * The pool of transformers for the given script, creating it if this is the first expression to
+     * ask for it. Callers borrow with {@code poll} and must return with {@code add}.
      *
      * @param script the xtrasonnet script
-     * @return an Optional containing the transformer if cached, otherwise empty
+     * @return the pool for that script, never null
      */
-    Optional<Transformer> lookup(String script) {
-        return Optional.ofNullable(mapperCache.get(script));
-    }
-
-    /**
-     * Get a cached transformer for the given script.
-     *
-     * @param script the xtrasonnet script
-     * @return the transformer if cached, otherwise null
-     */
-    Transformer get(String script) {
-        return mapperCache.get(script);
-    }
-
-    /**
-     * Compute and cache a transformer if not already present.
-     *
-     * @param script the xtrasonnet script
-     * @param mapperSupplier supplier to create a new transformer if missing
-     * @return the cached or newly created transformer
-     */
-    Transformer computeIfMiss(String script, Supplier<Transformer> mapperSupplier) {
-        return mapperCache.computeIfAbsent(script, k -> mapperSupplier.get());
+    Queue<Transformer> poolFor(String script) {
+        return pools.computeIfAbsent(script, k -> new ConcurrentLinkedQueue<>());
     }
 }
