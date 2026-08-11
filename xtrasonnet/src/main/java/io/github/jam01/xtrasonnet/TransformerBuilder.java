@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -42,7 +43,9 @@ public class TransformerBuilder {
     }
 
     public TransformerBuilder withInputNames(String... inputNames) {
-        this.inputNames = new HashSet<>(Arrays.asList(inputNames));
+        // LinkedHashSet so the generated top level parameters keep the declared order, which makes
+        // error messages predictable. Binding is by name, so ordering is not load bearing.
+        this.inputNames = new LinkedHashSet<>(Arrays.asList(inputNames));
         return this;
     }
 

@@ -107,6 +107,10 @@ class Transformer(private var script: String,
     }
   }
 
+  // Position of each top level parameter, by name. Inputs are bound by name rather than by the
+  // iteration order of the given Map, which is unspecified and, for Map.of, randomized per JVM.
+  private val paramIndices: Map[String, Int] = scriptFn.params.names.zipWithIndex.toMap
+
   def evaluate(txt: String, path: Path): Either[Error, Val] = {
       val resolvedImport = StaticResolvedFile(txt)
       interpreter.resolver.cache(path) = resolvedImport
@@ -150,18 +154,17 @@ class Transformer(private var script: String,
     val entrySet = input.getContent.asInstanceOf[java.util.Map[_, _]].entrySet()
     if (entrySet.isEmpty) return formats.mandatoryRead(effectiveInput(name, input), evaluator.emptyMaterializeFileScopePos)
 
-    val it = entrySet.iterator
-    val firstEntry = it.next
-    if (!firstEntry.getKey.isInstanceOf[String] || !firstEntry.getValue.isInstanceOf[Document[_]])
+    // every entry must be a (String, Document) for this to be a group of nested documents, otherwise
+    // the Map is read as a single document. Checking only the first entry leaves the rest to fail
+    // with an opaque ClassCastException.
+    val entries = entrySet.asScala.toSeq
+    if (!entries.forall(entry => entry.getKey.isInstanceOf[String] && entry.getValue.isInstanceOf[Document[_]]))
       return formats.mandatoryRead(effectiveInput(name, input), evaluator.emptyMaterializeFileScopePos)
 
     val builder = new java.util.LinkedHashMap[String, Val.Obj.Member]()
-    val key = firstEntry.getKey.asInstanceOf[String]
-    builder.put(key, memberOf(formats.mandatoryRead(effectiveInput(name + "." + key, firstEntry.getValue.asInstanceOf[Document[_]]), evaluator.emptyMaterializeFileScopePos)))
-    while (it.hasNext) {
-      val entry = it.next
-      val key1 = entry.getKey.asInstanceOf[String]
-      builder.put(key1, memberOf(formats.mandatoryRead(effectiveInput(name + "." + key1, entry.getValue.asInstanceOf[Document[_]]), evaluator.emptyMaterializeFileScopePos)))
+    entries.foreach { entry =>
+      val key = entry.getKey.asInstanceOf[String]
+      builder.put(key, memberOf(formats.mandatoryRead(effectiveInput(name + "." + key, entry.getValue.asInstanceOf[Document[_]]), evaluator.emptyMaterializeFileScopePos)))
     }
 
     new Val.Obj(Position(null, 0), builder, false, null, null)
@@ -216,16 +219,23 @@ class Transformer(private var script: String,
                    output: MediaType,
                    target: Class[T]): Document[T] = {
     val payloadExpr = formats.mandatoryRead(effectiveInput("payload", payload), evaluator.emptyMaterializeFileScopePos)
-    val inputExprs = inputs.asScala.map { case (name, input) => resolveInput(name, input) }.toArray
 
     val fnDefaultArgs = scriptFn.params.defaultExprs.clone()
 
     fnDefaultArgs(0) = payloadExpr
 
-    var i = 0
-    while (i < inputExprs.length) {
-      fnDefaultArgs(i + 1) = inputExprs(i)
-      i += 1
+    inputs.asScala.foreach { case (name, input) =>
+      // "payload" names the first parameter, bound above from the payload argument. It is never a
+      // declared input either: the wrapper prepends the parameter, so withInputNames cannot introduce it.
+      if (name == "payload") throw new IllegalArgumentException(
+        "'payload' is not a named input: it is the payload argument of transform. Pass it there, or " +
+          "rename this input.")
+
+      val idx = paramIndices.getOrElse(name, throw new IllegalArgumentException(
+        "Unknown input '" + name + "'. Declared inputs are: " +
+          scriptFn.params.names.drop(1).mkString(", ") +
+          ". Declare it with TransformerBuilder.withInputNames before transforming."))
+      fnDefaultArgs(idx) = resolveInput(name, input)
     }
 
     val scriptFn2 = new Val.Func(scriptFn.pos, scriptFn.defSiteValScope, Params(scriptFn.params.names, fnDefaultArgs)) {
