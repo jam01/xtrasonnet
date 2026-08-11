@@ -54,6 +54,22 @@ public class ArraysTest {
     }
 
     @Test
+    public void duplicatesBy_appliesFuncToBothSides() {
+        Assertions.assertEquals(TestUtils.transform("[{ id: 1, n: 'a' }, { id: 2, n: 'c' }]"),
+                TestUtils.transform("xtr.arrays.duplicatesBy([{ id: 1, n: 'a' }, { id: 2, n: 'c' }, { id: 3, n: 'd' }, { id: 1, n: 'b' }, { id: 2, n: 'e' }], function(item) item.id)"));
+        Assertions.assertEquals(TestUtils.transform("['ab']"),
+                TestUtils.transform("xtr.arrays.duplicatesBy(['ab', 'cde', 'fg'], function(item) xtr.length(item))"));
+        Assertions.assertEquals(TestUtils.transform("[]"),
+                TestUtils.transform("xtr.arrays.duplicatesBy([1, 2, 3], function(item) item)"));
+    }
+
+    @Test
+    public void duplicatesBy_returnsFirstOccurrenceOfEachDuplicatedKey() {
+        Assertions.assertEquals(TestUtils.transform("[1, 2]"),
+                TestUtils.transform("xtr.arrays.duplicatesBy([1, 2, 1, 2, 1], function(item) item)"));
+    }
+
+    @Test
     public void find() {
         Assertions.assertEquals(TestUtils.transform("[4]"), TestUtils.transform("xtr.arrays.find([1, 2, 3, 4, 5], function(item) item * 3 > 10)"));
         Assertions.assertEquals(TestUtils.transform("[3]"), TestUtils.transform("xtr.arrays.find([1, 2, 3, 4, 5], function(item, idx) item * (3 + idx) > 10)"));
@@ -77,6 +93,14 @@ public class ArraysTest {
     @Test
     public void occurrencesBy() {
         Assertions.assertEquals(TestUtils.transform("{ 'under4': 3, 'over4': 2 }"), TestUtils.transform("xtr.arrays.occurrencesBy([1, 2, 3, 4, 5], function(item) if (item) < 4 then 'under4' else 'over4')"));
+    }
+
+    @Test
+    public void occurrencesBy_keepsFirstEncounteredKeyOrder() {
+        Assertions.assertEquals(TestUtils.transform("{ zebra: 2, ant: 1, moose: 3, bee: 1 }"),
+                TestUtils.transform("xtr.arrays.occurrencesBy(['zebra', 'ant', 'moose', 'zebra', 'moose', 'bee', 'moose'], function(item) item)"));
+        Assertions.assertEquals(TestUtils.transform("{ '1': 1, '2': 1, '3': 1, '4': 1, '5': 1, '6': 1, '7': 1, '8': 1 }"),
+                TestUtils.transform("xtr.arrays.occurrencesBy([1, 2, 3, 4, 5, 6, 7, 8], function(item) '%d' % item)"));
     }
 
     @Test
@@ -114,6 +138,13 @@ public class ArraysTest {
         Assertions.assertEquals(TestUtils.transform("[[1, 2, 3], ['x', 'y', 'z']]"), TestUtils.transform("xtr.arrays.unzip([[1, 'x'], [2, 'y'], [3, 'z']])"));
     }
 
+    @Test
+    public void unzip_truncatesToTheShortestArray() {
+        Assertions.assertEquals(TestUtils.transform("[[1, 2, 3]]"), TestUtils.transform("xtr.arrays.unzip([[1, 'x'], [2], [3, 'z']])"));
+        Assertions.assertEquals(TestUtils.transform("[]"), TestUtils.transform("xtr.arrays.unzip([[1, 'x'], []])"));
+        Assertions.assertEquals(TestUtils.transform("[]"), TestUtils.transform("xtr.arrays.unzip([])"));
+    }
+
 //    @Disabled
 //    @Test
 //    public void unzipAll() {
@@ -123,6 +154,13 @@ public class ArraysTest {
     @Test
     public void zip() {
         Assertions.assertEquals(TestUtils.transform("[[1, 'x'], [2, 'y'], [3, 'z']]"), TestUtils.transform("xtr.arrays.zip([1, 2, 3], ['x', 'y', 'z'])"));
+    }
+
+    @Test
+    public void zip_truncatesToTheShortestArray() {
+        Assertions.assertEquals(TestUtils.transform("[[1, 'x'], [2, 'y']]"), TestUtils.transform("xtr.arrays.zip([1, 2, 3], ['x', 'y'])"));
+        Assertions.assertEquals(TestUtils.transform("[[1, 'x', true]]"), TestUtils.transform("xtr.arrays.zip([1, 2, 3], ['x'], [true, false])"));
+        Assertions.assertEquals(TestUtils.transform("[]"), TestUtils.transform("xtr.arrays.zip([1, 2, 3], [])"));
     }
 
 //    @Disabled

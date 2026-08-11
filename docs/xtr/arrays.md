@@ -144,17 +144,27 @@ xtr.arrays.dropWhile([1, 2, 3, 4, 5], function(item) item * 3 < 10)
 
 <br/>
 ## duplicatesBy
-`duplicatesBy(arr: Array[A]): Array[A]`
+`duplicatesBy(arr: Array[A], identity: Func[(A) => B]): Array[A]`
 
-Returns a new `Array` with the element in `arr` that are duplicated.
+Returns a new `Array` with the elements in `arr` whose `identity` is shared by more than one element. Each
+duplicated identity contributes the first element that produced it, in the order they appear in `arr`.
 
 **Example**
 ```
-xtr.arrays.duplicatesBy([1, 2, 3, 1, 2])
+xtr.arrays.duplicatesBy([1, 2, 3, 1, 2], function(item) item)
 ```
 **Result**
 ```
 [1, 2]
+```
+
+**Example**
+```
+xtr.arrays.duplicatesBy([{ id: 1, n: 'a' }, { id: 2, n: 'c' }, { id: 1, n: 'b' }], function(item) item.id)
+```
+**Result**
+```
+[{ id: 1, n: 'a' }]
 ```
 
 <br/>
@@ -252,7 +262,7 @@ xtr.arrays.lastIndexWhere([1, 2, 3, 4, 5], function(item) item * 3 < 10)
 ## occurrencesBy
 `occurrencesBy(arr: Array[A], identity: Func[(A) => String]): Object[Number]`
 
-Returns an `Object` with an entry for each unique identity of elements in `arr`. The value of each entry is the `Number` of elements in `arr` that produced such identity, using `identity`. `identity` must take an `A`.
+Returns an `Object` with an entry for each unique identity of elements in `arr`. The value of each entry is the `Number` of elements in `arr` that produced such identity, using `identity`. `identity` must take an `A`. Entries appear in the order their identity was first produced.
 
 **Example**
 ```

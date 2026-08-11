@@ -31,7 +31,7 @@ package io.github.jam01.xtrasonnet.modules
 
 import io.github.jam01.xtrasonnet.spi.Library.keyFrom
 import sjsonnet.functions.AbstractFunctionModule
-import sjsonnet.{Error, EvalScope, Lazy, NumberMath, TailstrictModeDisabled, Val}
+import sjsonnet.{Error, EvalScope, Lazy, NumberMath, Position, TailstrictModeDisabled, Val}
 
 import java.util
 import scala.collection.mutable
@@ -178,28 +178,7 @@ object Arrays extends AbstractFunctionModule {
 
     builtin("unzip", "array") {
       (pos, _, array: Val.Arr) =>
-        val lazyArr = array.asLazyArray
-        val out = new ArrayBuffer[Lazy]
-        val maxSize = lazyArr.map(
-          _.force match {
-            case arr: Val.Arr => arr.asLazyArray.length
-            case x => Error.fail("Expected Array of Arrays, got inner: " + x.prettyName)
-          })
-          .max
-
-        var i = 0
-        while (i < maxSize) {
-          val current = new ArrayBuffer[Lazy]
-          var j = 0
-          while (j < lazyArr.length) {
-            current.append(lazyArr(j).force.asArr.asLazyArray(i))
-            j = j + 1
-          }
-          out.append(Val.Arr(pos, current.toArray))
-          i = i + 1
-        }
-
-        Val.Arr(pos, out.toArray)
+        Val.Arr(pos, transpose(array.asLazyArray, pos))
     },
 
     builtinWithDefaults("zip",
@@ -213,27 +192,8 @@ object Arrays extends AbstractFunctionModule {
         case _: Val.False => false
         case x => Error.fail("Expected Array, got: " + x.prettyName) // give param index?
       }
-      val out = new ArrayBuffer[Lazy]
-      val maxSize = lazyArr.map(
-        _.force match {
-          case arr: Val.Arr => arr.asLazyArray.length
-          case x => Error.fail("Expected Array of Arrays, got inner: " + x.prettyName)
-        })
-        .max
 
-      var i = 0
-      while (i < maxSize) {
-        val current = new ArrayBuffer[Lazy]
-        var j = 0
-        while (j < lazyArr.length) {
-          current.append(lazyArr(j).force.asArr.asLazyArray(i))
-          j = j + 1
-        }
-        out.append(Val.Arr(pos, current.toArray))
-        i = i + 1
-      }
-
-      Val.Arr(pos, out.toArray)
+      Val.Arr(pos, transpose(lazyArr, pos))
     },
 
     /*
@@ -246,11 +206,23 @@ object Arrays extends AbstractFunctionModule {
      */
     builtin("duplicatesBy", "array", "func") {
       (pos, ev, array: Val.Arr, func: Val.Func) =>
+        val lazyArr = array.asLazyArray
+        // func is applied once per element and the results compared against each other
+        val keys = lazyArr.map(item => func.apply1(item, func.pos)(ev, TailstrictModeDisabled))
         val out = mutable.ArrayBuffer[Lazy]()
-        array.asLazyArray.collect({
-          case item if array.asLazyArray.count(lzy => ev.equal(lzy.force, func.apply1(item.force, func.pos)(ev, TailstrictModeDisabled))) >= 2 &&
-            !out.exists(lzy => ev.equal(lzy.force, item.force)) => out.append(item)
-        })
+        val reported = mutable.ArrayBuffer[Val]()
+
+        var i = 0
+        while (i < lazyArr.length) {
+          val key = keys(i)
+          if (!reported.exists(seen => ev.equal(seen, key)) &&
+            keys.count(other => ev.equal(other, key)) >= 2) {
+            reported.append(key)
+            out.append(lazyArr(i))
+          }
+          i = i + 1
+        }
+
         Val.Arr(pos, out.toArray)
     },
 
@@ -261,14 +233,15 @@ object Arrays extends AbstractFunctionModule {
      */
     builtin("occurrencesBy", "arr", "func") {
       (pos, ev, array: Val.Arr, func: Val.Func) =>
-        // no idea why, but this sorts the result in the correct order
-        val ordered = mutable.Map.from(
-          array.asLazyArray
-            .groupBy(item => keyFrom(func.apply1(item, pos.noOffset)(ev, TailstrictModeDisabled)))
-            .map(item => item._1 -> memberOf(Val.Num(pos, item._2.length)))
-        )
+        // a LinkedHashMap, so keys come out in the order func first produced them rather than in the
+        // hash order of whatever the caller's keys happen to be
+        val counts = mutable.LinkedHashMap[String, Int]()
+        array.asLazyArray.foreach(item => {
+          val key = keyFrom(func.apply1(item, pos.noOffset)(ev, TailstrictModeDisabled))
+          counts.update(key, counts.getOrElse(key, 0) + 1)
+        })
 
-        Val.Obj.mk(pos, ordered.toSeq: _*)
+        Val.Obj.mk(pos, counts.toSeq.map { case (key, count) => (key, memberOf(Val.Num(pos, count))) }: _*)
     },
 
     /*
@@ -284,6 +257,37 @@ object Arrays extends AbstractFunctionModule {
      * datasonnet-mapper: end
      */
   )
+
+  /**
+   * Transposes the given arrays, truncating to the shortest of them.
+   *
+   * The documented contract for both zip and unzip is "equal size to the shortest array". Filling short
+   * arrays is what the (still unimplemented) zipAll/unzipAll are for.
+   */
+  private def transpose(arrays: Array[? <: Lazy], pos: Position): Array[Lazy] = {
+    val inner = arrays.map(
+      _.force match {
+        case arr: Val.Arr => arr.asLazyArray
+        case x => Error.fail("Expected Array of Arrays, got inner: " + x.prettyName)
+      })
+
+    val size = if (inner.isEmpty) 0 else inner.map(_.length).min
+    val out = new Array[Lazy](size)
+
+    var i = 0
+    while (i < size) {
+      val current = new Array[Lazy](inner.length)
+      var j = 0
+      while (j < inner.length) {
+        current(j) = inner(j)(i)
+        j = j + 1
+      }
+      out(i) = Val.Arr(pos, current)
+      i = i + 1
+    }
+
+    out
+  }
 
   private def distinctBy(array: Array[Lazy], func: Val.Func, ev: EvalScope): Val = {
     // alternative implementation here https://stackoverflow.com/a/9982455
