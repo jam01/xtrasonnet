@@ -1,12 +1,11 @@
 package io.github.jam01.xtrasonnet;
 
 /*-
- * Copyright 2022 Jose Montoya.
+ * Copyright 2022-2026 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
  */
-
 /* datasonnet-mapper copyright/notice, per Apache-2.0 § 4.c */
 /*-
  * Copyright 2019-2020 the original author or authors.
@@ -136,5 +135,92 @@ public class HeaderTest {
 
         assertTrue(header1.getPayloadInput().isPresent());
         assertTrue(MediaTypes.APPLICATION_JAVA.equalsTypeAndSubtype(header1.getPayloadInput().get()));
+    }
+
+    @Test
+    public void conflictingInputDeclarationsFail() {
+        var ex = Assertions.assertThrows(HeaderParseException.class, () -> Header.parseHeader("""
+                /** xtrasonnet
+                input payload application/json
+                input payload application/xml
+                */
+                {}"""));
+
+        Assertions.assertTrue(ex.getMessage().contains("payload"), ex.getMessage());
+        Assertions.assertTrue(ex.getMessage().contains("application/json"), ex.getMessage());
+        Assertions.assertTrue(ex.getMessage().contains("application/xml"), ex.getMessage());
+    }
+
+    @Test
+    public void headerErrorsPointAtALine() {
+        var ex = Assertions.assertThrows(HeaderParseException.class, () -> Header.parseHeader("""
+                /** xtrasonnet
+                input payload application/json
+                this is not a directive
+                */
+                {}"""));
+
+        Assertions.assertTrue(ex.getMessage().contains("header line 2"), ex.getMessage());
+    }
+
+    @Test
+    public void higherQualityValueWinsForInput() throws HeaderParseException {
+        // q is what disambiguates a repeated declaration, in either order
+        var first = Header.parseHeader("""
+                /** xtrasonnet
+                input payload application/json;q=0.9
+                input payload application/xml;q=1.0
+                */
+                {}""");
+        Assertions.assertTrue(MediaTypes.APPLICATION_XML.equalsTypeAndSubtype(first.getPayloadInput().get()));
+
+        var second = Header.parseHeader("""
+                /** xtrasonnet
+                input payload application/xml;q=1.0
+                input payload application/json;q=0.9
+                */
+                {}""");
+        Assertions.assertTrue(MediaTypes.APPLICATION_XML.equalsTypeAndSubtype(second.getPayloadInput().get()));
+    }
+
+    @Test
+    public void conflictingOutputDeclarationsFail() {
+        var ex = Assertions.assertThrows(HeaderParseException.class, () -> Header.parseHeader("""
+                /** xtrasonnet
+                output application/json
+                output application/xml
+                */
+                {}"""));
+
+        Assertions.assertTrue(ex.getMessage().contains("output"), ex.getMessage());
+    }
+
+    // same media type declared twice is still merged rather than rejected
+    @Test
+    public void repeatedInputWithSameTypeMerges() throws HeaderParseException {
+        var header = Header.parseHeader("""
+                /** xtrasonnet
+                input payload application/csv;separator=|
+                input payload application/csv;quotechar='
+                */
+                {}""");
+
+        var merged = header.getInput("payload").orElseThrow(AssertionError::new);
+        Assertions.assertEquals("|", merged.getParameter("separator"));
+        Assertions.assertEquals("'", merged.getParameter("quotechar"));
+    }
+
+    @Test
+    public void repeatedOutputWithSameTypeMerges() throws HeaderParseException {
+        var header = Header.parseHeader("""
+                /** xtrasonnet
+                output application/csv;separator=|
+                output application/csv;quotechar='
+                */
+                {}""");
+
+        var merged = header.getOutput().orElseThrow(AssertionError::new);
+        Assertions.assertEquals("|", merged.getParameter("separator"));
+        Assertions.assertEquals("'", merged.getParameter("quotechar"));
     }
 }

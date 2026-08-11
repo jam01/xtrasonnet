@@ -106,8 +106,12 @@ public class Header {
         List<MediaType> allInputs = new ArrayList<>(8);
         List<MediaType> dataformats = new ArrayList<>(8);
 
-        for (String line : headerSection.split("\\r?\\n")) {
-            line = line.trim();  // we never care about leading or trailing whitespace
+        String[] lines = headerSection.split("\\r?\\n");
+        for (int i = 0; i < lines.length; i++) {
+            String line = lines[i].trim();  // we never care about leading or trailing whitespace
+            // 1-based position within the header, so an error can point at a specific directive
+            // rather than just quoting its text back
+            String at = " (header line " + (i + 1) + ")";
             try {
                 if (line.startsWith(PRESERVE_ORDER)) {
                     String[] tokens = line.split("=", 2);
@@ -115,7 +119,7 @@ public class Header {
                 } else if (line.startsWith(INPUT)) {
                     Matcher matcher = INPUT_LINE.matcher(line);
                     if (!matcher.matches()) {
-                        throw new HeaderParseException("Unable to parse header line " + line + ", it must follow the input line format");
+                        throw new HeaderParseException("Unable to parse header line " + line + at + ", it must follow the input line format");
                     }
 
                     String name = matcher.group("name");
@@ -132,15 +136,39 @@ public class Header {
                             params.putAll(prev.getParameters());
                             params.putAll(mediaType.getParameters());
                             inputs.put(name, mediaType.withParameters(params));
+                        } else if (mediaType.getQualityValue() > prev.getQualityValue()) {
+                            inputs.put(name, mediaType); // an explicit q says which one is preferred
+                        } else if (mediaType.getQualityValue() == prev.getQualityValue()) {
+                            // with equal q there is nothing to choose between them, and picking
+                            // one silently would let a typo change the format an input is read as
+                            throw new HeaderParseException("Conflicting media types declared for input '" + name
+                                    + "'" + at + ": " + prev + " and " + mediaType
+                                    + ". Give them different q values to express a preference.");
                         }
                     }
                 } else if (line.startsWith(OUTPUT)) {
                     Matcher matcher = OUTPUT_LINE.matcher(line);
                     if (!matcher.matches()) {
-                        throw new HeaderParseException("Unable to parse header line " + line + ", it must follow the output line format");
+                        throw new HeaderParseException("Unable to parse header line " + line + at + ", it must follow the output line format");
                     }
 
-                    output = MediaType.valueOf(matcher.group("mediatype"));
+                    MediaType candidate = MediaType.valueOf(matcher.group("mediatype"));
+                    if (output == null) {
+                        output = candidate;
+                    } else if (candidate.equalsTypeAndSubtype(output)) {
+                        // merge parameters, as the input branch does: replacing would drop the
+                        // earlier declaration's parameters without a word
+                        var params = new HashMap<String, String>(output.getParameters().size() + candidate.getParameters().size());
+                        params.putAll(output.getParameters());
+                        params.putAll(candidate.getParameters());
+                        output = candidate.withParameters(params);
+                    } else if (candidate.getQualityValue() > output.getQualityValue()) {
+                        output = candidate;
+                    } else if (candidate.getQualityValue() == output.getQualityValue()) {
+                        throw new HeaderParseException("Conflicting output media types" + at + ": "
+                                + output + " and " + candidate
+                                + ". Give them different q values to express a preference.");
+                    }
                 } else if (line.startsWith(DATAFORMAT_PREFIX)) {
                     String[] tokens = line.split(" ", 2);
                     MediaType toAdd = MediaType.valueOf(tokens[1]);
@@ -148,12 +176,12 @@ public class Header {
                 } else if (line.isEmpty() || line.startsWith(COMMENT_PREFIX)) {
                     // deliberately do nothing
                 } else {
-                    throw new HeaderParseException("Unable to parse header line: " + line);
+                    throw new HeaderParseException("Unable to parse header line: " + line + at);
                 }
             } catch (InvalidMediaTypeException exc) {
-                throw new HeaderParseException("Could not parse media type from header in line " + line, exc);
+                throw new HeaderParseException("Could not parse media type from header in line " + line + at, exc);
             } catch (ArrayIndexOutOfBoundsException exc) {
-                throw new HeaderParseException("Problem with header formatting in line " + line);
+                throw new HeaderParseException("Problem with header formatting in line " + line + at, exc);
             }
         }
 
