@@ -70,7 +70,7 @@ public class MatrixExcelPlugin extends BasePlugin {
                 bVisitor.visitValue(sVisitor.visitEnd(-1), -1);
             }
         } catch (IOException ex) {
-            throw new IllegalStateException(ex);
+            throw new PluginException("Could not read spreadsheet: " + ex.getMessage(), ex);
         }
 
         return bVisitor.visitEnd(-1);
