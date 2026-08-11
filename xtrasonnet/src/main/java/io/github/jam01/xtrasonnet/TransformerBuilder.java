@@ -7,6 +7,8 @@ package io.github.jam01.xtrasonnet;
  * compliance with the Elastic License 2.0.
  */
 
+import org.jspecify.annotations.Nullable;
+
 import io.github.jam01.xtrasonnet.document.MediaType;
 import io.github.jam01.xtrasonnet.spi.DataFormatPlugin;
 import io.github.jam01.xtrasonnet.spi.Library;
@@ -31,7 +33,7 @@ public class TransformerBuilder {
     private DataFormatService service = DataFormatService.DEFAULT;
     // stays null until something is actually configured, so that an untouched builder leaves the
     // script's header in charge of preserveOrder
-    private TransformerSettings.Builder settings;
+    private TransformerSettings.@Nullable Builder settings;
 
     public TransformerBuilder(String script) {
         this.script = script;

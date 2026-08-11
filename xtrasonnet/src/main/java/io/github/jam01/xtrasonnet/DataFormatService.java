@@ -6,6 +6,8 @@ package io.github.jam01.xtrasonnet;
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
  */
+
+import org.jspecify.annotations.Nullable;
 import io.github.jam01.xtrasonnet.document.Document;
 import io.github.jam01.xtrasonnet.document.MediaType;
 import io.github.jam01.xtrasonnet.plugins.DefaultCSVPlugin;
@@ -73,7 +75,7 @@ public final class DataFormatService {
         return all.isEmpty() ? "none" : all.toString();
     }
 
-    public <T> Document<T> mandatoryWrite(Val input, MediaType mediaType, Class<T> targetType, EvalScope ev) throws PluginException {
+    public <T> Document<T> mandatoryWrite(Val input, MediaType mediaType, @Nullable Class<T> targetType, EvalScope ev) throws PluginException {
         return thatCanWrite(mediaType, targetType)
                 .orElseThrow(() -> new IllegalArgumentException(
                         "No plugin can write " + mediaType + " as " + (targetType == null ? "null" : targetType.getName())

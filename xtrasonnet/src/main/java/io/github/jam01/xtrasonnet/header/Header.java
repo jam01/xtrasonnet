@@ -36,7 +36,7 @@ package io.github.jam01.xtrasonnet.header;
 import io.github.jam01.xtrasonnet.document.InvalidMediaTypeException;
 import io.github.jam01.xtrasonnet.document.MediaType;
 import io.github.jam01.xtrasonnet.document.MediaTypes;
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -58,7 +58,7 @@ public class Header {
     public static final String DATAFORMAT_PREFIX = "dataformat";
     private final boolean preserveOrder;
     private final Map<String, MediaType> inputs;
-    private final MediaType output;
+    private final @Nullable MediaType output;
 
     public Header(boolean preserveOrder,
                   Map<String, MediaType> inputs,
@@ -84,7 +84,6 @@ public class Header {
         return doParseHeader(headerSection);
     }
 
-    @NonNull
     private static String extractHeader(String script) throws HeaderParseException {
         int terminus = script.indexOf("*/");
         if (terminus == -1) {
@@ -97,7 +96,6 @@ public class Header {
                 .trim();
     }
 
-    @NonNull
     private static Header doParseHeader(String headerSection) throws HeaderParseException {
         boolean preserve = true;
         MediaType output = null;

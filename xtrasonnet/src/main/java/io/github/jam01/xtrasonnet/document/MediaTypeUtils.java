@@ -1,11 +1,13 @@
 package io.github.jam01.xtrasonnet.document;
 
 /*-
- * Copyright 2022 Jose Montoya.
+ * Copyright 2022-2026 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
  */
+
+import org.jspecify.annotations.Nullable;
 
 /* spring-framework copyright/notice, per Apache-2.0 § 4.c */
 /*
@@ -85,7 +87,7 @@ public abstract class MediaTypeUtils {
      * @return the mime type
      * @throws InvalidMediaTypeException if the string cannot be parsed
      */
-    public static MediaType parseMediaType(String mediaType) {
+    public static MediaType parseMediaType(@Nullable String mediaType) {
         if (mediaType == null || mediaType.isEmpty()) {
             throw new InvalidMediaTypeException(mediaType, "'mimeType' must not be empty");
         }
@@ -187,7 +189,7 @@ public abstract class MediaTypeUtils {
      * @return the list of mime types
      * @throws InvalidMediaTypeException if the string cannot be parsed
      */
-    public static List<MediaType> parseMediaTypes(String mimeTypes) {
+    public static List<MediaType> parseMediaTypes(@Nullable String mimeTypes) {
         if (mimeTypes == null || mimeTypes.isEmpty()) {
             return Collections.emptyList();
         }
@@ -206,7 +208,7 @@ public abstract class MediaTypeUtils {
      * @param mediaTypes the string to tokenize
      * @return the list of tokens
      */
-    public static List<String> tokenize(String mediaTypes) {
+    public static List<String> tokenize(@Nullable String mediaTypes) {
         if (mediaTypes == null || mediaTypes.isEmpty()) {
             return Collections.emptyList();
         }

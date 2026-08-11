@@ -1,11 +1,13 @@
 package io.github.jam01.xtrasonnet.document;
 
 /*-
- * Copyright 2022 Jose Montoya.
+ * Copyright 2022-2026 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
  */
+
+import org.jspecify.annotations.Nullable;
 
 /***
  * The document interface represents the document used by the mapper.
@@ -40,7 +42,7 @@ public interface Document<T> {
             this(content, null);
         }
 
-        public BasicDocument(T content, MediaType mediaType) {
+        public BasicDocument(T content, @Nullable MediaType mediaType) {
             this.content = content;
             if (mediaType != null) {
                 this.mediaType = mediaType;

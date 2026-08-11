@@ -7,6 +7,8 @@ package io.github.jam01.xtrasonnet.plugins;
  * compliance with the Elastic License 2.0.
  */
 
+import org.jspecify.annotations.Nullable;
+
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.MapperFeature;
@@ -42,7 +44,7 @@ public final class DefaultJavaPlugin extends BaseJacksonPlugin {
         this(null);
     }
 
-    public DefaultJavaPlugin(JsonMapper mapper) {
+    public DefaultJavaPlugin(@Nullable JsonMapper mapper) {
         if (mapper == null) {
             mapper = JsonMapper.builder()
                     .enable(MapperFeature.BLOCK_UNSAFE_POLYMORPHIC_BASE_TYPES) // block unsafe types

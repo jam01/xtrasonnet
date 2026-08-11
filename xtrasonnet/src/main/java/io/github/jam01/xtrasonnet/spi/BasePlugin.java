@@ -7,6 +7,8 @@ package io.github.jam01.xtrasonnet.spi;
  * compliance with the Elastic License 2.0.
  */
 
+import org.jspecify.annotations.Nullable;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import io.github.jam01.xtrasonnet.document.Document;
 import io.github.jam01.xtrasonnet.document.MediaType;
@@ -31,7 +33,7 @@ public abstract class BasePlugin implements DataFormatPlugin {
      * caller who is actually seeing it.
      */
     protected PluginException unsupportedReadClass(Document<?> doc) {
-        Object content = doc.getContent();
+        @Nullable Object content = doc.getContent();
         return new PluginException("%s cannot read %s content of type %s; supported: %s".formatted(
                 getClass().getSimpleName(),
                 doc.getMediaType(),
@@ -40,7 +42,7 @@ public abstract class BasePlugin implements DataFormatPlugin {
     }
 
     /** Message for a target type this plugin cannot write. */
-    protected PluginException unsupportedWriteClass(MediaType mediaType, Class<?> targetType) {
+    protected PluginException unsupportedWriteClass(MediaType mediaType, @Nullable Class<?> targetType) {
         return new PluginException("%s cannot write %s as %s; supported: %s".formatted(
                 getClass().getSimpleName(),
                 mediaType,
