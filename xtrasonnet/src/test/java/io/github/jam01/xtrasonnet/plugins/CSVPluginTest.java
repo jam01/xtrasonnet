@@ -1,12 +1,11 @@
 package io.github.jam01.xtrasonnet.plugins;
 
 /*-
- * Copyright 2022-2023 Jose Montoya.
+ * Copyright 2022-2026 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
  */
-
 import io.github.jam01.xtrasonnet.Transformer;
 import io.github.jam01.xtrasonnet.document.Document;
 import io.github.jam01.xtrasonnet.document.Documents;
@@ -15,9 +14,14 @@ import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 
 public class CSVPluginTest {
     // https://www.ietf.org/rfc/rfc4180.html#section-2
@@ -104,6 +108,48 @@ public class CSVPluginTest {
 
         JSONAssert.assertEquals(carsJson, doc.getContent(), true);
         assertEquals(MediaTypes.APPLICATION_JSON, doc.getMediaType());
+    }
+
+    @Test
+    public void read_inputStream() throws JSONException {
+        // InputStream is an advertised reader class, but the branch cast the content to String,
+        // so this path always threw ClassCastException
+        var doc = new Transformer("payload")
+                .transform(Document.of(new ByteArrayInputStream(cars.getBytes(StandardCharsets.UTF_8)),
+                        MediaTypes.TEXT_CSV));
+
+        JSONAssert.assertEquals(carsJson, doc.getContent(), true);
+        assertEquals(MediaTypes.APPLICATION_JSON, doc.getMediaType());
+    }
+
+    @Test
+    public void read_byteArray() throws JSONException {
+        var doc = new Transformer("payload")
+                .transform(Document.of(cars.getBytes(StandardCharsets.UTF_8), MediaTypes.TEXT_CSV));
+
+        JSONAssert.assertEquals(carsJson, doc.getContent(), true);
+        assertEquals(MediaTypes.APPLICATION_JSON, doc.getMediaType());
+    }
+
+    @Test
+    public void write_outputStream() {
+        // the plugin returned a BufferedOutputStream wrapping a discarded ByteArrayOutputStream,
+        // so the bytes were unreachable
+        var doc = new Transformer(carsJson)
+                .transform(Documents.Null(), Collections.emptyMap(), MediaTypes.TEXT_CSV, OutputStream.class);
+
+        assertInstanceOf(ByteArrayOutputStream.class, doc.getContent());
+        assertEquals(cars, doc.getContent().toString());
+        assertEquals(MediaTypes.TEXT_CSV, doc.getMediaType());
+    }
+
+    @Test
+    public void write_emptyArray() {
+        // node.elements().next() threw NoSuchElementException on an empty result
+        var doc = new Transformer("[]")
+                .transform(Documents.Null(), Collections.emptyMap(), MediaTypes.TEXT_CSV);
+
+        assertEquals("", doc.getContent());
     }
 
     @Test

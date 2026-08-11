@@ -20,7 +20,6 @@ import io.github.jam01.xtrasonnet.document.MediaType;
 import io.github.jam01.xtrasonnet.document.MediaTypes;
 import io.github.jam01.xtrasonnet.spi.PluginException;
 
-import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -103,7 +102,7 @@ public class DefaultCSVPlugin extends BaseJacksonPlugin {
             } else if (byte[].class.isAssignableFrom(doc.getContent().getClass())) {
                 return reader.readTree(((byte[]) doc.getContent()));
             } else if (InputStream.class.isAssignableFrom(doc.getContent().getClass())) {
-                return reader.readTree((String) doc.getContent());
+                return reader.readTree((InputStream) doc.getContent());
             } else {
                 throw new PluginException(new IllegalArgumentException("Unsupported document content class, use the test method canRead before invoking read"));
             }
@@ -118,6 +117,9 @@ public class DefaultCSVPlugin extends BaseJacksonPlugin {
     @Override
     public <T> Document<T> write(JsonNode node, MediaType mediaType, Class<T> targetType) throws PluginException {
         assertArrayNode(node, "Writing CSV requires an Array, found: " + node.getNodeType().name());
+        if (node.isEmpty()) { // nothing to infer a schema from, and no rows to write
+            return writeCsv(CSV_MAPPER.writerFor(JsonNode.class).with(baseBuilderFor(mediaType).build()), node, targetType);
+        }
         JsonNode first = node.elements().next();
 
         ObjectWriter writer;
@@ -151,6 +153,11 @@ public class DefaultCSVPlugin extends BaseJacksonPlugin {
             throw new IllegalArgumentException("Unsupported combination of input and parameters."); // we give up
         }
 
+        return writeCsv(writer, node, targetType);
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T> Document<T> writeCsv(ObjectWriter writer, JsonNode node, Class<T> targetType) throws PluginException {
         try {
             if (targetType.isAssignableFrom(String.class)) {
                 return (Document<T>) new Document.BasicDocument<>(writer.writeValueAsString(node),
@@ -158,7 +165,9 @@ public class DefaultCSVPlugin extends BaseJacksonPlugin {
             }
 
             if (targetType.isAssignableFrom(OutputStream.class)) {
-                OutputStream out = new BufferedOutputStream(new ByteArrayOutputStream());
+                // must be the ByteArrayOutputStream itself: wrapping it hands back a stream whose
+                // bytes the caller has no way to reach
+                ByteArrayOutputStream out = new ByteArrayOutputStream();
                 writer.writeValue(out, node);
                 return (Document<T>) new Document.BasicDocument<>(out, MediaTypes.TEXT_CSV);
             }
