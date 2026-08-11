@@ -73,7 +73,9 @@ import scala.jdk.CollectionConverters.*
 final class Xtr(dataFormats: DataFormatService, header: Header) extends Library {
   override def name: String = "xtr"
 
-  private val functions: Map[String, Val.Func] = Map(
+  // a Seq, like every other module: Val.Obj.mk keeps insertion order and visibleKeyNames does not
+  // sort, so a Map here would order xtr's fields by the hash of their names
+  private val functions: Seq[(String, Val.Func)] = Seq(
     builtin("contains", "container", "value") {
       (_, ev, container: Val, value: Val) =>
         container match {
@@ -492,13 +494,18 @@ final class Xtr(dataFormats: DataFormatService, header: Header) extends Library 
     },
 
     builtin("parseNum", "str") { (_, _, str: String) =>
-      str.toDouble
+      try str.toDouble
+      catch {
+        case _: NumberFormatException => Error.fail("Expected a String holding a Number, got: " + str)
+      }
     }
   )
 
-  override def module: Val.Obj = {
+  // safe to cache where JLibrary.module is not: an Xtr is constructed per Transformer
+  // (Transformer.allLibs), so this object is never shared between them
+  override lazy val module: Val.Obj = {
     Val.Obj.mk(position,
-      functions.toSeq.map{ case (name, func) => (name, memberOf(func)) } ++
+      functions.map { case (name, func) => (name, memberOf(func)) } ++
         Xtr.allModules.map(mod => (mod.name, memberOf(mod.module))): _*)
   }
 

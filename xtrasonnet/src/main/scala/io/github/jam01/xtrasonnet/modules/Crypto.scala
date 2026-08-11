@@ -32,7 +32,7 @@ package io.github.jam01.xtrasonnet.modules
  */
 
 import org.bouncycastle.util.encoders.Hex
-import sjsonnet.Val
+import sjsonnet.{Error, Val}
 import sjsonnet.functions.AbstractFunctionModule
 
 import java.nio.charset.StandardCharsets
@@ -95,6 +95,11 @@ object Crypto extends AbstractFunctionModule {
           // separate prefix with IV from the rest of encrypted data//separate prefix with IV from the rest of encrypted data
           val encryptedPayload = java.util.Base64.getDecoder.decode(value)
           val iv = new Array[Byte](cipher.getBlockSize)
+          // checked before the subtraction below, which would otherwise go negative
+          if (encryptedPayload.length < iv.length) {
+            Error.fail("Expected at least " + iv.length + " bytes of encrypted payload to read the IV of " +
+              transformation + ", got: " + encryptedPayload.length)
+          }
           val encryptedBytes = new Array[Byte](encryptedPayload.length - iv.length)
           val rand: SecureRandom = new SecureRandom()
 

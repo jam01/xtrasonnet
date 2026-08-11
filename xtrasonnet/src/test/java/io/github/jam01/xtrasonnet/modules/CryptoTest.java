@@ -8,6 +8,7 @@ package io.github.jam01.xtrasonnet.modules;
  */
 
 import io.github.jam01.xtrasonnet.TestUtils;
+import io.github.jam01.xtrasonnet.XtrasonnetException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -49,6 +50,15 @@ public class CryptoTest {
         round_trip(data, twentyfour, "DESede/CBC/PKCS5Padding");
 
         // round_trip(data, sixteen, "RSA/ECB/PKCS1Padding");
+    }
+
+    @Test
+    public void decrypt_payloadShorterThanTheIv() {
+        // "YWJj" is 3 bytes, short of AES' 16 byte IV
+        var thrown = Assertions.assertThrows(XtrasonnetException.class,
+                () -> TestUtils.transform("xtr.crypto.decrypt('YWJj', '$sixteencharkey$', 'AES/CBC/PKCS5Padding')"));
+        Assertions.assertTrue(thrown.getMessage().contains("Expected at least 16 bytes of encrypted payload"),
+                "expected a message naming the required length but was <" + thrown.getMessage() + ">");
     }
 
     private void round_trip(String data, String key, String transformation) {

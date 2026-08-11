@@ -8,6 +8,7 @@ package io.github.jam01.xtrasonnet.modules;
  */
 
 import io.github.jam01.xtrasonnet.TestUtils;
+import io.github.jam01.xtrasonnet.XtrasonnetException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -436,6 +437,20 @@ public class RootTest {
     @Test
     public void parseNum() {
         Assertions.assertEquals(TestUtils.transform("123.45"), TestUtils.transform("xtr.parseNum('123.45')"));
+    }
+
+    @Test
+    public void parseNum_rejectsAStringThatIsNotANumber() {
+        var thrown = Assertions.assertThrows(XtrasonnetException.class, () -> TestUtils.transform("xtr.parseNum('abc')"));
+        Assertions.assertTrue(thrown.getMessage().contains("Expected a String holding a Number, got: abc"),
+                "expected a message naming the value but was <" + thrown.getMessage() + ">");
+    }
+
+    @Test
+    public void xtrFieldsAreInDeclarationOrder() {
+        // std.objectFieldsAll does not sort insertion-ordered objects, so this pins declaration order
+        Assertions.assertEquals(TestUtils.transform("['contains', 'entries', 'filter', 'filterObject', 'indicesOf']"),
+                TestUtils.transform("xtr.arrays.take(std.objectFieldsAll(xtr), 5)"));
     }
 
     @Test
