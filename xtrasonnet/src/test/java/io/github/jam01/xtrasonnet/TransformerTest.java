@@ -196,13 +196,14 @@ public class TransformerTest {
 
     @Test
     public void http_import() throws JSONException {
-        var srv = new WireMockServer(options().port(8080));
+        // dynamic ports: fixed 8080/8443 collide with anything already listening on the machine
+        var srv = new WireMockServer(options().dynamicPort());
         srv.start();
         srv.addStubMapping(WireMock.get("/imports/garnish.txt")
                 .willReturn(okForContentType("text/plain", "Maraschino Cherry")).build());
 
         try {
-            var res = transform("importstr 'http://localhost:8080/imports/garnish.txt'");
+            var res = transform("importstr 'http://localhost:%d/imports/garnish.txt'".formatted(srv.port()));
             JSONAssert.assertEquals("\"Maraschino Cherry\"", res, true);
         } finally {
             srv.stop();
@@ -214,13 +215,14 @@ public class TransformerTest {
         var context = SSLContextBuilder.create().loadTrustMaterial(new TrustEverythingStrategy()).build();
         HttpsURLConnection.setDefaultSSLSocketFactory(context.getSocketFactory());
 
-        var srv = new WireMockServer(options().httpsPort(8443));
+        // both ports must be dynamic: the server binds an HTTP port even when only httpsPort is set
+        var srv = new WireMockServer(options().dynamicPort().dynamicHttpsPort());
         srv.start();
         srv.addStubMapping(WireMock.get("/imports/garnish.txt")
                 .willReturn(okForContentType("text/plain", "Maraschino Cherry")).build());
 
         try {
-            var res = transform("importstr 'https://localhost:8443/imports/garnish.txt'");
+            var res = transform("importstr 'https://localhost:%d/imports/garnish.txt'".formatted(srv.httpsPort()));
             JSONAssert.assertEquals("\"Maraschino Cherry\"", res, true);
         } finally {
             srv.stop();
