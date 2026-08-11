@@ -25,9 +25,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class DefaultCSVPlugin extends BaseJacksonPlugin {
     public static final String PARAM_QUOTE_CHAR = "quotechar";
@@ -39,12 +39,17 @@ public class DefaultCSVPlugin extends BaseJacksonPlugin {
     public static final String HEADER_LN_PRESENT_VALUE = "present";
     public static final String HEADER_LN_ABSENT_VALUE = "absent";
 
-    private static final CsvMapper CSV_MAPPER = new CsvMapper();
-    private static final Map<Object, ObjectReader> READER_CACHE = new HashMap<>();
+    // built rather than mutated after construction, so there is no window in which another thread
+    // could observe it half-configured. A configured CsvMapper is safe to share.
+    private static final CsvMapper CSV_MAPPER = CsvMapper.builder()
+            .enable(CsvParser.Feature.WRAP_AS_ARRAY)
+            .build();
 
-    static {
-        CSV_MAPPER.enable(CsvParser.Feature.WRAP_AS_ARRAY);
-    }
+    // Per instance, and concurrent: this was a static HashMap shared by every Transformer in the
+    // JVM and mutated through computeIfAbsent, so concurrent inserts could corrupt it -- which broke
+    // even callers who correctly kept one Transformer per thread. ObjectReader is immutable, so the
+    // entries themselves are safe to share.
+    private final Map<Map<String, String>, ObjectReader> readerCache = new ConcurrentHashMap<>();
 
     public DefaultCSVPlugin() {
         supportedTypes.add(MediaTypes.TEXT_CSV);
@@ -73,7 +78,8 @@ public class DefaultCSVPlugin extends BaseJacksonPlugin {
             return NullNode.getInstance();
         }
 
-        ObjectReader reader = READER_CACHE.computeIfAbsent(doc.getMediaType().getParameters(), (p) -> {
+        // MediaType.getParameters returns an unmodifiable map, so it is safe as a key
+        ObjectReader reader = readerCache.computeIfAbsent(doc.getMediaType().getParameters(), (p) -> {
             CsvSchema.Builder builder = baseBuilderFor(doc.getMediaType());
 
             // assume header line present unless explicitly a value other than "present"
