@@ -45,15 +45,28 @@ object Transformer {
   def builder(script: String) = new TransformerBuilder(script)
 }
 
+/**
+ * Compiles a transformation script once and evaluates it against payloads.
+ *
+ * '''A Transformer is not safe to share between threads.''' Compilation happens once, in the
+ * constructor, but evaluation mutates state that lives inside sjsonnet: `Val.Obj` memoises field
+ * values into an unsynchronized `java.util.HashMap`, and the `std` and `xtr` objects every script
+ * touches are built once per Transformer and shared by every call. `Evaluator.cachedImports`, the
+ * import cache and `DefaultParseCache` are plain mutable maps for the same reason.
+ *
+ * Use one Transformer per thread, or pool them -- `camel-xtrasonnet`'s `XtrasonnetExpression` keeps
+ * a pool, following `org.apache.camel.language.xpath.XPathBuilder`. Overlapping calls are detected
+ * and rejected rather than left to corrupt those caches silently.
+ */
 // Significantly based on {@link sjsonnet.Interpreter Interpreter.class}
-class Transformer(private var script: String,
+class Transformer(script: String,
                   inputNames: java.util.Set[String] = Collections.emptySet(),
                   libs: java.util.Set[Library] = Collections.emptySet(),
                   formats: DataFormatService = DataFormatService.DEFAULT,
                   wd: Path = ResourcePath.root,
                   parseCache: ParseCache = new DefaultParseCache,
                   importer: Importer = ResourcePath.importer,
-                  private var settings: TransformerSettings = null,
+                  settings: TransformerSettings = null,
                   std: Val.Obj = StdLibModule.Default.module) {
 
   def this(script: String,
@@ -79,8 +92,12 @@ class Transformer(private var script: String,
   }
 
   val header: Header = Header.parseHeader(script)
-  script = Transformer.asFunction(script, inputNames.asScala)
-  settings = if (settings != null) settings else new TransformerSettings(Settings(preserveOrder = header.isPreserveOrder))
+
+  // vals, not vars reassigned in the constructor body: non-final fields assigned there can be seen
+  // as null by a thread that observes a racily-published Transformer
+  private val fnScript: String = Transformer.asFunction(script, inputNames.asScala)
+  private val effSettings: TransformerSettings =
+    if (settings != null) settings else new TransformerSettings(Settings(preserveOrder = header.isPreserveOrder))
 
   private val allLibs: IndexedSeq[Library] = IndexedSeq(new Xtr(formats, header)).appendedAll(libs.asScala)
   private val allLibsMap: Map[String, Val.Obj] = allLibs.map(lib => (lib.name, lib.module)).toMap
@@ -89,7 +106,7 @@ class Transformer(private var script: String,
     ResourcePath(main),
     importer,
     parseCache,
-    settings.sjsSettings,
+    effSettings.sjsSettings,
     std = std,
     variableResolver = ext => {
       allLibsMap.get(ext)
@@ -97,7 +114,7 @@ class Transformer(private var script: String,
 
   private val evaluator: Evaluator = interpreter.evaluator
 
-  private val scriptFn: Val.Func = evaluate(script, ResourcePath(main)) match {
+  private val scriptFn: Val.Func = evaluate(fnScript, ResourcePath(main)) match {
     case Right(value) => value match {
       case func: Val.Func => func
       case _ => throw new XtrasonnetParseException("Not a valid script. Transformation scripts must be a Top Level Function.") // shouldn't happen since we're wrapping in Top Level Func
@@ -121,7 +138,9 @@ class Transformer(private var script: String,
   // iteration order of the given Map, which is unspecified and, for Map.of, randomized per JVM.
   private val paramIndices: Map[String, Int] = scriptFn.params.names.zipWithIndex.toMap
 
-  def evaluate(txt: String, path: Path): Either[Error, Val] = {
+  // private: it exists to compile the wrapped script once, from the constructor, and it writes into
+  // the resolver's mutable cache. Exposing it handed callers a way to mutate that from any thread.
+  private def evaluate(txt: String, path: Path): Either[Error, Val] = {
       val resolvedImport = StaticResolvedFile(txt)
       interpreter.resolver.cache(path) = resolvedImport
       interpreter.resolver.parse(path, resolvedImport)(evaluator) flatMap { case (expr, x) =>
@@ -140,7 +159,7 @@ class Transformer(private var script: String,
       return fromHeader.get()
     }
 
-    settings.defOutputMediaType
+    effSettings.defOutputMediaType
   }
 
   // If the input type is UNKNOWN then look in the header, default to JSON
@@ -154,7 +173,7 @@ class Transformer(private var script: String,
       return input.withMediaType(fromHeader.get())
     }
 
-    input.withMediaType(settings.defInputMediaType)
+    input.withMediaType(effSettings.defInputMediaType)
   }
 
   // supports a Map[String, Document] to enable a scenario where documents are grouped into a single input
@@ -213,6 +232,25 @@ class Transformer(private var script: String,
     err2
   }
 
+  // The evaluation state this guards lives inside sjsonnet and cannot be made concurrent from here
+  // (see the class doc). Two threads overlapping in transform corrupt unsynchronized HashMaps, which
+  // shows up later as a lost memo, a null where a value exists, or a thread spinning -- never as a
+  // clean failure at the point of the mistake. So say so at the point of the mistake instead.
+  private val owner = new java.util.concurrent.atomic.AtomicReference[Thread]()
+
+  private def exclusively[T](f: => T): T = {
+    val self = Thread.currentThread()
+    val prev = owner.compareAndExchange(null, self)
+    if (prev != null && prev != self) throw new XtrasonnetException(
+      "This Transformer is already in use by thread '" + prev.getName + "'. A Transformer holds " +
+        "evaluation state that cannot be shared: build one per thread, or pool them -- see " +
+        "camel-xtrasonnet's XtrasonnetExpression. Sharing one would corrupt the evaluator's " +
+        "caches silently rather than failing here.")
+
+    // prev == self means an outer call on this thread already owns it; that frame does the release
+    if (prev != null) f else try f finally owner.set(null)
+  }
+
   def transform(payload: String): String = {
     transform(new BasicDocument[String](payload)).getContent
   }
@@ -230,7 +268,7 @@ class Transformer(private var script: String,
   def transform[T](payload: Document[_],
                    inputs: java.util.Map[String, Document[_]],
                    output: MediaType,
-                   target: Class[T]): Document[T] = {
+                   target: Class[T]): Document[T] = exclusively {
     val payloadExpr = formats.mandatoryRead(effectiveInput("payload", payload), evaluator.emptyMaterializeFileScopePos)
 
     val fnDefaultArgs = scriptFn.params.defaultExprs.clone()

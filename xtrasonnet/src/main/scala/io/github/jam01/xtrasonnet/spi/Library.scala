@@ -44,6 +44,18 @@ abstract class JLibrary extends Library {
   def functions(): java.util.Map[String, Val.Func] =
     Collections.emptyMap()
 
+  /**
+   * '''A def, deliberately -- do not cache this in a val.'''
+   *
+   * A Library instance is commonly a singleton shared by many Transformers: `camel-xtrasonnet`
+   * registers `CML.getInstance()` into every Transformer its pool builds. A `def` hands each of them
+   * its own `Val.Obj`; caching one would hand them all the same object, and `Val.Obj.value` memoises
+   * every field it reads into a plain `java.util.HashMap`. Pooled Transformers on different threads
+   * would then write that map concurrently -- the corruption `Transformer` refuses to allow within
+   * one instance, reintroduced one level above where it can see it.
+   *
+   * It is called once per Transformer, from `Transformer.allLibsMap`, so there is nothing to gain.
+   */
   override def module: Val.Obj = {
     moduleFromFunctions(functions().asScala.toSeq: _*)
   }

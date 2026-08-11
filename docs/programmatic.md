@@ -46,7 +46,7 @@ var myTransformer = Transformer.builder(myJsonnet)
 Developers can also exert more control on the behavior of the transformation at the point they're ready to evaluate it, by passing more arguments to the `transform` method. To do so we leverage `Document` and `MediaType` objects:
 
 ```java
-OutputStream output = myTransformer.transform(
+Document<OutputStream> output = myTransformer.transform(
         Document.of(myInput, MediaTypes.APPLICATION_JSON), // (1)
         Map.of("second", mySecInput, "third", myThirdInput), // (2)
         MediaTypes.APPLICATION_XML, // (3)
@@ -56,7 +56,35 @@ OutputStream output = myTransformer.transform(
 1. A `Document` object with the input content and the media type that describes its format.
 2. A `java.util.Map` containing the inputs, other than the `payload` input, that the transformation expects.
 3. The `MediaType` object representing the output format to be returned, if supported.
-4. The type of the object to be returned, if supported.
+4. The type of the object to be returned, if supported. `transform` returns a `Document` wrapping it.
+
+Inputs are bound by name, so the iteration order of the map you pass does not matter. Passing a name
+the transformation did not declare with `withInputNames` is an error rather than being ignored.
+
+## Reusing a transformer across threads
+
+Building a `Transformer` compiles the transformation, which is the expensive part, so you will want to
+reuse one. **A `Transformer` is not safe to share between threads.** Evaluation mutates caches that
+belong to the underlying jsonnet engine — object fields are memoised into maps that are not
+synchronised, and the objects holding them are shared by every call on that transformer.
+
+Use one transformer per thread, or pool them:
+
+```java
+var pool = new ConcurrentLinkedQueue<Transformer>();
+
+Transformer transformer = pool.poll();
+if (transformer == null) transformer = Transformer.builder(myJsonnet).build();
+try {
+    return transformer.transform(myPayload);
+} finally {
+    pool.add(transformer);
+}
+```
+
+Overlapping calls on one transformer are rejected with an exception naming the thread that holds it,
+rather than being allowed to corrupt those caches silently. `camel-xtrasonnet` pools transformers this
+way, so Camel routes are safe without any work on your part.
 
 ## Header present
 
