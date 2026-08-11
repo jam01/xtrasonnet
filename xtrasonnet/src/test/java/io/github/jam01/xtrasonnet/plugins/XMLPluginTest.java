@@ -1,12 +1,11 @@
 package io.github.jam01.xtrasonnet.plugins;
 
 /*-
- * Copyright 2022-2023 Jose Montoya.
+ * Copyright 2022-2026 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
  */
-
 import io.github.jam01.xtrasonnet.TestUtils;
 import io.github.jam01.xtrasonnet.Transformer;
 import io.github.jam01.xtrasonnet.document.Document;
@@ -19,10 +18,13 @@ import org.xmlunit.diff.DefaultNodeMatcher;
 import org.xmlunit.diff.ElementSelectors;
 import org.xmlunit.matchers.CompareMatcher;
 
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
 import java.util.Collections;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -58,6 +60,51 @@ public class XMLPluginTest {
                         MediaTypes.APPLICATION_XML.withParameter(DefaultXMLPlugin.PARAM_MODE(), DefaultXMLPlugin.SIMPLIFIED_MODE_VALUE()));
 
         assertThat(doc.getContent(), CompareMatcher.isSimilarTo(root).ignoreWhitespace());
+    }
+
+    @Test
+    public void write_outputStream() {
+        // the plugin never flushed the OutputStreamWriter and returned a BufferedOutputStream
+        // wrapping a discarded ByteArrayOutputStream, so the bytes were unreachable
+        var doc = new Transformer(rootAsJsonSimple)
+                .transform(Documents.Null(), Collections.emptyMap(),
+                        MediaTypes.APPLICATION_XML.withParameter(DefaultXMLPlugin.PARAM_MODE(), DefaultXMLPlugin.SIMPLIFIED_MODE_VALUE()),
+                        OutputStream.class);
+
+        assertInstanceOf(ByteArrayOutputStream.class, doc.getContent());
+        assertThat(doc.getContent().toString(), CompareMatcher.isSimilarTo(root).ignoreWhitespace());
+    }
+
+    @Test
+    public void write_int64_staysExact() {
+        // integers were routed through Double, losing exactness above 2^53 and rendering as "1.0"
+        var doc = new Transformer("{ root: 9007199254740993 }")
+                .transform(Documents.Null(), Collections.emptyMap(),
+                        MediaTypes.APPLICATION_XML.withParameter(DefaultXMLPlugin.PARAM_MODE(), DefaultXMLPlugin.SIMPLIFIED_MODE_VALUE()));
+
+        assertThat(doc.getContent(), CompareMatcher.isSimilarTo("<root>9007199254740993</root>").ignoreWhitespace());
+    }
+
+    @Test
+    public void write_smallInt_hasNoDecimalPoint() {
+        var doc = new Transformer("{ root: 1 }")
+                .transform(Documents.Null(), Collections.emptyMap(),
+                        MediaTypes.APPLICATION_XML.withParameter(DefaultXMLPlugin.PARAM_MODE(), DefaultXMLPlugin.SIMPLIFIED_MODE_VALUE()));
+
+        assertThat(doc.getContent(), CompareMatcher.isSimilarTo("<root>1</root>").ignoreWhitespace());
+    }
+
+    @Test
+    public void read_nameform_isAccepted() throws JSONException {
+        // nameform is consumed by BadgerFishHandler but was never registered as a reader param, so
+        // parametersAreSupported rejected any media type that set it
+        var doc = new Transformer("payload")
+                .transform(Document.of("<ns:root xmlns:ns='http://example.com'>value</ns:root>",
+                        MediaTypes.APPLICATION_XML
+                                .withParameter(DefaultXMLPlugin.PARAM_NAME_FORM(), DefaultXMLPlugin.NAME_FORM_LOCAL_VALUE())));
+
+        // local name form drops the ns: prefix from the element name
+        JSONAssert.assertEquals("{\"root\":{\"_text\":\"value\"}}", doc.getContent(), false);
     }
 
     @Test

@@ -79,7 +79,13 @@ final class BadgerFishVisitor(val params: EffectiveParams) {
     // --- primitives ---------------------------------------------------------
     override def visitFalse(index: Int): Unit = visitString("false", index)
     override def visitTrue(index: Int): Unit = visitString("true", index)
-    override def visitInt64(i: Long, index: Int): Unit = visitFloat64(i.toDouble, index)
+    // rendered as an integer rather than routed through Double, which lost exactness above 2^53
+    // and serialized integral values as "1.0"
+    override def visitInt64(i: Long, index: Int): Unit = {
+      out.append('<').append(qname).append('>')
+      out.append(java.lang.Long.toString(i))
+      out.append("</").append(qname).append('>')
+    }
 
     override def visitNull(index: Int): Unit = {
       out.append('<').append(qname)
