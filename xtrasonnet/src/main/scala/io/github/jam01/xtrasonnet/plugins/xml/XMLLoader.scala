@@ -8,7 +8,7 @@ package io.github.jam01.xtrasonnet.plugins.xml
  */
 
 import io.github.jam01.xtrasonnet.plugins.DefaultXMLPlugin.EffectiveParams
-import io.github.jam01.xtrasonnet.plugins.xml.Source.{fromFile, fromInputStream, fromString}
+import io.github.jam01.xtrasonnet.plugins.xml.Source.{fromInputStream, fromString}
 import org.xml.sax.InputSource
 import sjsonnet.Val
 
@@ -46,12 +46,20 @@ trait XMLLoader {
   }
 
   /** Loads XML from the given file, file descriptor, or filename. */
-  def loadFile(file: File, params: EffectiveParams): Val.Literal = loadXML(fromFile(file), parser(params), params)
+  def loadFile(file: File, params: EffectiveParams): Val.Literal = {
+    // whoever opens the stream closes it
+    val is = new FileInputStream(file)
+    try loadXML(fromInputStream(is), parser(params), params) finally is.close()
+  }
 
-  /** loads XML from given InputStream, Reader, sysID, InputSource, or URL. */
+  /** loads XML from given InputStream, Reader, sysID, InputSource, or URL. The stream belongs to
+   * the caller and is left open. */
   def load(is: InputStream, params: EffectiveParams): Val.Literal = loadXML(fromInputStream(is), parser(params), params)
 
-  def load(url: URL, params: EffectiveParams): Val.Literal = loadXML(fromInputStream(url.openStream()), parser(params), params)
+  def load(url: URL, params: EffectiveParams): Val.Literal = {
+    val is = url.openStream()
+    try loadXML(fromInputStream(is), parser(params), params) finally is.close()
+  }
 
   /** Loads XML from the given String. */
   def loadString(string: String, params: EffectiveParams): Val.Literal = loadXML(fromString(string), parser(params), params)

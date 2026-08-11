@@ -11,6 +11,7 @@ import io.github.jam01.xtrasonnet.document.Document.BasicDocument
 import io.github.jam01.xtrasonnet.document.{Document, MediaType, MediaTypes}
 import io.github.jam01.xtrasonnet.plugins.xml.XML
 import io.github.jam01.xtrasonnet.spi.{BasePlugin, PluginException}
+import org.xml.sax.SAXParseException
 import sjsonnet.{EvalScope, Position, Val}
 
 import java.io.*
@@ -117,12 +118,20 @@ object DefaultXMLPlugin extends BasePlugin {
 
     val effectiveParams = EffectiveParams(doc.getMediaType)
 
-    doc.getContent.getClass match {
-      case cls if classOf[String].isAssignableFrom(cls) => XML.loadString(doc.getContent.asInstanceOf[String], effectiveParams)
-      case cls if classOf[URL].isAssignableFrom(cls) => XML.load(doc.getContent.asInstanceOf[URL], effectiveParams)
-      case cls if classOf[File].isAssignableFrom(cls) => XML.loadFile(doc.getContent.asInstanceOf[File], effectiveParams)
-      case cls if classOf[InputStream].isAssignableFrom(cls) => XML.load(doc.getContent.asInstanceOf[InputStream], effectiveParams)
-      case _ => throw new PluginException(new IllegalArgumentException("Unsupported document content class, use the test method canRead before invoking read"))
+    try {
+      doc.getContent.getClass match {
+        case cls if classOf[String].isAssignableFrom(cls) => XML.loadString(doc.getContent.asInstanceOf[String], effectiveParams)
+        case cls if classOf[URL].isAssignableFrom(cls) => XML.load(doc.getContent.asInstanceOf[URL], effectiveParams)
+        case cls if classOf[File].isAssignableFrom(cls) => XML.loadFile(doc.getContent.asInstanceOf[File], effectiveParams)
+        case cls if classOf[InputStream].isAssignableFrom(cls) => XML.load(doc.getContent.asInstanceOf[InputStream], effectiveParams)
+        case _ => throw new PluginException(new IllegalArgumentException("Unsupported document content class, use the test method canRead before invoking read"))
+      }
+    } catch {
+      // the parser knows exactly where the document went wrong; keep that rather than surfacing a
+      // bare SAXParseException from somewhere inside the reader
+      case ex: SAXParseException =>
+        throw new PluginException("Could not read XML: %s (line %d, column %d)"
+          .format(ex.getMessage, ex.getLineNumber, ex.getColumnNumber), ex)
     }
   }
 

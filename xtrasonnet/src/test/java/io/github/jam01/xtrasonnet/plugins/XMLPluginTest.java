@@ -129,6 +129,19 @@ public class XMLPluginTest {
     }
 
     @Test
+    public void read_malformedXmlFails() {
+        Throwable thrown = assertThrows(Throwable.class, () -> new Transformer("payload")
+                .transform(Document.of("<root><a>unclosed</root>", MediaTypes.APPLICATION_XML)));
+
+        var chain = new StringBuilder();
+        for (Throwable t = thrown; t != null; t = t.getCause()) {
+            chain.append(t.getMessage()).append(" | ");
+        }
+        assertTrue(chain.toString().contains("line"),
+                "expected the reported location of the failure, got: " + chain);
+    }
+
+    @Test
     public void write_comprehensive_simplified() {
         var doc = new Transformer(TestUtils.resourceAsString("xml/reports-simplified.json"))
                 .transform(Documents.Null(), Collections.emptyMap(),

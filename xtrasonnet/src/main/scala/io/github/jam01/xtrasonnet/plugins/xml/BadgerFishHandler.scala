@@ -213,20 +213,14 @@ class BadgerFishHandler(params: EffectiveParams) extends DefaultHandler2 {
     buffer.clear()
   }
 
+  // SAX warnings are advisory and the document is still usable, so parsing continues.
   override def warning(ex: SAXParseException): Unit = {}
 
-  override def error(ex: SAXParseException): Unit = printError("Error", ex)
+  // Throwing is the SAX contract for aborting a parse, and it keeps the line and column the parser
+  // reports. Returning instead would let a malformed document yield a partial result and no error.
+  override def error(ex: SAXParseException): Unit = throw ex
 
-  override def fatalError(ex: SAXParseException): Unit = printError("Fatal Error", ex)
-
-  // TODO: use slf4j
-  protected def printError(errtype: String, ex: SAXParseException): Unit =
-    Console.withOut(Console.err) {
-      val s = "[%s]" + COLON + "%d" + COLON + "%d" + COLON + " %s".format(
-        errtype, ex.getLineNumber, ex.getColumnNumber, ex.getMessage)
-      Console.println(s)
-      Console.flush()
-    }
+  override def fatalError(ex: SAXParseException): Unit = throw ex
 
   private def freezeObj(fields: mutable.LinkedHashMap[String, BFValue]): Val.Obj = {
     Val.Obj.mk(dummyPos, fields.iterator.map { case (k, v) => (k, memberOf(v.finalizeVal)) }.toArray)

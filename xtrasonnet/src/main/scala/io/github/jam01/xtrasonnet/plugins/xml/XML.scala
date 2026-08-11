@@ -16,7 +16,8 @@ import java.nio.charset.Charset
 import javax.xml.parsers.SAXParser
 
 object Source {
-  def fromFile(file: File) = new InputSource(new FileInputStream(file))
+  // no fromFile: it opened a stream nobody owned, so every file read leaked a descriptor.
+  // XMLLoader.loadFile opens and closes its own.
 
   def fromInputStream(is: InputStream): InputSource = new InputSource(is)
 
