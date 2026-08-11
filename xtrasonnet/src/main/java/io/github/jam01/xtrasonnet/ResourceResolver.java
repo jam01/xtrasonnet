@@ -78,7 +78,7 @@ public final class ResourceResolver {
         }
 
         if (url == null) {
-            ResourceResolver.class.getClassLoader().getResource(resource);
+            url = ResourceResolver.class.getClassLoader().getResource(resource);
         }
 
         if (url == null) {
