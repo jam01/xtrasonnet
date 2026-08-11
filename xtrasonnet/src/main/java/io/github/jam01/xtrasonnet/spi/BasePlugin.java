@@ -24,6 +24,45 @@ public abstract class BasePlugin implements DataFormatPlugin {
     protected final Set<Class<?>> readerSupportedClasses = new LinkedHashSet<>();
     protected final Set<Class<?>> writerSupportedClasses = new LinkedHashSet<>();
 
+    /**
+     * Message for content this plugin cannot read. The previous text -- "Unsupported document
+     * content class, use the test method canRead before invoking read" -- named neither the
+     * offending class nor the supported ones, and addressed a plugin integrator rather than the
+     * caller who is actually seeing it.
+     */
+    protected PluginException unsupportedReadClass(Document<?> doc) {
+        Object content = doc.getContent();
+        return new PluginException("%s cannot read %s content of type %s; supported: %s".formatted(
+                getClass().getSimpleName(),
+                doc.getMediaType(),
+                content == null ? "null" : content.getClass().getName(),
+                describe(readerSupportedClasses)));
+    }
+
+    /** Message for a target type this plugin cannot write. */
+    protected PluginException unsupportedWriteClass(MediaType mediaType, Class<?> targetType) {
+        return new PluginException("%s cannot write %s as %s; supported: %s".formatted(
+                getClass().getSimpleName(),
+                mediaType,
+                targetType == null ? "null" : targetType.getName(),
+                describe(writerSupportedClasses)));
+    }
+
+    private static String describe(Set<Class<?>> classes) {
+        if (classes.isEmpty()) return "none";
+        StringBuilder sb = new StringBuilder();
+        for (Class<?> cls : classes) {
+            if (sb.length() > 0) sb.append(", ");
+            sb.append(cls.getSimpleName());
+        }
+        return sb.toString();
+    }
+
+    @Override
+    public java.util.Collection<MediaType> supportedMediaTypes() {
+        return java.util.Collections.unmodifiableSet(supportedTypes);
+    }
+
     @Override
     public JsonNode read(Document<?> doc) throws PluginException {
         throw new UnsupportedOperationException("not implemented!");

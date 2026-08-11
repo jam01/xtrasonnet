@@ -124,7 +124,7 @@ object DefaultXMLPlugin extends BasePlugin {
         case cls if classOf[URL].isAssignableFrom(cls) => XML.load(doc.getContent.asInstanceOf[URL], effectiveParams)
         case cls if classOf[File].isAssignableFrom(cls) => XML.loadFile(doc.getContent.asInstanceOf[File], effectiveParams)
         case cls if classOf[InputStream].isAssignableFrom(cls) => XML.load(doc.getContent.asInstanceOf[InputStream], effectiveParams)
-        case _ => throw new PluginException(new IllegalArgumentException("Unsupported document content class, use the test method canRead before invoking read"))
+        case _ => throw unsupportedReadClass(doc)
       }
     } catch {
       // the parser knows exactly where the document went wrong; keep that rather than surfacing a
@@ -174,7 +174,7 @@ object DefaultXMLPlugin extends BasePlugin {
     }
 
     else {
-      throw new PluginException(new IllegalArgumentException("Unsupported document content class, use the test method canRead before invoking read"))
+      throw unsupportedWriteClass(mediaType, targetType)
     }
   }
 

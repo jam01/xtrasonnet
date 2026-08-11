@@ -1,12 +1,11 @@
 package io.github.jam01.xtrasonnet;
 
 /*-
- * Copyright 2022-2023 Jose Montoya.
+ * Copyright 2022-2026 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
  */
-
 import io.github.jam01.xtrasonnet.document.Document;
 import io.github.jam01.xtrasonnet.document.MediaType;
 import io.github.jam01.xtrasonnet.plugins.DefaultCSVPlugin;
@@ -23,8 +22,10 @@ import sjsonnet.Val;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public final class DataFormatService {
     private final List<DataFormatPlugin> plugins;
@@ -58,15 +59,36 @@ public final class DataFormatService {
         return Optional.empty();
     }
 
+    /** The media types the registered plugins handle, in plugin order. */
+    public Set<MediaType> supportedMediaTypes() {
+        Set<MediaType> all = new LinkedHashSet<>();
+        for (DataFormatPlugin plugin : plugins) {
+            all.addAll(plugin.supportedMediaTypes());
+        }
+        return all;
+    }
+
+    private String describeSupported() {
+        Set<MediaType> all = supportedMediaTypes();
+        return all.isEmpty() ? "none" : all.toString();
+    }
+
     public <T> Document<T> mandatoryWrite(Val input, MediaType mediaType, Class<T> targetType, EvalScope ev) throws PluginException {
         return thatCanWrite(mediaType, targetType)
-                .orElseThrow(() -> new IllegalArgumentException("The output MediaType " + mediaType + " is not supported for " + targetType))
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "No plugin can write " + mediaType + " as " + (targetType == null ? "null" : targetType.getName())
+                                + ". Supported output media types: " + describeSupported()))
                 .write(input, mediaType, targetType, ev);
     }
 
     public Val.Literal mandatoryRead(Document<?> doc, Position pos) throws PluginException {
         return thatCanRead(doc)
-                .orElseThrow(() -> new IllegalArgumentException("The input MediaType " + doc.getMediaType() + " is not supported for " + doc.getContent().getClass()))
+                // getContent() may be null, and dereferencing it here replaced the real problem
+                // with a NullPointerException
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "No plugin can read " + doc.getMediaType() + " content of type "
+                                + (doc.getContent() == null ? "null" : doc.getContent().getClass().getName())
+                                + ". Supported input media types: " + describeSupported()))
                 .read(doc, pos);
     }
 }

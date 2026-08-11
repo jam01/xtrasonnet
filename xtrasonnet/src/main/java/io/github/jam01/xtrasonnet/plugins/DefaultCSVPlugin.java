@@ -104,7 +104,7 @@ public class DefaultCSVPlugin extends BaseJacksonPlugin {
             } else if (InputStream.class.isAssignableFrom(doc.getContent().getClass())) {
                 return reader.readTree((InputStream) doc.getContent());
             } else {
-                throw new PluginException(new IllegalArgumentException("Unsupported document content class, use the test method canRead before invoking read"));
+                throw unsupportedReadClass(doc);
             }
         } catch (JsonProcessingException jpe) {
             throw new PluginException("Unable to convert CSV to JSON", jpe);
@@ -118,7 +118,7 @@ public class DefaultCSVPlugin extends BaseJacksonPlugin {
     public <T> Document<T> write(JsonNode node, MediaType mediaType, Class<T> targetType) throws PluginException {
         assertArrayNode(node, "Writing CSV requires an Array, found: " + node.getNodeType().name());
         if (node.isEmpty()) { // nothing to infer a schema from, and no rows to write
-            return writeCsv(CSV_MAPPER.writerFor(JsonNode.class).with(baseBuilderFor(mediaType).build()), node, targetType);
+            return writeCsv(CSV_MAPPER.writerFor(JsonNode.class).with(baseBuilderFor(mediaType).build()), node, mediaType, targetType);
         }
         JsonNode first = node.elements().next();
 
@@ -150,14 +150,18 @@ public class DefaultCSVPlugin extends BaseJacksonPlugin {
             }
             writer = CSV_MAPPER.writerFor(JsonNode.class).with(builder.build());
         } else {
-            throw new IllegalArgumentException("Unsupported combination of input and parameters."); // we give up
+            // name what was actually considered; the previous text was a dead end for the user
+            throw new IllegalArgumentException(("Cannot write CSV from an Array of %s with %s=%s and %s=%s. "
+                    + "Writing an Array of Arr with a header line requires %s to name the columns.").formatted(
+                    first.getNodeType().name().toLowerCase(), PARAM_HEADER_LINE, headerln ? "present" : "absent",
+                    PARAM_COLUMNS, paramColumns.isEmpty() ? "<unset>" : paramColumns, PARAM_COLUMNS));
         }
 
-        return writeCsv(writer, node, targetType);
+        return writeCsv(writer, node, mediaType, targetType);
     }
 
     @SuppressWarnings("unchecked")
-    private <T> Document<T> writeCsv(ObjectWriter writer, JsonNode node, Class<T> targetType) throws PluginException {
+    private <T> Document<T> writeCsv(ObjectWriter writer, JsonNode node, MediaType mediaType, Class<T> targetType) throws PluginException {
         try {
             if (targetType.isAssignableFrom(String.class)) {
                 return (Document<T>) new Document.BasicDocument<>(writer.writeValueAsString(node),
@@ -176,9 +180,9 @@ public class DefaultCSVPlugin extends BaseJacksonPlugin {
                 return (Document<T>) new Document.BasicDocument<>(writer.writeValueAsBytes(node),
                         MediaTypes.TEXT_CSV);
             }
-            throw new PluginException(new IllegalArgumentException("Unsupported document content class, use the test method canWrite before invoking write"));
+            throw unsupportedWriteClass(mediaType, targetType);
         } catch (IOException e) {
-            throw new PluginException("Unable to processing CSV", e);
+            throw new PluginException("Unable to write CSV", e);
         }
     }
 

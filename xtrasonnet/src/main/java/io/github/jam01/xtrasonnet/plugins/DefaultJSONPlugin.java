@@ -102,7 +102,7 @@ public class DefaultJSONPlugin extends BasePlugin {
             return InputStreamParser$.MODULE$.transform(((InputStream) doc.getContent()), new LiteralVisitor(pos));
         }
 
-        throw new PluginException(new IllegalArgumentException("Unsupported document content class, use the test method canRead before invoking read"));
+        throw unsupportedReadClass(doc);
     }
 
     private static Val.Literal fromPath(Path s, LiteralVisitor v) {
@@ -146,6 +146,6 @@ public class DefaultJSONPlugin extends BasePlugin {
             return new Document.BasicDocument<>((T) out.toByteArray(), MediaTypes.APPLICATION_JSON);
         }
 
-        throw new PluginException(new IllegalArgumentException("Unsupported document content class, use the test method canRead before invoking read"));
+        throw unsupportedWriteClass(mediaType, targetType);
     }
 }
