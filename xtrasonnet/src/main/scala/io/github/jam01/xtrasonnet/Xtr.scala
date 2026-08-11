@@ -106,8 +106,18 @@ final class Xtr(dataFormats: DataFormatService, header: Header) extends Library 
       (pos, ev, container: Val, value: Val) =>
         container match {
           case str: Val.Str =>
+            // literal, matching indexOf: treating sub as a regex made indicesOf("a.b.c", ".")
+            // return every index, and threw on any needle containing regex metacharacters
             val sub = value.cast[Val.Str].value
-            Val.Arr(pos, sub.r.findAllMatchIn(str.value).map(_.start).map(item => Val.Num(pos, item)).toArray)
+            val out = new ArrayBuffer[Val.Num]()
+            if (sub.nonEmpty) {
+              var idx = str.value.indexOf(sub)
+              while (idx != -1) {
+                out.append(Val.Num(pos, idx))
+                idx = str.value.indexOf(sub, idx + sub.length)
+              }
+            }
+            Val.Arr(pos, out.toArray)
           case array: Val.Arr =>
             val out = new ArrayBuffer[Val.Num]()
             val lazArr = array.asLazyArray
@@ -144,7 +154,8 @@ final class Xtr(dataFormats: DataFormatService, header: Header) extends Library 
 
     builtin("endsWith", "main", "sub") {
       (_, _, main: String, sub: String) =>
-        main.toLowerCase().endsWith(sub.toLowerCase());
+        // case sensitive, matching startsWith and std
+        main.endsWith(sub);
     },
 
     builtin("groupBy", "container", "func") {

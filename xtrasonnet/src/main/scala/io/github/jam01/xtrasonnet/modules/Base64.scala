@@ -27,9 +27,7 @@ object Base64 extends AbstractFunctionModule {
       (pos, ev, value: Val) =>
         value match {
           case x: Val.Num =>
-            if (NumberMath.mod(pos, x, Val.Num(position, 1))(ev).isZero)
-              new String(java.util.Base64.getEncoder.encode(x.toString.getBytes()))
-            else new String(java.util.Base64.getEncoder.encode(x.toString.getBytes()))
+            new String(java.util.Base64.getEncoder.encode(x.toString.getBytes()))
           case x: Val.Str => new String(java.util.Base64.getEncoder.encode(x.value.getBytes()))
           case x => Error.fail("Expected String, got: " + x.prettyName)
         }

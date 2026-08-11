@@ -1,12 +1,11 @@
 package io.github.jam01.xtrasonnet.modules;
 
 /*-
- * Copyright 2022 Jose Montoya.
+ * Copyright 2022-2026 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
  */
-
 import io.github.jam01.xtrasonnet.TestUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
@@ -98,11 +97,20 @@ public class DatetimeTest {
 
     @Test
     public void toParts() {
+        // 2019-07-10 is a Wednesday, so day-of-month (10) and day-of-week (3) differ. The previous
+        // fixture used 2019-07-04, a Thursday, where both are 4 -- so it passed while `day` was
+        // being populated with the day-of-week.
         Assertions.assertEquals(TestUtils.transform("""
                 {
-                    year: 2019, month: 7, day: 4,
+                    year: 2019, month: 7, day: 10, dayOfWeek: 3,
                     hour: 21, minute: 0, second: 0, nanosecond: 0,
                     offset: 'Z'
-                }"""), TestUtils.transform("xtr.datetime.toParts('2019-07-04T21:00:00Z')"));
+                }"""), TestUtils.transform("xtr.datetime.toParts('2019-07-10T21:00:00Z')"));
+    }
+
+    @Test
+    public void ofToPartsRoundTrips() {
+        Assertions.assertEquals(TestUtils.transform("'2019-07-10T21:34:56Z'"),
+                TestUtils.transform("xtr.datetime.of(xtr.datetime.toParts('2019-07-10T21:34:56Z'))"));
     }
 }

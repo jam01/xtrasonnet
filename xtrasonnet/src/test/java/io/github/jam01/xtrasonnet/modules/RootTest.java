@@ -27,6 +27,13 @@ public class RootTest {
     }
 
     @Test
+    public void endsWithIsCaseSensitiveLikeStartsWith() {
+        // endsWith lowercased both sides while startsWith did not; they now agree
+        Assertions.assertEquals(TestUtils.transform("false"), TestUtils.transform("xtr.endsWith('Lorem ipsum', 'IPSUM')"));
+        Assertions.assertEquals(TestUtils.transform("false"), TestUtils.transform("xtr.startsWith('Lorem ipsum', 'LOREM')"));
+    }
+
+    @Test
     public void entries() {
         Assertions.assertEquals(TestUtils.transform("""
                 [
@@ -243,6 +250,17 @@ public class RootTest {
     public void indicesOf() {
         Assertions.assertEquals(TestUtils.transform("[1, 4]"), TestUtils.transform("xtr.indicesOf([1, 7, 3, 4, 7], 7)"));
         Assertions.assertEquals(TestUtils.transform("[0, 14]"), TestUtils.transform("xtr.indicesOf('lorem ipsum dolor', 'lo')"));
+    }
+
+    @Test
+    public void indicesOfTreatsNeedleAsLiteral() {
+        // the needle was compiled as a regex, so '.' matched every position and any metacharacter
+        // could throw; it is now a literal, consistent with indexOf
+        Assertions.assertEquals(TestUtils.transform("[1, 3]"), TestUtils.transform("xtr.indicesOf('a.b.c', '.')"));
+        Assertions.assertEquals(TestUtils.transform("[0]"), TestUtils.transform("xtr.indicesOf('a+b', 'a+')"));
+        Assertions.assertEquals(TestUtils.transform("[]"), TestUtils.transform("xtr.indicesOf('abc', 'X')"));
+        // overlapping matches advance past the whole needle
+        Assertions.assertEquals(TestUtils.transform("[0, 2]"), TestUtils.transform("xtr.indicesOf('aaaa', 'aa')"));
     }
 
     @Test

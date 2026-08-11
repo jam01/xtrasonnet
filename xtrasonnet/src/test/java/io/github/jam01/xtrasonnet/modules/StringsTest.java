@@ -1,12 +1,11 @@
 package io.github.jam01.xtrasonnet.modules;
 
 /*-
- * Copyright 2022 Jose Montoya.
+ * Copyright 2022-2026 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
  */
-
 import org.junit.jupiter.api.Test;
 
 import static io.github.jam01.xtrasonnet.TestUtils.transform;
@@ -86,6 +85,32 @@ public class StringsTest {
         assertEquals(transform("'After'"), transform("xtr.strings.substringAfterLast('!XHelloXWorldXAfter', 'X')"));
         assertEquals(transform("'!'"), transform("xtr.strings.substringBefore('!XHelloXWorldXAfter', 'X')"));
         assertEquals(transform("'!XHelloXWorld'"), transform("xtr.strings.substringBeforeLast('!XHelloXWorldXAfter', 'X')"));
+    }
+
+    @Test
+    public void substringWithMultiCharSeparator() {
+        // substringAfter skipped a single char rather than the separator's length, leaving its tail
+        // behind; substringAfterLast used split, which treats the separator as a regex
+        assertEquals(transform("'b::c'"), transform("xtr.strings.substringAfter('a::b::c', '::')"));
+        assertEquals(transform("'c'"), transform("xtr.strings.substringAfterLast('a::b::c', '::')"));
+        assertEquals(transform("'a'"), transform("xtr.strings.substringBefore('a::b::c', '::')"));
+        assertEquals(transform("'a::b'"), transform("xtr.strings.substringBeforeLast('a::b::c', '::')"));
+    }
+
+    @Test
+    public void substringWithRegexMetacharSeparator() {
+        // '.' must be a literal, not "any character"
+        assertEquals(transform("'b.c'"), transform("xtr.strings.substringAfter('a.b.c', '.')"));
+        assertEquals(transform("'c'"), transform("xtr.strings.substringAfterLast('a.b.c', '.')"));
+    }
+
+    @Test
+    public void substringSeparatorAbsent() {
+        // all four agree: absent separator yields the empty string
+        assertEquals(transform("''"), transform("xtr.strings.substringAfter('abc', 'X')"));
+        assertEquals(transform("''"), transform("xtr.strings.substringAfterLast('abc', 'X')"));
+        assertEquals(transform("''"), transform("xtr.strings.substringBefore('abc', 'X')"));
+        assertEquals(transform("''"), transform("xtr.strings.substringBeforeLast('abc', 'X')"));
     }
 
     @Test

@@ -207,20 +207,20 @@ object Strings extends AbstractFunctionModule {
 
     builtin("substringAfter", "value", "sep") {
       (_, _, s: String, sep: String) =>
-        s.substring(
-          s.indexOf(sep) match {
-            case -1 => s.length
-            case i => if (sep.equals("")) i else i + 1
-          }
-        )
+        // sep.length, not 1: a multi character separator left its tail in the result
+        s.indexOf(sep) match {
+          case -1 => ""
+          case i => s.substring(i + sep.length)
+        }
     },
 
     builtin("substringAfterLast", "value", "sep") {
       (_, _, s: String, sep: String) =>
-        val split = s.split(sep)
-        if (sep.equals("")) ""
-        else if (split.length == 1) ""
-        else split(split.length - 1)
+        // lastIndexOf rather than split: split treats sep as a regex, unlike every sibling here
+        s.lastIndexOf(sep) match {
+          case -1 => ""
+          case i => s.substring(i + sep.length)
+        }
     },
 
     builtin("substringBefore", "value", "sep") {
