@@ -35,6 +35,9 @@ updates:
           - "version-update:semver-major"
           - "version-update:semver-minor"
           - "version-update:semver-patch"
+      # pinned to the Scala toolchain version (scala3-library via the sjsonnet fork); it moves when
+      # the Scala version moves, not on its own release cadence
+      - dependency-name: "org.scala-lang:scaladoc_3"
 
   - package-ecosystem: github-actions
     directory: "/"
