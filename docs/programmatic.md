@@ -119,7 +119,15 @@ try {
 
 Overlapping calls on one transformer are rejected with an exception naming the thread that holds it,
 rather than being allowed to corrupt those caches silently. `camel-xtrasonnet` pools transformers this
-way, so Camel routes are safe without any work on your part.
+way, so Camel routes get this handling without any work on your part.
+
+One caveat, so the guarantee is not overstated: the jsonnet standard library object is built once per
+JVM and handed to *every* transformer, and it memoises each field the first time that field is read.
+Two transformers on two threads therefore write one shared, unsynchronised map during warm-up —
+pooling does not separate them. In practice this is benign, because every value cached there is a
+constant: a lost write costs a repeated lookup, not a wrong answer. A 16-thread run of ~28k
+transformations produced no incorrect result and no corruption. It is called out here because it is
+the one part of the contract above that one-per-thread does not actually cover.
 
 ## Header present
 
