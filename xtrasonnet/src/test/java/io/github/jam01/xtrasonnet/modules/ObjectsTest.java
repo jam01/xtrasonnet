@@ -330,4 +330,35 @@ public class ObjectsTest {
                     function(cust) cust.id, function(order) order.customerId,
                     function(cust, order) { l: cust, r: order })"""), false);
     }
+
+    @Test
+    public void fullEqJoinPreservesInputOrder() {
+        // matched and unmatched left rows in left order, then unmatched right rows in right order
+        assertEquals(transform("""
+                        [
+                            { id: 2, a: 'x' },
+                            { id: 1, b: 'y', a: 'w' },
+                            { id: 10, a: 'q' },
+                            { id: 7, b: 'z' }
+                        ]"""),
+                transform("""
+                        xtr.objects.fullEqJoin(
+                            [{ id: 2, a: 'x' }, { id: 1, a: 'w' }, { id: 10, a: 'q' }],
+                            [{ id: 1, b: 'y' }, { id: 7, b: 'z' }],
+                            function(o) o.id, function(o) o.id)"""));
+
+        assertEquals(transform("""
+                        [
+                            { l: 2, r: null },
+                            { l: 1, r: 1 },
+                            { l: 10, r: null },
+                            { l: null, r: 7 }
+                        ]"""),
+                transform("""
+                        xtr.objects.fullEqJoin(
+                            [{ id: 2 }, { id: 1 }, { id: 10 }],
+                            [{ id: 1 }, { id: 7 }],
+                            function(o) o.id, function(o) o.id,
+                            function(l, r) { l: l?.id, r: r?.id })"""));
+    }
 }

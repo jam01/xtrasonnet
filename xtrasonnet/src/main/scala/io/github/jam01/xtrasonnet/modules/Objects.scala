@@ -15,7 +15,6 @@ import sjsonnet.{Error, EvalScope, FileScope, TailstrictModeDisabled, Val}
 
 import java.util
 import scala.collection.mutable.ArrayBuffer
-import scala.jdk.CollectionConverters.CollectionHasAsScala
 
 object Objects extends AbstractFunctionModule {
   override def name: String = "objects"
@@ -67,7 +66,7 @@ object Objects extends AbstractFunctionModule {
 
       i = 0
       while (i < right.length) {
-        val k = keyFrom(funcIdR.apply1(right.asLazyArray(i), funcIdL.pos)(ev, TailstrictModeDisabled))
+        val k = keyFrom(funcIdR.apply1(right.asLazyArray(i), funcIdR.pos)(ev, TailstrictModeDisabled))
         if (leftHash.containsKey(k)) {
           leftHash.get(k).foreach(obj =>
             out.addOne(
@@ -155,49 +154,55 @@ object Objects extends AbstractFunctionModule {
         case f: Val.Func => f
         case x => Error.fail("Expected function, got: " + x.prettyName)
       }
-      val leftHash = new util.HashMap[String, ArrayBuffer[Val.Obj]]()
-      val bothHash = new util.HashMap[String, ArrayBuffer[Val.Obj]]()
-      val leftUnjoined = new util.HashSet[String]()
 
+      // 1. Index the RIGHT side by key, keeping each row's key for the unmatched pass
+      val rightHash = new util.HashMap[String, ArrayBuffer[Val.Obj]]()
+      val rightKeys = new Array[String](right.length)
       var i = 0
-      while (i < left.length) { // computing keys on the left with the corresponding array of values
-        val k = keyFrom(funcIdL.apply1(left.asLazyArray(i), funcIdL.pos)(ev, TailstrictModeDisabled))
-        val toAdd = left.force(i).asObj
-        val arr = leftHash.computeIfAbsent(k, newArrBuff).addOne(toAdd)
-
-        // no custom func, already moving to both in case not to be joined
-        if (funcJoin == null) bothHash.put(k, arr)
-        leftUnjoined.add(k)
-        i = i + 1
+      while (i < right.length) {
+        val k = keyFrom(funcIdR.apply1(right.asLazyArray(i), funcIdR.pos)(ev, TailstrictModeDisabled))
+        rightHash.computeIfAbsent(k, newArrBuff).addOne(right.force(i).asObj)
+        rightKeys(i) = k
+        i += 1
       }
 
+      val result = new ArrayBuffer[Val]()
+      val joinedKeys = new util.HashSet[String]()
+
+      // 2. Iterate the LEFT side in original order: joined rows where a key matches, plain left rows otherwise
       i = 0
-      while (i < right.length) { // computing keys on the right
-        val k = keyFrom(funcIdR.apply1(right.asLazyArray(i), funcIdL.pos)(ev, TailstrictModeDisabled))
-        if (leftHash.containsKey(k)) { // if also in left join them into bothHash
-          leftHash.get(k).foreach(obj => {
-            if (leftUnjoined.remove(k)) bothHash.remove(k) // 1st time seeing this one, clear it to join
-            bothHash.computeIfAbsent(k, newArrBuff).addOne(
-              if (funcJoin == null) obj.asObj.addSuper(pos, right.force(i).asObj).asObj
-              else funcJoin.asFunc.apply2(obj, right.force(i), funcJoin.pos)(ev, TailstrictModeDisabled).asObj
-            )
-          })
-        } else { // else add it to bothHash
-          val toAdd =
-            if (funcJoin == null) right.force(i).asObj
-            else funcJoin.asFunc.apply2(emptyObj, right.force(i).asObj, funcJoin.pos)(ev, TailstrictModeDisabled).asObj
-          bothHash.computeIfAbsent(k, _ => new ArrayBuffer[Obj]()).addOne(toAdd)
-        }
+      while (i < left.length) {
+        val leftObj = left.force(i).asObj
+        val k = keyFrom(funcIdL.apply1(left.asLazyArray(i), funcIdL.pos)(ev, TailstrictModeDisabled))
 
-        i = i + 1
+        val matches = rightHash.get(k)
+        if (matches != null) {
+          joinedKeys.add(k)
+          matches.foreach { rightObj =>
+            result.addOne(
+              if (funcJoin == null) leftObj.addSuper(pos, rightObj).asObj
+              else funcJoin.asFunc.apply2(leftObj, rightObj, funcJoin.pos)(ev, TailstrictModeDisabled).asObj)
+          }
+        } else {
+          result.addOne(
+            if (funcJoin == null) leftObj
+            else funcJoin.asFunc.apply2(leftObj, emptyObj, funcJoin.pos)(ev, TailstrictModeDisabled).asObj)
+        }
+        i += 1
       }
 
-      // if custom join func, apply to the remaining unjoined ones (otherwise already in bothHash)
-      if (funcJoin != null) leftUnjoined.forEach(k => bothHash.put(k, leftHash.get(k).map(obj =>
-        funcJoin.asFunc.apply2(obj, emptyObj, funcJoin.pos)(ev, TailstrictModeDisabled).asObj
-      )))
+      // 3. Append the unmatched RIGHT rows in their original order
+      i = 0
+      while (i < right.length) {
+        if (!joinedKeys.contains(rightKeys(i))) {
+          result.addOne(
+            if (funcJoin == null) right.force(i).asObj
+            else funcJoin.asFunc.apply2(emptyObj, right.asLazyArray(i), funcJoin.pos)(ev, TailstrictModeDisabled).asObj)
+        }
+        i += 1
+      }
 
-      Val.Arr(pos, bothHash.values().asScala.flatten.toArray)
+      Val.Arr(pos, result.toArray)
     },
 
     builtinWithDefaults("fromArray",
