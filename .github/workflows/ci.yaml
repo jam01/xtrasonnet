@@ -39,3 +39,18 @@ jobs:
           cache: maven
       - name: mvn clean verify
         run: mvn -V --no-transfer-progress --batch-mode clean verify
+
+  # the docs deploy builds the playground, so a change that breaks its npm install or rollup build
+  # breaks the site -- this catches that on the PR, where the docs workflow (main only) cannot
+  playground:
+    if: ${{ !startsWith(github.event.head_commit.message, '[maven-release-plugin] prepare release') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - shell: bash
+        run: |
+          npm --prefix playground/ install
+          npm --prefix playground/ start

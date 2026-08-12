@@ -16,6 +16,10 @@ updates:
       maven-plugins:
         patterns:
           - "org.apache.maven.plugins:*"
+          - "org.codehaus.mojo:*"
+          - "com.mycila:*"
+          - "net.alchim31.maven:*"
+          - "org.sonatype.central:*"
     ignore:
       # the engine depends on a fork published under this groupId, not on upstream releases
       - dependency-name: "io.github.jam01:sjsonnet_3"
@@ -49,3 +53,15 @@ updates:
     schedule:
       interval: monthly
     open-pull-requests-limit: 3
+    groups:
+      # rollup and its plugins declare peer dependencies on each other, so split PRs are
+      # individually unmergeable -- as are the codemirror packages
+      rollup:
+        patterns:
+          - "rollup"
+          - "@rollup/*"
+      codemirror:
+        patterns:
+          - "codemirror"
+          - "@codemirror/*"
+          - "@lezer/*"

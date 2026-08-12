@@ -1,0 +1,44 @@
+name: automerge-deps
+
+on: pull_request
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  automerge:
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: dependabot/fetch-metadata@v2
+        id: meta
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+      # The policy: actions bumps merge on green at any semver; npm (the playground) and maven
+      # merge on green for patch and minor, and maven only for test-scoped dependencies and the
+      # maven-plugins group. Majors and runtime dependencies wait for a human. jackson, camel and
+      # scaladoc never open version PRs at all -- see the ignores in dependabot.yml.
+      #
+      # --auto arms GitHub's native auto-merge, which waits for the checks the main ruleset
+      # requires; it is not an immediate merge.
+      - name: enable auto-merge when the update matches policy
+        if: >-
+          startsWith(github.head_ref, 'dependabot/github_actions/') ||
+          (
+            steps.meta.outputs.update-type != 'version-update:semver-major' &&
+            (
+              startsWith(github.head_ref, 'dependabot/npm_and_yarn/') ||
+              (
+                startsWith(github.head_ref, 'dependabot/maven/') &&
+                (
+                  steps.meta.outputs.dependency-type == 'direct:development' ||
+                  steps.meta.outputs.dependency-group == 'maven-plugins'
+                )
+              )
+            )
+          )
+        run: gh pr merge --auto --merge "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
