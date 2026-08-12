@@ -27,6 +27,14 @@ updates:
           - "version-update:semver-major"
           - "version-update:semver-minor"
           - "version-update:semver-patch"
+      # camel-xtrasonnet compiles against 4.4.5 deliberately: the component supports every camel
+      # release from that floor up, and bumping the floor would shrink that range. Security
+      # updates stay open here too
+      - dependency-name: "org.apache.camel*"
+        update-types:
+          - "version-update:semver-major"
+          - "version-update:semver-minor"
+          - "version-update:semver-patch"
 
   - package-ecosystem: github-actions
     directory: "/"
