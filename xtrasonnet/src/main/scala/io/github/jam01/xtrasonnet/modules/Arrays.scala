@@ -181,6 +181,16 @@ object Arrays extends AbstractFunctionModule {
         Val.Arr(pos, transpose(array.asLazyArray, pos))
     },
 
+    builtin("unzipAll", "array", "fill") {
+      (pos, _, array: Val.Arr, fill: Val) =>
+        Val.Arr(pos, transposeAll(array.asLazyArray, fill, pos))
+    },
+
+    builtin("zipAll", "array", "fill") {
+      (pos, _, array: Val.Arr, fill: Val) =>
+        Val.Arr(pos, transposeAll(array.asLazyArray, fill, pos))
+    },
+
     builtinWithDefaults("zip",
       "arr1" -> null,
       "arr2" -> null,
@@ -262,7 +272,7 @@ object Arrays extends AbstractFunctionModule {
    * Transposes the given arrays, truncating to the shortest of them.
    *
    * The documented contract for both zip and unzip is "equal size to the shortest array". Filling short
-   * arrays is what the (still unimplemented) zipAll/unzipAll are for.
+   * arrays is what zipAll/unzipAll are for.
    */
   private def transpose(arrays: Array[? <: Lazy], pos: Position): Array[Lazy] = {
     val inner = arrays.map(
@@ -280,6 +290,32 @@ object Arrays extends AbstractFunctionModule {
       var j = 0
       while (j < inner.length) {
         current(j) = inner(j)(i)
+        j = j + 1
+      }
+      out(i) = Val.Arr(pos, current)
+      i = i + 1
+    }
+
+    out
+  }
+
+  /** Transposes the given arrays, extending to the longest of them with the given fill value. */
+  private def transposeAll(arrays: Array[? <: Lazy], fill: Val, pos: Position): Array[Lazy] = {
+    val inner = arrays.map(
+      _.force match {
+        case arr: Val.Arr => arr.asLazyArray
+        case x => Error.fail("Expected Array of Arrays, got inner: " + x.prettyName)
+      })
+
+    val size = if (inner.isEmpty) 0 else inner.map(_.length).max
+    val out = new Array[Lazy](size)
+
+    var i = 0
+    while (i < size) {
+      val current = new Array[Lazy](inner.length)
+      var j = 0
+      while (j < inner.length) {
+        current(j) = if (i < inner(j).length) inner(j)(i) else fill
         j = j + 1
       }
       out(i) = Val.Arr(pos, current)

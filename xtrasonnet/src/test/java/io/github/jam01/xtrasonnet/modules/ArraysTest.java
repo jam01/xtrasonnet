@@ -145,11 +145,11 @@ public class ArraysTest {
         Assertions.assertEquals(TestUtils.transform("[]"), TestUtils.transform("xtr.arrays.unzip([])"));
     }
 
-//    @Disabled
-//    @Test
-//    public void unzipAll() {
-//        assertEquals(transform("[[1, 2, 3], ['x', 'NA', 'z']]"), transform("xtr.arrays.unzipAll([[1, 'x'], [2], [3, 'z']], 'NA')"));
-//    }
+    @Test
+    public void unzipAll() {
+        Assertions.assertEquals(TestUtils.transform("[[1, 2, 3], ['x', 'NA', 'z']]"), TestUtils.transform("xtr.arrays.unzipAll([[1, 'x'], [2], [3, 'z']], 'NA')"));
+        Assertions.assertEquals(TestUtils.transform("[]"), TestUtils.transform("xtr.arrays.unzipAll([], 'NA')"));
+    }
 
     @Test
     public void zip() {
@@ -163,9 +163,10 @@ public class ArraysTest {
         Assertions.assertEquals(TestUtils.transform("[]"), TestUtils.transform("xtr.arrays.zip([1, 2, 3], [])"));
     }
 
-//    @Disabled
-//    @Test
-//    public void zipAll() {
-//        assertEquals(transform("[[1, 'x'], [2, 'y'], [3, 'NA']]"), transform("txtr.arrays.zipAll([[1, 2, 3], ['x', 'y']], 'NA')"));
-//    }
+    @Test
+    public void zipAll() {
+        Assertions.assertEquals(TestUtils.transform("[[1, 'x'], [2, 'y'], [3, 'NA']]"), TestUtils.transform("xtr.arrays.zipAll([[1, 2, 3], ['x', 'y']], 'NA')"));
+        Assertions.assertEquals(TestUtils.transform("[[1, null], [2, null], [3, null]]"), TestUtils.transform("xtr.arrays.zipAll([[1, 2, 3], []], null)"));
+        Assertions.assertEquals(TestUtils.transform("[]"), TestUtils.transform("xtr.arrays.zipAll([], 'NA')"));
+    }
 }
