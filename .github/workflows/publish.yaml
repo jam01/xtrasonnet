@@ -1,0 +1,42 @@
+name: publish
+# Uploads an already-tagged release to Central. The release workflow does this as its second half;
+# this exists so an upload failure -- an expired token, a Central outage -- can be retried from the
+# tag without running release:prepare again, which would consume the next version.
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing release tag to build and upload to Central'
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.inputs.tag }}
+      - uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: '25'
+          cache: maven
+      # re:gpg signing see: https://gist.github.com/sualeh/ae78dc16123899d7942bc38baba5203c
+      - id: install-secret-key
+        name: Install gpg secret key
+        run: |
+          cat <(echo -e "${{ secrets.OSSRH_GPG_KEY }}") | gpg --batch --import
+          gpg --list-secret-keys --keyid-format LONG
+      - name: mvn deploy from tag
+        env:
+          SONATYPE_USER: ${{ secrets.OSSRH_USERNAME }}
+          SONATYPE_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+          GPG_EXECUTABLE: gpg
+          GPG_PASSPHRASE: ${{ secrets.OSSRH_GPG_PASSPHRASE }}
+        run: |
+          mvn -V --no-transfer-progress --batch-mode --settings .settings.xml \
+          -Dlicense.skip=true -DskipTests -Dmaven.install.skip=true -P release \
+          clean deploy
