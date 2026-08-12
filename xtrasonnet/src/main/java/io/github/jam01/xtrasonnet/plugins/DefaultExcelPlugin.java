@@ -80,13 +80,16 @@ public class DefaultExcelPlugin extends BasePlugin {
                 bVisitor.visitValue(sVisitor.visitEnd(-1), -1);
             }
         } catch (IOException ex) {
-            throw new IllegalStateException(ex);
+            // this method declares PluginException; IllegalStateException with no message left the
+            // caller with a bare stack trace
+            throw new PluginException("Could not read spreadsheet: " + ex.getMessage(), ex);
         }
 
         return bVisitor.visitEnd(-1);
     }
 
-    private static Val.Literal literalOf(CellType type, Cell cell, Visitor<?, ?> cVisitor) {
+    // package private so MatrixExcelPlugin shares one cell conversion instead of its own copy
+    static Val.Literal literalOf(CellType type, Cell cell, Visitor<?, ?> cVisitor) {
         if (CellType.BOOLEAN == type) {
             if (cell.getBooleanCellValue()) return (Val.Literal) cVisitor.visitTrue(-1);
             else return (Val.Literal) cVisitor.visitFalse(-1);
@@ -101,7 +104,10 @@ public class DefaultExcelPlugin extends BasePlugin {
         } else if (CellType.FORMULA == type) {
             return literalOf(cell.getCachedFormulaResultType(), cell, cVisitor);
         } else {
-            throw new IllegalArgumentException("Cannot represent type: " + type.toString() + " as a jsonnet element");
+            // the cell address is already in hand two lines up; naming it turns "somewhere in this
+            // workbook" into a cell the user can go open
+            throw new IllegalArgumentException("Cannot represent cell %s of sheet '%s' as a jsonnet element: unsupported cell type %s"
+                    .formatted(cell.getAddress().formatAsString(), cell.getSheet().getSheetName(), type));
         }
     }
 

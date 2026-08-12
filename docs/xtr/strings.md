@@ -153,7 +153,7 @@ true
 ## leftPad
 `leftPad(str: String, size: Number, char: String): String`
 
-Returns `str` prepended with enough repetitions of `char` required to meet the given `size`, otherwise returns `str` if its size is already equal or longer than `size`.
+Returns `str` prepended with enough repetitions of `char` required to meet the given `size`, otherwise returns `str` if its size is already equal or longer than `size`. Only the first character of `char` is used, and it must not be empty. `str` itself is never altered.
 
 **Example**
 ```
@@ -229,7 +229,7 @@ xtr.strings.repeat('hey ', 2)
 ## rightPad
 `rightPad(str: String, size: Number, char: String): String`
 
-Returns `str` prepended with enough repetitions of `char` required to meet the given `size`, otherwise returns `str` if its size is already equal or longer than `size`.
+Returns `str` appended with enough repetitions of `char` required to meet the given `size`, otherwise returns `str` if its size is already equal or longer than `size`. Only the first character of `char` is used, and it must not be empty.
 
 **Example**
 ```

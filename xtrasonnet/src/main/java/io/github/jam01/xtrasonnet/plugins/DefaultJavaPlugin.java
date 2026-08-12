@@ -7,6 +7,8 @@ package io.github.jam01.xtrasonnet.plugins;
  * compliance with the Elastic License 2.0.
  */
 
+import org.jspecify.annotations.Nullable;
+
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.MapperFeature;
@@ -23,22 +25,26 @@ import io.github.jam01.xtrasonnet.spi.PluginException;
 
 import java.text.SimpleDateFormat;
 import java.time.ZoneOffset;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.TimeZone;
+import java.util.concurrent.ConcurrentHashMap;
 
 public final class DefaultJavaPlugin extends BaseJacksonPlugin {
     private final JsonMapper mapper;
     public static final String PARAM_DATE_FORMAT = "dateformat";
     public static final String PARAM_TYPE = "type";
 
-    private static final Map<Map<String, String>, ObjectMapper> MAPPER_CACHE = new HashMap<>();
+    // Per instance, not static: the cached mappers derive from this.mapper, so sharing the cache
+    // across instances would serve a plugin built with a custom JsonMapper one derived from another
+    // instance's base -- camel-xtrasonnet installs exactly such a plugin. Concurrent, because the map
+    // is keyed on user-supplied media type parameters and reached from every thread using the plugin.
+    private final Map<Map<String, String>, ObjectMapper> mapperCache = new ConcurrentHashMap<>();
 
     public DefaultJavaPlugin() {
         this(null);
     }
 
-    public DefaultJavaPlugin(JsonMapper mapper) {
+    public DefaultJavaPlugin(@Nullable JsonMapper mapper) {
         if (mapper == null) {
             mapper = JsonMapper.builder()
                     .enable(MapperFeature.BLOCK_UNSAFE_POLYMORPHIC_BASE_TYPES) // block unsafe types
@@ -106,7 +112,8 @@ public final class DefaultJavaPlugin extends BaseJacksonPlugin {
     private ObjectMapper mapperFor(MediaType mediaType) throws PluginException {
         Map<String, String> parameters = mediaType.getParameters();
         if (parameters.containsKey(PARAM_DATE_FORMAT)) {
-            return MAPPER_CACHE.computeIfAbsent(parameters, k -> {
+            // MediaType.getParameters returns an unmodifiable map, so it is safe as a key
+            return mapperCache.computeIfAbsent(parameters, k -> {
                 JsonMapper.Builder builder = new JsonMapper.Builder(mapper.copy());
                 String datefmt = parameters.get(PARAM_DATE_FORMAT);
 

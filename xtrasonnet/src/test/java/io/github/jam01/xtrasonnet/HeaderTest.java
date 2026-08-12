@@ -1,12 +1,11 @@
 package io.github.jam01.xtrasonnet;
 
 /*-
- * Copyright 2022 Jose Montoya.
+ * Copyright 2022-2026 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
  */
-
 /* datasonnet-mapper copyright/notice, per Apache-2.0 § 4.c */
 /*-
  * Copyright 2019-2020 the original author or authors.
@@ -119,8 +118,7 @@ public class HeaderTest {
     @Test
     public void testDefaultOutput() throws HeaderParseException {
         Header header1 = Header.parseHeader("/** xtrasonnet\n" +
-                "output application/x-java-object;q=0.9\n" +
-                "output application/json;q=1.0\n" +
+                "output application/json\n" +
                 "*/");
 
         assertTrue(header1.getOutput().isPresent());
@@ -130,11 +128,102 @@ public class HeaderTest {
     @Test
     public void testDefaultInput() throws HeaderParseException {
         Header header1 = Header.parseHeader("/** xtrasonnet\n" +
-                "input payload application/x-java-object;q=1.0\n" +
-                "input payload application/json;q=0.9\n" +
+                "input payload application/x-java-object\n" +
                 "*/");
 
         assertTrue(header1.getPayloadInput().isPresent());
         assertTrue(MediaTypes.APPLICATION_JAVA.equalsTypeAndSubtype(header1.getPayloadInput().get()));
+    }
+
+    /**
+     * One declaration per input and one output. The header is the author's statement, so a repeat is
+     * a leftover to fix, not a preference to weigh -- q values included: the author holds the pen,
+     * and a runtime with a real preference states it as the explicit media type, which outranks the
+     * header entirely. Shared parameters belong on the 'dataformat' / 'input *' layers instead.
+     */
+    @Test
+    public void repeatedInputDeclarationFails() {
+        for (String repeat : new String[]{
+                "input payload application/xml",        // different type: a likely leftover
+                "input payload application/json;q=0.9", // q does not arbitrate
+                "input payload application/json;separator=|"}) { // same type: merging is what 'input *' is for
+            var ex = Assertions.assertThrows(HeaderParseException.class, () -> Header.parseHeader("""
+                    /** xtrasonnet
+                    input payload application/json
+                    %s
+                    */
+                    {}""".formatted(repeat)), repeat);
+
+            Assertions.assertTrue(ex.getMessage().contains("Input 'payload' is declared more than once"), ex.getMessage());
+            Assertions.assertTrue(ex.getMessage().contains("header lines 1 and 2"), ex.getMessage());
+            Assertions.assertTrue(ex.getMessage().contains("'dataformat' or 'input *'"), ex.getMessage());
+        }
+    }
+
+    @Test
+    public void repeatedOutputDeclarationFails() {
+        var ex = Assertions.assertThrows(HeaderParseException.class, () -> Header.parseHeader("""
+                /** xtrasonnet
+                output application/csv;separator=|
+                output application/csv;quotechar='
+                */
+                {}"""));
+
+        Assertions.assertTrue(ex.getMessage().contains("output is declared more than once"), ex.getMessage());
+        Assertions.assertTrue(ex.getMessage().contains("header lines 1 and 2"), ex.getMessage());
+        Assertions.assertTrue(ex.getMessage().contains("dataformat"), ex.getMessage());
+    }
+
+    @Test
+    public void headerErrorsPointAtALine() {
+        var ex = Assertions.assertThrows(HeaderParseException.class, () -> Header.parseHeader("""
+                /** xtrasonnet
+                input payload application/json
+                this is not a directive
+                */
+                {}"""));
+
+        Assertions.assertTrue(ex.getMessage().contains("header line 2"), ex.getMessage());
+    }
+
+    /**
+     * Parameters shared across declarations are layered general-to-specific: 'dataformat' reaches
+     * every input and the output of its type, 'input *' every input of its type, and the named
+     * declaration wins per parameter.
+     */
+    @Test
+    public void sharedParametersCascadeGeneralToSpecific() throws HeaderParseException {
+        var header = Header.parseHeader("""
+                /** xtrasonnet
+                dataformat application/csv;quotechar='
+                input * application/csv;separator=|;header=present
+                input payload application/csv;header=absent
+                input other application/csv
+                */
+                {}""");
+
+        var payload = header.getInput("payload").orElseThrow(AssertionError::new);
+        Assertions.assertEquals("'", payload.getParameter("quotechar"));
+        Assertions.assertEquals("|", payload.getParameter("separator"));
+        Assertions.assertEquals("absent", payload.getParameter("header")); // the named line wins
+
+        var other = header.getInput("other").orElseThrow(AssertionError::new);
+        Assertions.assertEquals("'", other.getParameter("quotechar"));
+        Assertions.assertEquals("|", other.getParameter("separator"));
+        Assertions.assertEquals("present", other.getParameter("header"));
+    }
+
+    @Test
+    public void dataformatParametersReachTheOutput() throws HeaderParseException {
+        var header = Header.parseHeader("""
+                /** xtrasonnet
+                dataformat application/csv;quotechar='
+                output application/csv;separator=|
+                */
+                {}""");
+
+        var output = header.getOutput().orElseThrow(AssertionError::new);
+        Assertions.assertEquals("'", output.getParameter("quotechar"));
+        Assertions.assertEquals("|", output.getParameter("separator"));
     }
 }

@@ -1,27 +1,41 @@
 name: ci
 
-on: [push]
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+# a newer push to the same ref makes the in-flight run redundant
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
-    # skip releases
-    if: startsWith(github.ref, '[maven-release-plugin] prepare release') != true
+    # skip the release plugin's own commits. github.ref is a ref, never a commit message, so the
+    # previous form of this condition was always true and never skipped anything. On pull_request
+    # head_commit is absent, which leaves this true and builds the PR.
+    if: ${{ !startsWith(github.event.head_commit.message, '[maven-release-plugin] prepare release') }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # 21 is maven.compiler.release, so it is the version that has to work
+        java: [ '21', '25' ]
+    name: build (jdk ${{ matrix.java }})
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v5
         with:
           # needed for license-plugin to check last modified date of each file
           fetch-depth: 0
-      - uses: actions/setup-java@v3
+      - uses: actions/setup-java@v5
         with:
-          distribution: 'oracle'
-          java-version: '25'
-      - name: Cache local Maven repository
-        uses: actions/cache@v3
-        with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven-
+          distribution: 'temurin'
+          java-version: ${{ matrix.java }}
+          # replaces actions/cache: the v1 cache service it used was retired, so the previous
+          # cache step was a no-op and every run downloaded the whole repository again
+          cache: maven
       - name: mvn clean verify
         run: mvn -V --no-transfer-progress --batch-mode clean verify

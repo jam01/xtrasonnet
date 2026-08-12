@@ -8,13 +8,13 @@ package io.github.jam01.xtrasonnet;
  */
 
 import io.github.jam01.xtrasonnet.document.MediaTypes;
-import sjsonnet.Settings;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -26,7 +26,9 @@ public class TestUtils {
 
     public static String transform(String script, String payload) {
         return Transformer.builder(script)
-                .withSettings(new TransformerSettings(new Settings(true, false, false, false, 1000, false), MediaTypes.APPLICATION_JSON, MediaTypes.APPLICATION_JSON))
+                .withPreserveOrder(true)
+                .withDefaultInput(MediaTypes.APPLICATION_JSON)
+                .withDefaultOutput(MediaTypes.APPLICATION_JSON)
                 .build().transform(payload);
     }
 
@@ -42,7 +44,9 @@ public class TestUtils {
     public static String resourceAsString(String filePath) {
         try {
             Path path = Paths.get(TestUtils.class.getClassLoader().getResource(filePath).toURI());
-            return new String(Files.readAllBytes(path));
+            // UTF-8, not the platform default: fixtures are UTF-8 files, and reading them with the
+            // host's encoding made non-ASCII assertions pass or fail depending on the machine
+            return new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
         } catch (IOException | URISyntaxException e) {
             throw new RuntimeException(e);
         }

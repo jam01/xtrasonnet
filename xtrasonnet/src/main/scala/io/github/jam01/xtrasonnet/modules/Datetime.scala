@@ -182,7 +182,10 @@ object Datetime extends AbstractFunctionModule {
         val out = new java.util.LinkedHashMap[String, Val.Obj.Member]
         out.put("year", memberOf(Val.Num(pos, date.getYear)))
         out.put("month", memberOf(Val.Num(pos, date.getMonthValue)))
-        out.put("day", memberOf(Val.Num(pos, date.getDayOfWeek.getValue)))
+        // day is day-of-month: datetime.of reads this key back as the day-of-month, so emitting
+        // day-of-week here made of(toParts(x)) produce a different date than x
+        out.put("day", memberOf(Val.Num(pos, date.getDayOfMonth)))
+        out.put("dayOfWeek", memberOf(Val.Num(pos, date.getDayOfWeek.getValue)))
         out.put("hour", memberOf(Val.Num(pos, date.getHour)))
         out.put("minute", memberOf(Val.Num(pos, date.getMinute)))
         out.put("second", memberOf(Val.Num(pos, date.getSecond)))

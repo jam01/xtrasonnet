@@ -20,10 +20,14 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 public final class ResourceResolver {
+    // UTF-8, not the platform default: jsonnet source is UTF-8, and every import arrives here with a
+    // null charset (ResourcePath.importer), so the platform default would decode scripts differently
+    // on different hosts
     public static String asString(String resource, @Nullable Charset charset) throws IOException {
-        charset = charset == null ? Charset.defaultCharset() : charset;
+        charset = charset == null ? StandardCharsets.UTF_8 : charset;
         try (InputStream is = asStream(resource)) {
             return Source.fromInputStream(is, new Codec(charset)).mkString();
         }
@@ -78,7 +82,7 @@ public final class ResourceResolver {
         }
 
         if (url == null) {
-            ResourceResolver.class.getClassLoader().getResource(resource);
+            url = ResourceResolver.class.getClassLoader().getResource(resource);
         }
 
         if (url == null) {

@@ -11,11 +11,12 @@ import io.github.jam01.xtrasonnet.document.Document.BasicDocument
 import io.github.jam01.xtrasonnet.document.{Document, MediaType, MediaTypes}
 import io.github.jam01.xtrasonnet.plugins.xml.XML
 import io.github.jam01.xtrasonnet.spi.{BasePlugin, PluginException}
+import org.xml.sax.SAXParseException
 import sjsonnet.{EvalScope, Position, Val}
 
 import java.io.*
 import java.net.URL
-import java.nio.charset.Charset
+import java.nio.charset.{Charset, StandardCharsets}
 import java.util.Collections
 import scala.jdk.CollectionConverters.MapHasAsScala
 
@@ -99,6 +100,9 @@ object DefaultXMLPlugin extends BasePlugin {
   readerParams.add(PARAM_XMLNS_DECLARATIONS)
   readerParams.add(PARAM_TRIM_TEXT)
   readerParams.add(PARAM_EXCLUDE)
+  // consumed by BadgerFishHandler; without registering it here parametersAreSupported rejects any
+  // media type that sets it, making an implemented feature unreachable
+  readerParams.add(PARAM_NAME_FORM)
 
   readerSupportedClasses.add(classOf[String].asInstanceOf[java.lang.Class[_]])
   readerSupportedClasses.add(classOf[java.net.URL].asInstanceOf[java.lang.Class[_]])
@@ -114,12 +118,20 @@ object DefaultXMLPlugin extends BasePlugin {
 
     val effectiveParams = EffectiveParams(doc.getMediaType)
 
-    doc.getContent.getClass match {
-      case cls if classOf[String].isAssignableFrom(cls) => XML.loadString(doc.getContent.asInstanceOf[String], effectiveParams)
-      case cls if classOf[URL].isAssignableFrom(cls) => XML.load(doc.getContent.asInstanceOf[URL], effectiveParams)
-      case cls if classOf[File].isAssignableFrom(cls) => XML.loadFile(doc.getContent.asInstanceOf[File], effectiveParams)
-      case cls if classOf[InputStream].isAssignableFrom(cls) => XML.load(doc.getContent.asInstanceOf[InputStream], effectiveParams)
-      case _ => throw new PluginException(new IllegalArgumentException("Unsupported document content class, use the test method canRead before invoking read"))
+    try {
+      doc.getContent.getClass match {
+        case cls if classOf[String].isAssignableFrom(cls) => XML.loadString(doc.getContent.asInstanceOf[String], effectiveParams)
+        case cls if classOf[URL].isAssignableFrom(cls) => XML.load(doc.getContent.asInstanceOf[URL], effectiveParams)
+        case cls if classOf[File].isAssignableFrom(cls) => XML.loadFile(doc.getContent.asInstanceOf[File], effectiveParams)
+        case cls if classOf[InputStream].isAssignableFrom(cls) => XML.load(doc.getContent.asInstanceOf[InputStream], effectiveParams)
+        case _ => throw unsupportedReadClass(doc)
+      }
+    } catch {
+      // the parser knows exactly where the document went wrong; keep that rather than surfacing a
+      // bare SAXParseException from somewhere inside the reader
+      case ex: SAXParseException =>
+        throw new PluginException("Could not read XML: %s (line %d, column %d)"
+          .format(ex.getMessage, ex.getLineNumber, ex.getColumnNumber), ex)
     }
   }
 
@@ -130,11 +142,6 @@ object DefaultXMLPlugin extends BasePlugin {
     }
 
     val effectiveParams = EffectiveParams(mediaType)
-    var charset = mediaType.getCharset
-    if (charset == null) {
-      charset = Charset.defaultCharset
-    }
-
     val inputAsObj: Val.Obj = input.asObj
     if (inputAsObj.visibleKeyNames.length > 1) {
       throw new PluginException("Object must have only one root element")
@@ -143,21 +150,30 @@ object DefaultXMLPlugin extends BasePlugin {
     val name = inputAsObj.visibleKeyNames.head
     if (targetType.isAssignableFrom(classOf[String])) {
       val writer = new StringWriter()
-      XML.writeXML(writer, (name, inputAsObj.value(name, ev.emptyMaterializeFileScopePos)(ev)), effectiveParams)(ev)
+      // UTF-8 regardless of any requested charset: a String carries no encoding, so this branch
+      // cannot honour one, and naming it would declare an encoding nothing has applied
+      XML.writeXML(writer, (name, inputAsObj.value(name, ev.emptyMaterializeFileScopePos)(ev)),
+        effectiveParams, StandardCharsets.UTF_8)(ev)
 
       new BasicDocument(writer.toString, MediaTypes.APPLICATION_XML).asInstanceOf[Document[T]]
     }
 
     else if (targetType.isAssignableFrom(classOf[OutputStream])) {
-      val out = new BufferedOutputStream(new ByteArrayOutputStream)
-      XML.writeXML(new OutputStreamWriter(out, charset),
-        (name, inputAsObj.value(name, ev.emptyMaterializeFileScopePos)(ev)), effectiveParams)(ev)
+      // the OutputStreamWriter buffers in its encoder, so it must be flushed, and the returned
+      // stream must be the ByteArrayOutputStream itself: wrapping it hands back a stream whose
+      // bytes the caller has no way to reach
+      val out = new ByteArrayOutputStream
+      val writer = new OutputStreamWriter(out, effectiveParams.writeCharset)
+      XML.writeXML(writer,
+        (name, inputAsObj.value(name, ev.emptyMaterializeFileScopePos)(ev)), effectiveParams,
+        effectiveParams.writeCharset)(ev)
+      writer.flush()
 
       new BasicDocument(out, MediaTypes.APPLICATION_XML).asInstanceOf[Document[T]]
     }
 
     else {
-      throw new PluginException(new IllegalArgumentException("Unsupported document content class, use the test method canRead before invoking read"))
+      throw unsupportedWriteClass(mediaType, targetType)
     }
   }
 
@@ -172,8 +188,14 @@ object DefaultXMLPlugin extends BasePlugin {
                              textKey: String, cdataKey: String, attrKey: String, posKey: String, xmlnsKey: String,
                              xmlnsAware: Boolean, declarations: Map[String, String],
                              omitDeclaration: Boolean, xmlVer: String,
-                             emptyTagsStr: Boolean, emptyTagsNull: Boolean, emptyTagsObj: Boolean, arrElements: java.util.List[String],
-                             nameform: String, trimText: Boolean)
+                             emptyTagsStr: Boolean, emptyTagsNull: Boolean, emptyTagsObj: Boolean,
+                             nameform: String, trimText: Boolean,
+                             // None when the media type declared no charset. Writing then defaults to
+                             // UTF-8; reading leaves detection to the parser, which honours the
+                             // document's own declaration -- forcing an encoding there would override it.
+                             charset: Option[Charset]) {
+    def writeCharset: Charset = charset.getOrElse(StandardCharsets.UTF_8)
+  }
 
   object EffectiveParams {
     def apply(mediaType: MediaType): EffectiveParams = {
@@ -213,8 +235,9 @@ object DefaultXMLPlugin extends BasePlugin {
         textKey, cdataKey, attrKey, posKey, xmlnsKey,
         xmlnsAware, declarations,
         omitDeclaration, xmlVer,
-        emptyTags.contains(EMPTY_TAGS_STRING_VALUE), emptyTags.contains(EMPTY_TAGS_NULL_VALUE), emptyTags.contains(EMPTY_TAGS_OBJECT_VALUE), Collections.emptyList(),
-        nameForm, trimText)
+        emptyTags.contains(EMPTY_TAGS_STRING_VALUE), emptyTags.contains(EMPTY_TAGS_NULL_VALUE), emptyTags.contains(EMPTY_TAGS_OBJECT_VALUE),
+        nameForm, trimText,
+        Option(mediaType.getCharset))
     }
   }
 }

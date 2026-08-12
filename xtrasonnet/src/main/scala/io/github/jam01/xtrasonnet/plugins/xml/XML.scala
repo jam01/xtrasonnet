@@ -12,13 +12,19 @@ import org.xml.sax.InputSource
 import sjsonnet.{EvalScope, Val}
 
 import java.io.*
-import java.nio.charset.Charset
 import javax.xml.parsers.SAXParser
 
 object Source {
-  def fromFile(file: File) = new InputSource(new FileInputStream(file))
+  // no fromFile: it opened a stream nobody owned, so every file read leaked a descriptor.
+  // XMLLoader.loadFile opens and closes its own.
 
-  def fromInputStream(is: InputStream): InputSource = new InputSource(is)
+  def fromInputStream(is: InputStream, params: EffectiveParams): InputSource = {
+    val src = new InputSource(is)
+    // only when the caller declared one: setEncoding overrides the document's own declaration, so
+    // defaulting it here would misread any document that says otherwise
+    params.charset.foreach(cs => src.setEncoding(cs.name()))
+    src
+  }
 
   def fromReader(reader: Reader): InputSource = new InputSource(reader)
 
@@ -34,9 +40,14 @@ object XML extends XMLLoader {
       override def parser(params: EffectiveParams): SAXParser = p
     }
 
-  def writeXML(sb: java.io.Writer, root: (String, Val), effParams: EffectiveParams)(implicit ev: EvalScope): Unit = {
-    // TODO: get charset from params
-    if (!effParams.omitDeclaration) sb.append("<?xml version='" + effParams.xmlVer + "' encoding='" + Charset.defaultCharset().displayName() + "'?>")
+  /**
+   * @param declaredCharset the charset to name in the declaration. Only the caller knows whether the
+   *                        output is bytes it is about to encode, or a String, which carries none.
+   */
+  def writeXML(sb: java.io.Writer, root: (String, Val), effParams: EffectiveParams,
+               declaredCharset: java.nio.charset.Charset)(implicit ev: EvalScope): Unit = {
+    // the declaration must name the charset the bytes are actually encoded with
+    if (!effParams.omitDeclaration) sb.append("<?xml version='" + effParams.xmlVer + "' encoding='" + declaredCharset.name() + "'?>")
     new BadgerFishVisitor(effParams).serialize(root._1, root._2, sb).toString
   }
 }

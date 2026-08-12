@@ -55,6 +55,8 @@ import static io.github.jam01.xtrasonnet.TestUtils.resourceAsString;
 import static io.github.jam01.xtrasonnet.TestUtils.stacktraceFrom;
 import static io.github.jam01.xtrasonnet.TestUtils.transform;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -104,8 +106,9 @@ public class TransformerTest {
         try {
             new Transformer("payload xtr.map(function(it) it");
             fail("Must fail to parse");
-        } catch(IllegalArgumentException e) {
-            assertTrue(e.getCause().getMessage().contains("Expected \")\":1:32, found \"\""), "Found message: " + e.getCause().getMessage());
+        } catch (XtrasonnetParseException e) {
+            // the detail is in getMessage() itself now, not only reachable via getCause()
+            assertTrue(e.getMessage().contains("Expected \")\":1:32, found \"\""), "Found message: " + e.getMessage());
         }
     }
 
@@ -114,8 +117,8 @@ public class TransformerTest {
         try {
             Transformer transformer = new Transformer("xtr.time.now() a");
             fail("Must fail to parse");
-        } catch(IllegalArgumentException e) {
-            assertTrue(e.getCause().getMessage().contains("Expected end-of-input:1:16"), "Found message: " + e.getCause().getMessage());
+        } catch (XtrasonnetParseException e) {
+            assertTrue(e.getMessage().contains("Expected end-of-input:1:16"), "Found message: " + e.getMessage());
         }
     }
 
@@ -124,10 +127,44 @@ public class TransformerTest {
         try {
             transform("payload.foo");
             fail("Must fail to execute");
-        } catch (IllegalArgumentException e) {
-            assertTrue(e.getCause().getMessage().contains("attempted to index a null with string foo"), "Found message: " + e.getCause().getMessage());
+        } catch (XtrasonnetEvaluationException e) {
+            assertTrue(e.getMessage().contains("attempted to index a null with string foo"), "Found message: " + e.getMessage());
             assertTrue(stacktraceFrom(e).contains("(main):1:8"), "Stacktrace does not indicate the issue");
         }
+    }
+
+    @Test
+    void distinguishesParseFromEvaluationFailures() {
+        // a malformed script is a defect in the template; a script that breaks on its input may be
+        // the input's fault. Callers could not tell these apart when both were IllegalArgumentException.
+        assertThrows(XtrasonnetParseException.class, () -> new Transformer("{ a: "));
+        assertThrows(XtrasonnetEvaluationException.class, () -> transform("payload.missing.deeper"));
+
+        // and both are catchable as one type
+        assertThrows(XtrasonnetException.class, () -> new Transformer("{ a: "));
+        assertThrows(XtrasonnetException.class, () -> transform("payload.missing.deeper"));
+    }
+
+    @Test
+    void wrappedJdkExceptionNamesItsCause() {
+        // sjsonnet's Error.withStackFrame wraps any NonFatal escaping a builtin as
+        // new Error("Internal Error", Nil, Some(e)) -- the literal string, with the throwable kept only
+        // as the cause. Every such failure reached the caller as "Internal Error" and nothing else.
+        var ex = assertThrows(XtrasonnetEvaluationException.class, () -> transform("xtr.strings.singularize('')"));
+
+        assertTrue(ex.getMessage().contains("StringIndexOutOfBoundsException"), "Found message: " + ex.getMessage());
+        assertTrue(ex.getMessage().contains("Range [0, -1) out of bounds for length 0"), "Found message: " + ex.getMessage());
+        // the cause is still reachable, and is still the original throwable
+        assertInstanceOf(StringIndexOutOfBoundsException.class, ex.getCause().getCause());
+    }
+
+    @Test
+    void builtinReferencedWithoutCallingIsExplained() {
+        // sjsonnet builtins carry a null position, which its own error reporting cannot format
+        var ex = assertThrows(XtrasonnetEvaluationException.class, () -> transform("xtr.datetime.now"));
+
+        assertTrue(ex.getMessage().contains("function"), "Found message: " + ex.getMessage());
+        assertTrue(ex.getMessage().contains("parentheses"), "Found message: " + ex.getMessage());
     }
 
     @Test
@@ -196,13 +233,14 @@ public class TransformerTest {
 
     @Test
     public void http_import() throws JSONException {
-        var srv = new WireMockServer(options().port(8080));
+        // dynamic ports: fixed 8080/8443 collide with anything already listening on the machine
+        var srv = new WireMockServer(options().dynamicPort());
         srv.start();
         srv.addStubMapping(WireMock.get("/imports/garnish.txt")
                 .willReturn(okForContentType("text/plain", "Maraschino Cherry")).build());
 
         try {
-            var res = transform("importstr 'http://localhost:8080/imports/garnish.txt'");
+            var res = transform("importstr 'http://localhost:%d/imports/garnish.txt'".formatted(srv.port()));
             JSONAssert.assertEquals("\"Maraschino Cherry\"", res, true);
         } finally {
             srv.stop();
@@ -214,13 +252,14 @@ public class TransformerTest {
         var context = SSLContextBuilder.create().loadTrustMaterial(new TrustEverythingStrategy()).build();
         HttpsURLConnection.setDefaultSSLSocketFactory(context.getSocketFactory());
 
-        var srv = new WireMockServer(options().httpsPort(8443));
+        // both ports must be dynamic: the server binds an HTTP port even when only httpsPort is set
+        var srv = new WireMockServer(options().dynamicPort().dynamicHttpsPort());
         srv.start();
         srv.addStubMapping(WireMock.get("/imports/garnish.txt")
                 .willReturn(okForContentType("text/plain", "Maraschino Cherry")).build());
 
         try {
-            var res = transform("importstr 'https://localhost:8443/imports/garnish.txt'");
+            var res = transform("importstr 'https://localhost:%d/imports/garnish.txt'".formatted(srv.httpsPort()));
             JSONAssert.assertEquals("\"Maraschino Cherry\"", res, true);
         } finally {
             srv.stop();

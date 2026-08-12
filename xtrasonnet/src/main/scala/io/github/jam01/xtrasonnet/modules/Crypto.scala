@@ -32,7 +32,7 @@ package io.github.jam01.xtrasonnet.modules
  */
 
 import org.bouncycastle.util.encoders.Hex
-import sjsonnet.Val
+import sjsonnet.{Error, Val}
 import sjsonnet.functions.AbstractFunctionModule
 
 import java.nio.charset.StandardCharsets
@@ -42,7 +42,10 @@ import javax.crypto.{Cipher, Mac}
 
 object Crypto extends AbstractFunctionModule {
   override def name: String = "crypto"
-  
+
+  // every String <-> bytes conversion below is pinned to UTF-8, as hash and hmac already were.
+  // With the platform default, text encrypted on a UTF-8 host and decrypted on a Windows-1252 one
+  // came back silently corrupted, and the same secret produced different keys on the two hosts.
   val functions: Seq[(String, Val.Func)] = Seq(
     builtin("encrypt", "value", "secret", "algorithm") {
       (_, _, value: String, secret: String, transformation: String) =>
@@ -51,8 +54,8 @@ object Crypto extends AbstractFunctionModule {
 
         // special case for ECB because of java.security.InvalidAlgorithmParameterException: ECB mode cannot use IV
         if (transformTokens.length >= 2 && "ECB".equals(transformTokens(1))) {
-          cipher.init(Cipher.ENCRYPT_MODE, new SecretKeySpec(secret.getBytes, transformTokens(0).toUpperCase))
-          java.util.Base64.getEncoder.encodeToString(cipher.doFinal(value.getBytes))
+          cipher.init(Cipher.ENCRYPT_MODE, new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), transformTokens(0).toUpperCase))
+          java.util.Base64.getEncoder.encodeToString(cipher.doFinal(value.getBytes(StandardCharsets.UTF_8)))
         } else {
           // https://stackoverflow.com/a/52571774/4814697
           val rand: SecureRandom = new SecureRandom()
@@ -60,12 +63,12 @@ object Crypto extends AbstractFunctionModule {
           rand.nextBytes(iv)
 
           cipher.init(Cipher.ENCRYPT_MODE,
-            new SecretKeySpec(secret.getBytes, transformTokens(0).toUpperCase),
+            new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), transformTokens(0).toUpperCase),
             new IvParameterSpec(iv),
             rand)
 
           // encrypted data:
-          val encryptedBytes = cipher.doFinal(value.getBytes)
+          val encryptedBytes = cipher.doFinal(value.getBytes(StandardCharsets.UTF_8))
 
           // append Initiation Vector as a prefix to use it during decryption:
           val combinedPayload = new Array[Byte](iv.length + encryptedBytes.length)
@@ -85,13 +88,18 @@ object Crypto extends AbstractFunctionModule {
 
         // special case for ECB because of java.security.InvalidAlgorithmParameterException: ECB mode cannot use IV
         if (transformTokens.length >= 2 && "ECB".equals(transformTokens(1))) {
-          cipher.init(Cipher.DECRYPT_MODE, new SecretKeySpec(secret.getBytes, transformTokens(0).toUpperCase))
-          new String(cipher.doFinal(java.util.Base64.getDecoder.decode(value)))
+          cipher.init(Cipher.DECRYPT_MODE, new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), transformTokens(0).toUpperCase))
+          new String(cipher.doFinal(java.util.Base64.getDecoder.decode(value)), StandardCharsets.UTF_8)
         } else {
           // https://stackoverflow.com/a/52571774/4814697
           // separate prefix with IV from the rest of encrypted data//separate prefix with IV from the rest of encrypted data
           val encryptedPayload = java.util.Base64.getDecoder.decode(value)
           val iv = new Array[Byte](cipher.getBlockSize)
+          // checked before the subtraction below, which would otherwise go negative
+          if (encryptedPayload.length < iv.length) {
+            Error.fail("Expected at least " + iv.length + " bytes of encrypted payload to read the IV of " +
+              transformation + ", got: " + encryptedPayload.length)
+          }
           val encryptedBytes = new Array[Byte](encryptedPayload.length - iv.length)
           val rand: SecureRandom = new SecureRandom()
 
@@ -102,11 +110,11 @@ object Crypto extends AbstractFunctionModule {
           System.arraycopy(encryptedPayload, iv.length, encryptedBytes, 0, encryptedBytes.length)
 
           cipher.init(Cipher.DECRYPT_MODE,
-            new SecretKeySpec(secret.getBytes, transformTokens(0).toUpperCase),
+            new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), transformTokens(0).toUpperCase),
             new IvParameterSpec(iv),
             rand)
 
-          new String(cipher.doFinal(encryptedBytes))
+          new String(cipher.doFinal(encryptedBytes), StandardCharsets.UTF_8)
         }
     },
 

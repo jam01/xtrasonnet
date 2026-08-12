@@ -9,3 +9,6 @@ tmp
 .project
 
 node_modules
+
+# built by the docs workflow: npm --prefix playground/ start (rollup)
+docs/javascripts/editor.bundle.js

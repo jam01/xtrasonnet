@@ -157,12 +157,7 @@
             <version>2.35.2</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>2.0.13</version>
-            <scope>test</scope>
-        </dependency>
+        <!-- slf4j-api arrives at compile scope via log4j-to-slf4j; only the binding is needed here -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
@@ -257,6 +252,25 @@
                         <arg>-unchecked</arg>
                     </args>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <!-- CharsetTest pins UTF-8 against the platform default, so it can only
+                             fail where the two differ; CI and every modern host default to UTF-8.
+                             This rerun is the non-UTF-8 host. -->
+                        <id>charset-tests-on-a-non-utf8-host</id>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <configuration>
+                            <test>CharsetTest</test>
+                            <argLine>-Dfile.encoding=ISO-8859-1</argLine>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

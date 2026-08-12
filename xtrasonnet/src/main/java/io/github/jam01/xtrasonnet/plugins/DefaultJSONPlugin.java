@@ -25,12 +25,14 @@ import ujson.InputStreamParser;
 import ujson.InputStreamParser$;
 import ujson.StringParser$;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -102,7 +104,7 @@ public class DefaultJSONPlugin extends BasePlugin {
             return InputStreamParser$.MODULE$.transform(((InputStream) doc.getContent()), new LiteralVisitor(pos));
         }
 
-        throw new PluginException(new IllegalArgumentException("Unsupported document content class, use the test method canRead before invoking read"));
+        throw unsupportedReadClass(doc);
     }
 
     private static Val.Literal fromPath(Path s, LiteralVisitor v) {
@@ -114,9 +116,12 @@ public class DefaultJSONPlugin extends BasePlugin {
     @SuppressWarnings("unchecked")
     @Override
     public <T> Document<T> write(Val input, MediaType mediaType, Class<T> targetType, EvalScope ev) throws PluginException {
+        // UTF-8, not the platform default -- and it is now actually applied. This was computed and
+        // then never read, so every byte-producing branch emitted the renderer's UTF-8 regardless of
+        // what the caller asked for.
         Charset charset = mediaType.getCharset();
         if (charset == null) {
-            charset = Charset.defaultCharset();
+            charset = StandardCharsets.UTF_8;
         }
 
         int indent = mediaType.getParameters().containsKey(PARAM_FORMAT) ? 4 : -1;
@@ -132,20 +137,35 @@ public class DefaultJSONPlugin extends BasePlugin {
         }
 
         if (targetType.isAssignableFrom(OutputStream.class)) {
-            var out = Materializer$.MODULE$.apply0(input, Renderer.bytesRenderer(indent, false), ev);
-            return new Document.BasicDocument<>((T) out, MediaTypes.APPLICATION_JSON);
+            return new Document.BasicDocument<>((T) renderBytes(input, indent, charset, ev), MediaTypes.APPLICATION_JSON);
         }
 
         if (targetType.isAssignableFrom(ByteBuffer.class)) {
-            var out = Materializer$.MODULE$.apply0(input, Renderer.bytesRenderer(indent, false), ev);
-            return new Document.BasicDocument<>((T) ByteBuffer.wrap(out.toByteArray()), MediaTypes.APPLICATION_JSON);
+            return new Document.BasicDocument<>((T) ByteBuffer.wrap(renderBytes(input, indent, charset, ev).toByteArray()),
+                    MediaTypes.APPLICATION_JSON);
         }
 
         if (targetType.isAssignableFrom(byte[].class)) {
-            var out = Materializer$.MODULE$.apply0(input, Renderer.bytesRenderer(indent, false), ev);
-            return new Document.BasicDocument<>((T) out.toByteArray(), MediaTypes.APPLICATION_JSON);
+            return new Document.BasicDocument<>((T) renderBytes(input, indent, charset, ev).toByteArray(),
+                    MediaTypes.APPLICATION_JSON);
         }
 
-        throw new PluginException(new IllegalArgumentException("Unsupported document content class, use the test method canRead before invoking read"));
+        throw unsupportedWriteClass(mediaType, targetType);
+    }
+
+    /**
+     * The byte renderer emits UTF-8, which is what RFC 8259 s8.1 requires for interchange and what
+     * callers get by default. Re-encode only when a different charset was explicitly requested.
+     */
+    private static ByteArrayOutputStream renderBytes(Val input, int indent, Charset charset, EvalScope ev) {
+        if (StandardCharsets.UTF_8.equals(charset)) {
+            return Materializer$.MODULE$.apply0(input, Renderer.bytesRenderer(indent, false), ev);
+        }
+
+        byte[] bytes = Materializer$.MODULE$.apply0(input, Renderer.stringRenderer(indent, false), ev)
+                .toString().getBytes(charset);
+        var out = new ByteArrayOutputStream(bytes.length);
+        out.writeBytes(bytes);
+        return out;
     }
 }

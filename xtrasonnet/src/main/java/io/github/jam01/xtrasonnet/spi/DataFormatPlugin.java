@@ -19,6 +19,14 @@ import sjsonnet.Val;
 
 public interface DataFormatPlugin {
 
+    /**
+     * Media types this plugin handles. Used to tell the caller what is actually available when no
+     * plugin matches, instead of only naming the type that failed.
+     */
+    default java.util.Collection<MediaType> supportedMediaTypes() {
+        return java.util.Collections.emptyList();
+    }
+
     default boolean canRead(Document<?> doc) {
         return false;
     }

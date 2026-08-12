@@ -11,20 +11,22 @@ import sjsonnet.Val
 import sjsonnet.functions.AbstractFunctionModule
 
 import java.net.{URLDecoder, URLEncoder}
-import java.nio.charset.Charset
+import java.nio.charset.StandardCharsets
 
 object URL extends AbstractFunctionModule {
   override def name: String = "url"
 
+  // percent-encoding is defined over UTF-8 octets (RFC 3986 s2.5), so the platform default would
+  // make the same script emit different escapes on different hosts
   val functions: Seq[(String, Val.Func)] = Seq(
     builtin("encode", "data") {
       (_, _, data: String) =>
-        URLEncoder.encode(data, Charset.defaultCharset())
+        URLEncoder.encode(data, StandardCharsets.UTF_8)
     },
 
     builtin("decode", "data") {
       (_, _, data: String) =>
-        URLDecoder.decode(data, Charset.defaultCharset())
+        URLDecoder.decode(data, StandardCharsets.UTF_8)
     },
   )
 }

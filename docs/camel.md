@@ -11,7 +11,7 @@ Add the following maven dependency
 <dependency>
   <groupId>io.github.jam01</groupId>
   <artifactId>camel-xtrasonnet</artifactId>
-  <version>0.7.0</version>
+  <version>0.7.2</version>
 </dependency>
 ```
 

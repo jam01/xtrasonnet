@@ -1,16 +1,18 @@
 package io.github.jam01.xtrasonnet.modules;
 
 /*-
- * Copyright 2022 Jose Montoya.
+ * Copyright 2022-2026 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
  */
-
+import io.github.jam01.xtrasonnet.XtrasonnetException;
 import org.junit.jupiter.api.Test;
 
 import static io.github.jam01.xtrasonnet.TestUtils.transform;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class StringsTest {
     @Test
@@ -56,6 +58,54 @@ public class StringsTest {
     }
 
     @Test
+    public void leftPad_doesNotRewriteTheValue() {
+        assertEquals(transform("'00a b'"), transform("xtr.strings.leftPad('a b', 5, '0')"));
+        assertEquals(transform("'****hello world'"), transform("xtr.strings.leftPad('hello world', 15, '*')"));
+    }
+
+    @Test
+    public void pad_returnsTheValueWhenNoPaddingIsDue() {
+        assertEquals(transform("'a b'"), transform("xtr.strings.leftPad('a b', 1, '0')"));
+        assertEquals(transform("'a'"), transform("xtr.strings.leftPad('a', -3, '0')"));
+        assertEquals(transform("'a'"), transform("xtr.strings.leftPad('a', 0, '0')"));
+        assertEquals(transform("'a b'"), transform("xtr.strings.rightPad('a b', 1, '0')"));
+        assertEquals(transform("'a'"), transform("xtr.strings.rightPad('a', -3, '0')"));
+    }
+
+    @Test
+    public void pad_rejectsAnEmptyPad() {
+        assertMessageContains("Expected a non-empty pad", () -> transform("xtr.strings.leftPad('a', 5, '')"));
+        assertMessageContains("Expected a non-empty pad", () -> transform("xtr.strings.rightPad('a', 5, '')"));
+    }
+
+    @Test
+    public void pad_usesTheFirstCharacterOfTheGivenPad() {
+        assertEquals(transform("'xxa'"), transform("xtr.strings.leftPad('a', 3, 'xyz')"));
+        assertEquals(transform("'axx'"), transform("xtr.strings.rightPad('a', 3, 'xyz')"));
+    }
+
+    @Test
+    public void capitalize_withoutAnyAlphanumericCharacter() {
+        assertEquals(transform("'---'"), transform("xtr.strings.capitalize('---')"));
+        assertEquals(transform("''"), transform("xtr.strings.capitalize('')"));
+        assertEquals(transform("'---'"), transform("xtr.strings.toSnakeCase('---')"));
+        assertEquals(transform("''"), transform("xtr.strings.toSnakeCase('')"));
+    }
+
+    @Test
+    public void charCode_outOfRange() {
+        assertMessageContains("Expected a non-empty String", () -> transform("xtr.strings.charCode('')"));
+        assertMessageContains("Expected an index within [0, 3), got: 3", () -> transform("xtr.strings.charCodeAt('abc', 3)"));
+        assertMessageContains("Expected an index within [0, 3), got: -1", () -> transform("xtr.strings.charCodeAt('abc', -1)"));
+    }
+
+    private static void assertMessageContains(String expected, org.junit.jupiter.api.function.Executable call) {
+        var thrown = assertThrows(XtrasonnetException.class, call);
+        assertTrue(thrown.getMessage().contains(expected),
+                "expected a message containing <" + expected + "> but was <" + thrown.getMessage() + ">");
+    }
+
+    @Test
     public void numOrdinalOf() {
         assertEquals(transform("'1st'"), transform("xtr.strings.numOrdinalOf(1)"));
     }
@@ -86,6 +136,32 @@ public class StringsTest {
         assertEquals(transform("'After'"), transform("xtr.strings.substringAfterLast('!XHelloXWorldXAfter', 'X')"));
         assertEquals(transform("'!'"), transform("xtr.strings.substringBefore('!XHelloXWorldXAfter', 'X')"));
         assertEquals(transform("'!XHelloXWorld'"), transform("xtr.strings.substringBeforeLast('!XHelloXWorldXAfter', 'X')"));
+    }
+
+    @Test
+    public void substringWithMultiCharSeparator() {
+        // substringAfter skipped a single char rather than the separator's length, leaving its tail
+        // behind; substringAfterLast used split, which treats the separator as a regex
+        assertEquals(transform("'b::c'"), transform("xtr.strings.substringAfter('a::b::c', '::')"));
+        assertEquals(transform("'c'"), transform("xtr.strings.substringAfterLast('a::b::c', '::')"));
+        assertEquals(transform("'a'"), transform("xtr.strings.substringBefore('a::b::c', '::')"));
+        assertEquals(transform("'a::b'"), transform("xtr.strings.substringBeforeLast('a::b::c', '::')"));
+    }
+
+    @Test
+    public void substringWithRegexMetacharSeparator() {
+        // '.' must be a literal, not "any character"
+        assertEquals(transform("'b.c'"), transform("xtr.strings.substringAfter('a.b.c', '.')"));
+        assertEquals(transform("'c'"), transform("xtr.strings.substringAfterLast('a.b.c', '.')"));
+    }
+
+    @Test
+    public void substringSeparatorAbsent() {
+        // all four agree: absent separator yields the empty string
+        assertEquals(transform("''"), transform("xtr.strings.substringAfter('abc', 'X')"));
+        assertEquals(transform("''"), transform("xtr.strings.substringAfterLast('abc', 'X')"));
+        assertEquals(transform("''"), transform("xtr.strings.substringBefore('abc', 'X')"));
+        assertEquals(transform("''"), transform("xtr.strings.substringBeforeLast('abc', 'X')"));
     }
 
     @Test

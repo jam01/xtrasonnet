@@ -1,7 +1,7 @@
 package io.github.jam01.xtrasonnet;
 
 /*-
- * Copyright 2022 Jose Montoya.
+ * Copyright 2022-2026 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -36,5 +37,27 @@ public class NestedDocumentsTest {
                 .transform(Documents.Null(), inputs, MediaTypes.APPLICATION_JSON)
                 .getContent();
         assertEquals("{\"json\":{\"hello\":\"world!\"},\"xml\":{\"root\":{}}}", result);
+    }
+
+    /**
+     * A Map input is a group of nested documents only when <em>every</em> entry is a
+     * (String, Document); any other Map is read as one Java-object document. Checking only the
+     * first entry sends a mixed Map down the nested-documents path, where its other entries fail
+     * with an opaque ClassCastException.
+     */
+    @Test
+    public void mapWithANonDocumentEntryIsReadAsASingleDocument() {
+        Map<String, Object> mixed = new LinkedHashMap<>(2);
+        mixed.put("doc", Document.of("{ \"hello\": \"world!\" }", MediaTypes.APPLICATION_JSON));
+        mixed.put("plain", "not a document");
+
+        Map<String, Document<?>> inputs = Collections.singletonMap("mixed", Document.of(mixed, MediaTypes.APPLICATION_JAVA));
+        String result = Transformer.builder("mixed.plain")
+                .withInputNames("mixed")
+                .build()
+                .transform(Documents.Null(), inputs, MediaTypes.APPLICATION_JSON)
+                .getContent();
+
+        assertEquals("\"not a document\"", result);
     }
 }

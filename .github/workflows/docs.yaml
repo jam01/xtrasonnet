@@ -8,21 +8,27 @@ on:
       - 'playground/**'
       - 'mkdocs.yml'
       - '.github/workflows/docs.yaml'
+# gh-deploy pushes the built site to the gh-pages branch
+permissions:
+  contents: write
+
 jobs:
   build_site:
     name: "Build mkdocs site"
     runs-on: [ ubuntu-latest ]
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
+        uses: actions/checkout@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: 3.x
+      # pinned: an unpinned install makes the docs build non-reproducible and lets any
+      # upstream release break a deploy
       - shell: bash
-        run: pip install mkdocs-material mkdocs-minify-plugin
-      - uses: actions/setup-node@v3
+        run: pip install mkdocs-material==9.7.7 mkdocs-minify-plugin==0.8.0
+      - uses: actions/setup-node@v5
         with:
-          node-version: latest
+          node-version: '22'
       - shell: bash
         run: |
           npm --prefix playground/ install

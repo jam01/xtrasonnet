@@ -1,16 +1,17 @@
 package io.github.jam01.xtrasonnet.modules;
 
 /*-
- * Copyright 2022 Jose Montoya.
+ * Copyright 2022-2026 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
  */
-
 import io.github.jam01.xtrasonnet.TestUtils;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
 
 public class DatetimeTest {
 
@@ -42,12 +43,24 @@ public class DatetimeTest {
         Assertions.assertEquals(TestUtils.transform("1"), TestUtils.transform("xtr.datetime.compare('2020-12-31T23:19:35Z','2020-01-01T00:00:00Z')"));
     }
 
-    @Disabled
     @Test
     public void current() {
-        Assertions.assertEquals(TestUtils.transform("'2021-01-05T13:09:45.476375-05:00'"), TestUtils.transform("xtr.datetime.now()"));
-        Assertions.assertEquals(TestUtils.transform("'2021-01-05T00:00:00-05:00'"), TestUtils.transform("xtr.datetime.today"));
-        Assertions.assertEquals(TestUtils.transform("'2021-01-06T00:00:00-05:00'"), TestUtils.transform("xtr.datetime.tomorrow"));
+        // clock dependent, so assert shape and relationships rather than a fixed instant -- the
+        // previous version compared against a hardcoded 2021 timestamp and could only ever be
+        // @Disabled, leaving now/today/tomorrow with no coverage at all
+        // note the parens: today and tomorrow are functions, and referencing one without calling it
+        // fails inside sjsonnet's own error reporting, since builtins carry a null position
+        var now = OffsetDateTime.parse(unquote(TestUtils.transform("xtr.datetime.now()")));
+        var today = OffsetDateTime.parse(unquote(TestUtils.transform("xtr.datetime.today()")));
+        var tomorrow = OffsetDateTime.parse(unquote(TestUtils.transform("xtr.datetime.tomorrow()")));
+
+        Assertions.assertEquals(LocalTime.MIDNIGHT, today.toLocalTime(), "today should be the start of the day");
+        Assertions.assertEquals(today.plusDays(1), tomorrow);
+        Assertions.assertFalse(now.isBefore(today));
+    }
+
+    private static String unquote(String json) {
+        return json.substring(1, json.length() - 1);
     }
 
     @Test
@@ -98,11 +111,20 @@ public class DatetimeTest {
 
     @Test
     public void toParts() {
+        // 2019-07-10 is a Wednesday, so day-of-month (10) and day-of-week (3) differ. The previous
+        // fixture used 2019-07-04, a Thursday, where both are 4 -- so it passed while `day` was
+        // being populated with the day-of-week.
         Assertions.assertEquals(TestUtils.transform("""
                 {
-                    year: 2019, month: 7, day: 4,
+                    year: 2019, month: 7, day: 10, dayOfWeek: 3,
                     hour: 21, minute: 0, second: 0, nanosecond: 0,
                     offset: 'Z'
-                }"""), TestUtils.transform("xtr.datetime.toParts('2019-07-04T21:00:00Z')"));
+                }"""), TestUtils.transform("xtr.datetime.toParts('2019-07-10T21:00:00Z')"));
+    }
+
+    @Test
+    public void ofToPartsRoundTrips() {
+        Assertions.assertEquals(TestUtils.transform("'2019-07-10T21:34:56Z'"),
+                TestUtils.transform("xtr.datetime.of(xtr.datetime.toParts('2019-07-10T21:34:56Z'))"));
     }
 }

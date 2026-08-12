@@ -13,12 +13,37 @@ import sjsonnet.{Error, Val}
 object Numbers extends AbstractFunctionModule {
   override def name: String = "numbers"
 
+  /**
+   * Parses digits in the given radix.
+   *
+   * BigInt.apply throws a bare NumberFormatException for both a bad radix and bad digits, without
+   * saying which argument was at fault.
+   */
+  private def ofRadix(digits: String, radix: Int): BigDecimal = {
+    checkRadix(radix)
+    try BigDecimal(BigInt.apply(digits, radix))
+    catch {
+      case _: NumberFormatException =>
+        Error.fail("Expected a String of radix " + radix + " digits, got: " + digits)
+    }
+  }
+
+  /**
+   * java.math.BigInteger.toString(radix) silently falls back to radix 10 for a radix outside
+   * [2, 36], so an unchecked radix would answer in the wrong base rather than fail.
+   */
+  private def checkRadix(radix: Int): Unit = {
+    if (radix < Character.MIN_RADIX || radix > Character.MAX_RADIX) {
+      Error.fail("Expected a radix within [" + Character.MIN_RADIX + ", " + Character.MAX_RADIX + "], got: " + radix)
+    }
+  }
+
   val functions: Seq[(String, Val.Func)] = Seq(
     builtin("ofBinary", "value") {
       (pos, _, value: Val) =>
         value match {
-          case x: Val.Num => Val.Num(pos, BigDecimal(BigInt.apply(x.toString, 2))).asInstanceOf[Val]
-          case x: Val.Str => Val.Num(pos, BigDecimal(BigInt.apply(x.value, 2))).asInstanceOf[Val]
+          case x: Val.Num => Val.Num(pos, ofRadix(x.toString, 2)).asInstanceOf[Val]
+          case x: Val.Str => Val.Num(pos, ofRadix(x.value, 2)).asInstanceOf[Val]
           case x => Error.fail("Expected Number or String, got: " + x.prettyName)
         }
     },
@@ -26,8 +51,8 @@ object Numbers extends AbstractFunctionModule {
     builtin("ofHex", "value") {
       (pos, _, value: Val) =>
         value match {
-          case x: Val.Num => Val.Num(pos, BigDecimal(BigInt.apply(x.toString, 16))).asInstanceOf[Val]
-          case x: Val.Str => Val.Num(pos, BigDecimal(BigInt.apply(x.value, 16))).asInstanceOf[Val]
+          case x: Val.Num => Val.Num(pos, ofRadix(x.toString, 16)).asInstanceOf[Val]
+          case x: Val.Str => Val.Num(pos, ofRadix(x.value, 16)).asInstanceOf[Val]
           case x => Error.fail("Expected Number or String, got: " + x.prettyName)
         }
     },
@@ -35,8 +60,8 @@ object Numbers extends AbstractFunctionModule {
     builtin("ofRadix", "value", "num") {
       (pos, _, value: Val, num: Int) =>
         value match {
-          case x: Val.Num => Val.Num(pos, BigDecimal(BigInt.apply(x.toString, num))).asInstanceOf[Val]
-          case x: Val.Str => Val.Num(pos, BigDecimal(BigInt.apply(x.value, num))).asInstanceOf[Val]
+          case x: Val.Num => Val.Num(pos, ofRadix(x.toString, num)).asInstanceOf[Val]
+          case x: Val.Str => Val.Num(pos, ofRadix(x.value, num)).asInstanceOf[Val]
           case x => Error.fail("Expected Number or String, got: " + x.prettyName)
         }
     },
@@ -61,6 +86,7 @@ object Numbers extends AbstractFunctionModule {
 
     builtin("toRadix", "value", "num") {
       (_, _, value: Val, num: Int) =>
+        checkRadix(num)
         value match {
           case x: Val.Num => BigDecimal(x.toString).toBigInt.toString(num)
           case x: Val.Str => BigDecimal(x.value).toBigInt.toString(num)
@@ -70,8 +96,8 @@ object Numbers extends AbstractFunctionModule {
 
     builtin("ofOctal", "str") { (pos, _, num: Val) =>
       num match {
-        case x: Val.Num => Val.Num(pos, BigDecimal(BigInt.apply(x.toString, 8))).asInstanceOf[Val]
-        case x: Val.Str => Val.Num(pos, BigDecimal(BigInt.apply(x.value, 8))).asInstanceOf[Val]
+        case x: Val.Num => Val.Num(pos, ofRadix(x.toString, 8)).asInstanceOf[Val]
+        case x: Val.Str => Val.Num(pos, ofRadix(x.value, 8)).asInstanceOf[Val]
         case x => Error.fail("Expected Number or String, got: " + x.prettyName)
       }
     },

@@ -311,20 +311,23 @@ Returns the constituent parts of the given `datetime`, as an `Object` of the for
 
 ```
 {
-    year: Number, month: Number, day: Number,
+    year: Number, month: Number, day: Number, dayOfWeek: Number,
     hour: Number, minute: Number, second: Number, nanosecond: Number,
     offset: String
 }
 ```
 
+`day` is the day of the **month**, so that `of(toParts(x))` round-trips — [`of`](#of) reads the `day`
+key as the day of the month. The day of the **week** is `dayOfWeek`, 1 (Monday) through 7 (Sunday).
+
 **Example**
 ```
-xtr.datetime.toParts('2019-07-04T21:00:00Z')
+xtr.datetime.toParts('2019-07-10T21:00:00Z')
 ```
 **Result**
 ```
 {
-    year: 2019, month: 7, day: 4,
+    year: 2019, month: 7, day: 10, dayOfWeek: 3,
     hour: 21, minute: 0, second: 0, nanosecond: 0,
     offset: 'Z'
 }

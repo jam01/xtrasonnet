@@ -20,15 +20,14 @@ import io.github.jam01.xtrasonnet.document.MediaType;
 import io.github.jam01.xtrasonnet.document.MediaTypes;
 import io.github.jam01.xtrasonnet.spi.PluginException;
 
-import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class DefaultCSVPlugin extends BaseJacksonPlugin {
     public static final String PARAM_QUOTE_CHAR = "quotechar";
@@ -40,12 +39,17 @@ public class DefaultCSVPlugin extends BaseJacksonPlugin {
     public static final String HEADER_LN_PRESENT_VALUE = "present";
     public static final String HEADER_LN_ABSENT_VALUE = "absent";
 
-    private static final CsvMapper CSV_MAPPER = new CsvMapper();
-    private static final Map<Object, ObjectReader> READER_CACHE = new HashMap<>();
+    // built rather than mutated after construction, so there is no window in which another thread
+    // could observe it half-configured. A configured CsvMapper is safe to share.
+    private static final CsvMapper CSV_MAPPER = CsvMapper.builder()
+            .enable(CsvParser.Feature.WRAP_AS_ARRAY)
+            .build();
 
-    static {
-        CSV_MAPPER.enable(CsvParser.Feature.WRAP_AS_ARRAY);
-    }
+    // Per instance, and concurrent: this was a static HashMap shared by every Transformer in the
+    // JVM and mutated through computeIfAbsent, so concurrent inserts could corrupt it -- which broke
+    // even callers who correctly kept one Transformer per thread. ObjectReader is immutable, so the
+    // entries themselves are safe to share.
+    private final Map<Map<String, String>, ObjectReader> readerCache = new ConcurrentHashMap<>();
 
     public DefaultCSVPlugin() {
         supportedTypes.add(MediaTypes.TEXT_CSV);
@@ -74,7 +78,8 @@ public class DefaultCSVPlugin extends BaseJacksonPlugin {
             return NullNode.getInstance();
         }
 
-        ObjectReader reader = READER_CACHE.computeIfAbsent(doc.getMediaType().getParameters(), (p) -> {
+        // MediaType.getParameters returns an unmodifiable map, so it is safe as a key
+        ObjectReader reader = readerCache.computeIfAbsent(doc.getMediaType().getParameters(), (p) -> {
             CsvSchema.Builder builder = baseBuilderFor(doc.getMediaType());
 
             // assume header line present unless explicitly a value other than "present"
@@ -103,9 +108,9 @@ public class DefaultCSVPlugin extends BaseJacksonPlugin {
             } else if (byte[].class.isAssignableFrom(doc.getContent().getClass())) {
                 return reader.readTree(((byte[]) doc.getContent()));
             } else if (InputStream.class.isAssignableFrom(doc.getContent().getClass())) {
-                return reader.readTree((String) doc.getContent());
+                return reader.readTree((InputStream) doc.getContent());
             } else {
-                throw new PluginException(new IllegalArgumentException("Unsupported document content class, use the test method canRead before invoking read"));
+                throw unsupportedReadClass(doc);
             }
         } catch (JsonProcessingException jpe) {
             throw new PluginException("Unable to convert CSV to JSON", jpe);
@@ -118,6 +123,9 @@ public class DefaultCSVPlugin extends BaseJacksonPlugin {
     @Override
     public <T> Document<T> write(JsonNode node, MediaType mediaType, Class<T> targetType) throws PluginException {
         assertArrayNode(node, "Writing CSV requires an Array, found: " + node.getNodeType().name());
+        if (node.isEmpty()) { // nothing to infer a schema from, and no rows to write
+            return writeCsv(CSV_MAPPER.writerFor(JsonNode.class).with(baseBuilderFor(mediaType).build()), node, mediaType, targetType);
+        }
         JsonNode first = node.elements().next();
 
         ObjectWriter writer;
@@ -148,9 +156,18 @@ public class DefaultCSVPlugin extends BaseJacksonPlugin {
             }
             writer = CSV_MAPPER.writerFor(JsonNode.class).with(builder.build());
         } else {
-            throw new IllegalArgumentException("Unsupported combination of input and parameters."); // we give up
+            // name what was actually considered; the previous text was a dead end for the user
+            throw new IllegalArgumentException(("Cannot write CSV from an Array of %s with %s=%s and %s=%s. "
+                    + "Writing an Array of Arr with a header line requires %s to name the columns.").formatted(
+                    first.getNodeType().name().toLowerCase(), PARAM_HEADER_LINE, headerln ? HEADER_LN_PRESENT_VALUE : HEADER_LN_ABSENT_VALUE,
+                    PARAM_COLUMNS, paramColumns.isEmpty() ? "<unset>" : paramColumns, PARAM_COLUMNS));
         }
 
+        return writeCsv(writer, node, mediaType, targetType);
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T> Document<T> writeCsv(ObjectWriter writer, JsonNode node, MediaType mediaType, Class<T> targetType) throws PluginException {
         try {
             if (targetType.isAssignableFrom(String.class)) {
                 return (Document<T>) new Document.BasicDocument<>(writer.writeValueAsString(node),
@@ -158,7 +175,9 @@ public class DefaultCSVPlugin extends BaseJacksonPlugin {
             }
 
             if (targetType.isAssignableFrom(OutputStream.class)) {
-                OutputStream out = new BufferedOutputStream(new ByteArrayOutputStream());
+                // must be the ByteArrayOutputStream itself: wrapping it hands back a stream whose
+                // bytes the caller has no way to reach
+                ByteArrayOutputStream out = new ByteArrayOutputStream();
                 writer.writeValue(out, node);
                 return (Document<T>) new Document.BasicDocument<>(out, MediaTypes.TEXT_CSV);
             }
@@ -167,9 +186,9 @@ public class DefaultCSVPlugin extends BaseJacksonPlugin {
                 return (Document<T>) new Document.BasicDocument<>(writer.writeValueAsBytes(node),
                         MediaTypes.TEXT_CSV);
             }
-            throw new PluginException(new IllegalArgumentException("Unsupported document content class, use the test method canWrite before invoking write"));
+            throw unsupportedWriteClass(mediaType, targetType);
         } catch (IOException e) {
-            throw new PluginException("Unable to processing CSV", e);
+            throw new PluginException("Unable to write CSV", e);
         }
     }
 

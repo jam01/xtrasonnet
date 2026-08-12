@@ -59,15 +59,32 @@ object Math extends AbstractFunctionModule {
     },
 
     builtin("pow", "num1", "num2") {
-      (pos, _, num1: Val.Num, num2: Int) =>
-        if (num2 <= 0 || num2 >= Int.MaxValue) {
-          throw new IllegalArgumentException("Exponent must be valid Int32 integer")
+      (pos, _, num1: Val.Num, num2: Val.Num) =>
+        val base = num1 match {
+          case Val.Int64(_, v1) => BigDecimal.decimal(v1)
+          case Val.Float64(_, v1) => BigDecimal.decimal(v1)
+          case Val.Dec128(_, v1) => v1
+        }
+        val exponent = num2 match {
+          case Val.Int64(_, v2) => BigDecimal.decimal(v2)
+          case Val.Float64(_, v2) => BigDecimal.decimal(v2)
+          case Val.Dec128(_, v2) => v2
         }
 
-        num1 match {
-          case Val.Int64(_, v1) => Val.Num(pos, BigDecimal.decimal(v1).pow(num2))
-          case Val.Float64(_, v1) => Val.Num(pos, BigDecimal.decimal(v1).pow(num2))
-          case Val.Dec128(_, v1) => Val.Num(pos, v1.pow(num2))
+        // an integral exponent is exact, which is the point of this function. A fractional one has no
+        // exact decimal representation in general, so it goes through Double.
+        if (exponent.isWhole && exponent.isValidInt) {
+          if (base == 0 && exponent < 0) {
+            Error.fail("Expected a non-zero base for a negative exponent, got: 0 ^ " + exponent.toBigInt)
+          }
+          // pow(int, MathContext) accepts negative exponents, unlike BigDecimal.pow(int)
+          Val.Num(pos, base.underlying().pow(exponent.toIntExact, MathContext.DECIMAL128))
+        } else {
+          val result = scala.math.pow(base.toDouble, exponent.toDouble)
+          if (result.isNaN || result.isInfinite) {
+            Error.fail("Expected a real result, got: " + base + " ^ " + exponent + " = " + result)
+          }
+          Val.Num(pos, result)
         }
     },
 
@@ -120,10 +137,6 @@ object Math extends AbstractFunctionModule {
     builtin("clamp", "x", "minVal", "maxVal") { (pos, ev, x: Val.Num, minVal: Val.Num, maxVal: Val.Num) =>
       val minClamped = if (NumberMath.compareTo(x, minVal) < 0) minVal else x
       if (NumberMath.compareTo(minClamped, maxVal) > 0) maxVal else minClamped
-    },
-
-    builtin("pow", "x", "n") { (_, _, x: Double, n: Double) =>
-      java.lang.Math.pow(x, n)
     },
 
     builtin("sin", "x") { (_, _, x: Double) =>

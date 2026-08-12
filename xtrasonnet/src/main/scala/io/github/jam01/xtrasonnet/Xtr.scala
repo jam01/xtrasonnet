@@ -48,7 +48,6 @@ import io.github.jam01.xtrasonnet.header.Header
 import io.github.jam01.xtrasonnet.modules.{Arrays, Base64, Crypto, Datetime, Duration, Math, Numbers, Objects, Strings, URL}
 import io.github.jam01.xtrasonnet.spi.Library
 import io.github.jam01.xtrasonnet.spi.Library.{emptyObj, keyFrom}
-import sjsonnet.ReadWriter.{ArrRead, ObjRead, ValRead}
 import sjsonnet.functions.FunctionModule
 import sjsonnet.{Error, EvalScope, Lazy, Materializer, Position, TailstrictModeDisabled, Val}
 import ujson.{Bool, Null, Num, Str}
@@ -73,7 +72,9 @@ import scala.jdk.CollectionConverters.*
 final class Xtr(dataFormats: DataFormatService, header: Header) extends Library {
   override def name: String = "xtr"
 
-  private val functions: Map[String, Val.Func] = Map(
+  // a Seq, like every other module: Val.Obj.mk keeps insertion order and visibleKeyNames does not
+  // sort, so a Map here would order xtr's fields by the hash of their names
+  private val functions: Seq[(String, Val.Func)] = Seq(
     builtin("contains", "container", "value") {
       (_, ev, container: Val, value: Val) =>
         container match {
@@ -106,8 +107,18 @@ final class Xtr(dataFormats: DataFormatService, header: Header) extends Library 
       (pos, ev, container: Val, value: Val) =>
         container match {
           case str: Val.Str =>
+            // literal, matching indexOf: treating sub as a regex made indicesOf("a.b.c", ".")
+            // return every index, and threw on any needle containing regex metacharacters
             val sub = value.cast[Val.Str].value
-            Val.Arr(pos, sub.r.findAllMatchIn(str.value).map(_.start).map(item => Val.Num(pos, item)).toArray)
+            val out = new ArrayBuffer[Val.Num]()
+            if (sub.nonEmpty) {
+              var idx = str.value.indexOf(sub)
+              while (idx != -1) {
+                out.append(Val.Num(pos, idx))
+                idx = str.value.indexOf(sub, idx + sub.length)
+              }
+            }
+            Val.Arr(pos, out.toArray)
           case array: Val.Arr =>
             val out = new ArrayBuffer[Val.Num]()
             val lazArr = array.asLazyArray
@@ -144,7 +155,8 @@ final class Xtr(dataFormats: DataFormatService, header: Header) extends Library 
 
     builtin("endsWith", "main", "sub") {
       (_, _, main: String, sub: String) =>
-        main.toLowerCase().endsWith(sub.toLowerCase());
+        // case sensitive, matching startsWith and std
+        main.endsWith(sub);
     },
 
     builtin("groupBy", "container", "func") {
@@ -481,13 +493,18 @@ final class Xtr(dataFormats: DataFormatService, header: Header) extends Library 
     },
 
     builtin("parseNum", "str") { (_, _, str: String) =>
-      str.toDouble
+      try str.toDouble
+      catch {
+        case _: NumberFormatException => Error.fail("Expected a String holding a Number, got: " + str)
+      }
     }
   )
 
-  override def module: Val.Obj = {
+  // safe to cache where JLibrary.module is not: an Xtr is constructed per Transformer
+  // (Transformer.allLibs), so this object is never shared between them
+  override lazy val module: Val.Obj = {
     Val.Obj.mk(position,
-      functions.toSeq.map{ case (name, func) => (name, memberOf(func)) } ++
+      functions.map { case (name, func) => (name, memberOf(func)) } ++
         Xtr.allModules.map(mod => (mod.name, memberOf(mod.module))): _*)
   }
 

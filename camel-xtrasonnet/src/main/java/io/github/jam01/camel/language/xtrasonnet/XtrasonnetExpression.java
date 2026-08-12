@@ -35,7 +35,6 @@ package io.github.jam01.camel.language.xtrasonnet;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import io.github.jam01.xtrasonnet.Transformer;
 import io.github.jam01.xtrasonnet.TransformerBuilder;
-import io.github.jam01.xtrasonnet.TransformerSettings;
 import io.github.jam01.xtrasonnet.document.Document;
 import io.github.jam01.xtrasonnet.document.MediaType;
 import io.github.jam01.xtrasonnet.document.MediaTypes;
@@ -47,9 +46,9 @@ import org.apache.camel.RuntimeExpressionException;
 import org.apache.camel.spi.ExpressionResultTypeAware;
 import org.apache.camel.support.ExchangeHelper;
 import org.apache.camel.support.ExpressionAdapter;
-import sjsonnet.Settings;
 
 import java.util.Collections;
+import java.util.Queue;
 import java.util.Set;
 
 /**
@@ -61,10 +60,13 @@ import java.util.Set;
  */
 public class XtrasonnetExpression extends ExpressionAdapter implements ExpressionResultTypeAware {
     private final String expression;
-    private MediaType bodyMediaType;
-    private MediaType outputMediaType;
-    private Class<?> resultType;
-    private transient XtrasonnetLanguage language;
+    // volatile: configured while the route is built, read from worker threads afterwards
+    private volatile MediaType bodyMediaType;
+    private volatile MediaType outputMediaType;
+    private volatile Class<?> resultType;
+    private transient volatile XtrasonnetLanguage language;
+    // borrowed from for the duration of each evaluation; see XtrasonnetLanguage.poolFor
+    private transient volatile Queue<Transformer> pool;
 
     /**
      * Constructs a new xtrasonnet expression.
@@ -77,13 +79,18 @@ public class XtrasonnetExpression extends ExpressionAdapter implements Expressio
 
     @Override
     public boolean matches(Exchange exchange) {
-        this.outputMediaType = MediaTypes.APPLICATION_JAVA;
-        return evaluate(exchange, Boolean.class);
+        // as an override for this evaluation only. Assigning this.outputMediaType made a predicate
+        // evaluation permanently change the output type of every later exchange on the route.
+        return evaluate(exchange, Boolean.class, MediaTypes.APPLICATION_JAVA);
+    }
+
+    @Override
+    public <T> T evaluate(Exchange exchange, Class<T> type) {
+        return evaluate(exchange, type, null);
     }
 
     @SuppressWarnings("unchecked")
-    @Override
-    public <T> T evaluate(Exchange exchange, Class<T> type) {
+    private <T> T evaluate(Exchange exchange, Class<T> type, MediaType outputOverride) {
         if (language == null) {
             throw new IllegalStateException("xtrasonnet expression not initialized");
         }
@@ -91,13 +98,14 @@ public class XtrasonnetExpression extends ExpressionAdapter implements Expressio
         try {
             // pass exchange to CML lib using thread as context
             CML.getInstance().getExchange().set(exchange);
-            Document<?> result = doEvaluate(exchange);
+            Class<?> effectiveResultType = effectiveResultType(exchange);
+            Document<?> result = doEvaluate(exchange, outputOverride, effectiveResultType);
 
             if (type.equals(Document.class)) {
                 return (T) result;
             } else if (!type.equals(Object.class)) {
                 return ExchangeHelper.convertToType(exchange, type, result.getContent());
-            } else if (resultType == null || resultType.equals(Document.class)) {
+            } else if (effectiveResultType == null || effectiveResultType.equals(Document.class)) {
                 return (T) result;
             } else {
                 return (T) result.getContent();
@@ -109,12 +117,22 @@ public class XtrasonnetExpression extends ExpressionAdapter implements Expressio
         }
     }
 
-    private Document<?> doEvaluate(Exchange exchange) {
-        if (resultType == null) {
-            resultType = exchange.getProperty(XtrasonnetConstants.RESULT_TYPE,
-                    exchange.getMessage().getHeader(XtrasonnetConstants.RESULT_TYPE), Class.class);
+    /**
+     * The configured result type, or failing that the one this exchange asks for. Deliberately not
+     * written back to the field: this instance is shared by every exchange on the route, so caching
+     * one exchange's header there applied it to all the later ones.
+     */
+    private Class<?> effectiveResultType(Exchange exchange) {
+        Class<?> configured = resultType;
+        if (configured != null) {
+            return configured;
         }
 
+        return exchange.getProperty(XtrasonnetConstants.RESULT_TYPE,
+                exchange.getMessage().getHeader(XtrasonnetConstants.RESULT_TYPE), Class.class);
+    }
+
+    private Document<?> doEvaluate(Exchange exchange, MediaType outputOverride, Class<?> effectiveResultType) {
         MediaType bodyMT = bodyMediaType;
         if (bodyMT == null) {
             //Try to auto-detect input mime type if it was not explicitly set
@@ -133,11 +151,7 @@ public class XtrasonnetExpression extends ExpressionAdapter implements Expressio
             body = Document.of(exchange.getMessage().getBody(), bodyMT);
         }
 
-        // the mapper is pre initialized
-        Transformer mapper = language.get(expression);
-        if (mapper == null) mapper = createTransformer(language.getCamelContext());
-
-        MediaType outMT = outputMediaType;
+        MediaType outMT = outputOverride != null ? outputOverride : outputMediaType;
         if (outMT == null) {
             //Try to auto-detect output mime type if it was not explicitly set
             String typeHeader = exchange.getProperty(XtrasonnetConstants.OUTPUT_MEDIATYPE,
@@ -149,24 +163,30 @@ public class XtrasonnetExpression extends ExpressionAdapter implements Expressio
             }
         }
 
-        if (resultType == null || resultType.equals(Document.class)) {
-            return mapper.transform(body, Collections.emptyMap(), outMT, Object.class);
-        } else {
-            return mapper.transform(body, Collections.emptyMap(), outMT, resultType);
+        // borrow for the duration of this evaluation, then hand it back, so concurrent exchanges
+        // never share one. A miss builds a transformer rather than recompiling per message.
+        Transformer mapper = pool.poll();
+        if (mapper == null) {
+            mapper = createTransformer(language.getCamelContext());
+        }
+
+        try {
+            if (effectiveResultType == null || effectiveResultType.equals(Document.class)) {
+                return mapper.transform(body, Collections.emptyMap(), outMT, Object.class);
+            } else {
+                return mapper.transform(body, Collections.emptyMap(), outMT, effectiveResultType);
+            }
+        } finally {
+            pool.add(mapper);
         }
     }
 
     private Transformer createTransformer(CamelContext context) {
         TransformerBuilder builder = new TransformerBuilder(expression)
                 .withLibrary(CML.getInstance())
-                .withSettings(new TransformerSettings(
-                        new Settings(true,
-                                false,
-                                false,
-                                false,
-                                1000,
-                                false),
-                        MediaTypes.APPLICATION_JAVA, MediaTypes.APPLICATION_JAVA));
+                .withPreserveOrder(true)
+                .withDefaultInput(MediaTypes.APPLICATION_JAVA)
+                .withDefaultOutput(MediaTypes.APPLICATION_JAVA);
 
         Set<Library> additionalLibraries = context.getRegistry().findByType(Library.class);
         for (Library lib : additionalLibraries) {
@@ -189,8 +209,16 @@ public class XtrasonnetExpression extends ExpressionAdapter implements Expressio
         super.init(context);
         if (language != null) return;
 
-        language = (XtrasonnetLanguage) context.resolveLanguage("xtrasonnet");
-        language.computeIfMiss(expression, () -> createTransformer(context)); // initialize mapper eagerZ
+        // pool is published before language, because evaluate() guards on language alone: a thread
+        // that passed that guard while pool was still null would dereference it
+        var resolved = (XtrasonnetLanguage) context.resolveLanguage("xtrasonnet");
+        var resolvedPool = resolved.poolFor(expression);
+        if (resolvedPool.isEmpty()) {
+            resolvedPool.add(createTransformer(context)); // compile eagerly, as before
+        }
+
+        pool = resolvedPool;
+        language = resolved;
     }
 
     // Getter/Setter methods

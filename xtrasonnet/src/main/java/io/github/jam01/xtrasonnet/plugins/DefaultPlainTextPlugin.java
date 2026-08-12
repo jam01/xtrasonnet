@@ -33,7 +33,7 @@ public class DefaultPlainTextPlugin extends BasePlugin {
         if (String.class.isAssignableFrom(doc.getContent().getClass())) {
             return new Val.Str(pos, (String) doc.getContent());
         } else {
-            throw new PluginException("Unsupported document content class, use the test method canRead before invoking read");
+            throw unsupportedReadClass(doc);
         }
     }
 

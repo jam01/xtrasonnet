@@ -1,0 +1,3 @@
+{
+  greeting: "ñaïve café € 🎉",
+}

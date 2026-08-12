@@ -15,7 +15,47 @@ import scala.collection.mutable
 
 object Strings extends AbstractFunctionModule {
   override def name: String = "strings"
-  
+
+  // hoisted so they compile once rather than on every call
+  private val alphanumeric = "[0-9A-Za-z]".r
+  private val wordBoundary = "([_\\s-]+)([0-9A-Za-z])([A-Z]+|)".r("one", "two", "three")
+  private val caseBoundary = "([a-z])([A-Z])".r("end", "start")
+  private val camelBoundary = "([A-Z])|[\\s-_]+(\\w)".r("head", "tail")
+  private val isAlphaPattern = "^[A-Za-z]+$".r
+  private val isAlphanumericPattern = "^[A-Za-z0-9]+$".r
+  private val isLowerCasePattern = "^[a-z]+$".r
+  private val isNumericPattern = "^[0-9]+$".r
+  private val isUpperCasePattern = "^[A-Z]+$".r
+
+  /**
+   * The character a pad argument stands for: both pad functions use only its first character.
+   */
+  private def padChar(pad: String): Char = {
+    if (pad.isEmpty) Error.fail("Expected a non-empty pad")
+    pad.charAt(0)
+  }
+
+  /**
+   * Prepends `size - value.length` pad characters to value, or returns value unchanged when it is already
+   * that long.
+   *
+   * The value itself is never altered, and a size it already meets returns it unchanged -- including a
+   * negative or zero size.
+   */
+  private def padStart(value: String, size: Int, pad: String): String = {
+    val fill = padChar(pad)
+    if (value.length >= size) value
+    else {
+      val builder = new java.lang.StringBuilder(size)
+      var i = value.length
+      while (i < size) {
+        builder.append(fill)
+        i = i + 1
+      }
+      builder.append(value).toString
+    }
+  }
+
   val functions: Seq[(String, Val.Func)] = Seq(
 
     builtin("appendIfMissing", "str1", "str2") {
@@ -30,7 +70,7 @@ object Strings extends AbstractFunctionModule {
     builtin("toCamelCase", "str") {
       (_, _, str: String) =>
         //regex fo _CHAR
-        "([A-Z])|[\\s-_]+(\\w)".r("head", "tail").replaceAllIn(str, found => {
+        camelBoundary.replaceAllIn(str, found => {
           if (found.group(2) != null) found.group(2).toUpperCase
           else found.group(1).toLowerCase
         })
@@ -38,43 +78,42 @@ object Strings extends AbstractFunctionModule {
 
     builtin("capitalize", "str") {
       (_, _, str: String) =>
-        //regex fo _CHAR
-        val regex = "([_\\s-]+)([0-9A-Za-z])([A-Z]+|)".r("one", "two", "three")
-        val middleRegex = "([a-z])([A-Z])".r("end", "start")
-
         //Start string at first non underscore, lower case xt
-        var temp = str.substring("[0-9A-Za-z]".r.findFirstMatchIn(str).map(_.start).toList.head)
-        temp = temp.replaceFirst(temp.charAt(0).toString, temp.charAt(0).toUpper.toString)
+        // a str with no alphanumeric character has nothing to capitalize, so it is returned as is
+        alphanumeric.findFirstMatchIn(str).map(_.start) match {
+          case None => str
+          case Some(start) =>
+            var temp = str.substring(start)
+            temp = temp.replaceFirst(temp.charAt(0).toString, temp.charAt(0).toUpper.toString)
 
-        //replace and uppercase
-        temp = regex.replaceAllIn(temp, m => s" ${(m group "two").toUpperCase() + (m group "three").toLowerCase()}")
-        temp = middleRegex.replaceAllIn(temp, m => s"${m group "end"} ${(m group "start").toUpperCase()}")
+            //replace and uppercase
+            temp = wordBoundary.replaceAllIn(temp, m => s" ${(m group "two").toUpperCase() + (m group "three").toLowerCase()}")
+            temp = caseBoundary.replaceAllIn(temp, m => s"${m group "end"} ${(m group "start").toUpperCase()}")
 
-        temp
+            temp
+        }
     },
 
     builtin("charCode", "str") {
       (_, _, str: String) =>
+        if (str.isEmpty) Error.fail("Expected a non-empty String")
         str.codePointAt(0)
     },
 
     builtin("charCodeAt", "str", "num") {
       (_, _, str: String, num: Int) =>
+        if (num < 0 || num >= str.length) Error.fail("Expected an index within [0, " + str.length + "), got: " + num)
         str.codePointAt(num)
     },
 
     builtin("toKebabCase", "str") {
       (_, _, str: String) =>
-        //regex fo _CHAR
-        val regex = "([_\\s-]+)([0-9A-Za-z])([A-Z]+|)".r("one", "two", "three")
-        val middleRegex = "([a-z])([A-Z])".r("end", "start")
-
         //Start string at first non underscore, lower case xt
         var temp = str
 
         //replace and uppercase
-        temp = regex.replaceAllIn(temp, m => s"-${(m group "two") + (m group "three").toLowerCase()}")
-        temp = middleRegex.replaceAllIn(temp, m => s"${m group "end"}-${m group "start"}")
+        temp = wordBoundary.replaceAllIn(temp, m => s"-${(m group "two") + (m group "three").toLowerCase()}")
+        temp = caseBoundary.replaceAllIn(temp, m => s"${m group "end"}-${m group "start"}")
 
         temp.toLowerCase()
     },
@@ -87,7 +126,7 @@ object Strings extends AbstractFunctionModule {
     builtin("isAlpha", "str") {
       (_, _, str: Val) =>
         str match {
-          case value: Val.Str => "^[A-Za-z]+$".r.matches(value.value)
+          case value: Val.Str => isAlphaPattern.matches(value.value)
           case _: Val.Num => false
           case _: Val.Bool => true
           case x => Error.fail("Expected String, got: " + x.prettyName)
@@ -97,7 +136,7 @@ object Strings extends AbstractFunctionModule {
     builtin("isAlphanumeric", "str") {
       (_, _, str: Val) =>
         str match {
-          case value: Val.Str => "^[A-Za-z0-9]+$".r.matches(value.value)
+          case value: Val.Str => isAlphanumericPattern.matches(value.value)
           case _: Val.Num => true
           case _: Val.Bool => true
           case x => Error.fail("Expected String, got: " + x.prettyName)
@@ -105,13 +144,13 @@ object Strings extends AbstractFunctionModule {
     },
 
     builtin("isLowerCase", "str") {
-      (_, _, str: String) => "^[a-z]+$".r.matches(str)
+      (_, _, str: String) => isLowerCasePattern.matches(str)
     },
 
     builtin("isNumeric", "str") {
       (_, _, str: Val) =>
         str match {
-          case value: Val.Str => "^[0-9]+$".r.matches(value.value)
+          case value: Val.Str => isNumericPattern.matches(value.value)
           case _: Val.Num => true
           case _: Val.Bool => false
           case x => Error.fail("Expected String, got: " + x.prettyName)
@@ -119,15 +158,15 @@ object Strings extends AbstractFunctionModule {
     },
 
     builtin("isUpperCase", "str") {
-      (_, _, str: String) => "^[A-Z]+$".r.matches(str)
+      (_, _, str: String) => isUpperCasePattern.matches(str)
     },
 
     builtin("leftPad", "str", "offset", "pad") {
       (_, _, str: Val, size: Int, pad: String) =>
         str match {
-          case str: Val.Str => ("%" + size + "s").format(str.value).replace(" ", pad.substring(0, 1))
+          case str: Val.Str => padStart(str.value, size, pad)
           //TODO change to use sjsonnet's Format and DecimalFormat
-          case x: Val.Num => ("%" + size + "s").format(new DecimalFormat("0.#").format(x.asInt)).replace(" ", pad.substring(0, 1))
+          case x: Val.Num => padStart(new DecimalFormat("0.#").format(x.asInt), size, pad)
           case x => Error.fail("Expected String, got: " + x.prettyName)
         }
     },
@@ -136,7 +175,7 @@ object Strings extends AbstractFunctionModule {
       (_, _, num: Val) =>
         val str = num match { //convert number value to string
           case value: Val.Str =>
-            if ("^[0-9]+$".r.matches(value.value)) value.value
+            if (isNumericPattern.matches(value.value)) value.value
             else Error.fail("Expected Number, got: " + value.value)
           case value: Val.Num => value.asInt.toString
           case _ => Error.fail("Expected Number, got: " + num.prettyName)
@@ -188,9 +227,9 @@ object Strings extends AbstractFunctionModule {
     builtin("rightPad", "str", "offset", "pad") {
       (_, _, value: Val, offset: Int, pad: String) =>
         value match {
-          case str: Val.Str => str.value.padTo(offset, pad.charAt(0))
+          case str: Val.Str => str.value.padTo(offset, padChar(pad))
           //TODO change to use sjsonnet's Format and DecimalFormat
-          case x: Val.Num => new DecimalFormat("0.#").format(x.asInt).padTo(offset, pad.charAt(0))
+          case x: Val.Num => new DecimalFormat("0.#").format(x.asInt).padTo(offset, padChar(pad))
           case x => Error.fail("Expected String, got: " + x.prettyName)
         }
     },
@@ -207,20 +246,20 @@ object Strings extends AbstractFunctionModule {
 
     builtin("substringAfter", "value", "sep") {
       (_, _, s: String, sep: String) =>
-        s.substring(
-          s.indexOf(sep) match {
-            case -1 => s.length
-            case i => if (sep.equals("")) i else i + 1
-          }
-        )
+        // sep.length, not 1: a multi character separator left its tail in the result
+        s.indexOf(sep) match {
+          case -1 => ""
+          case i => s.substring(i + sep.length)
+        }
     },
 
     builtin("substringAfterLast", "value", "sep") {
       (_, _, s: String, sep: String) =>
-        val split = s.split(sep)
-        if (sep.equals("")) ""
-        else if (split.length == 1) ""
-        else split(split.length - 1)
+        // lastIndexOf rather than split: split treats sep as a regex, unlike every sibling here
+        s.lastIndexOf(sep) match {
+          case -1 => ""
+          case i => s.substring(i + sep.length)
+        }
     },
 
     builtin("substringBefore", "value", "sep") {
@@ -245,19 +284,20 @@ object Strings extends AbstractFunctionModule {
 
     builtin("toSnakeCase", "str") {
       (_, _, str: String) =>
-        //regex fo _CHAR
-        val regex = "([_\\s-]+)([0-9A-Za-z])([A-Z]+|)".r("one", "two", "three")
-        val middleRegex = "([a-z])([A-Z])".r("end", "start")
-
         //Start string at first non underscore, lower case xt
-        var temp = str.substring("[0-9A-Za-z]".r.findFirstMatchIn(str).map(_.start).toList.head)
-        temp = temp.replaceFirst(temp.charAt(0).toString, temp.charAt(0).toLower.toString)
+        // as in capitalize, a str with no alphanumeric character is returned as is
+        alphanumeric.findFirstMatchIn(str).map(_.start) match {
+          case None => str
+          case Some(start) =>
+            var temp = str.substring(start)
+            temp = temp.replaceFirst(temp.charAt(0).toString, temp.charAt(0).toLower.toString)
 
-        //replace and uppercase
-        temp = regex.replaceAllIn(temp, m => s"_${(m group "two") + (m group "three")}")
-        temp = middleRegex.replaceAllIn(temp, m => s"${m group "end"}_${m group "start"}")
+            //replace and uppercase
+            temp = wordBoundary.replaceAllIn(temp, m => s"_${(m group "two") + (m group "three")}")
+            temp = caseBoundary.replaceAllIn(temp, m => s"${m group "end"}_${m group "start"}")
 
-        temp.toLowerCase
+            temp.toLowerCase
+        }
     },
 
     builtin("unwrap", "value", "wrapper") {
@@ -282,27 +322,6 @@ object Strings extends AbstractFunctionModule {
       (_, _, str: String, wrapper: String) => wrapper + str + wrapper
     },
 
-    // todo: and these?
-    //      builtin("scan", "str", "regex") {
-    //        (pos, ev, str: String, regex: String) =>
-    //          new Val.Arr(pos, regex.r.findAllMatchIn(str).map(item => {
-    //            new Val.Arr(pos, (0 to item.groupCount).map(i => Val.Str(pos, item.group(i))).toArray)
-    //          }).toArray
-    //          )
-    //      },
-    //
-    //      builtin("match", "string", "regex") {
-    //        (pos, _, string: String, regex: String) =>
-    //          val out = new ArrayBuffer[Lazy]
-    //          regex.r.findAllMatchIn(string).foreach(
-    //            word => (0 to word.groupCount).foreach(index => out += Val.Str(pos, word.group(index)))
-    //          )
-    //          new Val.Arr(pos, out.toArray)
-    //      },
-    //
-    //      builtin("matches", "string", "regex") {
-    //        (pos, ev, string: String, regex: String) =>
-    //          regex.r.matches(string);
-    //      }
+    // todo: regex functions -- scan, match, matches -- are still missing from this module
   )
 }
