@@ -22,6 +22,8 @@ import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class CSVPluginTest {
     // https://www.ietf.org/rfc/rfc4180.html#section-2
@@ -141,6 +143,21 @@ public class CSVPluginTest {
         assertInstanceOf(ByteArrayOutputStream.class, doc.getContent());
         assertEquals(cars, doc.getContent().toString());
         assertEquals(MediaTypes.TEXT_CSV, doc.getMediaType());
+    }
+
+    @Test
+    public void write_unwritableInputNamesTheParametersConsidered() {
+        // an Array of numbers cannot become CSV rows; the error must say what was seen and which
+        // parameters decide, not just give up
+        var ex = assertThrows(RuntimeException.class, () -> new Transformer("[1, 2]")
+                .transform(Documents.Null(), Collections.emptyMap(), MediaTypes.TEXT_CSV));
+
+        var chain = new StringBuilder();
+        for (Throwable t = ex; t != null; t = t.getCause()) chain.append(t.getMessage()).append(" | ");
+        assertTrue(chain.toString().contains("Cannot write CSV from an Array of number"),
+                "expected the offending node type in: " + chain);
+        assertTrue(chain.toString().contains(DefaultCSVPlugin.PARAM_COLUMNS),
+                "expected the deciding parameter in: " + chain);
     }
 
     @Test

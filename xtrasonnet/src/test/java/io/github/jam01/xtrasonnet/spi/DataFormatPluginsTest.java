@@ -67,6 +67,18 @@ public class DataFormatPluginsTest {
     }
 
     @Test
+    public void unsupportedInputWithNullContentIsStillDescribed() {
+        // the diagnostic must not trade the real problem for a NullPointerException while naming
+        // the content's class
+        var ex = assertThrows(RuntimeException.class, () -> new Transformer("payload")
+                .transform(new Document.BasicDocument<>(null, MediaTypes.APPLICATION_PDF)));
+
+        var chain = chainOf(ex);
+        assertTrue(chain.contains("application/pdf"), "should name the offending type: " + chain);
+        assertTrue(chain.contains("null"), "should say the content was null: " + chain);
+    }
+
+    @Test
     public void unsupportedContentClassNamesTheClassAndTheSupportedOnes() {
         // plain text only reads String
         var ex = assertThrows(Exception.class, () -> new Transformer("payload")

@@ -29,10 +29,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * Expectations are written as explicit UTF-8 octets rather than as round-trips, so they pin the
  * encoding instead of merely agreeing with whatever the platform happens to use. A default charset
- * creeping back in fails these on a non-UTF-8 host.
- * <p>
- * Non-ASCII text is written with {@code \\u} escapes throughout, so nothing here depends on how this
- * source file itself is decoded.
+ * creeping back in fails these only where the default is not UTF-8, which no modern host provides on
+ * its own -- so the surefire execution {@code charset-tests-on-a-non-utf8-host} reruns this class
+ * with {@code -Dfile.encoding=ISO-8859-1} on every build.
  */
 public class CharsetTest {
     private static final String N_TILDE = "ñ";                     // C3 B1 in UTF-8, F1 in Latin-1
