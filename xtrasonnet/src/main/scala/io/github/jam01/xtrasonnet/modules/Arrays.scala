@@ -118,7 +118,7 @@ object Arrays extends AbstractFunctionModule {
             i = i + 1
           }
         } else {
-          Error.fail("Expected embedded function to have 1 parameters, received: " + args)
+          Error.fail("Expected embedded function to have 1 parameter, received: " + args)
         }
         Val.Arr(pos, out.toArray)
     },
