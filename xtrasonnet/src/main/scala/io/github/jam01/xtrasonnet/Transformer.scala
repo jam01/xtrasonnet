@@ -7,7 +7,7 @@ package io.github.jam01.xtrasonnet
  * compliance with the Elastic License 2.0.
  */
 
-import io.github.jam01.xtrasonnet.Transformer.{ERROR_LINE_REGEX, INTERNAL_ERROR_PREFIX, handleException, main}
+import io.github.jam01.xtrasonnet.Transformer.{ERROR_LINE_REGEX, FORK_INTERNAL_ERROR, INTERNAL_ERROR_PREFIX, handleException, main}
 import io.github.jam01.xtrasonnet.document.Document.BasicDocument
 import io.github.jam01.xtrasonnet.document.{Document, MediaType, MediaTypes}
 import io.github.jam01.xtrasonnet.header.Header
@@ -33,6 +33,9 @@ object Transformer {
   private val ERROR_LINE_REGEX = raw":(\d+):(\d+)".r
 
   private[xtrasonnet] val INTERNAL_ERROR_PREFIX = "Internal error: "
+
+  // the exact message sjsonnet's Error.withStackFrame gives a wrapped NonFatal, which carries no detail
+  private[xtrasonnet] val FORK_INTERNAL_ERROR = "Internal Error"
 
   private[xtrasonnet] def handleException[T](f: => T): Either[Error, T] = {
     try Right(f) catch {
@@ -210,11 +213,26 @@ class Transformer(script: String,
   private def inMainScript(el: StackTraceElement): Boolean =
     el.getFileName != null && el.getFileName.contains(main)
 
+  /**
+   * The message to report for an Error, which is not always the one it carries.
+   *
+   * sjsonnet's Error.withStackFrame wraps any NonFatal thrown during evaluation as
+   * `new Error("Internal Error", Nil, Some(e))` -- the literal string, with the throwable kept only as
+   * the cause. So any JDK exception escaping a builtin reached the caller as "Internal Error" and
+   * nothing else, while the message that says what actually went wrong sat unread in getCause. Name the
+   * cause, in the same shape handleException uses for the exceptions it wraps itself.
+   */
+  private def describe(err: Error): String = {
+    if (FORK_INTERNAL_ERROR == err.getMessage && err.getCause != null) INTERNAL_ERROR_PREFIX + err.getCause
+    else err.getMessage
+  }
+
   private def processError(err: Error): Error = {
     val trace = err.getStackTrace
-    val msg2 = if (err.getMessage == null || trace.isEmpty || !inMainScript(trace(0))) err.getMessage
+    val message = describe(err)
+    val msg2 = if (message == null || trace.isEmpty || !inMainScript(trace(0))) message
     else {
-      ERROR_LINE_REGEX.replaceAllIn(err.getMessage, _ match {
+      ERROR_LINE_REGEX.replaceAllIn(message, _ match {
         case ERROR_LINE_REGEX(fline, fcolumn) =>
           ":" + (Integer.parseInt(fline) - 1) + ":" + fcolumn
       })

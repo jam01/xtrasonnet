@@ -55,6 +55,7 @@ import static io.github.jam01.xtrasonnet.TestUtils.resourceAsString;
 import static io.github.jam01.xtrasonnet.TestUtils.stacktraceFrom;
 import static io.github.jam01.xtrasonnet.TestUtils.transform;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -142,6 +143,19 @@ public class TransformerTest {
         // and both are catchable as one type
         assertThrows(XtrasonnetException.class, () -> new Transformer("{ a: "));
         assertThrows(XtrasonnetException.class, () -> transform("payload.missing.deeper"));
+    }
+
+    @Test
+    void wrappedJdkExceptionNamesItsCause() {
+        // sjsonnet's Error.withStackFrame wraps any NonFatal escaping a builtin as
+        // new Error("Internal Error", Nil, Some(e)) -- the literal string, with the throwable kept only
+        // as the cause. Every such failure reached the caller as "Internal Error" and nothing else.
+        var ex = assertThrows(XtrasonnetEvaluationException.class, () -> transform("xtr.strings.singularize('')"));
+
+        assertTrue(ex.getMessage().contains("StringIndexOutOfBoundsException"), "Found message: " + ex.getMessage());
+        assertTrue(ex.getMessage().contains("Range [0, -1) out of bounds for length 0"), "Found message: " + ex.getMessage());
+        // the cause is still reachable, and is still the original throwable
+        assertInstanceOf(StringIndexOutOfBoundsException.class, ex.getCause().getCause());
     }
 
     @Test
