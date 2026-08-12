@@ -127,4 +127,11 @@ public class DatetimeTest {
         Assertions.assertEquals(TestUtils.transform("'2019-07-10T21:34:56Z'"),
                 TestUtils.transform("xtr.datetime.of(xtr.datetime.toParts('2019-07-10T21:34:56Z'))"));
     }
+
+    @Test
+    public void ofRejectsUnknownParts() {
+        var ex = Assertions.assertThrows(RuntimeException.class,
+                () -> TestUtils.transform("xtr.datetime.of({years: 2021})"));
+        Assertions.assertTrue(ex.getMessage().contains("Unexpected datetime part: years"), ex.getMessage());
+    }
 }

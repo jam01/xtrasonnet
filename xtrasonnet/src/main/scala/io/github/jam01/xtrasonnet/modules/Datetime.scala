@@ -40,6 +40,10 @@ import java.time.{Duration, Instant, OffsetDateTime, Period, ZoneOffset}
 import scala.collection.mutable
 
 object Datetime extends AbstractFunctionModule {
+  // every key emitted by toParts, so that of(toParts(x)) keeps working; dayOfWeek is derived and ignored
+  private val datetimePartNames =
+    Array("year", "month", "day", "dayOfWeek", "hour", "minute", "second", "nanosecond", "offset")
+
   override def name: String = "datetime"
 
   val functions: Seq[(String, Val.Func)] = Seq(
@@ -304,9 +308,11 @@ object Datetime extends AbstractFunctionModule {
      */
     builtin("of", "obj") {
       (pos, ev, obj: Val.Obj) =>
-        //year, month, dayOfMonth, hour, minute, second, nanoSecond, zoneId
         val out = mutable.Map[String, Val]()
-        obj.visibleKeyNames.foreach(key => out.addOne(key, obj.value(key, pos)(ev)))
+        obj.visibleKeyNames.foreach { key =>
+          if (!datetimePartNames.contains(key)) Error.fail("Unexpected datetime part: " + key)
+          out.addOne(key, obj.value(key, pos)(ev))
+        }
         OffsetDateTime.of(
           out.getOrElse("year", Val.Num(pos, 0)).asInt,
           out.getOrElse("month", Val.Num(pos, 1)).asInt,
