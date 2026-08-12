@@ -15,7 +15,7 @@
     <description>Camel xtrsaonnet support</description>
 
     <properties>
-        <camel-version>4.4.5</camel-version>
+        <camel-version>4.22.0</camel-version>
 
         <!-- matching camel -->
         <maven-surefire-plugin-version>3.2.5</maven-surefire-plugin-version>
