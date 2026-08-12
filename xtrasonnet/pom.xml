@@ -154,7 +154,7 @@
         <dependency>
             <groupId>com.github.tomakehurst</groupId>
             <artifactId>wiremock-jre8</artifactId>
-            <version>2.35.2</version>
+            <version>3.0.1</version>
             <scope>test</scope>
         </dependency>
         <!-- slf4j-api arrives at compile scope via log4j-to-slf4j; only the binding is needed here -->
