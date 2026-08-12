@@ -99,7 +99,14 @@ public class Header {
     private static Header doParseHeader(String headerSection) throws HeaderParseException {
         boolean preserve = true;
         MediaType output = null;
+        int outputLine = 0;
         Map<String, MediaType> inputs = new HashMap<>(8);
+        // header line of each named declaration, so a repeat can point at both occurrences.
+        // One declaration per input and one output: the header is the author's statement, and the
+        // author holds the pen -- a repeated declaration is a leftover, not a preference to weigh.
+        // Parameters shared across declarations belong on a 'dataformat' or 'input *' line, which
+        // layer general-to-specific below.
+        Map<String, Integer> inputLines = new HashMap<>(8);
 
         List<MediaType> allInputs = new ArrayList<>(8);
         List<MediaType> dataformats = new ArrayList<>(8);
@@ -126,23 +133,13 @@ public class Header {
                     if (matcher.group("all") != null) {  // there's a *. This also means it can't be a default.
                         allInputs.add(mediaType);
                     } else {
-                        var prev = inputs.get(name);
-                        if (prev == null) {
-                            inputs.put(name, mediaType);
-                        } else if (mediaType.equalsTypeAndSubtype(prev)) {
-                            var params = new HashMap<String, String>(prev.getParameters().size() + mediaType.getParameters().size());
-                            params.putAll(prev.getParameters());
-                            params.putAll(mediaType.getParameters());
-                            inputs.put(name, mediaType.withParameters(params));
-                        } else if (mediaType.getQualityValue() > prev.getQualityValue()) {
-                            inputs.put(name, mediaType); // an explicit q says which one is preferred
-                        } else if (mediaType.getQualityValue() == prev.getQualityValue()) {
-                            // with equal q there is nothing to choose between them, and picking
-                            // one silently would let a typo change the format an input is read as
-                            throw new HeaderParseException("Conflicting media types declared for input '" + name
-                                    + "'" + at + ": " + prev + " and " + mediaType
-                                    + ". Give them different q values to express a preference.");
+                        var prevLine = inputLines.putIfAbsent(name, i + 1);
+                        if (prevLine != null) {
+                            throw new HeaderParseException("Input '" + name + "' is declared more than once (header lines "
+                                    + prevLine + " and " + (i + 1) + "). Declare shared parameters on a '"
+                                    + DATAFORMAT_PREFIX + "' or 'input *' line instead.");
                         }
+                        inputs.put(name, mediaType);
                     }
                 } else if (line.startsWith(OUTPUT)) {
                     Matcher matcher = OUTPUT_LINE.matcher(line);
@@ -150,23 +147,13 @@ public class Header {
                         throw new HeaderParseException("Unable to parse header line " + line + at + ", it must follow the output line format");
                     }
 
-                    MediaType candidate = MediaType.valueOf(matcher.group("mediatype"));
-                    if (output == null) {
-                        output = candidate;
-                    } else if (candidate.equalsTypeAndSubtype(output)) {
-                        // merge parameters, as the input branch does: replacing would drop the
-                        // earlier declaration's parameters without a word
-                        var params = new HashMap<String, String>(output.getParameters().size() + candidate.getParameters().size());
-                        params.putAll(output.getParameters());
-                        params.putAll(candidate.getParameters());
-                        output = candidate.withParameters(params);
-                    } else if (candidate.getQualityValue() > output.getQualityValue()) {
-                        output = candidate;
-                    } else if (candidate.getQualityValue() == output.getQualityValue()) {
-                        throw new HeaderParseException("Conflicting output media types" + at + ": "
-                                + output + " and " + candidate
-                                + ". Give them different q values to express a preference.");
+                    if (output != null) {
+                        throw new HeaderParseException("The output is declared more than once (header lines "
+                                + outputLine + " and " + (i + 1) + "). Declare shared parameters on a '"
+                                + DATAFORMAT_PREFIX + "' line instead.");
                     }
+                    output = MediaType.valueOf(matcher.group("mediatype"));
+                    outputLine = i + 1;
                 } else if (line.startsWith(DATAFORMAT_PREFIX)) {
                     String[] tokens = line.split(" ", 2);
                     MediaType toAdd = MediaType.valueOf(tokens[1]);

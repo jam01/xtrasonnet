@@ -118,8 +118,7 @@ public class HeaderTest {
     @Test
     public void testDefaultOutput() throws HeaderParseException {
         Header header1 = Header.parseHeader("/** xtrasonnet\n" +
-                "output application/x-java-object;q=0.9\n" +
-                "output application/json;q=1.0\n" +
+                "output application/json\n" +
                 "*/");
 
         assertTrue(header1.getOutput().isPresent());
@@ -129,26 +128,50 @@ public class HeaderTest {
     @Test
     public void testDefaultInput() throws HeaderParseException {
         Header header1 = Header.parseHeader("/** xtrasonnet\n" +
-                "input payload application/x-java-object;q=1.0\n" +
-                "input payload application/json;q=0.9\n" +
+                "input payload application/x-java-object\n" +
                 "*/");
 
         assertTrue(header1.getPayloadInput().isPresent());
         assertTrue(MediaTypes.APPLICATION_JAVA.equalsTypeAndSubtype(header1.getPayloadInput().get()));
     }
 
+    /**
+     * One declaration per input and one output. The header is the author's statement, so a repeat is
+     * a leftover to fix, not a preference to weigh -- q values included: the author holds the pen,
+     * and a runtime with a real preference states it as the explicit media type, which outranks the
+     * header entirely. Shared parameters belong on the 'dataformat' / 'input *' layers instead.
+     */
     @Test
-    public void conflictingInputDeclarationsFail() {
+    public void repeatedInputDeclarationFails() {
+        for (String repeat : new String[]{
+                "input payload application/xml",        // different type: a likely leftover
+                "input payload application/json;q=0.9", // q does not arbitrate
+                "input payload application/json;separator=|"}) { // same type: merging is what 'input *' is for
+            var ex = Assertions.assertThrows(HeaderParseException.class, () -> Header.parseHeader("""
+                    /** xtrasonnet
+                    input payload application/json
+                    %s
+                    */
+                    {}""".formatted(repeat)), repeat);
+
+            Assertions.assertTrue(ex.getMessage().contains("Input 'payload' is declared more than once"), ex.getMessage());
+            Assertions.assertTrue(ex.getMessage().contains("header lines 1 and 2"), ex.getMessage());
+            Assertions.assertTrue(ex.getMessage().contains("'dataformat' or 'input *'"), ex.getMessage());
+        }
+    }
+
+    @Test
+    public void repeatedOutputDeclarationFails() {
         var ex = Assertions.assertThrows(HeaderParseException.class, () -> Header.parseHeader("""
                 /** xtrasonnet
-                input payload application/json
-                input payload application/xml
+                output application/csv;separator=|
+                output application/csv;quotechar='
                 */
                 {}"""));
 
-        Assertions.assertTrue(ex.getMessage().contains("payload"), ex.getMessage());
-        Assertions.assertTrue(ex.getMessage().contains("application/json"), ex.getMessage());
-        Assertions.assertTrue(ex.getMessage().contains("application/xml"), ex.getMessage());
+        Assertions.assertTrue(ex.getMessage().contains("output is declared more than once"), ex.getMessage());
+        Assertions.assertTrue(ex.getMessage().contains("header lines 1 and 2"), ex.getMessage());
+        Assertions.assertTrue(ex.getMessage().contains("dataformat"), ex.getMessage());
     }
 
     @Test
@@ -163,64 +186,44 @@ public class HeaderTest {
         Assertions.assertTrue(ex.getMessage().contains("header line 2"), ex.getMessage());
     }
 
+    /**
+     * Parameters shared across declarations are layered general-to-specific: 'dataformat' reaches
+     * every input and the output of its type, 'input *' every input of its type, and the named
+     * declaration wins per parameter.
+     */
     @Test
-    public void higherQualityValueWinsForInput() throws HeaderParseException {
-        // q is what disambiguates a repeated declaration, in either order
-        var first = Header.parseHeader("""
-                /** xtrasonnet
-                input payload application/json;q=0.9
-                input payload application/xml;q=1.0
-                */
-                {}""");
-        Assertions.assertTrue(MediaTypes.APPLICATION_XML.equalsTypeAndSubtype(first.getPayloadInput().get()));
-
-        var second = Header.parseHeader("""
-                /** xtrasonnet
-                input payload application/xml;q=1.0
-                input payload application/json;q=0.9
-                */
-                {}""");
-        Assertions.assertTrue(MediaTypes.APPLICATION_XML.equalsTypeAndSubtype(second.getPayloadInput().get()));
-    }
-
-    @Test
-    public void conflictingOutputDeclarationsFail() {
-        var ex = Assertions.assertThrows(HeaderParseException.class, () -> Header.parseHeader("""
-                /** xtrasonnet
-                output application/json
-                output application/xml
-                */
-                {}"""));
-
-        Assertions.assertTrue(ex.getMessage().contains("output"), ex.getMessage());
-    }
-
-    // same media type declared twice is still merged rather than rejected
-    @Test
-    public void repeatedInputWithSameTypeMerges() throws HeaderParseException {
+    public void sharedParametersCascadeGeneralToSpecific() throws HeaderParseException {
         var header = Header.parseHeader("""
                 /** xtrasonnet
-                input payload application/csv;separator=|
-                input payload application/csv;quotechar='
+                dataformat application/csv;quotechar='
+                input * application/csv;separator=|;header=present
+                input payload application/csv;header=absent
+                input other application/csv
                 */
                 {}""");
 
-        var merged = header.getInput("payload").orElseThrow(AssertionError::new);
-        Assertions.assertEquals("|", merged.getParameter("separator"));
-        Assertions.assertEquals("'", merged.getParameter("quotechar"));
+        var payload = header.getInput("payload").orElseThrow(AssertionError::new);
+        Assertions.assertEquals("'", payload.getParameter("quotechar"));
+        Assertions.assertEquals("|", payload.getParameter("separator"));
+        Assertions.assertEquals("absent", payload.getParameter("header")); // the named line wins
+
+        var other = header.getInput("other").orElseThrow(AssertionError::new);
+        Assertions.assertEquals("'", other.getParameter("quotechar"));
+        Assertions.assertEquals("|", other.getParameter("separator"));
+        Assertions.assertEquals("present", other.getParameter("header"));
     }
 
     @Test
-    public void repeatedOutputWithSameTypeMerges() throws HeaderParseException {
+    public void dataformatParametersReachTheOutput() throws HeaderParseException {
         var header = Header.parseHeader("""
                 /** xtrasonnet
+                dataformat application/csv;quotechar='
                 output application/csv;separator=|
-                output application/csv;quotechar='
                 */
                 {}""");
 
-        var merged = header.getOutput().orElseThrow(AssertionError::new);
-        Assertions.assertEquals("|", merged.getParameter("separator"));
-        Assertions.assertEquals("'", merged.getParameter("quotechar"));
+        var output = header.getOutput().orElseThrow(AssertionError::new);
+        Assertions.assertEquals("'", output.getParameter("quotechar"));
+        Assertions.assertEquals("|", output.getParameter("separator"));
     }
 }
