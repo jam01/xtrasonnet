@@ -53,9 +53,11 @@ object Transformer {
  *
  * '''A Transformer is not safe to share between threads.''' Compilation happens once, in the
  * constructor, but evaluation mutates state that lives inside sjsonnet: `Val.Obj` memoises field
- * values into an unsynchronized `java.util.HashMap`, and the `std` and `xtr` objects every script
- * touches are built once per Transformer and shared by every call. `Evaluator.cachedImports`, the
- * import cache and `DefaultParseCache` are plain mutable maps for the same reason.
+ * values into an unsynchronized `java.util.HashMap`, and the `xtr` object every script touches is
+ * built once per Transformer and shared by every call. `Evaluator.cachedImports`, the import cache
+ * and `DefaultParseCache` are plain mutable maps for the same reason. The default `std` object is
+ * wider still: a single instance shared by every Transformer in the JVM -- see the caveat in
+ * docs/programmatic.md for why that is benign.
  *
  * Use one Transformer per thread, or pool them -- `camel-xtrasonnet`'s `XtrasonnetExpression` keeps
  * a pool, following `org.apache.camel.language.xpath.XPathBuilder`. Overlapping calls are detected
