@@ -3,11 +3,11 @@
 [//]: # (todo: document available algorithms or point to the docs)
 
 ## decrypt
-`decrypt(data: String, key: String, transformation: String): String`
+`decrypt(value: String, secret: String, algorithm: String): String`
 
-Decrypts the Base64 `data` with specified Java Cryptographic `transformation` and the given `key`.
+Decrypts the Base64 `value` with the specified Java Cryptographic transformation given in `algorithm`, using the given `secret`.
 
-The `transformation` must include the name of a cryptographic algorithm (e.g., AES), and may be followed by a feedback mode and padding scheme. A transformation is of the form: 'algorithm/mode/padding' or 'algorithm'. See the [Java Cipher](https://docs.oracle.com/en/java/javase/17/docs/api/java.base/javax/crypto/Cipher.html) docs for more information.
+The `algorithm` transformation must include the name of a cryptographic algorithm (e.g., AES), and may be followed by a feedback mode and padding scheme. A transformation is of the form: 'algorithm/mode/padding' or 'algorithm'. See the [Java Cipher](https://docs.oracle.com/en/java/javase/17/docs/api/java.base/javax/crypto/Cipher.html) docs for more information.
 
 **Example**
 ```
@@ -22,17 +22,17 @@ xtr.crypto.decrypt('vAkb3PWJPQF1kGkM3vQrdQ==', '$sixteencharkey$', 'AES/ECB/PKCS
 	xtrasonnet supports decryption through the Java Cryptographic Extension (JCE) framework. Every Java distribution is required to support a specific set of algorithms, while others may only be supported by third party libraries such as the popular [Bouncy Castle](https://www.bouncycastle.org/java.html) libraries, which are bundled with xtrasonnet.
 
 !!! note
-	In order to facilitate encryption/decryption, xtrasonnet prefixes the encrypted data with the randomly generated initialization vector (IV) used by the JCE Cipher. Similarly, decryption operations expect such IV to be present in order to correctly decrypt the data.  
+	In order to facilitate encryption/decryption, for every mode except ECB, xtrasonnet prefixes the encrypted data with the randomly generated initialization vector (IV) used by the JCE Cipher. Similarly, decryption operations expect such IV to be present in order to correctly decrypt the data. ECB transformations, like the one in the example above, use no IV and no prefix; a transformation with no explicit mode, e.g. plain 'AES', does get the IV prefix.  
 
     The form of the payload byte array expected for decryption is as follows: `[{encryption IV bytes},{encrypted data bytes}]` where the size of the IV portion is equal to the block size for the selected algorithm.
 
 <br/>
 ## encrypt
-`encrypt(data: String, key: String, transformation: String): String`
+`encrypt(value: String, secret: String, algorithm: String): String`
 
-Encrypts the `data` with specified Java Cryptographic `transformation` and the given `key`, and encodes the result in Base64.
+Encrypts the `value` with the specified Java Cryptographic transformation given in `algorithm`, using the given `secret`, and encodes the result in Base64.
 
-The `transformation` must include the name of a cryptographic algorithm (e.g., AES), and may be followed by a feedback mode and padding scheme. A transformation is of the form: 'algorithm/mode/padding' or 'algorithm'. See the [Java Cipher](https://docs.oracle.com/en/java/javase/17/docs/api/java.base/javax/crypto/Cipher.html) docs for more information.
+The `algorithm` transformation must include the name of a cryptographic algorithm (e.g., AES), and may be followed by a feedback mode and padding scheme. A transformation is of the form: 'algorithm/mode/padding' or 'algorithm'. See the [Java Cipher](https://docs.oracle.com/en/java/javase/17/docs/api/java.base/javax/crypto/Cipher.html) docs for more information.
 
 **Example**
 ```
@@ -47,15 +47,15 @@ xtr.crypto.encrypt('Hello, world!', '$sixteencharkey$', 'AES/ECB/PKCS5Padding')
 	xtrasonnet supports encryption through the Java Cryptographic Extension (JCE) framework. Every Java distribution is required to support a specific set of algorithms, while others may only be found in third party libraries such as the popular [Bouncy Castle](https://www.bouncycastle.org/java.html) libraries, which are bundled with xtrasonnet.
 
 !!! note
-	In order to facilitate encryption/decryption, xtrasonnet prefixes the encrypted data with the randomly generated initialization vector (IV) used by the JCE Cipher. Similarly decryption operations expect such IV to be present in order to correctly decrypt the data.  
+	In order to facilitate encryption/decryption, for every mode except ECB, xtrasonnet prefixes the encrypted data with the randomly generated initialization vector (IV) used by the JCE Cipher. Similarly decryption operations expect such IV to be present in order to correctly decrypt the data. ECB transformations, like the one in the example above, use no IV and no prefix; a transformation with no explicit mode, e.g. plain 'AES', does get the IV prefix.  
 
     The form of the encrypted byte array payload is as follows: `[{random IV bytes},{encrypted data bytes}]` where the size of the IV portion is equal to the block size for the selected algorithm.
 
 <br/>
 ## hash
-`hash(data: String, algorithm: String): String`
+`hash(value: String, algorithm: String): String`
 
-Calculates Message Digest for the `data` using the given hash `algorithm`, and encodes the result in a hexadecimal string.
+Calculates Message Digest for the `value` using the given hash `algorithm`, and encodes the result in a hexadecimal string.
 
 **Example**
 ```
@@ -72,9 +72,9 @@ xtr.crypto.hash('HelloWorld', 'MD5')
 
 <br/>
 ## hmac
-`hmac(data: String, key: String, algorithm: String): String`
+`hmac(value: String, secret: String, algorithm: String): String`
 
-Calculates the Message Authentication Code for the `data` using the given cryptographic hash `algorithm`, and encodes the result in a hexadecimal string.
+Calculates the Message Authentication Code for the `value` using the given cryptographic hash `algorithm` and `secret`, and encodes the result in a hexadecimal string.
 
 **Example**
 ```

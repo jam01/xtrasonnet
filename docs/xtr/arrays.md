@@ -1,9 +1,9 @@
 # xtr.arrays
 
 ## all
-`all(arr: Array[A], predicate: Func[(A) => Boolean]): Boolean`
+`all(value: Array[A], func: Func[(A) => Boolean]): Boolean`
 
-Returns `true` if all elements in `arr` satisfy the given `predicate`, otherwise `false`. `predicate` must accept an `A`.
+Returns `true` if all elements in `value` satisfy the given `func`, otherwise `false`. `func` must accept an `A`.
 
 **Example**
 ```
@@ -16,9 +16,9 @@ true
 
 <br/>
 ## any
-`any(arr: Array[A], function: Func[(A) => Boolean]): Boolean`
+`any(value: Array[A], func: Func[(A) => Boolean]): Boolean`
 
-Returns `true` if any element in `arr` satisfies the given `predicate`, otherwise `false`. `predicate` must accept an `A`.
+Returns `true` if any element in `value` satisfies the given `func`, otherwise `false`. `func` must accept an `A`.
 
 **Example**
 ```
@@ -31,11 +31,11 @@ true
 
 <br/>
 ## break
-`break(arr: Array[A], predicate: Func[(A) => Boolean]): Object[Array[A]]`
+`break(arr: Array[A], func: Func[(A) => Boolean]): Object[Array[A]]`
 
 Returns an `Object` with two entries:
 
-- `left` key with an `Array[A]` containing the elements of `arr` before the first element to satisfy the given `predicate`.
+- `left` key with an `Array[A]` containing the elements of `arr` before the first element to satisfy the given `func`.
 - `right` key with an `Array[A]` containing the remaining elements of `arr`.
 
 **Example**
@@ -49,9 +49,9 @@ xtr.arrays.break([1, 2, 3, 4, 5], function(item) item % 2 == 0)
 
 <br/>
 ## chunksOf
-`chunksOf(arr: Array[A], size: Number): Array[Array[A]]`
+`chunksOf(array: Array[A], size: Number): Array[Array[A]]`
 
-Returns a new `Array` of `Array[A]`, with every element containing the next `size` elements in `arr`.
+Returns a new `Array` of `Array[A]`, with every element containing the next `size` elements in `array`.
 
 **Example**
 ```
@@ -64,9 +64,9 @@ xtr.arrays.chunksOf([1, 2, 3, 4, 5], 2)
 
 <br/>
 ## countBy
-`countBy(arr: Array[A], predicate: Func[(A) => Boolean]): Number`
+`countBy(arr: Array[A], func: Func[(A) => Boolean]): Number`
 
-Returns a `Number` count of all the elements in `array` that satisfy the given `predicate`, which must accept and `A`.
+Returns a `Number` count of all the elements in `arr` that satisfy the given `func`, which must accept an `A`.
 
 **Example**
 ```
@@ -80,9 +80,9 @@ xtr.arrays.countBy([1, 2, 3], function(item) item > 2)
 <br/>
 ## distinctBy
 ### distinctBy func(value)
-`distinctBy(arr: Array[A], identity: Func[(A) => B]): Array[A]`
+`distinctBy(container: Array[A], func: Func[(A) => B]): Array[A]`
 
-Returns a new `Array` with the distinct elements in `arr` using the given `identity` function for comparison. `identity` must accept an `A`.
+Returns a new `Array` with the distinct elements in `container` using the given `func` function for comparison. `func` must accept an `A`.
 
 **Example**
 ```
@@ -97,26 +97,26 @@ The modulo operation on the elements yields `[1, 2, 0, 1, 2, 0]` meaning `1` and
 
 <br/>
 ### distinctBy func(value, idx)
-`distinctBy(arr: Array[A], identity: Func[(A, Number) => B]): Array[A]`
+`distinctBy(container: Array[A], func: Func[(A, Number) => B]): Array[A]`
 
-Returns a new `Array` with the distinct elements in `arr` using the given `identity` function for comparison. `identity` must accept an `A`.
+Returns a new `Array` with the distinct elements in `container` using the given `func` function for comparison. `func` must accept an `A` and its `Number` index.
 
 **Example**
 ```
-xtr.arrays.distinctBy([1, 2, 3, 4, 5, 6], function(item, idx) item % (3 * idx))
+xtr.arrays.distinctBy([1, 2, 3, 4, 5, 6], function(item, idx) (item + idx) % 3)
 ```
 **Result**
 ```
-[1, 2, 3, 4, 5, 6]
+[1, 2, 3]
 ```
 
-The modulo operation on the elements yields `[0, 2, 3, 4, 5, 6]` where all are distinct, so all elements are kept.
+The computation on the elements yields `[1, 0, 2, 1, 0, 2]`, meaning `4`, `5`, and `6` share an identity with `1`, `2`, and `3` respectively, so they are discarded.
 
 <br/>
 ## drop
-`drop(arr: Array[A], n: Number): Array[A]`
+`drop(arr: Array[A], num: Number): Array[A]`
 
-Returns a new `Array` with the elements in `arr` but dropping the first `n` elements.
+Returns a new `Array` with the elements in `arr` but dropping the first `num` elements.
 
 **Example**
 ```
@@ -129,9 +129,9 @@ xtr.arrays.drop([1, 2, 3, 4, 5], 3)
 
 <br/>
 ## dropWhile
-`dropWhile(arr: Array[A], predicate: Func[(A) => Boolean]): Array[A]`
+`dropWhile(arr: Array[A], func: Func[(A) => Boolean]): Array[A]`
 
-Returns a new `Array` with the elements in `arr`, but dropping the first elements while they satisfy the given `predicate`, which must accept an `A`.
+Returns a new `Array` with the elements in `arr`, but dropping the first elements while they satisfy the given `func`, which must accept an `A`.
 
 **Example**
 ```
@@ -144,10 +144,10 @@ xtr.arrays.dropWhile([1, 2, 3, 4, 5], function(item) item * 3 < 10)
 
 <br/>
 ## duplicatesBy
-`duplicatesBy(arr: Array[A], identity: Func[(A) => B]): Array[A]`
+`duplicatesBy(array: Array[A], func: Func[(A) => B]): Array[A]`
 
-Returns a new `Array` with the elements in `arr` whose `identity` is shared by more than one element. Each
-duplicated identity contributes the first element that produced it, in the order they appear in `arr`.
+Returns a new `Array` with the elements in `array` whose identity, as computed by `func`, is shared by more than one element. Each
+duplicated identity contributes the first element that produced it, in the order they appear in `array`.
 
 **Example**
 ```
@@ -170,9 +170,9 @@ xtr.arrays.duplicatesBy([{ id: 1, n: 'a' }, { id: 2, n: 'c' }, { id: 1, n: 'b' }
 <br/>
 ## find
 ### find func(value)
-`find(arr: Array[A], predicate: Func[(A) => Boolean]): [A]`
+`find(arr: Array[A], func: Func[(A) => Boolean]): Array[A]`
 
-Returns a single element `Array` with the first `A` that satisfies the given `predicate`, which must accept an `A`.
+Returns a single element `Array` with the first `A` that satisfies the given `func`, which must accept an `A`.
 
 **Example**
 ```
@@ -185,9 +185,9 @@ xtr.arrays.find([1, 2, 3, 4, 5], function(item) item * 3 > 10)
 
 <br/>
 ### find func(value, idx)
-`find(arr: Array[A], predicate: Func[(A, Number) => Boolean]): [A]`
+`find(arr: Array[A], func: Func[(A, Number) => Boolean]): Array[A]`
 
-Returns a single element `Array` with the first `A` that satisfies the given `predicate`, which must accept an `A` and its `Number` index.
+Returns a single element `Array` with the first `A` that satisfies the given `func`, which must accept an `A` and its `Number` index.
 
 **Example**
 ```
@@ -200,7 +200,7 @@ xtr.arrays.find([1, 2, 3, 4, 5], function(item, idx) item * (3 + idx) > 10)
 
 <br/>
 ## flat
-`flat(arr: Array[Array[A]]): Array[Any]`
+`flat(arr: Array[Any]): Array[Any]`
 
 Returns a new single level `Array` with the contents of all `Array` in `arr`, recursively flattening each `Array` element found.
 
@@ -215,9 +215,9 @@ xtr.arrays.flat([[1, 2], '3', [4, {}, [5, 6]]])
 
 <br/>
 ## indexWhere
-`indexWhere(arr: Array[A], predicate: Func[(A) => Boolean]): Number`
+`indexWhere(arr: Array[A], func: Func[(A) => Boolean]): Number`
 
-Returns the `Number` index of the first element that satisfies the given `predicate`, otherwise `-1`. `predicate` which must accept an `A`.
+Returns the `Number` index of the first element that satisfies the given `func`, otherwise `-1`. `func` must accept an `A`.
 
 **Example**
 ```
@@ -230,9 +230,9 @@ xtr.arrays.indexWhere([1, 2, 3, 4, 5], function(item) item * 3 < 10)
 
 <br/>
 ## indicesWhere
-`indicesWhere(arr: Array[A], predicate: Func[(A) => Boolean]): Array[Number]`
+`indicesWhere(arr: Array[A], func: Func[(A) => Boolean]): Array[Number]`
 
-Returns an `Array[Number]` with the indices of elements that satisfy the given `predicate`, which must accept an `A`.
+Returns an `Array[Number]` with the indices of elements that satisfy the given `func`, which must accept exactly one parameter, an `A`.
 
 **Example**
 ```
@@ -245,9 +245,9 @@ xtr.arrays.indicesWhere([1, 2, 3, 4, 5], function(item) item * 3 < 10)
 
 <br/>
 ## lastIndexWhere
-`lastIndexWhere(arr: Array[A], predicate: Func[(A) => Boolean]): Number`
+`lastIndexWhere(arr: Array[A], func: Func[(A) => Boolean]): Number`
 
-Returns the `Number` index of the last element in `arr` that satisfies the given `predicate`, otherwise `-1`. `predicate` which must accept an `A`.
+Returns the `Number` index of the last element in `arr` that satisfies the given `func`, otherwise `-1`. `func` must accept an `A`.
 
 **Example**
 ```
@@ -260,13 +260,13 @@ xtr.arrays.lastIndexWhere([1, 2, 3, 4, 5], function(item) item * 3 < 10)
 
 <br/>
 ## occurrencesBy
-`occurrencesBy(arr: Array[A], identity: Func[(A) => String]): Object[Number]`
+`occurrencesBy(arr: Array[A], func: Func[(A) => String|Number|Boolean|Null]): Object[Number]`
 
-Returns an `Object` with an entry for each unique identity of elements in `arr`. The value of each entry is the `Number` of elements in `arr` that produced such identity, using `identity`. `identity` must take an `A`. Entries appear in the order their identity was first produced.
+Returns an `Object` with an entry for each unique identity of elements in `arr`. The value of each entry is the `Number` of elements in `arr` that produced such identity, using `func`, which must take an `A`. Entries appear in the order their identity was first produced.
 
 **Example**
 ```
-xtr.arrays.occurrencesBy([1, 2, 3, 4, 5], function(item) if (item) < 4 then 'under4' else 'over4')
+xtr.arrays.occurrencesBy([1, 2, 3, 4, 5], function(item) if item < 4 then 'under4' else 'over4')
 ```
 **Result**
 ```
@@ -275,12 +275,12 @@ xtr.arrays.occurrencesBy([1, 2, 3, 4, 5], function(item) if (item) < 4 then 'und
 
 <br/>
 ## partition
-`partition(arr: Array[A], predicate: Func[(A) => Boolean]): Object[A]`
+`partition(arr: Array[A], func: Func[(A) => Boolean]): Object[Array[A]]`
 
 Returns an `Object` with two entries:
 
-- `pass` key with an `Array[A]` of the subset of elements in `arr` that satisfy the given `predicate`, which must take an `A`.
-- `fail` key with an `Array[A]` of the subset of elements in `arr` that fail the given `predicate`, which must take an `A`.
+- `pass` key with an `Array[A]` of the subset of elements in `arr` that satisfy the given `func`, which must take an `A`.
+- `fail` key with an `Array[A]` of the subset of elements in `arr` that fail the given `func`, which must take an `A`.
 
 **Example**
 ```
@@ -293,12 +293,12 @@ xtr.arrays.partition([1, 2, 3, 4, 5], function(item) item < 4)
 
 <br/>
 ## splitAt
-`splitAt(arr: Array[A], n: Number): Object[A]`
+`splitAt(array: Array[A], index: Number): Object[Array[A]]`
 
-Returns an `Object[A]` with two entries:
+Returns an `Object` with two entries:
 
-- `left` key with an `Array[A]` containing the elements of `arr` before the `n` element.
-- `right` key with an `Array[A]` containing the remaining elements of `arr`.
+- `left` key with an `Array[A]` containing the elements of `array` before the `index` element.
+- `right` key with an `Array[A]` containing the remaining elements of `array`.
 
 **Example**
 ```
@@ -310,10 +310,25 @@ xtr.arrays.splitAt([1, 2, 3, 4, 5], 3)
 ```
 
 <br/>
-## take
-`take(arr: Array[A], n: Number): Array[A]`
+## sumBy
+`sumBy(array: Array[A], func: Func[(A) => Number]): Number`
 
-Returns a new `Array` with the elements in `arry`, but only taking the first `n` elements.
+Returns the `Number` sum of the values obtained by applying the given `func` to every element in `array`. `func` must accept an `A` and return a `Number`.
+
+**Example**
+```
+xtr.arrays.sumBy([{ price: 3 }, { price: 12 }], function(item) item.price)
+```
+**Result**
+```
+15
+```
+
+<br/>
+## take
+`take(array: Array[A], index: Number): Array[A]`
+
+Returns a new `Array` with the elements in `array`, but only taking the first `index` elements.
 
 **Example**
 ```
@@ -326,9 +341,9 @@ xtr.arrays.take([1, 2, 3, 4, 5], 3)
 
 <br/>
 ## takeWhile
-`takeWhile(arr: Array[A], predicate: Func[(A) => Boolean]): Array[A]`
+`takeWhile(array: Array[A], func: Func[(A) => Boolean]): Array[A]`
 
-Returns a new `Array` with the elements in `arr`, but only taking the first elements that satisfy the given `predicate`, which must accept an `A`.
+Returns a new `Array` with the elements in `array`, but only taking the first elements that satisfy the given `func`, which must accept an `A`.
 
 **Example**
 ```
@@ -341,11 +356,11 @@ xtr.arrays.takeWhile([1, 2, 3, 4, 5], function(item) item * 2 < 9)
 
 <br/>
 ## unzip
-`unzip(arr: Array[Array[A]]): Array[Array[A]]`
+`unzip(array: Array[Array[A]]): Array[Array[A]]`
 
-Create n-number of `Arrays`, each containing the n-th element of every array in `arr`.
+Create n-number of `Arrays`, each containing the n-th element of every array in `array`.
 
-Returns a new `Array` of equal size to the shortest array in `arr`. Every n-th element in the result is an `Array` containing the n-th element the arrays in `arr`.
+Returns a new `Array` of equal size to the shortest array in `array`. Every n-th element in the result is an `Array` containing the n-th element of the arrays in `array`.
 
 **Example**
 ```
@@ -357,7 +372,7 @@ xtr.arrays.unzip([[1, 'x'], [2, 'y'], [3, 'z']])
 ```
 
 ## unzipAll
-`unzipAll(arr: Array[Array[A]], fill: B): Array[Array[A|B]]`
+`unzipAll(array: Array[Array[A]], fill: B): Array[Array[A|B]]`
 
 Create n-number of `Arrays`, each containing the n-th element of every array in `arr`, using a `fill` value for missing n-th elements.
 
@@ -374,9 +389,9 @@ xtr.arrays.unzipAll([[1, 'x'], [2], [3, 'z']], 'NA')
 
 <br/>
 ## zip
-`zip(arr1: Array[A], arr2: Array[B], arrN: Array[C]*): Array[Array[A|B|C]]`
+`zip(arr1: Array[A], arr2: Array[B], arr3: Array[C], arr4: Array[D], arr5: Array[E]): Array[Array[A|B|C|D|E]]`
 
-Combines corresponding elements of the given arrays.
+Combines corresponding elements of the given arrays. Accepts two to five arrays; `arr3` through `arr5` are optional.
 
 Returns a new `Array` of equal size to the shortest array given. Every n-th element in the result is an `Array` containing the n-th element of the given arrays.
 
@@ -390,7 +405,7 @@ xtr.arrays.zip([1, 2, 3], ['x', 'y', 'z'])
 ```
 
 ## zipAll
-`zipAll(arr: Array[Array[A]], fill: B): Array[Array[A|B]]`
+`zipAll(array: Array[Array[A]], fill: B): Array[Array[A|B]]`
 
 Combines corresponding elements of the arrays in `arr`, using a `fill` value for short arrays.
 

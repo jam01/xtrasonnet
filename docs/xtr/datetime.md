@@ -53,7 +53,7 @@ xtr.datetime.atBeginningOfMonth('2020-12-31T23:19:35Z')
 ## atBeginningOfWeek
 `atBeginningOfWeek(datetime: String): String`
 
-Returns the given `datetime` with the day set to first of the current week, and the time set to midnight.
+Returns the given `datetime` with the day set to first of the current week, and the time set to midnight. The week is taken to start on Sunday.
 
 **Example**
 ```
@@ -96,15 +96,15 @@ xtr.datetime.inOffset('2020-12-31T23:19:35Z', '-08:00')
 
 <br/>
 ## compare
-`compare(datetime1: String, datetime2: String): String`
+`compare(datetime: String, datetwo: String): Number`
 
 Returns:
 
-`1` if `datetime1` is after `datetime2`
+`1` if `datetime` is after `datetwo`
 
-`-1` if `datetime1` is before `datetime2`
+`-1` if `datetime` is before `datetwo`
 
-`0` if `datetime1` and `datetime2` are the same
+`0` if `datetime` and `datetwo` are the same
 
 **Example**
 ```
@@ -117,19 +117,20 @@ xtr.datetime.compare('2020-12-31T23:19:35Z','2020-01-01T00:00:00Z')
 
 <br/>
 ## of
-`of(parts: Object[Number|String]): String`
+`of(obj: Object[Number|String]): String`
 
-Returns the `String` representation of the date and time given in `parts`, an `Object` of the form:
+Returns the `String` representation of the date and time given in `obj`, an `Object` of the form:
 
 ```
 {
     year: Number, month: Number, day: Number,
     hour: Number, minute: Number, second: Number,
-    offset: String
+    nanosecond: Number, offset: String
 }
 ```
 
-where all elements are optional.
+where all elements are optional; keys outside this form are an error, except `dayOfWeek`, which is
+accepted and ignored so that `of(toParts(x))` round-trips.
 
 **Example**
 ```
@@ -147,7 +148,7 @@ xtr.datetime.of(parts)
 
 <br/>
 ## between
-`between(datetime1: String, datetime2: String): String`
+`between(datetimeone: String, datetimetwo: String): String`
 
 Returns the ISO-8601 duration between `datetime1` and `datetime2`.
 
@@ -165,7 +166,7 @@ xtr.datetime.between(date1, date2)
 
 <br/>
 ## format
-`format(datetime: String, format: String): String`
+`format(datetime: String, outputFormat: String): String`
 
 Returns the given `datetime` formatted in the requested `format`.
 
@@ -180,7 +181,7 @@ xtr.datetime.format('2019-09-20T18:53:41.425Z', 'yyyy/MM/dd')
 
 <br/>
 ## isLeapYear
-`isLeapYear(datetime: String): String`
+`isLeapYear(datetime: String): Boolean`
 
 Returns a `true` if `datetime` is in a leap year, otherwise `false`.
 
@@ -225,7 +226,7 @@ xtr.datetime.now()
 
 <br/>
 ## parse
-`parse(datetime: String|Number, format: String): String`
+`parse(datetime: String|Number, inputFormat: String): String`
 
 Returns an ISO-8601 extended offset date-time from the given `datetime` using the specified `format`.
 
@@ -290,7 +291,7 @@ xtr.datetime.toLocalDateTime('2019-07-04T21:00:00Z')
 
 <br/>
 ## toLocalTime
-`toLocalTime(datetime: String, format: String): String`
+`toLocalTime(datetime: String): String`
 
 Returns the given `datetime` without date or offset.
 
@@ -341,7 +342,7 @@ Returns the current day at midnight.
 
 **Example**
 ```
-xtr.datetime.today
+xtr.datetime.today()
 ```
 
 **Result**
@@ -357,7 +358,7 @@ Returns the next day at midnight.
 
 **Example**
 ```
-xtr.datetime.tomorrow
+xtr.datetime.tomorrow()
 ```
 
 **Result**
@@ -373,7 +374,7 @@ Returns the previous day at midnight.
 
 **Example**
 ```
-xtr.datetime.yesterday
+xtr.datetime.yesterday()
 ```
 
 **Result**

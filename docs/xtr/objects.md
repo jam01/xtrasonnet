@@ -1,9 +1,9 @@
 # xtr.objects
 
 ## all
-`all(obj, Object[A], predicate: Func[(A, String) => Boolean]): Boolean`
+`all(value: Object[A], func: Func[(A, String) => Boolean]): Boolean`
 
-Returns `true` if all entries in `obj` satisfy the given `predicate`, otherwise `false`. `predicate` must accept an `A` and its corresponding `String` key.
+Returns `true` if all entries in `value` satisfy the given `func`, otherwise `false`. `func` must accept an `A` and its corresponding `String` key.
 
 **Example**
 ```
@@ -22,9 +22,9 @@ false
 
 <br/>
 ## any
-`any(obj, Object[A], predicate: Func[(A, String) => Boolean]): Boolean`
+`any(value: Object[A], func: Func[(A, String) => Boolean]): Boolean`
 
-Returns `true` if any entry in `obj` satisfies the given `predicate`, otherwise `false`. `predicate` must accept an `A` and its corresponding `String` key.
+Returns `true` if any entry in `value` satisfies the given `func`, otherwise `false`. `func` must accept an `A` and its corresponding `String` key.
 
 **Example**
 ```
@@ -44,9 +44,9 @@ true
 <br/>
 ## distinctBy
 ### distinctBy func(value)
-`distinctBy(obj: Object[A], Func[(A) => B]): Object[A]`
+`distinctBy(container: Object[A], func: Func[(A) => B]): Object[A]`
 
-Returns a new `Object` with the distinct entries in `obj` using the given `identity` function for comparison. `identity` must accept an `A`.
+Returns a new `Object` with the distinct entries in `container` using the given `func` function for comparison. `func` must accept an `A`.
 
 **Example**
 ```
@@ -68,9 +68,9 @@ xtr.objects.distinctBy(languages, function(lang) lang.name)
 
 <br/>
 ### distinctBy func(value, key)
-`distinctBy(obj: Object[A], Func[(A, String) => B]): Object[A]`
+`distinctBy(container: Object[A], func: Func[(A, String) => B]): Object[A]`
 
-Returns a new `Object` with the distinct entries in `obj` using the given `identity` function for comparison. `identity` must accept an `A` and its corresponding `String` key.
+Returns a new `Object` with the distinct entries in `container` using the given `func` function for comparison. `func` must accept an `A` and its corresponding `String` key.
 
 **Example**
 ```
@@ -80,9 +80,9 @@ local languages = {
     third: { name: 'java', version: '18', isJvm: true }
 };
 
-xtr.objects.distinctBy(languages, function(lang, ordinal)
+xtr.objects.distinctBy(languages, function(lang, key)
     if (lang.name == 'java') then lang.version
-    else ordinal
+    else key
 )
 ```
 **Result**
@@ -96,23 +96,57 @@ xtr.objects.distinctBy(languages, function(lang, ordinal)
 
 <br/>
 ## fromArray
-### fromArray func(value)
-`fromArray(arr: Array[A], Func[(A) => Object[B]): Object[B]`
+### fromArray
+`fromArray(arr: Array[A], keyF: Func[(A) => String]): Object[A]`
 
-Returns a new `Object[B]` containing the entry of every `Object[B]` obtained by applying the given `function` to all elements in `arr`. `function` must accept an `A` value.
+Returns a new `Object` with an entry for every element in `arr`, whose key is the result of applying the given `keyF` to the element, and whose value is the element itself. `keyF` must return a `String`; any other type is an error. `keyF` may instead accept two parameters, the element and its `Number` index. Elements that produce the same key keep only the last one.
+
+**Example**
+```
+local languages = [
+    { name: 'scala', version: '3.1.3' },
+    { name: 'java', version: '19' }
+];
+
+xtr.objects.fromArray(languages, function(lang) lang.name)
+```
+**Result**
+```
+{
+    scala: { name: 'scala', version: '3.1.3' },
+    java: { name: 'java', version: '19' }
+}
+```
 
 <br/>
-### fromArray func(value, idx)
-`fromArray(arr: Array[A], Func[(A, Number) => Object[B]]: Object[B]`
+### fromArray with valueF
+`fromArray(arr: Array[A], keyF: Func[(A) => String], valueF: Func[(A) => B]): Object[B]`
 
-Returns a new `Object[B]` containing the entry of every `Object[B]` obtained by applying the given `function` to all elements in `arr`. `function` must accept an `A` value and its `Number` index.
+Returns a new `Object` with an entry for every element in `arr`, whose key is the result of applying the given `keyF` to the element, and whose value is the result of applying the given `valueF` to it.
+
+**Example**
+```
+local languages = [
+    { name: 'scala', version: '3.1.3' },
+    { name: 'java', version: '19' }
+];
+
+xtr.objects.fromArray(languages, function(lang) lang.name, function(lang) lang.version)
+```
+**Result**
+```
+{
+    scala: '3.1.3',
+    java: '19'
+}
+```
 
 <br/>
 ## fullEqJoin
 ### fullEqJoin
-`fullEqJoin(arrL: Array[Object[A]], arrR: Array[Object[B]], identity: Func[(Object[A]) => String|Number|Boolean], identityR: Func[(Object[B]) => String|Number|Boolean) => Object[C]]): Array[Object[C]]`
+`fullEqJoin(arrL: Array[Object[A]], arrR: Array[Object[B]], funcIdL: Func[(Object[A]) => String|Number|Boolean|Null], funcIdR: Func[(Object[B]) => String|Number|Boolean|Null]): Array[Object[C]]`
 
-Returns a new `Array` with all the objects that exist in `arrL` or in `arrR`, joining those that exist in both with a shallow merge, and using the given `identity` functions to compute equality.
+Returns a new `Array` with all the objects that exist in `arrL` or in `arrR`, joining those that exist in both with a shallow merge, and using the given `funcIdL` and `funcIdR` identity functions to compute equality. On key collision the merged entry keeps the `arrL` object's value.
 
 **Example**
 ```
@@ -148,9 +182,9 @@ xtr.objects.fullEqJoin(customers, orders,
 
 <br/>
 ### fullEqJoin func(left, right) => joined
-`fullEqJoin(arrL: Array[Object[A]], arrR: Array[Object[B]], identity: Func[(Object[A]) => String|Number|Boolean], identityR: Func[(Object[B]) => String|Number|Boolean)score], join: Func[(Object[A], Object[B]) => Object[C]]): Array[Object[C]]`
+`fullEqJoin(arrL: Array[Object[A]], arrR: Array[Object[B]], funcIdL: Func[(Object[A]) => String|Number|Boolean|Null], funcIdR: Func[(Object[B]) => String|Number|Boolean|Null], funcJoin: Func[(Object[A], Object[B]) => Object[C]]): Array[Object[C]]`
 
-Returns a new `Array` with all the objects that exist in `arrL` or in `arrR`, joining those that exist in both with the given `join` function, and using the given `identity` functions to compute equality.
+Returns a new `Array` with all the objects that exist in `arrL` or in `arrR`, joining those that exist in both with the given `funcJoin` function, and using the given `funcIdL` and `funcIdR` identity functions to compute equality.
 
 **Example**
 ```
@@ -185,9 +219,9 @@ xtr.objects.fullEqJoin(customers, orders,
 <br/>
 ## innerEqJoin
 ### innerEqJoin
-`innerEqJoin(arrL: Array[Object[A]], arrR: Array[Object[B]], identity: Func[(Object[A]) => String|Number|Boolean], identityR: Func[(Object[B]) => String|Number|Boolean)]): Array[Object[C]]`
+`innerEqJoin(arrL: Array[Object[A]], arrR: Array[Object[B]], funcIdL: Func[(Object[A]) => String|Number|Boolean|Null], funcIdR: Func[(Object[B]) => String|Number|Boolean|Null]): Array[Object[C]]`
 
-Returns a new `Array` with all the objects that exist in both `arrL` _and_ `arrR`, using the given `identity` functions to compute equality, and joined using a shallow merge.
+Returns a new `Array` with all the objects that exist in both `arrL` _and_ `arrR`, using the given `funcIdL` and `funcIdR` identity functions to compute equality, and joined using a shallow merge. On key collision the merged entry keeps the `arrL` object's value.
 
 **Example**
 ```
@@ -221,9 +255,9 @@ xtr.objects.innerEqJoin(customers, orders,
 
 <br/>
 ### innerEqJoin func(left, right) => joined
-`innerEqJoin(arrL: Array[Object[A]], arrR: Array[Object[B]], identity: Func[(Object[A]) => String|Number|Boolean], identityR: Func[(Object[B]) => String|Number|Boolean), join: Func[(Object[A], Object[B]) => Object[C]]): Array[Object[C]]`
+`innerEqJoin(arrL: Array[Object[A]], arrR: Array[Object[B]], funcIdL: Func[(Object[A]) => String|Number|Boolean|Null], funcIdR: Func[(Object[B]) => String|Number|Boolean|Null], funcJoin: Func[(Object[A], Object[B]) => Object[C]]): Array[Object[C]]`
 
-Returns a new `Array` with all the objects that exist in both `arrL` _and_ `arrR`, using the given `identity` functions to compute equality, and joined using the given `join` function.
+Returns a new `Array` with all the objects that exist in both `arrL` _and_ `arrR`, using the given `funcIdL` and `funcIdR` identity functions to compute equality, and joined using the given `funcJoin` function.
 
 **Example**
 ```
@@ -255,10 +289,10 @@ xtr.objects.innerEqJoin(customers, orders,
 
 <br/>
 ## leftEqJoin
-### leftEqJoin func(left, right) => joined
-`leftEqJoin(arrL: Array[Object[A]], arrR: Array[Object[B]], identity: Func[(Object[A]) => String|Number|Boolean], identityR: Func[(Object[B]) => String|Number|Boolean)]): Array[Object[C]]`
+### leftEqJoin
+`leftEqJoin(arrL: Array[Object[A]], arrR: Array[Object[B]], funcIdL: Func[(Object[A]) => String|Number|Boolean|Null], funcIdR: Func[(Object[B]) => String|Number|Boolean|Null]): Array[Object[C]]`
 
-Returns a new `Array` with all the objects that exist in `arrL`, joined using a shallow merge with those that also exist in `arrR`, using the given `identity` functions to compute equality.
+Returns a new `Array` with all the objects that exist in `arrL`, joined using a shallow merge with those that also exist in `arrR`, using the given `funcIdL` and `funcIdR` identity functions to compute equality. On key collision the merged entry keeps the `arrL` object's value.
 
 **Example**
 ```
@@ -293,9 +327,9 @@ xtr.objects.leftEqJoin(customers, orders,
 
 <br/>
 ### leftEqJoin func(left, right) => joined
-`leftEqJoin(arrL: Array[Object[A]], arrR: Array[Object[B]], identity: Func[(Object[A]) => String|Number|Boolean], identityR: Func[(Object[B]) => String|Number|Boolean), join: Func[(Object[A], Object[B]) => Object[C]]): Array[Object[C]]`
+`leftEqJoin(arrL: Array[Object[A]], arrR: Array[Object[B]], funcIdL: Func[(Object[A]) => String|Number|Boolean|Null], funcIdR: Func[(Object[B]) => String|Number|Boolean|Null], funcJoin: Func[(Object[A], Object[B]) => Object[C]]): Array[Object[C]]`
 
-Returns a new `Array` with all the objects that exist in `arrL`, joined using the given `join` function with those that also exist in `arrR`, using the given `identity` functions to compute equality.
+Returns a new `Array` with all the objects that exist in `arrL`, joined using the given `funcJoin` function with those that also exist in `arrR`, using the given `funcIdL` and `funcIdR` identity functions to compute equality.
 
 **Example**
 ```

@@ -1,9 +1,9 @@
 # xtr.numbers
 
 ## ofBinary
-`ofBinary(binary: String | Number): Number`
+`ofBinary(value: String | Number): Number`
 
-Returns the `Number` representation for the given `binary`.
+Returns the `Number` representation for the given binary `value`.
 
 **Example**
 ```
@@ -16,9 +16,9 @@ xtr.numbers.ofBinary(1100100)
 
 <br/>
 ## ofHex
-`ofHex(hexadecimal: String): Number`
+`ofHex(value: String | Number): Number`
 
-Returns the `Number` representation for the given `hexadecimal`.
+Returns the `Number` representation for the given hexadecimal `value`.
 
 **Example**
 ```
@@ -31,9 +31,9 @@ xtr.numbers.ofHex('F')
 
 <br/>
 ## ofOctal
-`ofOctal(octal: String | Number): Number`
+`ofOctal(str: String | Number): Number`
 
-Returns the `Number` representation for the given `octal`.
+Returns the `Number` representation for the given octal `str`.
 
 **Example**
 ```
@@ -46,13 +46,13 @@ xtr.numbers.ofOctal(107136)
 
 <br/>
 ## ofRadix
-`ofRadix(value: String | Number, n: Number): Number`
+`ofRadix(value: String | Number, num: Number): Number`
 
-Returns the `Number` representation for the given Base-`n` `value`
+Returns the `Number` representation for the given Base-`num` `value`. The radix must be between `2` and `36`.
 
 **Example**
 ```
-xtr.numbers.ofRadixNumber('10', 3)
+xtr.numbers.ofRadix('10', 3)
 ```
 **Result**
 ```
@@ -61,7 +61,7 @@ xtr.numbers.ofRadixNumber('10', 3)
 
 <br/>
 ## toBinary
-`toBinary(number: Number): String`
+`toBinary(value: Number | String): String`
 
 Returns the binary representation for the given `number`.
 
@@ -76,7 +76,7 @@ xtr.numbers.toBinary(100)
 
 <br/>
 ## toHex
-`toHex(number: Number): String`
+`toHex(value: Number | String): String`
 
 Returns the hexadecimal representation for the given `number`.
 
@@ -91,7 +91,7 @@ xtr.numbers.toHex(15)
 
 <br/>
 ## toOctal
-`toOctal(number: Number): String`
+`toOctal(value: Number | String): String`
 
 Returns the octal representation for the given `number`.
 
@@ -106,7 +106,7 @@ xtr.numbers.toOctal(36446)
 
 <br/>
 ## toRadix
-`toRadix(value: Number, n: Number): String`
+`toRadix(value: Number | String, num: Number): String`
 
 Returns the Base-`n` representation for the given `value` as a `String`.
 

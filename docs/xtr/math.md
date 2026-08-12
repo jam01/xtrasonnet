@@ -16,9 +16,9 @@ xtr.math.abs(-1)
 
 <br/>
 ## acos
-`acos(num: Number): Number`
+`acos(x: Number): Number`
 
-Returns the arc cosine of the given `num`.
+Returns the arc cosine of the given `x`.
 
 **Example**
 ```
@@ -31,9 +31,9 @@ xtr.math.acos(1)
 
 <br/>
 ## asin
-`asin(num: Number): Number`
+`asin(x: Number): Number`
 
-Returns the arc sine of the given `num`.
+Returns the arc sine of the given `x`.
 
 **Example**
 ```
@@ -46,9 +46,9 @@ xtr.math.asin(1)
 
 <br/>
 ## atan
-`atan(num: Number): Number`
+`atan(x: Number): Number`
 
-Returns the arc tangent of the given `num`.
+Returns the arc tangent of the given `x`.
 
 **Example**
 ```
@@ -61,9 +61,9 @@ xtr.math.atan(1)
 
 <br/>
 ## avg
-`avg(arr: Array[Number]): Number`
+`avg(array: Array[Number]): Number`
 
-Returns the average of the numbers in `arr`.
+Returns the average of the numbers in `array`.
 
 **Example**
 ```
@@ -91,9 +91,9 @@ xtr.math.ceil(1.01)
 
 <br/>
 ## clamp
-`clamp(num: Number, min: Number, max: Number): Number`
+`clamp(x: Number, minVal: Number, maxVal: Number): Number`
 
-Returns `num` if it exists between `min` and `max`, otherwise the one that is closest.
+Returns `x` if it exists between `minVal` and `maxVal`, otherwise the one that is closest.
 
 **Example**
 ```
@@ -106,9 +106,9 @@ xtr.math.clamp(100, 0, 10)
 
 <br/>
 ## cos
-`cos(num: Number): Number`
+`cos(x: Number): Number`
 
-Returns the cosine of the given`num`.
+Returns the cosine of the given `x`.
 
 **Example**
 ```
@@ -121,9 +121,9 @@ xtr.math.cos(0)
 
 <br/>
 ## exp
-`exp(num: Number): Number`
+`exp(x: Number): Number`
 
-Returns Euler's number e, to the power of `num`.
+Returns Euler's number e, to the power of `x`.
 
 **Example**
 ```
@@ -136,9 +136,9 @@ xtr.math.exp(2)
 
 <br/>
 ## exponent
-`exponent(num: Number): Number`
+`exponent(x: Number): Number`
 
-Returns the exponent portion of the double-precision binary floating-point representation (IEEE 754:binary64) of the given `num`.
+Returns the exponent portion of the double-precision binary floating-point representation (IEEE 754:binary64) of the given `x`.
 
 **Example**
 ```
@@ -166,9 +166,9 @@ xtr.math.floor(4.99)
 
 <br/>
 ## log
-`log(num: Number): Number`
+`log(x: Number): Number`
 
-Returns the natural logarithm of the given `num`.
+Returns the natural logarithm of the given `x`.
 
 **Example**
 ```
@@ -181,9 +181,9 @@ xtr.math.log(2)
 
 <br/>
 ## mantissa
-`mantissa(num: Number): Number`
+`mantissa(x: Number): Number`
 
-Returns the fraction portion (aka significand) of the double-precision binary floating-point representation (IEEE 754:binary64) of the given `num`.
+Returns the fraction portion (aka significand) of the double-precision binary floating-point representation (IEEE 754:binary64) of the given `x`.
 
 **Example**
 ```
@@ -196,7 +196,7 @@ xtr.math.mantissa(2)
 
 <br/>
 ## pow
-`pow(num: Number1, num: Number2)`
+`pow(num1: Number, num2: Number): Number`
 
 Returns the value of `num1` raised to the power of `num2`.
 
@@ -211,13 +211,13 @@ xtr.math.pow(2, 2)
 
 <br/>
 ## random
-`random`
+`random(): Number`
 
 Returns a pseudo-random double-precision floating-point number between `0` and `1`.
 
 **Example**
 ```
-xtr.math.random
+xtr.math.random()
 ```
 **Result**
 ```
@@ -228,7 +228,7 @@ xtr.math.random
 ## randomInt
 `randomInt(num: Number): Number`
 
-Returns a pseudo-random integer between 0 (inclusive) and the given`num` (exclusive).
+Returns a pseudo-random integer between 0 (inclusive) and the given `num` (exclusive). A `num` of zero or less is an error.
 
 **Example**
 ```
@@ -241,7 +241,7 @@ xtr.math.randomInt(500)
 
 <br/>
 ## round
-`round(num: Number, mode: String = 'half-up', precision: Number = '0'): Number`
+`round(num: Number, mode: String = 'half-up', precision: Number = 0): Number`
 
 Rounds the given `num` using the `mode` and `precision` requested. Supported modes are `up`, `down`, `half-up`, `half-down`, `ceiling`, `floor`, and `half-even`.
 
@@ -256,9 +256,9 @@ xtr.math.round(2.5)
 
 <br/>
 ## sin
-`sin(num: Number): Number`
+`sin(x: Number): Number`
 
-Returns the sine of the given `num`.
+Returns the sine of the given `x`.
 
 **Example**
 ```
@@ -286,9 +286,9 @@ xtr.math.sqrt(4)
 
 <br/>
 ## sum
-`sum(arr: Array[Number])`
+`sum(array: Array[Number]): Number`
 
-Returns the sum of all numbers in `arr`.
+Returns the sum of all numbers in `array`.
 
 **Example**
 ```
@@ -301,9 +301,9 @@ xtr.math.sum([10, 20, 30])
 
 <br/>
 ## tan
-`tan(num: Number): Number`
+`tan(x: Number): Number`
 
-Returns the tangent of the given `num`.
+Returns the tangent of the given `x`.
 
 **Example**
 ```

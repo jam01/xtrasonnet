@@ -3,9 +3,9 @@
 The duration module leverages the [ISO-8601 duration](https://en.wikipedia.org/wiki/ISO_8601#Durations) format.
 
 ## of
-`of(parts: Object[Number]): String`
+`of(obj: Object[Number]): String`
 
-Returns the ISO-8601 duration of the given `parts`, an `Object` of the form:
+Returns the ISO-8601 duration of the given `obj`, an `Object` of the form:
 
 ```
 {
@@ -34,9 +34,9 @@ xtr.duration.of(parts)
 
 <br/>
 ## toParts
-`toParts(duration: String): Object[Number]`
+`toParts(str: String): Object[Number]`
 
-Returns the constituent parts of the given `duration`, as an `Object` of the form:
+Returns the constituent parts of the given `str` duration, as an `Object` of the form:
 
 ```
 {

@@ -1,9 +1,9 @@
 # xtr.strings
 
 ## appendIfMissing
-`appendIfMissing(str: String, suffix: String): String`
+`appendIfMissing(str1: String, str2: String): String`
 
-Returns `str`, appended with `suffix` if it does not already end with `suffix`.
+Returns `str1`, appended with `str2` if it does not already end with `str2`.
 
 **Example**
 ```
@@ -31,9 +31,9 @@ xtr.strings.capitalize('hello world')
 
 <br/>
 ## charCode
-`charCode(char: String): String`
+`charCode(str: String): Number`
 
-Returns the character-code for the given `char`.
+Returns the character-code for the given `str`, a single character.
 
 **Example**
 ```
@@ -46,9 +46,9 @@ xtr.strings.charCode('*')
 
 <br/>
 ## charCodeAt
-`charCodeAt(str: String, index: Number): String`
+`charCodeAt(str: String, num: Number): Number`
 
-Returns the character-code for the character at the given `index` in `str`.
+Returns the character-code for the character at the given `num` index in `str`.
 
 **Example**
 ```
@@ -61,7 +61,7 @@ xtr.strings.charCodeAt('_*_', 1)
 
 <br/>
 ## ofCharCode
-`ofCharCode(code: Number): String`
+`ofCharCode(num: Number): String`
 
 Returns the character for the given character-code.
 
@@ -76,7 +76,7 @@ xtr.strings.ofCharCode(42)
 
 <br/>
 ## isAlpha
-`isAlpha(str: String): String`
+`isAlpha(str: String|Number|Boolean): Boolean`
 
 Returns `true` if the given `str` contains only alphabetic characters, otherwise `false`.
 
@@ -91,7 +91,7 @@ true
 
 <br/>
 ## isAlphanumeric
-`isAlphanumeric(str: String): String`
+`isAlphanumeric(str: String|Number|Boolean): Boolean`
 
 Returns `true` if the given `str` contains only alphanumeric characters, otherwise `false`.
 
@@ -106,7 +106,7 @@ true
 
 <br/>
 ## isLowerCase
-`isLowerCase(str: String): String`
+`isLowerCase(str: String): Boolean`
 
 Returns `true` if the alphabetic characters in the given `str` are all lowercase, otherwise `false`.
 
@@ -121,7 +121,7 @@ true
 
 <br/>
 ## isNumeric
-`isNumeric(str: String): String`
+`isNumeric(str: String|Number|Boolean): Boolean`
 
 Returns `true` if the given `str` contains only numeric characters.
 
@@ -136,9 +136,9 @@ true
 
 <br/>
 ## isUpperCase
-`isUpperCase(str: String): String`
+`isUpperCase(str: String): Boolean`
 
-Returns `true` if the alphabetic characters in the given `str` are all uppercse, otherwise `false`.
+Returns `true` if the alphabetic characters in the given `str` are all uppercase, otherwise `false`.
 
 **Example**
 ```
@@ -151,9 +151,9 @@ true
 
 <br/>
 ## leftPad
-`leftPad(str: String, size: Number, char: String): String`
+`leftPad(str: String|Number, offset: Number, pad: String): String`
 
-Returns `str` prepended with enough repetitions of `char` required to meet the given `size`, otherwise returns `str` if its size is already equal or longer than `size`. Only the first character of `char` is used, and it must not be empty. `str` itself is never altered.
+Returns `str` prepended with enough repetitions of `pad` required to meet the given `offset` size; a `str` already that long -- including any negative or zero `offset` -- is returned unchanged. Only the first character of `pad` is used, and an empty `pad` is an error. A `Number` value for `str` is stringified the same way as `xtr.toString`.
 
 **Example**
 ```
@@ -198,9 +198,9 @@ false
 
 <br/>
 ## numOrdinalOf
-`numOrdinalOf(num: Number): String`
+`numOrdinalOf(num: Number|String): String`
 
-Returns the numeric ordinal name for the given `num`.
+Returns the numeric ordinal name for the given `num`. A `String` is accepted if its contents are numeric; anything else is an error.
 
 **Example**
 ```
@@ -214,9 +214,9 @@ xtr.strings.numOrdinalOf(1)
 [//]: # ( todo: document algo)
 <br/>
 ## pluralize
-`pluralize(word: String): String`
+`pluralize(value: String): String`
 
-Returns the plural of the given `word`.
+Returns the plural of the given `value`.
 
 **Example**
 ```
@@ -229,9 +229,9 @@ xtr.strings.pluralize('car')
 
 <br/>
 ## prependIfMissing
-`prependIfMissing(str: String, prefix: String): String`
+`prependIfMissing(str1: String, str2: String): String`
 
-Returns `str`, prepended with `prefix` if it does not already start with `prefix`.
+Returns `str1`, prepended with `str2` if it does not already start with `str2`.
 
 **Example**
 ```
@@ -244,9 +244,9 @@ xtr.strings.prependIfMissing('World', 'Hello ')
 
 <br/>
 ## repeat
-`repeat(str: String, n: Number): String`
+`repeat(str: String, num: Number): String`
 
-Returns `str` repeated `n` times.
+Returns `str` repeated `num` times.
 
 **Example**
 ```
@@ -259,9 +259,9 @@ xtr.strings.repeat('hey ', 2)
 
 <br/>
 ## rightPad
-`rightPad(str: String, size: Number, char: String): String`
+`rightPad(str: String|Number, offset: Number, pad: String): String`
 
-Returns `str` appended with enough repetitions of `char` required to meet the given `size`, otherwise returns `str` if its size is already equal or longer than `size`. Only the first character of `char` is used, and it must not be empty.
+Returns `str` appended with enough repetitions of `pad` required to meet the given `offset` size; a `str` already that long -- including any negative or zero `offset` -- is returned unchanged. Only the first character of `pad` is used, and an empty `pad` is an error. A `Number` value for `str` is stringified the same way as `xtr.toString`.
 
 **Example**
 ```
@@ -292,9 +292,9 @@ xtr.strings.scan('write to a1@b1.com or a2@b2.com', '(\\w+)@([\\w.]+)')
 
 <br/>
 ## singularize
-`singularize(word: String): String`
+`singularize(value: String): String`
 
-Returns the singular of the given `word`.
+Returns the singular of the given `value`.
 
 **Example**
 ```
@@ -307,9 +307,9 @@ xtr.strings.singularize('cars')
 
 <br/>
 ## substringAfter
-`substringAfter(str1: String, str2: String): String`
+`substringAfter(value: String, sep: String): String`
 
-Returns the contents of `str1` after the first occurrence of `str2`, otherwise returns `str1` if it does not contain `str2`.
+Returns the contents of `value` after the first occurrence of `sep`, or an empty `String` if `value` does not contain `sep`.
 
 **Example**
 ```
@@ -322,9 +322,9 @@ xtr.strings.substringAfter('!XHelloXWorldXAfter', 'X')
 
 <br/>
 ## substringAfterLast
-`substringAfterLast(str1: String, str2: String): String`
+`substringAfterLast(value: String, sep: String): String`
 
-Returns the contents of `str1` after the last occurrence of `str2`, otherwise returns `str1` if it does not contain `str2`.
+Returns the contents of `value` after the last occurrence of `sep`, or an empty `String` if `value` does not contain `sep`.
 
 **Example**
 ```
@@ -337,9 +337,9 @@ xtr.strings.substringAfterLast('!XHelloXWorldXAfter', 'X')
 
 <br/>
 ## substringBefore
-`substringBefore(str1: String, str2: String): String`
+`substringBefore(value: String, sep: String): String`
 
-Returns the contents of `str1` before the first occurrence of `str2`, otherwise returns `str1` if it does not contain `str2`.
+Returns the contents of `value` before the first occurrence of `sep`, or an empty `String` if `value` does not contain `sep`.
 
 **Example**
 ```
@@ -352,9 +352,9 @@ xtr.strings.substringBefore('!XHelloXWorldXAfter', 'X')
 
 <br/>
 ## substringBeforeLast
-`substringBeforeLast(str1: String, str2: String): String`
+`substringBeforeLast(value: String, sep: String): String`
 
-Returns the contents of `str1` before the last occurrence of `str2`, otherwise returns `str1` if it does not contain `str2`.
+Returns the contents of `value` before the last occurrence of `sep`, or an empty `String` if `value` does not contain `sep`.
 
 **Example**
 ```
@@ -412,9 +412,9 @@ xtr.strings.toSnakeCase('Hello WorldX')
 
 <br/>
 ## unwrap
-`unwrap(str: String, wrap: String): String`
+`unwrap(value: String, wrapper: String): String`
 
-Returns `str` without the given `wrap` as prefix and suffix, if found.
+Returns `value` without the given `wrapper` as prefix and suffix, when both are present. When only one is present it is moved to the other side: a prefix-only match strips the prefix and appends the `wrapper`, a suffix-only match strips the suffix and prepends it.
 
 **Example**
 ```
@@ -427,7 +427,7 @@ xtr.strings.unwrap('_Hello, world!_', '_')
 
 <br/>
 ## wrap
-`wrap(str: String, wrap: String): String`
+`wrap(value: String, wrapper: String): String`
 
 Returns `str`, prepended and appended with `wrap`.
 
@@ -442,7 +442,7 @@ xtr.strings.wrap('_Hello, world!', '_')
 
 <br/>
 ## wrapIfMissing
-`wrapIfMissing(str: String, wrap: String): String`
+`wrapIfMissing(value: String, wrapper: String): String`
 
 Returns `str`, prepended and appended with `wrap`, if not found.
 
