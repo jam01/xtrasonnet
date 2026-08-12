@@ -305,6 +305,7 @@ object Datetime extends AbstractFunctionModule {
      * - 807cd78abf40551644067455338e5b2a683e86bd: upgraded sjsonnet
      * - fc930f88524269cb6ddfa26b24f8c34df5502756: refactor datetime and period modules
      * - a192423d89a9bdb898a3d3314db306a4a9d10773: rename epoch format to unix
+     * - ac43b61a66a17dd9107f1aa27a4965c245d61caa: reject unknown part names
      */
     builtin("of", "obj") {
       (pos, ev, obj: Val.Obj) =>
