@@ -303,7 +303,7 @@
                                         <dependency>
                                             <groupId>org.scala-lang</groupId>
                                             <artifactId>scaladoc_3</artifactId>
-                                            <version>3.3.7</version>
+                                            <version>3.8.4</version>
                                         </dependency>
                                     </dependencies>
                                 </configuration>
