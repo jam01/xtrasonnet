@@ -183,4 +183,38 @@ public class StringsTest {
     public void wrapIfMissing() {
         assertEquals(transform("'_Hello, world!_'"), transform("xtr.strings.wrapIfMissing('_Hello, world!', '_')"));
     }
+
+    @Test
+    public void matchesRegex() {
+        assertEquals(transform("true"), transform("xtr.strings.matches('user@example.com', '\\\\w+@\\\\w+\\\\.\\\\w+')"));
+        // the entire string must match
+        assertEquals(transform("false"), transform("xtr.strings.matches('say user@example.com twice', '\\\\w+@\\\\w+\\\\.\\\\w+')"));
+        assertEquals(transform("false"), transform("xtr.strings.matches('user at example dot com', '\\\\w+@\\\\w+\\\\.\\\\w+')"));
+    }
+
+    @Test
+    public void matchRegex() {
+        assertEquals(transform("['user@example.com', 'user', 'example.com']"),
+                transform("xtr.strings.match('user@example.com', '(\\\\w+)@([\\\\w.]+)')"));
+        // no match yields null, which composes with the ?? operator
+        assertEquals(transform("null"), transform("xtr.strings.match('no email here', '(\\\\w+)@([\\\\w.]+)')"));
+        assertEquals(transform("'none'"), transform("xtr.strings.match('no email here', '(\\\\w+)@([\\\\w.]+)') ?? 'none'"));
+        // groups that did not participate in the match are null
+        assertEquals(transform("['ab', 'b', null]"), transform("xtr.strings.match('ab', 'a(b)|a(c)')"));
+    }
+
+    @Test
+    public void scanRegex() {
+        assertEquals(transform("[['a1@b1.com', 'a1', 'b1.com'], ['a2@b2.com', 'a2', 'b2.com']]"),
+                transform("xtr.strings.scan('write to a1@b1.com or a2@b2.com', '(\\\\w+)@([\\\\w.]+)')"));
+        assertEquals(transform("[]"), transform("xtr.strings.scan('nothing to find', '(\\\\d+)')"));
+        // no capture groups: each match is just the matched string
+        assertEquals(transform("[['1'], ['2']]"), transform("xtr.strings.scan('1 and 2', '\\\\d')"));
+    }
+
+    @Test
+    public void invalidRegex() {
+        var ex = assertThrows(XtrasonnetException.class, () -> transform("xtr.strings.matches('abc', '[')"));
+        assertTrue(ex.getMessage().contains("Invalid regular expression"), ex.getMessage());
+    }
 }

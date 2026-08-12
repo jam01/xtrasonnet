@@ -165,6 +165,38 @@ xtr.strings.leftPad('Hello', 10, ' ')
 ```
 
 <br/>
+## match
+`match(str: String, regex: String): Array[String|Null] | Null`
+
+Matches the entire `str` against the given [Java regular expression](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/regex/Pattern.html) `regex`.
+
+Returns an `Array` with the entire match followed by the value of each capture group, where groups that did not participate in the match are `null`. Returns `null` if `str` does not match, which composes with the `??` operator.
+
+**Example**
+```
+xtr.strings.match('user@example.com', '(\\w+)@([\\w.]+)')
+```
+**Result**
+```
+['user@example.com', 'user', 'example.com']
+```
+
+<br/>
+## matches
+`matches(str: String, regex: String): Boolean`
+
+Reports whether the entire `str` matches the given [Java regular expression](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/regex/Pattern.html) `regex`.
+
+**Example**
+```
+xtr.strings.matches('say user@example.com twice', '\\w+@[\\w.]+')
+```
+**Result**
+```
+false
+```
+
+<br/>
 ## numOrdinalOf
 `numOrdinalOf(num: Number): String`
 
@@ -241,6 +273,23 @@ xtr.strings.rightPad('Hello', 10, ' ')
 ```
 
 [//]: # (todo: document algo)
+<br/>
+## scan
+`scan(str: String, regex: String): Array[Array[String|Null]]`
+
+Finds every match of the given [Java regular expression](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/regex/Pattern.html) `regex` within `str`.
+
+Returns an `Array` with one element per match, each an `Array` of the entire match followed by the value of each capture group, where groups that did not participate in the match are `null`. Returns an empty `Array` if there are no matches.
+
+**Example**
+```
+xtr.strings.scan('write to a1@b1.com or a2@b2.com', '(\\w+)@([\\w.]+)')
+```
+**Result**
+```
+[['a1@b1.com', 'a1', 'b1.com'], ['a2@b2.com', 'a2', 'b2.com']]
+```
+
 <br/>
 ## singularize
 `singularize(word: String): String`

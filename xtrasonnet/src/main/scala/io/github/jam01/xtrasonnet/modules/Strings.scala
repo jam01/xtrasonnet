@@ -8,10 +8,12 @@ package io.github.jam01.xtrasonnet.modules
  */
 
 import sjsonnet.functions.AbstractFunctionModule
-import sjsonnet.{Error, Val}
+import sjsonnet.{Error, Lazy, Position, Val}
 
 import java.text.DecimalFormat
+import java.util.regex.{Matcher, Pattern, PatternSyntaxException}
 import scala.collection.mutable
+import scala.collection.mutable.ArrayBuffer
 
 object Strings extends AbstractFunctionModule {
   override def name: String = "strings"
@@ -322,6 +324,40 @@ object Strings extends AbstractFunctionModule {
       (_, _, str: String, wrapper: String) => wrapper + str + wrapper
     },
 
-    // todo: regex functions -- scan, match, matches -- are still missing from this module
+    builtin("match", "str", "regex") {
+      (pos, _, str: String, regex: String) =>
+        val matcher = compile(regex).matcher(str)
+        if (!matcher.matches()) Val.Null(pos)
+        else Val.Arr(pos, groupsOf(matcher, pos))
+    },
+
+    builtin("matches", "str", "regex") {
+      (_, _, str: String, regex: String) => compile(regex).matcher(str).matches()
+    },
+
+    builtin("scan", "str", "regex") {
+      (pos, _, str: String, regex: String) =>
+        val matcher = compile(regex).matcher(str)
+        val out = new ArrayBuffer[Lazy]()
+        while (matcher.find()) out.append(Val.Arr(pos, groupsOf(matcher, pos)))
+        Val.Arr(pos, out.toArray)
+    }
   )
+
+  private def compile(regex: String): Pattern =
+    try Pattern.compile(regex) catch {
+      case e: PatternSyntaxException => Error.fail("Invalid regular expression: " + e.getMessage)
+    }
+
+  /** The current match as [entire match, capture groups...], null for groups that didn't participate. */
+  private def groupsOf(matcher: Matcher, pos: Position): Array[Lazy] = {
+    val groups = new Array[Lazy](matcher.groupCount() + 1)
+    var i = 0
+    while (i <= matcher.groupCount()) {
+      val group = matcher.group(i)
+      groups(i) = if (group == null) Val.Null(pos) else Val.Str(pos, group)
+      i = i + 1
+    }
+    groups
+  }
 }
