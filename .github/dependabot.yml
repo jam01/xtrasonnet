@@ -19,6 +19,14 @@ updates:
     ignore:
       # the engine depends on a fork published under this groupId, not on upstream releases
       - dependency-name: "io.github.jam01:sjsonnet_3"
+      # jackson is a floor the host application overrides, so routine bumps only force versions on
+      # them. Listing the three version-update types leaves security updates open: a CVE still gets
+      # a PR, at the minimum patched version
+      - dependency-name: "com.fasterxml.jackson*"
+        update-types:
+          - "version-update:semver-major"
+          - "version-update:semver-minor"
+          - "version-update:semver-patch"
 
   - package-ecosystem: github-actions
     directory: "/"
