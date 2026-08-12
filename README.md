@@ -68,6 +68,7 @@ xtrasonnet includes a `DataFormatPlugin` for each of the following:
 * XML (application/xml)
 * CSV (application/csv)
 * Java (application/x-java-object)
+* Excel (application/vnd.ms-excel)
 * text/plain
 
 ## What kind of additions to the jsonnet language?
@@ -220,7 +221,7 @@ local myObj = {
 
 ### What kind of functions are available?
 
-For a full reference see the [`xtr` docs](https://josemontoya.io/xtrasonnet/datasonnet/latest/index.html).
+For a full reference see the [`xtr` docs](https://jam01.github.io/xtrasonnet/xtr/).
 
 The `xtr` library is written natively (vs written as jsonnet code) and provides an extensive set of functions.
 
