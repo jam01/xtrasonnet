@@ -85,6 +85,13 @@ public class StringsTest {
     }
 
     @Test
+    public void pad_stringifiesNumbersLikeToString() {
+        assertEquals(transform("'0003.7'"), transform("xtr.strings.leftPad(3.7, 6, '0')"));
+        assertEquals(transform("'3.7000'"), transform("xtr.strings.rightPad(3.7, 6, '0')"));
+        assertEquals(transform("'  42'"), transform("xtr.strings.leftPad(42, 4, ' ')"));
+    }
+
+    @Test
     public void capitalize_withoutAnyAlphanumericCharacter() {
         assertEquals(transform("'---'"), transform("xtr.strings.capitalize('---')"));
         assertEquals(transform("''"), transform("xtr.strings.capitalize('')"));

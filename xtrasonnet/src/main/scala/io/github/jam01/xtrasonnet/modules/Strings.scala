@@ -8,9 +8,8 @@ package io.github.jam01.xtrasonnet.modules
  */
 
 import sjsonnet.functions.AbstractFunctionModule
-import sjsonnet.{Error, Lazy, Position, Val}
+import sjsonnet.{Error, Lazy, Materializer, Position, Val}
 
-import java.text.DecimalFormat
 import java.util.regex.{Matcher, Pattern, PatternSyntaxException}
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -164,11 +163,10 @@ object Strings extends AbstractFunctionModule {
     },
 
     builtin("leftPad", "str", "offset", "pad") {
-      (_, _, str: Val, size: Int, pad: String) =>
+      (_, ev, str: Val, size: Int, pad: String) =>
         str match {
           case str: Val.Str => padStart(str.value, size, pad)
-          //TODO change to use sjsonnet's Format and DecimalFormat
-          case x: Val.Num => padStart(new DecimalFormat("0.#").format(x.asInt), size, pad)
+          case x: Val.Num => padStart(Materializer.stringify(x)(ev), size, pad)
           case x => Error.fail("Expected String, got: " + x.prettyName)
         }
     },
@@ -227,11 +225,10 @@ object Strings extends AbstractFunctionModule {
     },
 
     builtin("rightPad", "str", "offset", "pad") {
-      (_, _, value: Val, offset: Int, pad: String) =>
+      (_, ev, value: Val, offset: Int, pad: String) =>
         value match {
           case str: Val.Str => str.value.padTo(offset, padChar(pad))
-          //TODO change to use sjsonnet's Format and DecimalFormat
-          case x: Val.Num => new DecimalFormat("0.#").format(x.asInt).padTo(offset, padChar(pad))
+          case x: Val.Num => Materializer.stringify(x)(ev).padTo(offset, padChar(pad))
           case x => Error.fail("Expected String, got: " + x.prettyName)
         }
     },
