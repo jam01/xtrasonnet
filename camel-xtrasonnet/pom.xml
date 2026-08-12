@@ -21,7 +21,7 @@
         <maven-surefire-plugin-version>3.2.5</maven-surefire-plugin-version>
         <!-- end -->
         <!-- matching camel parent -->
-        <build-helper-maven-plugin-version>3.5.0</build-helper-maven-plugin-version>
+        <build-helper-maven-plugin-version>3.6.1</build-helper-maven-plugin-version>
         <compiler.fork>true</compiler.fork>
         <camel.surefire.fork.vmargs>-XX:+ExitOnOutOfMemoryError</camel.surefire.fork.vmargs>
         <camel.surefire.forkCount>1</camel.surefire.forkCount>
