@@ -109,6 +109,21 @@ public class XMLPluginTest {
     }
 
     @Test
+    public void default_xmlns_roundTrip() throws JSONException {
+        // a default namespace declaration reads under the documented _def key...
+        var json = new Transformer("payload")
+                .transform(Document.of("<root xmlns='http://example.org/ns'><a>1</a></root>", MediaTypes.APPLICATION_XML));
+        JSONAssert.assertEquals("{\"root\":{\"_xmlns\":{\"_def\":\"http://example.org/ns\"},\"a\":{\"_text\":\"1\"}}}",
+                json.getContent(), true);
+
+        // ...and writes back as a well-formed default declaration, not 'xmlns:='
+        var xml = new Transformer(json.getContent())
+                .transform(Documents.Null(), Collections.emptyMap(), MediaTypes.APPLICATION_XML);
+        assertThat(xml.getContent(), CompareMatcher.isSimilarTo("<root xmlns='http://example.org/ns'><a>1</a></root>")
+                .ignoreWhitespace().throwComparisonFailure());
+    }
+
+    @Test
     public void read_rejectsDoctypeAndExternalEntities() {
         // XMLLoader disables DTDs and both external entity classes. Nothing asserted that, so a
         // regression would have shipped silently; this is one line away at all times.

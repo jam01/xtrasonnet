@@ -157,7 +157,7 @@ final class BadgerFishVisitor(val params: EffectiveParams) {
               val k = kvv.getKey
               val vv = kvv.getValue
               out.append(" xmlns")
-              if (k != null && k != DEFAULT_NS_KEY) out.append(':').append(k)
+              if (k != null && k.nonEmpty && k != DEFAULT_NS_KEY) out.append(':').append(k)
               out.append('=')
               val tmp = new StringWriter()
               val raw: String = if (vv != null && vv.isTextual) vv.asText() else ""

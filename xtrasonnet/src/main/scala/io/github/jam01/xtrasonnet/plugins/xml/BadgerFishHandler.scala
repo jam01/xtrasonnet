@@ -72,7 +72,9 @@ class BadgerFishHandler(params: EffectiveParams) extends DefaultHandler2 {
       if (!declaredXmlns.isEmpty) declaredXmlns = new util.LinkedHashMap() // re-use map of xmlns -- tradeoff of speed for memory(clear map values)
     }
 
-    val newPrefix = if (prefix.equals("xmlns")) DefaultXMLPlugin.DEFAULT_NS_KEY else overrides.prefix(prefix, uri)
+    // SAX reports a default-namespace declaration as the empty prefix, which maps to the default-ns key
+    val computed = if (prefix.equals("xmlns")) "" else overrides.prefix(prefix, uri)
+    val newPrefix = if (computed.isEmpty) DefaultXMLPlugin.DEFAULT_NS_KEY else computed
     if (!params.excludeXmlns) declaredXmlns.put(newPrefix, memberOf(Val.Str(dummyPos, uri)))
   }
 
