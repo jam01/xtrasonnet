@@ -320,7 +320,7 @@ Returns the constituent parts of the given `datetime`, as an `Object` of the for
 `day` is the day of the **month**, so that `of(toParts(x))` round-trips — [`of`](#of) reads the `day`
 key as the day of the month. The day of the **week** is `dayOfWeek`, 1 (Monday) through 7 (Sunday).
 
-!!! warning "Changed since 0.7.1"
+!!! warning "Changed in 0.7.2"
     `day` previously held the day of the *week*, which made `of(toParts(x))` produce a different date
     than `x`. A script relying on that should read `dayOfWeek` instead.
 
