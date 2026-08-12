@@ -26,7 +26,7 @@ jobs:
       # upstream release break a deploy
       - shell: bash
         run: pip install mkdocs-material==9.7.7 mkdocs-minify-plugin==0.8.0
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v7
         with:
           node-version: '22'
       - shell: bash
