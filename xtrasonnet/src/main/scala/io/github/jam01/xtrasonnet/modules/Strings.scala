@@ -7,10 +7,10 @@ package io.github.jam01.xtrasonnet.modules
  * compliance with the Elastic License 2.0.
  */
 
+import io.github.jam01.xtrasonnet.util.ConcurrentLruCache
 import sjsonnet.functions.AbstractFunctionModule
 import sjsonnet.{Error, Lazy, Position, Val}
 
-import java.util.concurrent.ConcurrentHashMap
 import java.util.regex.{Matcher, Pattern, PatternSyntaxException}
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -346,20 +346,12 @@ object Strings extends AbstractFunctionModule {
   )
 
   // shared across all Transformers; Pattern is immutable and thread-safe
-  private val patternCache = new ConcurrentHashMap[String, Pattern]()
+  private val patternCache = new ConcurrentLruCache[String, Pattern](1024, regex =>
+    try Pattern.compile(regex) catch {
+      case e: PatternSyntaxException => Error.fail("Invalid regular expression: " + e.getMessage)
+    })
 
-  private def compile(regex: String): Pattern = {
-    val cached = patternCache.get(regex)
-    if (cached != null) return cached
-
-    val compiled =
-      try Pattern.compile(regex) catch {
-        case e: PatternSyntaxException => Error.fail("Invalid regular expression: " + e.getMessage)
-      }
-    if (patternCache.size >= 1024) patternCache.clear() // crude bound for scripts that generate regexes
-    patternCache.putIfAbsent(regex, compiled)
-    compiled
-  }
+  private def compile(regex: String): Pattern = patternCache.get(regex)
 
   /** The current match as [entire match, capture groups...], null for groups that didn't participate. */
   private def groupsOf(matcher: Matcher, pos: Position): Array[Lazy] = {
