@@ -11,7 +11,7 @@ import io.github.jam01.xtrasonnet.spi.Library.{emptyObj, keyFrom}
 import sjsonnet.Expr.Member.Visibility
 import sjsonnet.Val.Obj
 import sjsonnet.functions.AbstractFunctionModule
-import sjsonnet.{Error, EvalScope, FileScope, TailstrictModeDisabled, Val}
+import sjsonnet.{Error, EvalScope, FileScope, Position, TailstrictModeDisabled, Val}
 
 import java.util
 import scala.collection.mutable.ArrayBuffer
@@ -43,43 +43,7 @@ object Objects extends AbstractFunctionModule {
       "funcIdL" -> null,
       "funcIdR" -> null,
       "funcJoin" -> Val.False(position)) { (args, pos, ev) =>
-
-      val left = args(0).asArr
-      val right = args(1).asArr
-      val funcIdL = args(2).asFunc
-      val funcIdR = args(3).asFunc
-      val funcJoin = args(4) match {
-        case _: Val.False => null
-        case f: Val.Func => f
-        case x => Error.fail("Expected function, got: " + x.prettyName)
-      }
-      val leftHash = new util.HashMap[String, ArrayBuffer[Val.Obj]]()
-      val out = new ArrayBuffer[Val.Obj]()
-
-      var i = 0
-      while (i < left.length) {
-        val k = keyFrom(funcIdL.apply1(left.asLazyArray(i), funcIdL.pos)(ev, TailstrictModeDisabled))
-        if (leftHash.containsKey(k)) leftHash.put(k, leftHash.get(k).addOne(left.force(i).asObj))
-        else leftHash.put(k, ArrayBuffer[Obj](left.force(i).asObj))
-        i = i + 1
-      }
-
-      i = 0
-      while (i < right.length) {
-        val k = keyFrom(funcIdR.apply1(right.asLazyArray(i), funcIdR.pos)(ev, TailstrictModeDisabled))
-        if (leftHash.containsKey(k)) {
-          leftHash.get(k).foreach(obj =>
-            out.addOne(
-              if (funcJoin == null) obj.asObj.addSuper(pos, right.force(i).asObj).asObj
-              else funcJoin.asFunc.apply2(obj, right.force(i), funcJoin.pos)(ev, TailstrictModeDisabled).asObj
-            )
-          )
-        }
-
-        i = i + 1
-      }
-
-      Val.Arr(pos, out.toArray)
+      eqJoin(args, pos, ev, unmatchedLeft = false, unmatchedRight = false)
     },
 
     builtinWithDefaults("leftEqJoin",
@@ -88,54 +52,7 @@ object Objects extends AbstractFunctionModule {
       "funcIdL" -> null,
       "funcIdR" -> null,
       "funcJoin" -> Val.False(position)) { (args, pos, ev) =>
-
-      val left = args(0).asArr
-      val right = args(1).asArr
-      val funcIdL = args(2).asFunc
-      val funcIdR = args(3).asFunc
-      val funcJoin = args(4) match {
-        case _: Val.False => null
-        case f: Val.Func => f
-        case x => Error.fail("Expected function, got: " + x.prettyName)
-      }
-
-      // 1. Index the RIGHT side so we can look them up by key
-      val rightHash = new util.HashMap[String, ArrayBuffer[Val.Obj]]()
-      var i = 0
-      while (i < right.length) {
-        val k = keyFrom(funcIdR.apply1(right.asLazyArray(i), funcIdR.pos)(ev, TailstrictModeDisabled))
-        rightHash.computeIfAbsent(k, _ => new ArrayBuffer[Val.Obj]()).addOne(right.force(i).asObj)
-        i += 1
-      }
-
-      val result = new ArrayBuffer[Val]()
-
-      // 2. Iterate through the LEFT side in their original order
-      i = 0
-      while (i < left.length) {
-        val leftObj = left.force(i).asObj
-        val k = keyFrom(funcIdL.apply1(left.asLazyArray(i), funcIdL.pos)(ev, TailstrictModeDisabled))
-
-        val matches = rightHash.get(k)
-        if (matches != null && !matches.isEmpty) {
-          // For every match in orders, create a joined row
-          matches.foreach { rightObj =>
-            val joined = if (funcJoin == null) leftObj.addSuper(pos, rightObj).asObj
-            else
-              funcJoin.asFunc.apply2(leftObj, rightObj, funcJoin.pos)(ev, TailstrictModeDisabled).asObj
-            result.addOne(joined)
-          }
-        } else {
-          // No match found? Still add the left object (Left Join behavior)
-          val unjoined = if (funcJoin == null) leftObj
-          else
-            funcJoin.asFunc.apply2(leftObj, emptyObj, funcJoin.pos)(ev, TailstrictModeDisabled).asObj
-          result.addOne(unjoined)
-        }
-        i += 1
-      }
-
-      Val.Arr(pos, result.toArray)
+      eqJoin(args, pos, ev, unmatchedLeft = true, unmatchedRight = false)
     },
 
     builtinWithDefaults("fullEqJoin",
@@ -144,65 +61,7 @@ object Objects extends AbstractFunctionModule {
       "funcIdL" -> null,
       "funcIdR" -> null,
       "funcJoin" -> Val.False(position)) { (args, pos, ev) =>
-
-      val left = args(0).asArr
-      val right = args(1).asArr
-      val funcIdL = args(2).asFunc
-      val funcIdR = args(3).asFunc
-      val funcJoin = args(4) match {
-        case _: Val.False => null
-        case f: Val.Func => f
-        case x => Error.fail("Expected function, got: " + x.prettyName)
-      }
-
-      // 1. Index the RIGHT side by key, keeping each row's key for the unmatched pass
-      val rightHash = new util.HashMap[String, ArrayBuffer[Val.Obj]]()
-      val rightKeys = new Array[String](right.length)
-      var i = 0
-      while (i < right.length) {
-        val k = keyFrom(funcIdR.apply1(right.asLazyArray(i), funcIdR.pos)(ev, TailstrictModeDisabled))
-        rightHash.computeIfAbsent(k, newArrBuff).addOne(right.force(i).asObj)
-        rightKeys(i) = k
-        i += 1
-      }
-
-      val result = new ArrayBuffer[Val]()
-      val joinedKeys = new util.HashSet[String]()
-
-      // 2. Iterate the LEFT side in original order: joined rows where a key matches, plain left rows otherwise
-      i = 0
-      while (i < left.length) {
-        val leftObj = left.force(i).asObj
-        val k = keyFrom(funcIdL.apply1(left.asLazyArray(i), funcIdL.pos)(ev, TailstrictModeDisabled))
-
-        val matches = rightHash.get(k)
-        if (matches != null) {
-          joinedKeys.add(k)
-          matches.foreach { rightObj =>
-            result.addOne(
-              if (funcJoin == null) leftObj.addSuper(pos, rightObj).asObj
-              else funcJoin.asFunc.apply2(leftObj, rightObj, funcJoin.pos)(ev, TailstrictModeDisabled).asObj)
-          }
-        } else {
-          result.addOne(
-            if (funcJoin == null) leftObj
-            else funcJoin.asFunc.apply2(leftObj, emptyObj, funcJoin.pos)(ev, TailstrictModeDisabled).asObj)
-        }
-        i += 1
-      }
-
-      // 3. Append the unmatched RIGHT rows in their original order
-      i = 0
-      while (i < right.length) {
-        if (!joinedKeys.contains(rightKeys(i))) {
-          result.addOne(
-            if (funcJoin == null) right.force(i).asObj
-            else funcJoin.asFunc.apply2(emptyObj, right.asLazyArray(i), funcJoin.pos)(ev, TailstrictModeDisabled).asObj)
-        }
-        i += 1
-      }
-
-      Val.Arr(pos, result.toArray)
+      eqJoin(args, pos, ev, unmatchedLeft = true, unmatchedRight = true)
     },
 
     builtinWithDefaults("fromArray",
@@ -257,6 +116,78 @@ object Objects extends AbstractFunctionModule {
       new Val.Obj(pos, m, false, null, null).asInstanceOf[Val]
     }
   )
+
+  /**
+   * The hash-join core behind inner/left/fullEqJoin, differing only in which unmatched rows they emit.
+   *
+   * Rows come out in a deterministic order: left rows in their original order -- each expanded to its
+   * right matches in right order, one row per match via a shallow merge or funcJoin -- and, when
+   * unmatched right rows are emitted, those appended in their original order.
+   */
+  private def eqJoin(args: Array[Val], pos: Position, ev: EvalScope,
+                     unmatchedLeft: Boolean, unmatchedRight: Boolean): Val = {
+    val left = args(0).asArr
+    val right = args(1).asArr
+    val funcIdL = args(2).asFunc
+    val funcIdR = args(3).asFunc
+    val funcJoin = args(4) match {
+      case _: Val.False => null
+      case f: Val.Func => f
+      case x => Error.fail("Expected function, got: " + x.prettyName)
+    }
+
+    // 1. Index the RIGHT side by key, keeping each row's key for the unmatched pass
+    val rightHash = new util.HashMap[String, ArrayBuffer[Val.Obj]]()
+    val rightKeys = new Array[String](right.length)
+    var i = 0
+    while (i < right.length) {
+      val k = keyFrom(funcIdR.apply1(right.asLazyArray(i), funcIdR.pos)(ev, TailstrictModeDisabled))
+      rightHash.computeIfAbsent(k, newArrBuff).addOne(right.force(i).asObj)
+      rightKeys(i) = k
+      i += 1
+    }
+
+    val result = new ArrayBuffer[Val]()
+    val joinedKeys = new util.HashSet[String]()
+
+    // 2. Iterate the LEFT side in original order
+    i = 0
+    while (i < left.length) {
+      val leftObj = left.force(i).asObj
+      val k = keyFrom(funcIdL.apply1(left.asLazyArray(i), funcIdL.pos)(ev, TailstrictModeDisabled))
+
+      val matches = rightHash.get(k)
+      if (matches != null) {
+        joinedKeys.add(k)
+        matches.foreach { rightObj =>
+          result.addOne(
+            if (funcJoin == null) leftObj.addSuper(pos, rightObj).asObj
+            else funcJoin.apply2(leftObj, rightObj, funcJoin.pos)(ev, TailstrictModeDisabled).asObj)
+        }
+      } else if (unmatchedLeft) {
+        result.addOne(
+          if (funcJoin == null) leftObj
+          else funcJoin.apply2(leftObj, emptyObj, funcJoin.pos)(ev, TailstrictModeDisabled).asObj)
+      }
+      i += 1
+    }
+
+    // 3. Append the unmatched RIGHT rows in their original order
+    if (unmatchedRight) {
+      i = 0
+      while (i < right.length) {
+        if (!joinedKeys.contains(rightKeys(i))) {
+          val rightObj = right.force(i).asObj
+          result.addOne(
+            if (funcJoin == null) rightObj
+            else funcJoin.apply2(emptyObj, rightObj, funcJoin.pos)(ev, TailstrictModeDisabled).asObj)
+        }
+        i += 1
+      }
+    }
+
+    Val.Arr(pos, result.toArray)
+  }
 
   private def distinctBy(obj: Val.Obj, func: Val.Func, ev: EvalScope): Val = {
     val pos = func.pos

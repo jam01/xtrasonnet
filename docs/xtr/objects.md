@@ -146,7 +146,7 @@ xtr.objects.fromArray(languages, function(lang) lang.name, function(lang) lang.v
 ### fullEqJoin
 `fullEqJoin(arrL: Array[Object[A]], arrR: Array[Object[B]], funcIdL: Func[(Object[A]) => String|Number|Boolean|Null], funcIdR: Func[(Object[B]) => String|Number|Boolean|Null]): Array[Object[C]]`
 
-Returns a new `Array` with all the objects that exist in `arrL` or in `arrR`, joining those that exist in both with a shallow merge, and using the given `funcIdL` and `funcIdR` identity functions to compute equality. On key collision the merged entry keeps the `arrL` object's value.
+Returns a new `Array` with all the objects that exist in `arrL` or in `arrR`, joining those that exist in both with a shallow merge, and using the given `funcIdL` and `funcIdR` identity functions to compute equality. On key collision the merged entry keeps the `arrL` object's value. Rows follow `arrL`'s order, each expanded to its `arrR` matches in their order, with unmatched `arrR` objects appended last in their order.
 
 **Example**
 ```
@@ -184,7 +184,7 @@ xtr.objects.fullEqJoin(customers, orders,
 ### fullEqJoin func(left, right) => joined
 `fullEqJoin(arrL: Array[Object[A]], arrR: Array[Object[B]], funcIdL: Func[(Object[A]) => String|Number|Boolean|Null], funcIdR: Func[(Object[B]) => String|Number|Boolean|Null], funcJoin: Func[(Object[A], Object[B]) => Object[C]]): Array[Object[C]]`
 
-Returns a new `Array` with all the objects that exist in `arrL` or in `arrR`, joining those that exist in both with the given `funcJoin` function, and using the given `funcIdL` and `funcIdR` identity functions to compute equality.
+Returns a new `Array` with all the objects that exist in `arrL` or in `arrR`, joining those that exist in both with the given `funcJoin` function, and using the given `funcIdL` and `funcIdR` identity functions to compute equality. Rows follow `arrL`'s order, each expanded to its `arrR` matches in their order, with unmatched `arrR` objects appended last in their order.
 
 **Example**
 ```
@@ -221,7 +221,7 @@ xtr.objects.fullEqJoin(customers, orders,
 ### innerEqJoin
 `innerEqJoin(arrL: Array[Object[A]], arrR: Array[Object[B]], funcIdL: Func[(Object[A]) => String|Number|Boolean|Null], funcIdR: Func[(Object[B]) => String|Number|Boolean|Null]): Array[Object[C]]`
 
-Returns a new `Array` with all the objects that exist in both `arrL` _and_ `arrR`, using the given `funcIdL` and `funcIdR` identity functions to compute equality, and joined using a shallow merge. On key collision the merged entry keeps the `arrL` object's value.
+Returns a new `Array` with all the objects that exist in both `arrL` _and_ `arrR`, using the given `funcIdL` and `funcIdR` identity functions to compute equality, and joined using a shallow merge. On key collision the merged entry keeps the `arrL` object's value. Rows follow `arrL`'s order, each expanded to its `arrR` matches in their order.
 
 **Example**
 ```
@@ -257,7 +257,7 @@ xtr.objects.innerEqJoin(customers, orders,
 ### innerEqJoin func(left, right) => joined
 `innerEqJoin(arrL: Array[Object[A]], arrR: Array[Object[B]], funcIdL: Func[(Object[A]) => String|Number|Boolean|Null], funcIdR: Func[(Object[B]) => String|Number|Boolean|Null], funcJoin: Func[(Object[A], Object[B]) => Object[C]]): Array[Object[C]]`
 
-Returns a new `Array` with all the objects that exist in both `arrL` _and_ `arrR`, using the given `funcIdL` and `funcIdR` identity functions to compute equality, and joined using the given `funcJoin` function.
+Returns a new `Array` with all the objects that exist in both `arrL` _and_ `arrR`, using the given `funcIdL` and `funcIdR` identity functions to compute equality, and joined using the given `funcJoin` function. Rows follow `arrL`'s order, each expanded to its `arrR` matches in their order.
 
 **Example**
 ```
@@ -292,7 +292,7 @@ xtr.objects.innerEqJoin(customers, orders,
 ### leftEqJoin
 `leftEqJoin(arrL: Array[Object[A]], arrR: Array[Object[B]], funcIdL: Func[(Object[A]) => String|Number|Boolean|Null], funcIdR: Func[(Object[B]) => String|Number|Boolean|Null]): Array[Object[C]]`
 
-Returns a new `Array` with all the objects that exist in `arrL`, joined using a shallow merge with those that also exist in `arrR`, using the given `funcIdL` and `funcIdR` identity functions to compute equality. On key collision the merged entry keeps the `arrL` object's value.
+Returns a new `Array` with all the objects that exist in `arrL`, joined using a shallow merge with those that also exist in `arrR`, using the given `funcIdL` and `funcIdR` identity functions to compute equality. On key collision the merged entry keeps the `arrL` object's value. Rows follow `arrL`'s order, each expanded to its `arrR` matches in their order.
 
 **Example**
 ```
@@ -329,7 +329,7 @@ xtr.objects.leftEqJoin(customers, orders,
 ### leftEqJoin func(left, right) => joined
 `leftEqJoin(arrL: Array[Object[A]], arrR: Array[Object[B]], funcIdL: Func[(Object[A]) => String|Number|Boolean|Null], funcIdR: Func[(Object[B]) => String|Number|Boolean|Null], funcJoin: Func[(Object[A], Object[B]) => Object[C]]): Array[Object[C]]`
 
-Returns a new `Array` with all the objects that exist in `arrL`, joined using the given `funcJoin` function with those that also exist in `arrR`, using the given `funcIdL` and `funcIdR` identity functions to compute equality.
+Returns a new `Array` with all the objects that exist in `arrL`, joined using the given `funcJoin` function with those that also exist in `arrR`, using the given `funcIdL` and `funcIdR` identity functions to compute equality. Rows follow `arrL`'s order, each expanded to its `arrR` matches in their order.
 
 **Example**
 ```

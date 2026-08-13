@@ -332,6 +332,35 @@ public class ObjectsTest {
     }
 
     @Test
+    public void innerEqJoinPreservesLeftOrder() {
+        // rows follow the left side's order, not the right's
+        assertEquals(transform("""
+                        [
+                            { id: 2, b: 'z', a: 'x' },
+                            { id: 1, b: 'y', a: 'w' }
+                        ]"""),
+                transform("""
+                        xtr.objects.innerEqJoin(
+                            [{ id: 2, a: 'x' }, { id: 1, a: 'w' }],
+                            [{ id: 1, b: 'y' }, { id: 2, b: 'z' }],
+                            function(o) o.id, function(o) o.id)"""));
+
+        // duplicate keys expand left-major: each left row with all its right matches, in right order
+        assertEquals(transform("""
+                        [
+                            { id: 1, b: 'y', a: 'x' },
+                            { id: 1, b: 'y2', a: 'x' },
+                            { id: 1, b: 'y', a: 'x2' },
+                            { id: 1, b: 'y2', a: 'x2' }
+                        ]"""),
+                transform("""
+                        xtr.objects.innerEqJoin(
+                            [{ id: 1, a: 'x' }, { id: 1, a: 'x2' }],
+                            [{ id: 1, b: 'y' }, { id: 1, b: 'y2' }],
+                            function(o) o.id, function(o) o.id)"""));
+    }
+
+    @Test
     public void fullEqJoinPreservesInputOrder() {
         // matched and unmatched left rows in left order, then unmatched right rows in right order
         assertEquals(transform("""
