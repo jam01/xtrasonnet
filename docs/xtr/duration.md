@@ -15,8 +15,9 @@ Returns the ISO-8601 duration of the given `obj`, an `Object` of the form:
 ```
 
 where all elements are optional and default to zero; keys outside this form are an error. The
-result is in canonical form: zero-valued parts are omitted, e.g. `{hours: 2}` yields `'PT2H'`,
-and all-zero parts yield `'PT0S'`.
+`seconds` part may be fractional (`{seconds: 1.5}` yields `'PT1.5S'`); every other part must be
+a whole number. The result is in canonical form: zero-valued parts are omitted, e.g. `{hours: 2}`
+yields `'PT2H'`, and all-zero parts yield `'PT0S'`.
 
 **Example**
 ```
@@ -46,7 +47,8 @@ Returns the constituent parts of the given `str` duration, as an `Object` of the
 ```
 
 All six parts are always present. Time-only durations like `'PT4H'` and negative durations like
-`'-P1DT2H'` are supported; a leading minus sign negates every part.
+`'-P1DT2H'` are supported; a leading minus sign negates every part. Fractional seconds are kept
+exactly: `toParts('PT1.5S')` yields `seconds: 1.5`.
 
 **Example**
 ```

@@ -199,6 +199,8 @@ false
 `minus(datetime: String, duration: String): String`
 
 Returns the result of subtracting the specified ISO-8601 `duration` from the given `datetime`.
+Accepts any duration `xtr.duration.of` can produce, including time-only forms like `'PT2H'`;
+a leading minus sign negates every part of the duration.
 
 **Example**
 ```
@@ -249,6 +251,8 @@ Additionally, developers can parse Unix timestamps by passing `'unix'` as the `f
 `plus(datetime: String, duration: String): String`
 
 Returns the result of adding the specified ISO-8601 `duration` to the given `datetime`.
+Accepts any duration `xtr.duration.of` can produce, including time-only forms like `'PT2H'`;
+a leading minus sign negates every part of the duration.
 
 **Example**
 ```
