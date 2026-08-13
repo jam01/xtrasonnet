@@ -10,6 +10,7 @@ package io.github.jam01.xtrasonnet.modules
 import sjsonnet.{Error, Val}
 import sjsonnet.functions.AbstractFunctionModule
 
+import java.math.MathContext
 import java.time.*
 import java.time.format.DateTimeParseException
 import scala.collection.mutable
@@ -18,6 +19,34 @@ object Duration extends AbstractFunctionModule {
   override def name: String = "duration"
 
   private val partNames = Array("years", "months", "days", "hours", "minutes", "seconds")
+  private val NanosPerSecond = BigDecimal(1000000000)
+
+  private def bigDecOf(num: Val.Num): BigDecimal = num match {
+    case i: Val.Int64 => BigDecimal(i.value)
+    case f: Val.Float64 => BigDecimal(f.value)
+    case d: Val.Dec128 => d.value
+  }
+
+  /** The given part as a whole number; every part but seconds rejects fractions rather than truncate. */
+  private def wholePart(parts: mutable.Map[String, Val], name: String): Long = parts.get(name) match {
+    case None => 0L
+    case Some(n: Val.Num) =>
+      val bd = bigDecOf(n)
+      if (!bd.isWhole) Error.fail("Expected a whole number for duration part " + name + ", got: " + n)
+      if (!bd.isValidLong) Error.fail("Duration part out of range: " + name)
+      bd.toLong
+    case Some(x) => Error.fail("Expected number for duration part " + name + ", got: " + x.prettyName)
+  }
+
+  /** The seconds part in nanoseconds, honoring fractional values. */
+  private def secondsNanos(parts: mutable.Map[String, Val]): Long = parts.get("seconds") match {
+    case None => 0L
+    case Some(n: Val.Num) =>
+      val nanos = (bigDecOf(n) * NanosPerSecond).setScale(0, BigDecimal.RoundingMode.HALF_UP)
+      if (!nanos.isValidLong) Error.fail("Duration part out of range: seconds")
+      nanos.toLong
+    case Some(x) => Error.fail("Expected number for duration part seconds, got: " + x.prettyName)
+  }
 
   val functions: Seq[(String, Val.Func)] = Seq(
     builtin("of", "obj") {
@@ -27,18 +56,23 @@ object Duration extends AbstractFunctionModule {
           if (!partNames.contains(key)) Error.fail("Unexpected duration part: " + key)
           out.addOne(key, obj.value(key, pos)(ev))
         }
-        val period = Period.ZERO
-          .plusYears(out.getOrElse("years", Val.Num(pos, 0)).asInt)
-          .plusMonths(out.getOrElse("months", Val.Num(pos, 0)).asInt)
-          .plusDays(out.getOrElse("days", Val.Num(pos, 0)).asInt)
-        val dduration = java.time.Duration.ZERO
-          .plusHours(out.getOrElse("hours", Val.Num(pos, 0)).asLong)
-          .plusMinutes(out.getOrElse("minutes", Val.Num(pos, 0)).asLong)
-          .plusSeconds(out.getOrElse("seconds", Val.Num(pos, 0)).asLong)
 
-        if (period.isZero) dduration.toString // covers the all-zero case: "PT0S"
-        else if (dduration.isZero) period.toString
-        else period.toString + dduration.toString.substring(1)
+        try {
+          val period = Period.ZERO
+            .plusYears(wholePart(out, "years"))
+            .plusMonths(wholePart(out, "months"))
+            .plusDays(wholePart(out, "days"))
+          val dduration = java.time.Duration.ZERO
+            .plusHours(wholePart(out, "hours"))
+            .plusMinutes(wholePart(out, "minutes"))
+            .plusNanos(secondsNanos(out))
+
+          if (period.isZero) dduration.toString // covers the all-zero case: "PT0S"
+          else if (dduration.isZero) period.toString
+          else period.toString + dduration.toString.substring(1)
+        } catch {
+          case _: ArithmeticException | _: DateTimeException => Error.fail("Duration parts out of range")
+        }
     },
 
     builtin("toParts", "str") {
@@ -46,12 +80,20 @@ object Duration extends AbstractFunctionModule {
         val (period, dduration) = parseParts(duration)
 
         val out = new java.util.LinkedHashMap[String, Val.Obj.Member]
+        val hours = dduration.toHours
+        val minutes = dduration.toMinutesPart
+        // exact seconds, so fractions like PT1.5S survive; getNano is a non-negative adjustment on getSeconds
+        val seconds = BigDecimal(dduration.getSeconds - hours * 3600 - minutes * 60) +
+          BigDecimal(dduration.getNano) / NanosPerSecond
+
         out.put("years", memberOf(Val.Num(pos, period.getYears)))
         out.put("months", memberOf(Val.Num(pos, period.getMonths)))
         out.put("days", memberOf(Val.Num(pos, period.getDays)))
-        out.put("hours", memberOf(Val.Num(pos, dduration.toHours)))
-        out.put("minutes", memberOf(Val.Num(pos, dduration.toMinutesPart)))
-        out.put("seconds", memberOf(Val.Num(pos, dduration.toSecondsPart)))
+        out.put("hours", memberOf(Val.Num(pos, hours)))
+        out.put("minutes", memberOf(Val.Num(pos, minutes)))
+        out.put("seconds", memberOf(
+          if (seconds.isWhole) Val.Num(pos, seconds.toLong)
+          else Val.Num(pos, new BigDecimal(seconds.bigDecimal, MathContext.DECIMAL128))))
 
         new Val.Obj(pos, out, false, null, null)
     }

@@ -64,6 +64,34 @@ public class DurationTest {
     }
 
     @Test
+    public void fractionalSeconds() {
+        assertEquals(transform("'PT1.5S'"), transform("xtr.duration.of({seconds: 1.5})"));
+        assertEquals(transform("'PT1M30.25S'"), transform("xtr.duration.of({seconds: 90.25})"));
+
+        assertEquals(transform("""
+                        {
+                            years: 0, months: 0, days: 0,
+                            hours: 0, minutes: 0, seconds: 1.5
+                        }"""),
+                transform("xtr.duration.toParts('PT1.5S')"));
+        assertEquals(transform("""
+                        {
+                            years: 0, months: 0, days: 0,
+                            hours: 0, minutes: 0, seconds: -1.5
+                        }"""),
+                transform("xtr.duration.toParts('-PT1.5S')"));
+
+        assertEquals(transform("'PT1.5S'"),
+                transform("xtr.duration.of(xtr.duration.toParts('PT1.5S'))"));
+    }
+
+    @Test
+    public void ofRejectsFractionsAboveSeconds() {
+        var ex = assertThrows(RuntimeException.class, () -> transform("xtr.duration.of({hours: 1.5})"));
+        assertTrue(ex.getMessage().contains("Expected a whole number for duration part hours"), ex.getMessage());
+    }
+
+    @Test
     public void ofRejectsUnknownParts() {
         var ex = assertThrows(RuntimeException.class, () -> transform("xtr.duration.of({hour: 1})"));
         assertTrue(ex.getMessage().contains("Unexpected duration part: hour"), ex.getMessage());
