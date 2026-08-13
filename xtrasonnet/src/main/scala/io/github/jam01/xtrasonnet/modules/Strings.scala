@@ -8,7 +8,7 @@ package io.github.jam01.xtrasonnet.modules
  */
 
 import sjsonnet.functions.AbstractFunctionModule
-import sjsonnet.{Error, Lazy, Materializer, Position, Val}
+import sjsonnet.{Error, Lazy, Position, Val}
 
 import java.util.concurrent.ConcurrentHashMap
 import java.util.regex.{Matcher, Pattern, PatternSyntaxException}
@@ -164,10 +164,13 @@ object Strings extends AbstractFunctionModule {
     },
 
     builtin("leftPad", "str", "offset", "pad") {
-      (_, ev, str: Val, size: Int, pad: String) =>
+      (_, _, str: Val, size: Int, pad: String) =>
         str match {
           case str: Val.Str => padStart(str.value, size, pad)
-          case x: Val.Num => padStart(Materializer.stringify(x)(ev), size, pad)
+          // route through BigDecimal's plain string form: Val.Num's own toString (and thus
+          // Materializer.stringify) uses scientific notation for very small/large magnitudes,
+          // which isn't a valid padded numeric string
+          case x: Val.Num => padStart(BigDecimal(x.toString).bigDecimal.toPlainString, size, pad)
           case x => Error.fail("Expected String, got: " + x.prettyName)
         }
     },
@@ -226,10 +229,10 @@ object Strings extends AbstractFunctionModule {
     },
 
     builtin("rightPad", "str", "offset", "pad") {
-      (_, ev, value: Val, offset: Int, pad: String) =>
+      (_, _, value: Val, offset: Int, pad: String) =>
         value match {
           case str: Val.Str => str.value.padTo(offset, padChar(pad))
-          case x: Val.Num => Materializer.stringify(x)(ev).padTo(offset, padChar(pad))
+          case x: Val.Num => BigDecimal(x.toString).bigDecimal.toPlainString.padTo(offset, padChar(pad))
           case x => Error.fail("Expected String, got: " + x.prettyName)
         }
     },
