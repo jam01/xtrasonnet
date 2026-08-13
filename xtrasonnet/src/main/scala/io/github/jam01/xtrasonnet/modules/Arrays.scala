@@ -280,21 +280,14 @@ object Arrays extends AbstractFunctionModule {
         case x => Error.fail("Expected Array of Arrays, got inner: " + x.prettyName)
       })
 
-    var size = 0
-    var j = 1
-    if (inner.nonEmpty) {
-      size = inner(0).length
-      while (j < inner.length) {
-        size = if (fill == null) math.min(size, inner(j).length) else math.max(size, inner(j).length)
-        j = j + 1
-      }
-    }
+    val lens = inner.map(_.length)
+    val size = if (inner.isEmpty) 0 else if (fill == null) lens.min else lens.max
     val out = new Array[Lazy](size)
 
     var i = 0
     while (i < size) {
       val current = new Array[Lazy](inner.length)
-      j = 0
+      var j = 0
       while (j < inner.length) {
         val row = inner(j)
         current(j) = if (i < row.length) row(i) else fill
