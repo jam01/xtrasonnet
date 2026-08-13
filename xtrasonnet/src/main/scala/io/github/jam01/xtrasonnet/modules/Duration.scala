@@ -57,19 +57,33 @@ object Duration extends AbstractFunctionModule {
           out.addOne(key, obj.value(key, pos)(ev))
         }
 
-        try {
-          val period = Period.ZERO
-            .plusYears(wholePart(out, "years"))
-            .plusMonths(wholePart(out, "months"))
-            .plusDays(wholePart(out, "days"))
-          val dduration = java.time.Duration.ZERO
-            .plusHours(wholePart(out, "hours"))
-            .plusMinutes(wholePart(out, "minutes"))
-            .plusNanos(secondsNanos(out))
+        val years = wholePart(out, "years")
+        val months = wholePart(out, "months")
+        val days = wholePart(out, "days")
+        val hours = wholePart(out, "hours")
+        val minutes = wholePart(out, "minutes")
+        val nanos = secondsNanos(out)
 
-          if (period.isZero) dduration.toString // covers the all-zero case: "PT0S"
-          else if (dduration.isZero) period.toString
-          else period.toString + dduration.toString.substring(1)
+        // ISO-8601 allows a single leading sign for the whole duration; parseParts produces
+        // (and accepts) that form, and toParts puts every part on the same side of zero for a
+        // negative duration, so prefer it here too rather than java.time's per-component signs
+        val negative = Seq(years, months, days, hours, minutes, nanos).forall(_ <= 0) &&
+          Seq(years, months, days, hours, minutes, nanos).exists(_ < 0)
+
+        try {
+          var period = Period.ZERO.plusYears(years).plusMonths(months).plusDays(days)
+          var dduration = java.time.Duration.ZERO.plusHours(hours).plusMinutes(minutes).plusNanos(nanos)
+          if (negative) {
+            period = period.negated()
+            dduration = dduration.negated()
+          }
+
+          val body =
+            if (period.isZero) dduration.toString // covers the all-zero case: "PT0S"
+            else if (dduration.isZero) period.toString
+            else period.toString + dduration.toString.substring(1)
+
+          if (negative) "-" + body else body
         } catch {
           case _: ArithmeticException | _: DateTimeException => Error.fail("Duration parts out of range")
         }
