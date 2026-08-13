@@ -103,6 +103,30 @@ public class DatetimeTest {
     }
 
     @Test
+    public void plusMinus_timeOnlyDurations() {
+        Assertions.assertEquals(TestUtils.transform("'2019-09-18T20:53:41Z'"), TestUtils.transform("xtr.datetime.plus('2019-09-18T18:53:41Z', 'PT2H')"));
+        Assertions.assertEquals(TestUtils.transform("'2019-09-18T16:53:41Z'"), TestUtils.transform("xtr.datetime.minus('2019-09-18T18:53:41Z', 'PT2H')"));
+
+        // composes with duration.of, whose canonical output is time-only for time-only parts
+        Assertions.assertEquals(TestUtils.transform("'2019-09-18T20:53:41Z'"),
+                TestUtils.transform("xtr.datetime.plus('2019-09-18T18:53:41Z', xtr.duration.of({hours: 2}))"));
+    }
+
+    @Test
+    public void plusMinus_negativeDurationAppliesToAllParts() {
+        // -P1DT2H is minus(1 day and 2 hours); subtracting it adds both parts
+        Assertions.assertEquals(TestUtils.transform("'2019-09-21T20:53:41Z'"), TestUtils.transform("xtr.datetime.minus('2019-09-20T18:53:41Z', '-P1DT2H')"));
+        Assertions.assertEquals(TestUtils.transform("'2019-09-19T16:53:41Z'"), TestUtils.transform("xtr.datetime.plus('2019-09-20T18:53:41Z', '-P1DT2H')"));
+    }
+
+    @Test
+    public void plusMinus_invalidDuration() {
+        var ex = Assertions.assertThrows(RuntimeException.class,
+                () -> TestUtils.transform("xtr.datetime.plus('2019-09-18T18:53:41Z', '2 days')"));
+        Assertions.assertTrue(ex.getMessage().contains("Invalid ISO-8601 duration: 2 days"), ex.getMessage());
+    }
+
+    @Test
     public void toLocal() {
         Assertions.assertEquals(TestUtils.transform("'2019-07-04'"), TestUtils.transform("xtr.datetime.toLocalDate('2019-07-04T18:53:41Z')"));
         Assertions.assertEquals(TestUtils.transform("'2019-07-04T21:00:00'"), TestUtils.transform("xtr.datetime.toLocalDateTime('2019-07-04T21:00:00Z')"));

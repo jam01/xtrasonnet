@@ -43,28 +43,7 @@ object Duration extends AbstractFunctionModule {
 
     builtin("toParts", "str") {
       (pos, _, duration: String) =>
-        val negative = duration.startsWith("-")
-        val abs = if (negative || duration.startsWith("+")) duration.substring(1) else duration
-        val timeIdx = abs.indexOf('T')
-        var period = Period.ZERO
-        var dduration = java.time.Duration.ZERO
-
-        try {
-          if (timeIdx != -1) {
-            dduration = java.time.Duration.parse("P" + abs.substring(timeIdx))
-            val datePart = abs.substring(0, timeIdx)
-            if (datePart != "P") period = Period.parse(datePart) // "P" alone means no date components
-          } else {
-            period = Period.parse(abs)
-          }
-        } catch {
-          case _: DateTimeParseException => Error.fail("Invalid ISO-8601 duration: " + duration)
-        }
-
-        if (negative) {
-          period = period.negated()
-          dduration = dduration.negated()
-        }
+        val (period, dduration) = parseParts(duration)
 
         val out = new java.util.LinkedHashMap[String, Val.Obj.Member]
         out.put("years", memberOf(Val.Num(pos, period.getYears)))
@@ -77,4 +56,39 @@ object Duration extends AbstractFunctionModule {
         new Val.Obj(pos, out, false, null, null)
     }
   )
+
+  /**
+   * Parses an ISO-8601 duration into its date and time components; a leading sign applies to both.
+   *
+   * Handles the shapes java.time cannot parse in one call: combined date-and-time strings, time-only
+   * strings ("PT4H"), and a leading sign, failing with an evaluation error for anything malformed.
+   */
+  def parseParts(duration: String): (Period, java.time.Duration) = {
+    val negative = duration.startsWith("-")
+    val abs = if (negative || duration.startsWith("+")) duration.substring(1) else duration
+    val timeIdx = abs.indexOf('T')
+    var period = Period.ZERO
+    var dduration = java.time.Duration.ZERO
+
+    try {
+      if (timeIdx != -1) {
+        dduration = java.time.Duration.parse("P" + abs.substring(timeIdx))
+        val datePart = abs.substring(0, timeIdx)
+        if (datePart != "P") period = Period.parse(datePart) // "P" alone means no date components
+      } else {
+        period = Period.parse(abs)
+      }
+
+      if (negative) {
+        period = period.negated()
+        dduration = dduration.negated()
+      }
+    } catch {
+      // ArithmeticException covers negation overflow of a component at the numeric range's edge
+      case _: DateTimeParseException | _: ArithmeticException =>
+        Error.fail("Invalid ISO-8601 duration: " + duration)
+    }
+
+    (period, dduration)
+  }
 }

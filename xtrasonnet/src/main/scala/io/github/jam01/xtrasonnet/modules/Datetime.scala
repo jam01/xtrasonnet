@@ -32,6 +32,7 @@ package io.github.jam01.xtrasonnet.modules
  *      Functions: datetime.parse
  */
 
+import io.github.jam01.xtrasonnet.modules.{Duration => Durations}
 import sjsonnet.functions.AbstractFunctionModule
 import sjsonnet.{Error, Val}
 
@@ -62,33 +63,13 @@ object Datetime extends AbstractFunctionModule {
     },
 
     builtin("plus", "datetime", "duration") { (_, _, date: String, duration: String) =>
-      var datetime = OffsetDateTime.parse(date)
-      val timeIdx = duration.indexOf('T')
-
-      if (timeIdx != -1) {
-        datetime = datetime
-          .plus(Duration.parse("P" + duration.substring(timeIdx)))
-          .plus(Period.parse(duration.substring(0, timeIdx)))
-      } else {
-        datetime = datetime.plus(Period.parse(duration))
-      }
-
-      datetime.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+      val (period, dduration) = Durations.parseParts(duration)
+      OffsetDateTime.parse(date).plus(period).plus(dduration).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
     },
 
     builtin("minus", "datetime", "duration") { (_, _, date: String, duration: String) =>
-      var datetime = OffsetDateTime.parse(date)
-      val timeIdx = duration.indexOf('T')
-
-      if (timeIdx != -1) {
-        datetime = datetime
-          .minus(Duration.parse("P" + duration.substring(timeIdx)))
-          .minus(Period.parse(duration.substring(0, timeIdx)))
-      } else {
-        datetime = datetime.minus(Period.parse(duration))
-      }
-
-      datetime.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+      val (period, dduration) = Durations.parseParts(duration)
+      OffsetDateTime.parse(date).minus(period).minus(dduration).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
     },
 
     builtin("inOffset", "datetime", "offset") {

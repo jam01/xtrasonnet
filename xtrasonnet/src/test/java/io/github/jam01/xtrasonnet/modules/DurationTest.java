@@ -107,6 +107,13 @@ public class DurationTest {
     }
 
     @Test
+    public void toPartsOverflowIsAnEvaluationError() {
+        // negating Integer.MIN_VALUE years overflows; it must surface as the uniform parse error
+        var ex = assertThrows(RuntimeException.class, () -> transform("xtr.duration.toParts('-P-2147483648Y')"));
+        assertTrue(ex.getMessage().contains("Invalid ISO-8601 duration"), ex.getMessage());
+    }
+
+    @Test
     public void toPartsInvalid() {
         var ex = assertThrows(RuntimeException.class, () -> transform("xtr.duration.toParts('4 hours')"));
         assertTrue(ex.getMessage().contains("Invalid ISO-8601 duration: 4 hours"), ex.getMessage());
