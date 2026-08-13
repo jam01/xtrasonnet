@@ -43,7 +43,7 @@ object Objects extends AbstractFunctionModule {
       "funcIdL" -> null,
       "funcIdR" -> null,
       "funcJoin" -> Val.False(position)) { (args, pos, ev) =>
-      eqJoin(args, pos, ev, unmatchedLeft = false, unmatchedRight = false)
+      eqJoin(args, pos, ev, JoinKind.Inner)
     },
 
     builtinWithDefaults("leftEqJoin",
@@ -52,7 +52,7 @@ object Objects extends AbstractFunctionModule {
       "funcIdL" -> null,
       "funcIdR" -> null,
       "funcJoin" -> Val.False(position)) { (args, pos, ev) =>
-      eqJoin(args, pos, ev, unmatchedLeft = true, unmatchedRight = false)
+      eqJoin(args, pos, ev, JoinKind.Left)
     },
 
     builtinWithDefaults("fullEqJoin",
@@ -61,7 +61,7 @@ object Objects extends AbstractFunctionModule {
       "funcIdL" -> null,
       "funcIdR" -> null,
       "funcJoin" -> Val.False(position)) { (args, pos, ev) =>
-      eqJoin(args, pos, ev, unmatchedLeft = true, unmatchedRight = true)
+      eqJoin(args, pos, ev, JoinKind.Full)
     },
 
     builtinWithDefaults("fromArray",
@@ -117,6 +117,14 @@ object Objects extends AbstractFunctionModule {
     }
   )
 
+  /** Which rows eqJoin emits besides the matched pairs; the only three combinations any builtin defines. */
+  private sealed trait JoinKind
+  private object JoinKind {
+    case object Inner extends JoinKind // matched pairs only
+    case object Left extends JoinKind // + unmatched left rows
+    case object Full extends JoinKind // + unmatched left and right rows
+  }
+
   /**
    * The hash-join core behind inner/left/fullEqJoin, differing only in which unmatched rows they emit.
    *
@@ -124,8 +132,10 @@ object Objects extends AbstractFunctionModule {
    * right matches in right order, one row per match via a shallow merge or funcJoin -- and, when
    * unmatched right rows are emitted, those appended in their original order.
    */
-  private def eqJoin(args: Array[Val], pos: Position, ev: EvalScope,
-                     unmatchedLeft: Boolean, unmatchedRight: Boolean): Val = {
+  private def eqJoin(args: Array[Val], pos: Position, ev: EvalScope, kind: JoinKind): Val = {
+    val unmatchedLeft = kind != JoinKind.Inner
+    val unmatchedRight = kind == JoinKind.Full
+
     val left = args(0).asArr
     val right = args(1).asArr
     val funcIdL = args(2).asFunc
@@ -136,19 +146,19 @@ object Objects extends AbstractFunctionModule {
       case x => Error.fail("Expected function, got: " + x.prettyName)
     }
 
-    // 1. Index the RIGHT side by key, keeping each row's key for the unmatched pass
+    // 1. Index the RIGHT side by key; unmatchedRight also needs each row's key for the unmatched pass
     val rightHash = new util.HashMap[String, ArrayBuffer[Val.Obj]]()
-    val rightKeys = new Array[String](right.length)
+    val rightKeys = if (unmatchedRight) new Array[String](right.length) else null
     var i = 0
     while (i < right.length) {
       val k = keyFrom(funcIdR.apply1(right.asLazyArray(i), funcIdR.pos)(ev, TailstrictModeDisabled))
       rightHash.computeIfAbsent(k, newArrBuff).addOne(right.force(i).asObj)
-      rightKeys(i) = k
+      if (unmatchedRight) rightKeys(i) = k
       i += 1
     }
 
     val result = new ArrayBuffer[Val]()
-    val joinedKeys = new util.HashSet[String]()
+    val joinedKeys = if (unmatchedRight) new util.HashSet[String]() else null
 
     // 2. Iterate the LEFT side in original order
     i = 0
@@ -158,7 +168,7 @@ object Objects extends AbstractFunctionModule {
 
       val matches = rightHash.get(k)
       if (matches != null) {
-        joinedKeys.add(k)
+        if (unmatchedRight) joinedKeys.add(k)
         matches.foreach { rightObj =>
           result.addOne(
             if (funcJoin == null) leftObj.addSuper(pos, rightObj).asObj
