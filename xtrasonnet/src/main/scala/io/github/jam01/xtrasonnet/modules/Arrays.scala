@@ -178,17 +178,17 @@ object Arrays extends AbstractFunctionModule {
 
     builtin("unzip", "array") {
       (pos, _, array: Val.Arr) =>
-        Val.Arr(pos, transpose(array.asLazyArray, pos))
+        Val.Arr(pos, transpose(array.asLazyArray, null, pos))
     },
 
     builtin("unzipAll", "array", "fill") {
       (pos, _, array: Val.Arr, fill: Val) =>
-        Val.Arr(pos, transposeAll(array.asLazyArray, fill, pos))
+        Val.Arr(pos, transpose(array.asLazyArray, fill, pos))
     },
 
     builtin("zipAll", "array", "fill") {
       (pos, _, array: Val.Arr, fill: Val) =>
-        Val.Arr(pos, transposeAll(array.asLazyArray, fill, pos))
+        Val.Arr(pos, transpose(array.asLazyArray, fill, pos))
     },
 
     builtinWithDefaults("zip",
@@ -203,7 +203,7 @@ object Arrays extends AbstractFunctionModule {
         case x => Error.fail("Expected Array, got: " + x.prettyName) // give param index?
       }
 
-      Val.Arr(pos, transpose(lazyArr, pos))
+      Val.Arr(pos, transpose(lazyArr, null, pos))
     },
 
     /*
@@ -269,53 +269,35 @@ object Arrays extends AbstractFunctionModule {
   )
 
   /**
-   * Transposes the given arrays, truncating to the shortest of them.
-   *
-   * The documented contract for both zip and unzip is "equal size to the shortest array". Filling short
-   * arrays is what zipAll/unzipAll are for.
+   * Transposes the given arrays: with a null fill it truncates to the shortest of them (the documented
+   * contract for zip and unzip), otherwise it extends to the longest, filling the missing elements
+   * (zipAll and unzipAll).
    */
-  private def transpose(arrays: Array[? <: Lazy], pos: Position): Array[Lazy] = {
+  private def transpose(arrays: Array[? <: Lazy], fill: Val, pos: Position): Array[Lazy] = {
     val inner = arrays.map(
       _.force match {
         case arr: Val.Arr => arr.asLazyArray
         case x => Error.fail("Expected Array of Arrays, got inner: " + x.prettyName)
       })
 
-    val size = if (inner.isEmpty) 0 else inner.map(_.length).min
-    val out = new Array[Lazy](size)
-
-    var i = 0
-    while (i < size) {
-      val current = new Array[Lazy](inner.length)
-      var j = 0
+    var size = 0
+    var j = 1
+    if (inner.nonEmpty) {
+      size = inner(0).length
       while (j < inner.length) {
-        current(j) = inner(j)(i)
+        size = if (fill == null) math.min(size, inner(j).length) else math.max(size, inner(j).length)
         j = j + 1
       }
-      out(i) = Val.Arr(pos, current)
-      i = i + 1
     }
-
-    out
-  }
-
-  /** Transposes the given arrays, extending to the longest of them with the given fill value. */
-  private def transposeAll(arrays: Array[? <: Lazy], fill: Val, pos: Position): Array[Lazy] = {
-    val inner = arrays.map(
-      _.force match {
-        case arr: Val.Arr => arr.asLazyArray
-        case x => Error.fail("Expected Array of Arrays, got inner: " + x.prettyName)
-      })
-
-    val size = if (inner.isEmpty) 0 else inner.map(_.length).max
     val out = new Array[Lazy](size)
 
     var i = 0
     while (i < size) {
       val current = new Array[Lazy](inner.length)
-      var j = 0
+      j = 0
       while (j < inner.length) {
-        current(j) = if (i < inner(j).length) inner(j)(i) else fill
+        val row = inner(j)
+        current(j) = if (i < row.length) row(i) else fill
         j = j + 1
       }
       out(i) = Val.Arr(pos, current)
