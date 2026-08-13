@@ -1,12 +1,13 @@
 package io.github.jam01.xtrasonnet.plugins.xml;
 
 /*-
- * Copyright 2022 Jose Montoya.
+ * Copyright 2022-2026 Jose Montoya.
  *
  * Licensed under the Elastic License 2.0; you may not use this file except in
  * compliance with the Elastic License 2.0.
  */
 
+import io.github.jam01.xtrasonnet.plugins.DefaultXMLPlugin;
 import org.xml.sax.helpers.NamespaceSupport;
 
 import java.util.HashMap;
@@ -33,7 +34,9 @@ public class NamespaceDeclarations {
         if (requested.containsKey(uri)) { // if a prefix is requested for this uri, use that
             override = requested.get(uri);
             overridden.put(prefix, override);
-        } else if (requested.containsValue(prefix)) { // if prefix is requested for another uri, find an override
+        } else if (requested.containsValue(prefix)
+                // reserved for the default declaration, which a literal prefix must not collide with
+                || DefaultXMLPlugin.DEFAULT_NS_KEY().equals(prefix)) {
             var i = 1;
             do {
                 // https://saxonica.plan.io/projects/saxonmirrorhe/repository/he/entry/src/main/java/net/sf/saxon/event/ComplexContentOutputter.java?utf8=%E2%9C%93&rev=he_mirror_saxon_11_4#L588

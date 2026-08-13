@@ -124,6 +124,18 @@ public class XMLPluginTest {
     }
 
     @Test
+    public void literal_def_prefix_doesNotCollideWithDefaultNamespace() throws JSONException {
+        // a document prefix literally named _def is overridden so the default declaration keeps its key
+        var json = new Transformer("payload")
+                .transform(Document.of(
+                        "<r xmlns='http://ex.org/u2' xmlns:_def='http://ex.org/u1'><_def:a>1</_def:a></r>",
+                        MediaTypes.APPLICATION_XML));
+        JSONAssert.assertEquals("{\"r\":{\"_xmlns\":{\"_def\":\"http://ex.org/u2\",\"_def_1\":\"http://ex.org/u1\"},"
+                        + "\"_def_1:a\":{\"_text\":\"1\"}}}",
+                json.getContent(), true);
+    }
+
+    @Test
     public void read_rejectsDoctypeAndExternalEntities() {
         // XMLLoader disables DTDs and both external entity classes. Nothing asserted that, so a
         // regression would have shipped silently; this is one line away at all times.
