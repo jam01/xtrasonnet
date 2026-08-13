@@ -10,6 +10,7 @@ package io.github.jam01.xtrasonnet.modules
 import sjsonnet.functions.AbstractFunctionModule
 import sjsonnet.{Error, Lazy, Materializer, Position, Val}
 
+import java.util.concurrent.ConcurrentHashMap
 import java.util.regex.{Matcher, Pattern, PatternSyntaxException}
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -341,10 +342,21 @@ object Strings extends AbstractFunctionModule {
     }
   )
 
-  private def compile(regex: String): Pattern =
-    try Pattern.compile(regex) catch {
-      case e: PatternSyntaxException => Error.fail("Invalid regular expression: " + e.getMessage)
-    }
+  // shared across all Transformers; Pattern is immutable and thread-safe
+  private val patternCache = new ConcurrentHashMap[String, Pattern]()
+
+  private def compile(regex: String): Pattern = {
+    val cached = patternCache.get(regex)
+    if (cached != null) return cached
+
+    val compiled =
+      try Pattern.compile(regex) catch {
+        case e: PatternSyntaxException => Error.fail("Invalid regular expression: " + e.getMessage)
+      }
+    if (patternCache.size >= 1024) patternCache.clear() // crude bound for scripts that generate regexes
+    patternCache.putIfAbsent(regex, compiled)
+    compiled
+  }
 
   /** The current match as [entire match, capture groups...], null for groups that didn't participate. */
   private def groupsOf(matcher: Matcher, pos: Position): Array[Lazy] = {
