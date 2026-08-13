@@ -34,16 +34,31 @@ package io.github.jam01.xtrasonnet.modules
 
 import io.github.jam01.xtrasonnet.modules.{Duration => Durations}
 import sjsonnet.functions.AbstractFunctionModule
-import sjsonnet.{Error, Val}
+import sjsonnet.{Error, Position, Val}
 
 import java.time.format.DateTimeFormatter
 import java.time.{Duration, Instant, OffsetDateTime, Period, ZoneOffset}
 import scala.collection.mutable
 
 object Datetime extends AbstractFunctionModule {
-  // every key emitted by toParts, so that of(toParts(x)) keeps working; dayOfWeek is derived and ignored
-  private val datetimePartNames =
+  // the parts toParts emits, and the only keys of accepts; toParts emits exactly these (see below),
+  // so a part can't be added to one without the other. dayOfWeek is derived and of ignores it
+  private val partNames =
     Array("year", "month", "day", "dayOfWeek", "hour", "minute", "second", "nanosecond", "offset")
+
+  private def partValue(pos: Position, date: OffsetDateTime, name: String): Val = name match {
+    case "year" => Val.Num(pos, date.getYear)
+    case "month" => Val.Num(pos, date.getMonthValue)
+    // day is day-of-month: datetime.of reads this key back as the day-of-month, so emitting
+    // day-of-week here made of(toParts(x)) produce a different date than x
+    case "day" => Val.Num(pos, date.getDayOfMonth)
+    case "dayOfWeek" => Val.Num(pos, date.getDayOfWeek.getValue)
+    case "hour" => Val.Num(pos, date.getHour)
+    case "minute" => Val.Num(pos, date.getMinute)
+    case "second" => Val.Num(pos, date.getSecond)
+    case "nanosecond" => Val.Num(pos, date.getNano)
+    case "offset" => Val.Str(pos, date.getOffset.getId)
+  }
 
   override def name: String = "datetime"
 
@@ -165,17 +180,7 @@ object Datetime extends AbstractFunctionModule {
       (pos, _, datetime: String) =>
         val date = OffsetDateTime.parse(datetime)
         val out = new java.util.LinkedHashMap[String, Val.Obj.Member]
-        out.put("year", memberOf(Val.Num(pos, date.getYear)))
-        out.put("month", memberOf(Val.Num(pos, date.getMonthValue)))
-        // day is day-of-month: datetime.of reads this key back as the day-of-month, so emitting
-        // day-of-week here made of(toParts(x)) produce a different date than x
-        out.put("day", memberOf(Val.Num(pos, date.getDayOfMonth)))
-        out.put("dayOfWeek", memberOf(Val.Num(pos, date.getDayOfWeek.getValue)))
-        out.put("hour", memberOf(Val.Num(pos, date.getHour)))
-        out.put("minute", memberOf(Val.Num(pos, date.getMinute)))
-        out.put("second", memberOf(Val.Num(pos, date.getSecond)))
-        out.put("nanosecond", memberOf(Val.Num(pos, date.getNano)))
-        out.put("offset", memberOf(Val.Str(pos, date.getOffset.getId)))
+        partNames.foreach(name => out.put(name, memberOf(partValue(pos, date, name))))
 
         new Val.Obj(pos, out, false, null, null)
     },
@@ -292,7 +297,7 @@ object Datetime extends AbstractFunctionModule {
       (pos, ev, obj: Val.Obj) =>
         val out = mutable.Map[String, Val]()
         obj.visibleKeyNames.foreach { key =>
-          if (!datetimePartNames.contains(key)) Error.fail("Unexpected datetime part: " + key)
+          if (!partNames.contains(key)) Error.fail("Unexpected datetime part: " + key)
           out.addOne(key, obj.value(key, pos)(ev))
         }
         OffsetDateTime.of(
