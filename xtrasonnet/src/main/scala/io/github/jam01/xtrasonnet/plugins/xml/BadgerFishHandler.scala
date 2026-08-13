@@ -32,6 +32,9 @@ package io.github.jam01.xtrasonnet.plugins.xml
  * - de7029978b65a012dfdb8dd32b598e99a9c7708a: renamed currentNS to declaredXmlns, only start new xmlns context when
  *    xmlns found, use new NamespaceDeclarations
  * - 487f7939b08dfb9e75aa3ed4728a9e23e89d57dd: map the empty default-namespace prefix to the _def key
+ * - track per-element whether that element's start pushed a namespace context, so its end pops the
+ *   matching one; declaredXmlns.isEmpty was an unreliable proxy once a childless descendant closed
+ *   after its parent, since declaredXmlns wasn't repopulated to signal the parent's own pop
  */
 
 import io.github.jam01.xtrasonnet.plugins.DefaultXMLPlugin
@@ -61,6 +64,9 @@ class BadgerFishHandler(params: EffectiveParams) extends DefaultHandler2 {
   private var startContext = true // start a new context at the first xmlns declaration in doc
   private val overrides = new NamespaceDeclarations(params.declarations.asJava)
   private var declaredXmlns: util.LinkedHashMap[String, Val.Obj.Member] = util.LinkedHashMap()
+  // per-element record of whether that element's own start pushed a namespace context, so its end
+  // pops the matching one regardless of whether descendants pushed (and cleared declaredXmlns) too
+  private val pushedContext = new mutable.Stack[Boolean]
 
   // root
   badgerStack.push(BadgerFish(mutable.LinkedHashMap.empty))
@@ -89,7 +95,9 @@ class BadgerFishHandler(params: EffectiveParams) extends DefaultHandler2 {
 
     val current = mutable.LinkedHashMap.empty[String, BFValue] // builder for this element
 
-    if (!declaredXmlns.isEmpty) {
+    val pushedForThisElement = !declaredXmlns.isEmpty
+    pushedContext.push(pushedForThisElement)
+    if (pushedForThisElement) {
       current.put(params.xmlnsKey, BFSingle(Val.Obj(dummyPos, declaredXmlns, false, null, null)))
       declaredXmlns = new util.LinkedHashMap()
     }
@@ -186,7 +194,7 @@ class BadgerFishHandler(params: EffectiveParams) extends DefaultHandler2 {
     }
 
     capture = badgerStack.size != 1 // stop capturing at root level
-    if (!declaredXmlns.isEmpty) { // some xmlns were found
+    if (pushedContext.pop()) { // pop only if this element's own start pushed a context
       overrides.popContext()
     }
   }
