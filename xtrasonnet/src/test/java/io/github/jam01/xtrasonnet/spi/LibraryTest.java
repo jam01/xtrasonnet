@@ -28,7 +28,7 @@ public class LibraryTest {
         @Override
         public Map<String, Val.Func> functions() {
             var res = new HashMap<String, Val.Func>();
-            res.put("echo", jbuiltin(new String[]{"param"}, (vals, pos, ev) -> new Val.Str(position(), vals[0].asString() + " world!")));
+            res.put("echo", jbuiltin(new String[]{"param"}, (vals, pos, ev) -> new Val.Str(dummyPos(), vals[0].asString() + " world!")));
             return res;
         }
     }

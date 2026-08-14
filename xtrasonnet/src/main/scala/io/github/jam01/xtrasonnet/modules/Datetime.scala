@@ -275,7 +275,7 @@ object Datetime extends AbstractFunctionModule {
         case "unix" =>
           var inst: Instant = null
           datetime match {
-            case str: Val.Str => inst = Instant.ofEpochSecond(str.value.toLong)
+            case str: Val.Str => inst = Instant.ofEpochSecond(str.str.toLong)
             case num: Val.Num => inst = Instant.ofEpochSecond(num.asLong)
             case _ => Error.fail("Expected datetime to be a string or number, got: " + datetime.prettyName)
           }
@@ -308,7 +308,7 @@ object Datetime extends AbstractFunctionModule {
           out.getOrElse("minute", Val.Num(pos, 0)).asInt,
           out.getOrElse("second", Val.Num(pos, 0)).asInt,
           out.getOrElse("nanosecond", Val.Num(pos, 0)).asInt,
-          ZoneOffset.of(out.getOrElse("offset", Val.Str(pos, "Z")).cast[Val.Str].value)
+          ZoneOffset.of(out.getOrElse("offset", Val.Str(pos, "Z")).cast[Val.Str].str)
         ).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
     }
     /*

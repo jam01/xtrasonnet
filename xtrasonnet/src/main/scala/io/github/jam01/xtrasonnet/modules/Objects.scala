@@ -42,7 +42,7 @@ object Objects extends AbstractFunctionModule {
       "arrR" -> null,
       "funcIdL" -> null,
       "funcIdR" -> null,
-      "funcJoin" -> Val.False(position)) { (args, pos, ev) =>
+      "funcJoin" -> Val.False(dummyPos)) { (args, pos, ev) =>
       eqJoin(args, pos, ev, JoinKind.Inner)
     },
 
@@ -51,7 +51,7 @@ object Objects extends AbstractFunctionModule {
       "arrR" -> null,
       "funcIdL" -> null,
       "funcIdR" -> null,
-      "funcJoin" -> Val.False(position)) { (args, pos, ev) =>
+      "funcJoin" -> Val.False(dummyPos)) { (args, pos, ev) =>
       eqJoin(args, pos, ev, JoinKind.Left)
     },
 
@@ -60,14 +60,14 @@ object Objects extends AbstractFunctionModule {
       "arrR" -> null,
       "funcIdL" -> null,
       "funcIdR" -> null,
-      "funcJoin" -> Val.False(position)) { (args, pos, ev) =>
+      "funcJoin" -> Val.False(dummyPos)) { (args, pos, ev) =>
       eqJoin(args, pos, ev, JoinKind.Full)
     },
 
     builtinWithDefaults("fromArray",
       "arr" -> null,
       "keyF" -> null,
-      "valueF" -> Val.False(position)) { (args, pos, ev) =>
+      "valueF" -> Val.False(dummyPos)) { (args, pos, ev) =>
       val lzyArr = args(0) match {
         case arr: Val.Arr => arr.asLazyArray
         case x => Error.fail("Expected Array, got: " + x.prettyName)
@@ -89,7 +89,7 @@ object Objects extends AbstractFunctionModule {
 
           m.put(k.asString,
             if (vFunc.isInstanceOf[Val.False]) new Obj.Member(false, Visibility.Normal) {
-              override def invoke(self: Obj, sup: Obj, fs: FileScope, ev: EvalScope): Val = lzyArr(j).force
+              override def invoke(self: Obj, sup: Obj, fs: FileScope, ev: EvalScope): Val = lzyArr(j).value
             } else new Obj.Member(false, Visibility.Normal) {
               override def invoke(self: Obj, sup: Obj, fs: FileScope, ev: EvalScope): Val = vFunc.asFunc.apply1(lzyArr(j), pos.noOffset)(ev, TailstrictModeDisabled)
             })
@@ -103,7 +103,7 @@ object Objects extends AbstractFunctionModule {
 
           m.put(k.asString,
             if (vFunc.isInstanceOf[Val.False]) new Obj.Member(false, Visibility.Normal) {
-              override def invoke(self: Obj, sup: Obj, fs: FileScope, ev: EvalScope): Val = lzyArr(j).force
+              override def invoke(self: Obj, sup: Obj, fs: FileScope, ev: EvalScope): Val = lzyArr(j).value
             } else new Obj.Member(false, Visibility.Normal) {
               override def invoke(self: Obj, sup: Obj, fs: FileScope, ev: EvalScope): Val = vFunc.asFunc.apply1(lzyArr(j), pos.noOffset)(ev, TailstrictModeDisabled)
             })
@@ -152,7 +152,7 @@ object Objects extends AbstractFunctionModule {
     var i = 0
     while (i < right.length) {
       val k = keyFrom(funcIdR.apply1(right.asLazyArray(i), funcIdR.pos)(ev, TailstrictModeDisabled))
-      rightHash.computeIfAbsent(k, newArrBuff).addOne(right.force(i).asObj)
+      rightHash.computeIfAbsent(k, newArrBuff).addOne(right.value(i).asObj)
       if (unmatchedRight) rightKeys(i) = k
       i += 1
     }
@@ -163,7 +163,7 @@ object Objects extends AbstractFunctionModule {
     // 2. Iterate the LEFT side in original order
     i = 0
     while (i < left.length) {
-      val leftObj = left.force(i).asObj
+      val leftObj = left.value(i).asObj
       val k = keyFrom(funcIdL.apply1(left.asLazyArray(i), funcIdL.pos)(ev, TailstrictModeDisabled))
 
       val matches = rightHash.get(k)
@@ -187,7 +187,7 @@ object Objects extends AbstractFunctionModule {
       i = 0
       while (i < right.length) {
         if (!joinedKeys.contains(rightKeys(i))) {
-          val rightObj = right.force(i).asObj
+          val rightObj = right.value(i).asObj
           result.addOne(
             if (funcJoin == null) rightObj
             else funcJoin.apply2(emptyObj, rightObj, funcJoin.pos)(ev, TailstrictModeDisabled).asObj)

@@ -8,7 +8,7 @@ package io.github.jam01.xtrasonnet.modules
  */
 
 import sjsonnet.functions.AbstractFunctionModule
-import sjsonnet.{Error, NumberMath, Val}
+import sjsonnet.{Error, NumberMath, RenderUtils, Val}
 
 import java.nio.charset.StandardCharsets
 
@@ -22,8 +22,8 @@ object Base64 extends AbstractFunctionModule {
     builtin("decode", "value") {
       (_, _, value: Val) =>
         value match {
-          case x: Val.Num => new String(java.util.Base64.getDecoder.decode(x.toString), StandardCharsets.UTF_8)
-          case x: Val.Str => new String(java.util.Base64.getDecoder.decode(x.value), StandardCharsets.UTF_8)
+          case x: Val.Num => new String(java.util.Base64.getDecoder.decode(RenderUtils.renderNum(x)), StandardCharsets.UTF_8)
+          case x: Val.Str => new String(java.util.Base64.getDecoder.decode(x.str), StandardCharsets.UTF_8)
           case x => Error.fail("Expected String, got: " + x.prettyName)
         }
     },
@@ -32,8 +32,8 @@ object Base64 extends AbstractFunctionModule {
       (pos, ev, value: Val) =>
         value match {
           case x: Val.Num =>
-            new String(java.util.Base64.getEncoder.encode(x.toString.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8)
-          case x: Val.Str => new String(java.util.Base64.getEncoder.encode(x.value.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8)
+            new String(java.util.Base64.getEncoder.encode(RenderUtils.renderNum(x).getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8)
+          case x: Val.Str => new String(java.util.Base64.getEncoder.encode(x.str.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8)
           case x => Error.fail("Expected String, got: " + x.prettyName)
         }
     }

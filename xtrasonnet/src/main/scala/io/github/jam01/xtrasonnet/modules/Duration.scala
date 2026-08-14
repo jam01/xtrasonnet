@@ -22,9 +22,9 @@ object Duration extends AbstractFunctionModule {
   private val NanosPerSecond = BigDecimal(1000000000)
 
   private def bigDecOf(num: Val.Num): BigDecimal = num match {
-    case i: Val.Int64 => BigDecimal(i.value)
-    case f: Val.Float64 => BigDecimal(f.value)
-    case d: Val.Dec128 => d.value
+    case i: Val.Int64 => BigDecimal(i.num)
+    case f: Val.Float64 => BigDecimal(f.num)
+    case d: Val.Dec128 => d.num
   }
 
   /** The given part as a whole number; every part but seconds rejects fractions rather than truncate. */

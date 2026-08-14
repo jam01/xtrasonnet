@@ -30,14 +30,14 @@ object Math extends AbstractFunctionModule {
     // See: https://gist.github.com/gclaramunt/5710280
     builtin("avg", "array") {
       (pos, ev, array: Val.Arr) =>
-        val (sum, length) = array.asLazyArray.foldLeft((Val.Num(position, 0), 0))({
+        val (sum, length) = array.asLazyArray.foldLeft((Val.Num(dummyPos, 0), 0))({
           case ((sum, length), num) =>
-            (num.force match {
-              case num: Val.Num => NumberMath.add(position, sum, num)(ev)
+            (num.value match {
+              case num: Val.Num => NumberMath.add(dummyPos, sum, num)(ev)
               case x => Error.fail("Expected Array pf Numbers, got: Array of " + x.prettyName)
             }, 1 + length)
         })
-        NumberMath.divide(pos, sum, Val.Num(position, length))(ev).asInstanceOf[Val]
+        NumberMath.divide(pos, sum, Val.Num(dummyPos, length))(ev).asInstanceOf[Val]
     },
 
     builtin("ceil", "num") {
@@ -99,9 +99,9 @@ object Math extends AbstractFunctionModule {
     },
 
     builtinWithDefaults("round",
-      "num" -> Val.Null(position),
-      "mode" -> Val.Str(position, "half-up"),
-      "precision" -> Val.Num(position, 0)) { (args, pos, ev) =>
+      "num" -> Val.Null(dummyPos),
+      "mode" -> Val.Str(dummyPos, "half-up"),
+      "precision" -> Val.Num(dummyPos, 0)) { (args, pos, ev) =>
       val num = args(0).cast[Val.Num]
       val mode = args(1).asString
       val prec = args(2).asInt
@@ -125,8 +125,8 @@ object Math extends AbstractFunctionModule {
 
     builtin("sum", "array") {
       (pos, ev, array: Val.Arr) =>
-        array.asLazyArray.foldLeft(Val.Num(position, 0))((sum, value) =>
-          value.force match {
+        array.asLazyArray.foldLeft(Val.Num(dummyPos, 0))((sum, value) =>
+          value.value match {
             case num: Val.Num => NumberMath.add(pos, sum, num)(ev)
             case x => Error.fail("Expected Array of Numbers, got: Array of " + x.prettyName)
           }

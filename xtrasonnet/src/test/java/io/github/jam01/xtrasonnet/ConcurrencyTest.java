@@ -178,7 +178,7 @@ public class ConcurrencyTest {
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 }
-                return new Val.Str(position(), "blocked");
+                return new Val.Str(dummyPos(), "blocked");
             }));
             return res;
         }

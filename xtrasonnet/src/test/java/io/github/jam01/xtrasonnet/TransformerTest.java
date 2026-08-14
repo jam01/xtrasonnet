@@ -128,7 +128,7 @@ public class TransformerTest {
             transform("payload.foo");
             fail("Must fail to execute");
         } catch (XtrasonnetEvaluationException e) {
-            assertTrue(e.getMessage().contains("attempted to index a null with string foo"), "Found message: " + e.getMessage());
+            assertTrue(e.getMessage().contains("Attempted to index a null with string foo"), "Found message: " + e.getMessage());
             assertTrue(stacktraceFrom(e).contains("(main):1:8"), "Stacktrace does not indicate the issue");
         }
     }

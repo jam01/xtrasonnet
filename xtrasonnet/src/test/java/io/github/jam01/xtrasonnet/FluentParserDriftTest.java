@@ -34,7 +34,7 @@ public class FluentParserDriftTest {
      * sjsonnet.Parser#exprSuffix2 in the new version against FluentParser#exprSuffix2, carry over any
      * change, then update this constant and the version named in FluentParser's scaladoc.
      */
-    private static final String CHECKED_AGAINST = "0.6.90004";
+    private static final String CHECKED_AGAINST = "0.7.3-05";
 
     @Test
     public void copyWasCheckedAgainstTheSjsonnetOnTheClasspath() throws Exception {

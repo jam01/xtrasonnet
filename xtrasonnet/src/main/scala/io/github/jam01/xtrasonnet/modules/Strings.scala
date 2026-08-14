@@ -9,7 +9,7 @@ package io.github.jam01.xtrasonnet.modules
 
 import io.github.jam01.xtrasonnet.util.ConcurrentLruCache
 import sjsonnet.functions.AbstractFunctionModule
-import sjsonnet.{Error, Lazy, Position, Val}
+import sjsonnet.{Error, Eval, Position, RenderUtils, Val}
 
 import java.util.regex.{Matcher, Pattern, PatternSyntaxException}
 import scala.collection.mutable
@@ -128,7 +128,7 @@ object Strings extends AbstractFunctionModule {
     builtin("isAlpha", "str") {
       (_, _, str: Val) =>
         str match {
-          case value: Val.Str => isAlphaPattern.matches(value.value)
+          case value: Val.Str => isAlphaPattern.matches(value.str)
           case _: Val.Num => false
           case _: Val.Bool => true
           case x => Error.fail("Expected String, got: " + x.prettyName)
@@ -138,7 +138,7 @@ object Strings extends AbstractFunctionModule {
     builtin("isAlphanumeric", "str") {
       (_, _, str: Val) =>
         str match {
-          case value: Val.Str => isAlphanumericPattern.matches(value.value)
+          case value: Val.Str => isAlphanumericPattern.matches(value.str)
           case _: Val.Num => true
           case _: Val.Bool => true
           case x => Error.fail("Expected String, got: " + x.prettyName)
@@ -152,7 +152,7 @@ object Strings extends AbstractFunctionModule {
     builtin("isNumeric", "str") {
       (_, _, str: Val) =>
         str match {
-          case value: Val.Str => isNumericPattern.matches(value.value)
+          case value: Val.Str => isNumericPattern.matches(value.str)
           case _: Val.Num => true
           case _: Val.Bool => false
           case x => Error.fail("Expected String, got: " + x.prettyName)
@@ -166,11 +166,11 @@ object Strings extends AbstractFunctionModule {
     builtin("leftPad", "str", "offset", "pad") {
       (_, _, str: Val, size: Int, pad: String) =>
         str match {
-          case str: Val.Str => padStart(str.value, size, pad)
+          case str: Val.Str => padStart(str.str, size, pad)
           // route through BigDecimal's plain string form: Val.Num's own toString (and thus
           // Materializer.stringify) uses scientific notation for very small/large magnitudes,
           // which isn't a valid padded numeric string
-          case x: Val.Num => padStart(BigDecimal(x.toString).bigDecimal.toPlainString, size, pad)
+          case x: Val.Num => padStart(BigDecimal(RenderUtils.renderNum(x)).bigDecimal.toPlainString, size, pad)
           case x => Error.fail("Expected String, got: " + x.prettyName)
         }
     },
@@ -179,8 +179,8 @@ object Strings extends AbstractFunctionModule {
       (_, _, num: Val) =>
         val str = num match { //convert number value to string
           case value: Val.Str =>
-            if (isNumericPattern.matches(value.value)) value.value
-            else Error.fail("Expected Number, got: " + value.value)
+            if (isNumericPattern.matches(value.str)) value.str
+            else Error.fail("Expected Number, got: " + value.str)
           case value: Val.Num => value.asInt.toString
           case _ => Error.fail("Expected Number, got: " + num.prettyName)
         }
@@ -231,8 +231,8 @@ object Strings extends AbstractFunctionModule {
     builtin("rightPad", "str", "offset", "pad") {
       (_, _, value: Val, offset: Int, pad: String) =>
         value match {
-          case str: Val.Str => str.value.padTo(offset, padChar(pad))
-          case x: Val.Num => BigDecimal(x.toString).bigDecimal.toPlainString.padTo(offset, padChar(pad))
+          case str: Val.Str => str.str.padTo(offset, padChar(pad))
+          case x: Val.Num => BigDecimal(RenderUtils.renderNum(x)).bigDecimal.toPlainString.padTo(offset, padChar(pad))
           case x => Error.fail("Expected String, got: " + x.prettyName)
         }
     },
@@ -339,7 +339,7 @@ object Strings extends AbstractFunctionModule {
     builtin("scan", "str", "regex") {
       (pos, _, str: String, regex: String) =>
         val matcher = compile(regex).matcher(str)
-        val out = new ArrayBuffer[Lazy]()
+        val out = new ArrayBuffer[Eval]()
         while (matcher.find()) out.append(Val.Arr(pos, groupsOf(matcher, pos)))
         Val.Arr(pos, out.toArray)
     }
@@ -354,8 +354,8 @@ object Strings extends AbstractFunctionModule {
   private def compile(regex: String): Pattern = patternCache.get(regex)
 
   /** The current match as [entire match, capture groups...], null for groups that didn't participate. */
-  private def groupsOf(matcher: Matcher, pos: Position): Array[Lazy] = {
-    val groups = new Array[Lazy](matcher.groupCount() + 1)
+  private def groupsOf(matcher: Matcher, pos: Position): Array[Eval] = {
+    val groups = new Array[Eval](matcher.groupCount() + 1)
     var i = 0
     while (i <= matcher.groupCount()) {
       val group = matcher.group(i)

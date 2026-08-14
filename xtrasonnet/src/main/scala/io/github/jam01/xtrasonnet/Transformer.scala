@@ -151,7 +151,7 @@ class Transformer(script: String,
   // the resolver's mutable cache. Exposing it handed callers a way to mutate that from any thread.
   private def evaluate(txt: String, path: Path): Either[Error, Val] = {
       val resolvedImport = StaticResolvedFile(txt)
-      interpreter.resolver.cache(path) = resolvedImport
+      interpreter.resolver.cache((path, false)) = resolvedImport
       interpreter.resolver.parse(path, resolvedImport)(evaluator) flatMap { case (expr, x) =>
         handleException(evaluator.visitExpr(expr)(ValScope.empty))
       }

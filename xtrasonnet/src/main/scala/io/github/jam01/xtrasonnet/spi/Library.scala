@@ -20,8 +20,8 @@ object Library {
 
   def keyFrom(value: Val): String = {
     value match {
-      case x: Val.Num => x.toString
-      case x: Val.Str => x.value
+      case x: Val.Num => RenderUtils.renderNum(x)
+      case x: Val.Str => x.str
       case Val.Null(_) => "null"
       case _: Val.True => "true"
       case _: Val.False => "false"
@@ -31,9 +31,10 @@ object Library {
 
   def jbuiltin(params: Array[String], func: TriFunction[Array[Val], Position, EvalScope, Val]): Val.Func = {
     val paramIndices = params.indices
-    new Val.Func(null, ValScope.empty, Params(params, null)) {
+    // all-null, not a null array: Params.requiredParamsCount reads defaultExprs.length directly
+    new Val.Func(null, ValScope.empty, Params(params, new Array[Expr](params.length))) {
       override def evalRhs(scope: ValScope, ev: EvalScope, fs: FileScope, pos: Position): Val = {
-        func.apply(paramIndices.map(i => scope.bindings(i).force).toArray, pos, ev)
+        func.apply(paramIndices.map(i => scope.bindings(i).value).toArray, pos, ev)
       }
     }
   }

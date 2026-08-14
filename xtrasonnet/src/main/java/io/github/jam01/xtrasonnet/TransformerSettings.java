@@ -19,7 +19,7 @@ import java.util.Objects;
  * <p>
  * This was a Scala class with default arguments, which Java callers cannot see, so configuring a
  * transformer meant handing over six unnamed positional values:
- * <pre>{@code new TransformerSettings(new Settings(true, false, false, false, 1000, false), ...)}</pre>
+ * <pre>{@code new TransformerSettings(new Settings(true, false, false, 1000, false, ...), ...)}</pre>
  * where only the first differs from the default. Nobody can read that -- the repository's own
  * CLAUDE.md described the test harness as "order not preserved" while that first {@code true} says
  * the opposite. Say it by name instead:
@@ -40,7 +40,6 @@ public final class TransformerSettings {
     private final @Nullable Boolean preserveOrder;
     private final boolean strict;
     private final boolean throwErrorForInvalidSets;
-    private final boolean useNewEvaluator;
     private final int maxParserRecursionDepth;
     private final boolean brokenAssertionLogic;
     private final MediaType defInputMediaType;
@@ -50,7 +49,6 @@ public final class TransformerSettings {
         this.preserveOrder = b.preserveOrder;
         this.strict = b.strict;
         this.throwErrorForInvalidSets = b.throwErrorForInvalidSets;
-        this.useNewEvaluator = b.useNewEvaluator;
         this.maxParserRecursionDepth = b.maxParserRecursionDepth;
         this.brokenAssertionLogic = b.brokenAssertionLogic;
         this.defInputMediaType = b.defInputMediaType;
@@ -67,7 +65,6 @@ public final class TransformerSettings {
         b.preserveOrder = preserveOrder;
         b.strict = strict;
         b.throwErrorForInvalidSets = throwErrorForInvalidSets;
-        b.useNewEvaluator = useNewEvaluator;
         b.maxParserRecursionDepth = maxParserRecursionDepth;
         b.brokenAssertionLogic = brokenAssertionLogic;
         b.defInputMediaType = defInputMediaType;
@@ -82,9 +79,12 @@ public final class TransformerSettings {
      *                            was set here
      */
     public Settings sjsSettings(boolean headerPreserveOrder) {
+        // trailing params (maxMaterializeDepth, materializeRecursiveDepthLimit, maxStack,
+        // strictFormatBooleanConversions, countTailCallStackFrames, maxTrace) aren't surfaced by
+        // TransformerSettings; passed at sjsonnet's own defaults (Settings.default()).
         return new Settings(preserveOrder != null ? preserveOrder : headerPreserveOrder,
-                strict, throwErrorForInvalidSets, useNewEvaluator, maxParserRecursionDepth,
-                brokenAssertionLogic);
+                strict, throwErrorForInvalidSets, maxParserRecursionDepth, brokenAssertionLogic,
+                1000, 128, 500, false, false, 0);
     }
 
     /** Whether an explicit value was set, overriding whatever the script's header declares. */
@@ -106,7 +106,6 @@ public final class TransformerSettings {
         private @Nullable Boolean preserveOrder = null;
         private boolean strict = false;
         private boolean throwErrorForInvalidSets = false;
-        private boolean useNewEvaluator = false;
         private int maxParserRecursionDepth = 1000;
         private boolean brokenAssertionLogic = false;
         private MediaType defInputMediaType = MediaTypes.APPLICATION_JSON;
@@ -170,7 +169,6 @@ public final class TransformerSettings {
             this.preserveOrder = settings.preserveOrder();
             this.strict = settings.strict();
             this.throwErrorForInvalidSets = settings.throwErrorForInvalidSets();
-            this.useNewEvaluator = settings.useNewEvaluator();
             this.maxParserRecursionDepth = settings.maxParserRecursionDepth();
             this.brokenAssertionLogic = settings.brokenAssertionLogic();
             return this;

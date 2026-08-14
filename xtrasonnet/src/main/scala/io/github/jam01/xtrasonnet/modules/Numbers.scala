@@ -8,7 +8,7 @@ package io.github.jam01.xtrasonnet.modules
  */
 
 import sjsonnet.functions.AbstractFunctionModule
-import sjsonnet.{Error, Val}
+import sjsonnet.{Error, RenderUtils, Val}
 
 object Numbers extends AbstractFunctionModule {
   override def name: String = "numbers"
@@ -42,8 +42,8 @@ object Numbers extends AbstractFunctionModule {
     builtin("ofBinary", "value") {
       (pos, _, value: Val) =>
         value match {
-          case x: Val.Num => Val.Num(pos, ofRadix(x.toString, 2)).asInstanceOf[Val]
-          case x: Val.Str => Val.Num(pos, ofRadix(x.value, 2)).asInstanceOf[Val]
+          case x: Val.Num => Val.Num(pos, ofRadix(RenderUtils.renderNum(x), 2)).asInstanceOf[Val]
+          case x: Val.Str => Val.Num(pos, ofRadix(x.str, 2)).asInstanceOf[Val]
           case x => Error.fail("Expected Number or String, got: " + x.prettyName)
         }
     },
@@ -51,8 +51,8 @@ object Numbers extends AbstractFunctionModule {
     builtin("ofHex", "value") {
       (pos, _, value: Val) =>
         value match {
-          case x: Val.Num => Val.Num(pos, ofRadix(x.toString, 16)).asInstanceOf[Val]
-          case x: Val.Str => Val.Num(pos, ofRadix(x.value, 16)).asInstanceOf[Val]
+          case x: Val.Num => Val.Num(pos, ofRadix(RenderUtils.renderNum(x), 16)).asInstanceOf[Val]
+          case x: Val.Str => Val.Num(pos, ofRadix(x.str, 16)).asInstanceOf[Val]
           case x => Error.fail("Expected Number or String, got: " + x.prettyName)
         }
     },
@@ -60,8 +60,8 @@ object Numbers extends AbstractFunctionModule {
     builtin("ofRadix", "value", "num") {
       (pos, _, value: Val, num: Int) =>
         value match {
-          case x: Val.Num => Val.Num(pos, ofRadix(x.toString, num)).asInstanceOf[Val]
-          case x: Val.Str => Val.Num(pos, ofRadix(x.value, num)).asInstanceOf[Val]
+          case x: Val.Num => Val.Num(pos, ofRadix(RenderUtils.renderNum(x), num)).asInstanceOf[Val]
+          case x: Val.Str => Val.Num(pos, ofRadix(x.str, num)).asInstanceOf[Val]
           case x => Error.fail("Expected Number or String, got: " + x.prettyName)
         }
     },
@@ -69,8 +69,8 @@ object Numbers extends AbstractFunctionModule {
     builtin("toBinary", "value") {
       (_, _, value: Val) =>
         value match {
-          case x: Val.Num => BigDecimal(x.toString).toBigInt.toString(2)
-          case x: Val.Str => BigDecimal(x.value).toBigInt.toString(2)
+          case x: Val.Num => BigDecimal(RenderUtils.renderNum(x)).toBigInt.toString(2)
+          case x: Val.Str => BigDecimal(x.str).toBigInt.toString(2)
           case x => Error.fail("Expected Number or String, got: " + x.prettyName)
         }
     },
@@ -78,8 +78,8 @@ object Numbers extends AbstractFunctionModule {
     builtin("toHex", "value") {
       (_, _, value: Val) =>
         value match {
-          case x: Val.Num => BigDecimal(x.toString).toBigInt.toString(16)
-          case x: Val.Str => BigDecimal(x.value).toBigInt.toString(16)
+          case x: Val.Num => BigDecimal(RenderUtils.renderNum(x)).toBigInt.toString(16)
+          case x: Val.Str => BigDecimal(x.str).toBigInt.toString(16)
           case x => Error.fail("Expected Number or String, got: " + x.prettyName)
         }
     },
@@ -88,16 +88,16 @@ object Numbers extends AbstractFunctionModule {
       (_, _, value: Val, num: Int) =>
         checkRadix(num)
         value match {
-          case x: Val.Num => BigDecimal(x.toString).toBigInt.toString(num)
-          case x: Val.Str => BigDecimal(x.value).toBigInt.toString(num)
+          case x: Val.Num => BigDecimal(RenderUtils.renderNum(x)).toBigInt.toString(num)
+          case x: Val.Str => BigDecimal(x.str).toBigInt.toString(num)
           case x => Error.fail("Expected Number or String, got: " + x.prettyName)
         }
     },
 
     builtin("ofOctal", "str") { (pos, _, num: Val) =>
       num match {
-        case x: Val.Num => Val.Num(pos, ofRadix(x.toString, 8)).asInstanceOf[Val]
-        case x: Val.Str => Val.Num(pos, ofRadix(x.value, 8)).asInstanceOf[Val]
+        case x: Val.Num => Val.Num(pos, ofRadix(RenderUtils.renderNum(x), 8)).asInstanceOf[Val]
+        case x: Val.Str => Val.Num(pos, ofRadix(x.str, 8)).asInstanceOf[Val]
         case x => Error.fail("Expected Number or String, got: " + x.prettyName)
       }
     },
@@ -105,8 +105,8 @@ object Numbers extends AbstractFunctionModule {
     builtin("toOctal", "value") {
       (_, _, value: Val) =>
         value match {
-          case x: Val.Num => BigDecimal(x.toString).toBigInt.toString(8)
-          case x: Val.Str => BigDecimal(x.value).toBigInt.toString(8)
+          case x: Val.Num => BigDecimal(RenderUtils.renderNum(x)).toBigInt.toString(8)
+          case x: Val.Str => BigDecimal(x.str).toBigInt.toString(8)
           case x => Error.fail("Expected Number or String, got: " + x.prettyName)
         }
     }

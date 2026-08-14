@@ -107,7 +107,7 @@ public class TransformerSettingsTest {
     public void sjsonnetSettings_isTheEscapeHatchAndIsTakenWhole() {
         // handing over a complete Settings is read as meaning all of it, preserveOrder included
         var settings = TransformerSettings.builder()
-                .sjsonnetSettings(new Settings(false, false, false, false, 1000, false))
+                .sjsonnetSettings(new Settings(false, false, false, 1000, false, 1000, 128, 500, false, false, 0))
                 .build();
 
         assertEquals(Boolean.FALSE, settings.preserveOrder());

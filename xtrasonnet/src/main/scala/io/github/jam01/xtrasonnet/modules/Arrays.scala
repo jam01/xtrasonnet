@@ -31,7 +31,7 @@ package io.github.jam01.xtrasonnet.modules
 
 import io.github.jam01.xtrasonnet.spi.Library.keyFrom
 import sjsonnet.functions.AbstractFunctionModule
-import sjsonnet.{Error, EvalScope, Lazy, NumberMath, Position, TailstrictModeDisabled, Val}
+import sjsonnet.{Eval, Error, EvalScope, NumberMath, Position, TailstrictModeDisabled, Val}
 
 import java.util
 import scala.collection.mutable
@@ -68,7 +68,7 @@ object Arrays extends AbstractFunctionModule {
     },
 
     builtin("all", "value", "func") {
-      (pos, ev, arr: Val.Arr, func: Val.Func) => arr.forall(func.apply1(_, pos.noOffset)(ev, TailstrictModeDisabled).isInstanceOf[Val.True])
+      (pos, ev, arr: Val.Arr, func: Val.Func) => arr.asLazyArray.forall(func.apply1(_, pos.noOffset)(ev, TailstrictModeDisabled).isInstanceOf[Val.True])
     },
 
     builtin("find", "arr", "func") {
@@ -81,11 +81,11 @@ object Arrays extends AbstractFunctionModule {
             .find(item => func.apply2(item._1, Val.Num(pos, item._2), pos.noOffset)(ev, TailstrictModeDisabled).isInstanceOf[Val.True])
             .map(_._1)
           if (found.nonEmpty) Val.Arr(pos, Array(found.get))
-          else Val.Arr(pos, Array.empty[Lazy])
+          else Val.Arr(pos, Array.empty[Eval])
         } else if (args == 1) {
           val found = arr.asLazyArray.find(func.apply1(_, pos.noOffset)(ev, TailstrictModeDisabled).isInstanceOf[Val.True])
           if (found.nonEmpty) Val.Arr(pos, Array(found.get))
-          else Val.Arr(pos, Array.empty[Lazy])
+          else Val.Arr(pos, Array.empty[Eval])
         } else {
           Error.fail("Expected embedded function to have 1 or 2 parameters, received: " + args)
         }
@@ -158,7 +158,7 @@ object Arrays extends AbstractFunctionModule {
 
     builtin("sumBy", "array", "func") {
       (pos, ev, array: Val.Arr, func: Val.Func) =>
-        array.asLazyArray.foldLeft(Val.Num(position, 0))((sum, num) => NumberMath.add(position, sum, func.apply1(num, pos.noOffset)(ev, TailstrictModeDisabled).asNum)(ev))
+        array.asLazyArray.foldLeft(Val.Num(dummyPos, 0))((sum, num) => NumberMath.add(dummyPos, sum, func.apply1(num, pos.noOffset)(ev, TailstrictModeDisabled).asNum)(ev))
     },
 
     builtin("take", "array", "index") {
@@ -196,9 +196,9 @@ object Arrays extends AbstractFunctionModule {
     builtinWithDefaults("zip",
       "arr1" -> null,
       "arr2" -> null,
-      "arr3" -> Val.False(position),
-      "arr4" -> Val.False(position),
-      "arr5" -> Val.False(position)) { (args, pos, _) =>
+      "arr3" -> Val.False(dummyPos),
+      "arr4" -> Val.False(dummyPos),
+      "arr5" -> Val.False(dummyPos)) { (args, pos, _) =>
       val lazyArr = args.filter {
         case _: Val.Arr => true
         case _: Val.False => false
@@ -221,7 +221,7 @@ object Arrays extends AbstractFunctionModule {
         val lazyArr = array.asLazyArray
         // func is applied once per element and the results compared against each other
         val keys = lazyArr.map(item => func.apply1(item, func.pos)(ev, TailstrictModeDisabled))
-        val out = mutable.ArrayBuffer[Lazy]()
+        val out = mutable.ArrayBuffer[Eval]()
         val reported = mutable.ArrayBuffer[Val]()
 
         var i = 0
@@ -278,20 +278,20 @@ object Arrays extends AbstractFunctionModule {
    * contract for zip and unzip), otherwise it extends to the longest, filling the missing elements
    * (zipAll and unzipAll).
    */
-  private def transpose(arrays: Array[? <: Lazy], fill: Val, pos: Position): Array[Lazy] = {
+  private def transpose(arrays: Array[? <: Eval], fill: Val, pos: Position): Array[Eval] = {
     val inner = arrays.map(
-      _.force match {
+      _.value match {
         case arr: Val.Arr => arr.asLazyArray
         case x => Error.fail("Expected Array of Arrays, got inner: " + x.prettyName)
       })
 
     val lens = inner.map(_.length)
     val size = if (inner.isEmpty) 0 else if (fill == null) lens.min else lens.max
-    val out = new Array[Lazy](size)
+    val out = new Array[Eval](size)
 
     var i = 0
     while (i < size) {
-      val current = new Array[Lazy](inner.length)
+      val current = new Array[Eval](inner.length)
       var j = 0
       while (j < inner.length) {
         val row = inner(j)
@@ -305,12 +305,12 @@ object Arrays extends AbstractFunctionModule {
     out
   }
 
-  private def distinctBy(array: Array[Lazy], func: Val.Func, ev: EvalScope): Val = {
+  private def distinctBy(array: Array[Eval], func: Val.Func, ev: EvalScope): Val = {
     // alternative implementation here https://stackoverflow.com/a/9982455
     val pos = func.pos
     val args = func.params.names.length
     val tests = new ArrayBuffer[Val]()
-    val out = new ArrayBuffer[Lazy]()
+    val out = new ArrayBuffer[Eval]()
 
     var i = 0
     if (args == 2) { // 2 args
@@ -346,9 +346,9 @@ object Arrays extends AbstractFunctionModule {
    * - 05edbc0165aff4849b9f142e153141d7a8204efd: rename deepflatten for flat
    */
   // TODO: add depth parameter, guard for stackoverflow
-  private def flat(array: Array[Lazy]): Array[Lazy] = {
-    array.foldLeft(new ArrayBuffer[Lazy])((agg, curr) => {
-      curr.force match {
+  private def flat(array: Array[Eval]): Array[Eval] = {
+    array.foldLeft(new ArrayBuffer[Eval])((agg, curr) => {
+      curr.value match {
         case inner: Val.Arr => agg.appendAll(flat(inner.asLazyArray))
         case _ => agg.append(curr)
       }

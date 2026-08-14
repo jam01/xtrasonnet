@@ -315,7 +315,7 @@ object ExprComparator {
       assertEquals(pos1, pos2, "Positions do not match")
       assertArrayEquals(values1.asInstanceOf[Array[AnyRef]], values2.asInstanceOf[Array[AnyRef]], "Arrays do not match")
 
-    case (Expr.Apply(pos1, value1, args1, namedNames1, _), Expr.Apply(pos2, value2, args2, namedNames2, _)) =>
+    case (Expr.Apply(pos1, value1, args1, namedNames1, _, _), Expr.Apply(pos2, value2, args2, namedNames2, _, _)) =>
       assertEquals(pos1, pos2, "Positions do not match")
       assertEquals(value1, value2, "Values do not match")
       assertEquals(args1.length, args2.length, "Args do not match")
@@ -344,9 +344,9 @@ object ExprComparator {
       fields1.zip(fields2).foreach((f1, f2) => assertFieldEquals(f1, f2))
       assertArrayEquals(asserts1.asInstanceOf[Array[AnyRef]], asserts2.asInstanceOf[Array[AnyRef]], "AssertStmts arrays do not match")
 
-    case (Val.Arr(pos1, values1), Val.Arr(pos2, values2)) =>
-      assertEquals(pos1, pos2, "Positions do not match")
-      assertArrayEquals(values1.asInstanceOf[Array[AnyRef]], values2.asInstanceOf[Array[AnyRef]], "Arrays do not match")
+    case (a1: Val.Arr, a2: Val.Arr) =>
+      assertEquals(a1.pos, a2.pos, "Positions do not match")
+      assertArrayEquals(a1.asLazyArray.asInstanceOf[Array[AnyRef]], a2.asLazyArray.asInstanceOf[Array[AnyRef]], "Arrays do not match")
 
     case (Expr.Function(pos1, params1, body1), Expr.Function(pos2, params2, body2)) =>
       assertEquals(pos1, pos2, "Positions do not match")

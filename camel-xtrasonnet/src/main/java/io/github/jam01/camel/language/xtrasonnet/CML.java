@@ -112,7 +112,7 @@ public final class CML extends JLibrary {
      */
     private Val properties(Val key) {
         if (key instanceof Val.Str) {
-            return new Val.Str(position(), exchange.get().getContext().resolvePropertyPlaceholders("{{" + ((Val.Str) key).value() + "}}"));
+            return new Val.Str(dummyPos(), exchange.get().getContext().resolvePropertyPlaceholders("{{" + ((Val.Str) key).str() + "}}"));
         }
         throw new IllegalArgumentException("Expected String got: " + key.prettyName());
     }
@@ -128,7 +128,7 @@ public final class CML extends JLibrary {
      */
     private Val header(Val key, DataFormatService dataformats, Position pos) {
         if (key instanceof Val.Str) {
-            return valFrom(exchange.get().getMessage().getHeader(((Val.Str) key).value()), dataformats, pos);
+            return valFrom(exchange.get().getMessage().getHeader(((Val.Str) key).str()), dataformats, pos);
         }
         throw new IllegalArgumentException("Expected String got: " + key.prettyName());
     }
@@ -144,7 +144,7 @@ public final class CML extends JLibrary {
      */
     private Val exchangeProperty(Val key, DataFormatService dataformats, Position pos) {
         if (key instanceof Val.Str) {
-            return valFrom(exchange.get().getProperty(((Val.Str) key).value()), dataformats, pos);
+            return valFrom(exchange.get().getProperty(((Val.Str) key).str()), dataformats, pos);
         }
         throw new IllegalArgumentException("Expected String got: " + key.prettyName());
     }
@@ -160,7 +160,7 @@ public final class CML extends JLibrary {
      */
     private Val variable(Val key, DataFormatService dataformats, Position pos) {
         if (key instanceof Val.Str) {
-            return valFrom(exchange.get().getVariable(((Val.Str) key).value()), dataformats, pos);
+            return valFrom(exchange.get().getVariable(((Val.Str) key).str()), dataformats, pos);
         }
         throw new IllegalArgumentException("Expected String got: " + key.prettyName());
     }

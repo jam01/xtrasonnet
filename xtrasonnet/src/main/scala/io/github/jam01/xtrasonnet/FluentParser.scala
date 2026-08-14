@@ -68,13 +68,16 @@ final class FluentParser(currentFile: Path,
   }
 
   /**
-   * A verbatim copy of sjsonnet's Parser.exprSuffix2, differing only by the leading `Pass ~`, which is what
-   * lets expr1 above offer `infix` as an alternative to it.
+   * A verbatim copy of sjsonnet's Parser.exprSuffix2, differing by the leading `Pass ~` (which is what
+   * lets expr1 above offer `infix` as an alternative to it) and by capturing the suffix Position through
+   * the public `Pos` combinator rather than upstream's alloc-avoiding `fileScope` field access -- `fileScope`
+   * is `private` in `Parser`, unreachable from this subclass. Both build the same `Position`; upstream's
+   * version merely defers the allocation past the common non-matching case.
    *
    * Because it is an override, an upstream change to the grammar silently does not apply here: no compile
    * error, no failing test, just a parser that quietly lags the one it was copied from. The copy was last
-   * checked against sjsonnet 0.6.90004, and FluentParserDriftTest fails on a fork bump so that this gets
-   * re-checked rather than forgotten. If the two ever need to differ by more than `Pass ~`, say so here.
+   * checked against sjsonnet 0.7.3-05, and FluentParserDriftTest fails on a fork bump so that this gets
+   * re-checked rather than forgotten. If the two ever need to differ by more than the above, say so here.
    */
   override def exprSuffix2[$: P](currentDepth: Int): P[Expr => Expr] = {
     P(
@@ -108,7 +111,7 @@ final class FluentParser(currentFile: Path,
               }
             case '{' =>
               Pass ~ (objinside(i, currentDepth + 1) ~ "}").map(x => Expr.ObjExtend(i, _: Expr, x))
-            case _ => Fail
+            case _ => Fail.opaque("expression")
           }
         }
       }

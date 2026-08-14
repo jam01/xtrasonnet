@@ -49,7 +49,7 @@ import io.github.jam01.xtrasonnet.modules.{Arrays, Base64, Crypto, Datetime, Dur
 import io.github.jam01.xtrasonnet.spi.Library
 import io.github.jam01.xtrasonnet.spi.Library.{emptyObj, keyFrom}
 import sjsonnet.functions.FunctionModule
-import sjsonnet.{Error, EvalScope, Lazy, Materializer, Position, TailstrictModeDisabled, Val}
+import sjsonnet.{Eval, Error, EvalScope, Materializer, Position, TailstrictModeDisabled, Val}
 import ujson.{Bool, Null, Num, Str}
 
 import java.util
@@ -79,8 +79,8 @@ final class Xtr(dataFormats: DataFormatService, header: Header) extends Library 
       (_, ev, container: Val, value: Val) =>
         container match {
           // See: scala.collection.IterableOnceOps.exists
-          case str: Val.Str => str.value.contains(value.asString)
-          case array: Val.Arr => array.asLazyArray.exists(v => ev.equal(v.force, value))
+          case str: Val.Str => str.str.contains(value.asString)
+          case array: Val.Arr => array.asLazyArray.exists(v => ev.equal(v.value, value))
           case x => Error.fail("Expected Array or String, got: " + x.prettyName)
         }
     },
@@ -109,13 +109,13 @@ final class Xtr(dataFormats: DataFormatService, header: Header) extends Library 
           case str: Val.Str =>
             // literal, matching indexOf: treating sub as a regex made indicesOf("a.b.c", ".")
             // return every index, and threw on any needle containing regex metacharacters
-            val sub = value.cast[Val.Str].value
+            val sub = value.cast[Val.Str].str
             val out = new ArrayBuffer[Val.Num]()
             if (sub.nonEmpty) {
-              var idx = str.value.indexOf(sub)
+              var idx = str.str.indexOf(sub)
               while (idx != -1) {
                 out.append(Val.Num(pos, idx))
-                idx = str.value.indexOf(sub, idx + sub.length)
+                idx = str.str.indexOf(sub, idx + sub.length)
               }
             }
             Val.Arr(pos, out.toArray)
@@ -124,7 +124,7 @@ final class Xtr(dataFormats: DataFormatService, header: Header) extends Library 
             val lazArr = array.asLazyArray
             var i = 0
             while (i < lazArr.length) {
-              if (ev.equal(lazArr(i).force, value)) {
+              if (ev.equal(lazArr(i).value, value)) {
                 out.append(Val.Num(pos, i))
               }
               i = i + 1
@@ -144,10 +144,10 @@ final class Xtr(dataFormats: DataFormatService, header: Header) extends Library 
 
     builtin("flatten", "array") {
       (pos, _, value: Val.Arr) =>
-        val out = new ArrayBuffer[Lazy]
+        val out = new ArrayBuffer[Eval]
         var i = 0
         while (i < value.length) {
-          out.appendAll(value.asLazyArray(i).force.asArr.asLazyArray) // should we report we expected arr[arr]?
+          out.appendAll(value.asLazyArray(i).value.asArr.asLazyArray) // should we report we expected arr[arr]?
           i = i + 1
         }
         Val.Arr(pos, out.toArray)
@@ -185,7 +185,7 @@ final class Xtr(dataFormats: DataFormatService, header: Header) extends Library 
       (_, _, container: Val) =>
         container match {
           case s: Val.Obj => !s.hasKeys.booleanValue()
-          case s: Val.Str => s.value.isEmpty.booleanValue()
+          case s: Val.Str => s.str.isEmpty.booleanValue()
           case array: Val.Arr => array.asLazyArray.isEmpty.booleanValue()
           case x => Error.fail("Expected String, Array, or Object, got: " + x.prettyName)
         }
@@ -202,7 +202,7 @@ final class Xtr(dataFormats: DataFormatService, header: Header) extends Library 
 
     builtin("join", "array", "sep") {
       (_, _, array: Val.Arr, sep: String) =>
-        array.asLazyArray.map(v => keyFrom(v.force)).mkString(sep)
+        array.asLazyArray.map(v => keyFrom(v.value)).mkString(sep)
     },
 
     builtin("keys", "obj") {
@@ -228,22 +228,22 @@ final class Xtr(dataFormats: DataFormatService, header: Header) extends Library 
 
     // TODO: optimize with while-loop
     builtin("max", "array") {
-      (_, ev, array: Val.Arr) => array.asLazyArray.view.map(_.force).max(ev)
+      (_, ev, array: Val.Arr) => array.asLazyArray.view.map(_.value).max(ev)
     },
 
     builtin("maxBy", "array", "func") {
       (pos, ev, array: Val.Arr, func: Val.Func) =>
-        array.asLazyArray.view.map(_.force).maxBy(it => func.apply1(it, pos.noOffset)(ev, TailstrictModeDisabled))(ev)
+        array.asLazyArray.view.map(_.value).maxBy(it => func.apply1(it, pos.noOffset)(ev, TailstrictModeDisabled))(ev)
     },
 
     // TODO: optimize with while-loop
     builtin("min", "array") {
-      (_, ev, array: Val.Arr) => array.asLazyArray.view.map(_.force).min(ev)
+      (_, ev, array: Val.Arr) => array.asLazyArray.view.map(_.value).min(ev)
     },
 
     builtin("minBy", "array", "func") {
       (pos, ev, array: Val.Arr, func: Val.Func) =>
-        array.asLazyArray.view.map(_.force).minBy(it => func.apply1(it, pos.noOffset)(ev, TailstrictModeDisabled))(ev)
+        array.asLazyArray.view.map(_.value).minBy(it => func.apply1(it, pos.noOffset)(ev, TailstrictModeDisabled))(ev)
     },
 
     builtin("sortBy", "value", "func") {
@@ -269,10 +269,10 @@ final class Xtr(dataFormats: DataFormatService, header: Header) extends Library 
     builtinWithDefaults("read",
       "data" -> null,
       "mimeType" -> null,
-      "params" -> Val.False(position)) {
+      "params" -> Val.False(dummyPos)) {
       (args, pos, ev) =>
-        val data = args(0).cast[Val.Str].value
-        val mimeType = args(1).cast[Val.Str].value
+        val data = args(0).cast[Val.Str].str
+        val mimeType = args(1).cast[Val.Str].str
         val params = if (args(2).isInstanceOf[Val.False]) {
           emptyObj
         } else {
@@ -284,10 +284,10 @@ final class Xtr(dataFormats: DataFormatService, header: Header) extends Library 
     builtinWithDefaults("readUrl",
       "url" -> null,
       "mimeType" -> null,
-      "params" -> Val.False(position)) {
+      "params" -> Val.False(dummyPos)) {
       (args, pos, ev) =>
-        val url = args(0).cast[Val.Str].value
-        val mimeType = args(1).cast[Val.Str].value
+        val url = args(0).cast[Val.Str].str
+        val mimeType = args(1).cast[Val.Str].str
         val params = if (args(2).isInstanceOf[Val.False]) {
           emptyObj
         } else {
@@ -300,7 +300,7 @@ final class Xtr(dataFormats: DataFormatService, header: Header) extends Library 
     builtin("length", "value") {
       (_, _, value: Val) =>
         value match {
-          case s: Val.Str => s.value.length()
+          case s: Val.Str => s.str.length()
           case s: Val.Obj => s.visibleKeyNames.length
           case array: Val.Arr => array.asLazyArray.length
           case s: Val.Func => s.params.names.length
@@ -345,11 +345,11 @@ final class Xtr(dataFormats: DataFormatService, header: Header) extends Library 
     },
 
     builtinWithDefaults("write",
-      "data" -> Val.Null(position),
-      "mimeType" -> Val.Null(position),
+      "data" -> Val.Null(dummyPos),
+      "mimeType" -> Val.Null(dummyPos),
       "params" -> emptyObj) { (args, pos, ev) =>
       val data = args(0)
-      val mimeType = args(1).cast[Val.Str].value
+      val mimeType = args(1).cast[Val.Str].str
       val params = args(2).cast[Val.Obj]
       write(dataFormats, data, mimeType, params, ev, pos)
     },
@@ -411,7 +411,7 @@ final class Xtr(dataFormats: DataFormatService, header: Header) extends Library 
           (value match {
             case str: Val.Str =>
               obj.visibleKeyNames.toSeq.collect({
-                case key if !key.equals(str.value) => key -> memberOf(obj.value(key, pos)(ev))
+                case key if !key.equals(str.str) => key -> memberOf(obj.value(key, pos)(ev))
               })
             case x => Error.fail("Expected String, got: " + x.prettyName)
           }): _*).asInstanceOf[Val]
@@ -423,7 +423,7 @@ final class Xtr(dataFormats: DataFormatService, header: Header) extends Library 
           (second match {
             case arr: Val.Arr =>
               obj.visibleKeyNames.toSeq.collect({
-                case key if !arr.asLazyArray.exists(item => item.force.asString.equals(key)) =>
+                case key if !arr.asLazyArray.exists(item => item.value.asString.equals(key)) =>
                   key -> memberOf(obj.value(key, pos)(ev))
               })
             case x => Error.fail("Expected Array, got: " + x.prettyName)
@@ -432,7 +432,7 @@ final class Xtr(dataFormats: DataFormatService, header: Header) extends Library 
 
     builtin("filterNotEq", "collection", "value") {
       (pos, ev, arr: Val.Arr, value: Val) =>
-        Val.Arr(pos, arr.asLazyArray.filter(x => !ev.equal(x.force, value)))
+        Val.Arr(pos, arr.asLazyArray.filter(x => !ev.equal(x.value, value)))
     },
 
     builtin("filterNotIn", "first", "second") {
@@ -443,14 +443,14 @@ final class Xtr(dataFormats: DataFormatService, header: Header) extends Library 
               case arr2: Val.Arr =>
                 // unfortunately cannot use diff here because of lazy values
                 Val.Arr(pos, arr.asLazyArray
-                  .filter(arrItem => !arr2.asLazyArray.exists(arr2Item => ev.equal(arrItem.force, arr2Item.force)))).asInstanceOf[Val]
+                  .filter(arrItem => !arr2.asLazyArray.exists(arr2Item => ev.equal(arrItem.value, arr2Item.value)))).asInstanceOf[Val]
               case x => Error.fail("Expected Array, got: " + x.prettyName)
             }
           case obj: Val.Obj =>
             Val.Obj.mk(pos, (second match {
               case arr: Val.Arr =>
                 obj.visibleKeyNames.toSeq.collect({
-                  case key if !arr.asLazyArray.exists(item => item.force.asString.equals(key)) =>
+                  case key if !arr.asLazyArray.exists(item => item.value.asString.equals(key)) =>
                     key -> memberOf(obj.value(key, pos)(ev))
                 })
               case x => Error.fail("Expected Array, got: " + x.prettyName)
@@ -462,7 +462,7 @@ final class Xtr(dataFormats: DataFormatService, header: Header) extends Library 
     builtin("reverse", "collection") {
       (pos, ev, collection: Val) =>
         collection match {
-          case str: Val.Str => Val.Str(pos, str.value.reverse).asInstanceOf[Val]
+          case str: Val.Str => Val.Str(pos, str.str.reverse).asInstanceOf[Val]
           case arr: Val.Arr => Val.Arr(pos, arr.asLazyArray.reverse).asInstanceOf[Val]
           case obj: Val.Obj =>
             var result: Seq[(String, Val.Obj.Member)] = Seq()
@@ -477,8 +477,8 @@ final class Xtr(dataFormats: DataFormatService, header: Header) extends Library 
     builtin("indexOf", "container", "value") {
       (_, ev, container: Val, value: Val) =>
         container match {
-          case str: Val.Str => str.value.indexOf(value.cast[Val.Str].value)
-          case array: Val.Arr => array.asLazyArray.indexWhere(lzy => ev.equal(lzy.force, value))
+          case str: Val.Str => str.str.indexOf(value.cast[Val.Str].str)
+          case array: Val.Arr => array.asLazyArray.indexWhere(lzy => ev.equal(lzy.value, value))
           case x => Error.fail("Expected String or Array, got: " + x.prettyName)
         }
     },
@@ -486,8 +486,8 @@ final class Xtr(dataFormats: DataFormatService, header: Header) extends Library 
     builtin("lastIndexOf", "container", "value") {
       (_, ev, container: Val, value: Val) =>
         container match {
-          case str: Val.Str => str.value.lastIndexOf(value.cast[Val.Str].value)
-          case array: Val.Arr => array.asLazyArray.lastIndexWhere(lzy => ev.equal(lzy.force, value))
+          case str: Val.Str => str.str.lastIndexOf(value.cast[Val.Str].str)
+          case array: Val.Arr => array.asLazyArray.lastIndexWhere(lzy => ev.equal(lzy.value, value))
           case x => Error.fail("Expected String or Array, got: " + x.prettyName)
         }
     },
@@ -503,7 +503,7 @@ final class Xtr(dataFormats: DataFormatService, header: Header) extends Library 
   // safe to cache where JLibrary.module is not: an Xtr is constructed per Transformer
   // (Transformer.allLibs), so this object is never shared between them
   override lazy val module: Val.Obj = {
-    Val.Obj.mk(position,
+    Val.Obj.mk(dummyPos,
       functions.map { case (name, func) => (name, memberOf(func)) } ++
         Xtr.allModules.map(mod => (mod.name, memberOf(mod.module))): _*)
   }
@@ -538,10 +538,10 @@ final class Xtr(dataFormats: DataFormatService, header: Header) extends Library 
   }
 
   // TODO: can we reference std.filter?
-  private def filter(array: Array[Lazy], func: Val.Func, ev: EvalScope): Val.Arr = {
+  private def filter(array: Array[Eval], func: Val.Func, ev: EvalScope): Val.Arr = {
     val pos = func.pos
     val args = func.params.names.length
-    val out = new ArrayBuffer[Lazy]()
+    val out = new ArrayBuffer[Eval]()
 
     var i = 0
     if (args == 2) {
@@ -567,10 +567,10 @@ final class Xtr(dataFormats: DataFormatService, header: Header) extends Library 
     Val.Arr(pos, out.toArray)
   }
 
-  private def map(array: Array[Lazy], func: Val.Func, ev: EvalScope): Val.Arr = {
+  private def map(array: Array[Eval], func: Val.Func, ev: EvalScope): Val.Arr = {
     val pos = func.pos
     val args = func.params.names.length
-    val out = new Array[Lazy](array.length)
+    val out = new Array[Eval](array.length)
 
     var i = 0
     if (args == 2) { //2 args
@@ -630,15 +630,15 @@ final class Xtr(dataFormats: DataFormatService, header: Header) extends Library 
     Val.Obj.mk(pos, m.toArray: _*)
   }
 
-  private def flatMap(array: Array[Lazy], func: Val.Func, ev: EvalScope): Val = {
+  private def flatMap(array: Array[Eval], func: Val.Func, ev: EvalScope): Val = {
     val pos = func.pos
     val args = func.params.names.length
-    val out = new ArrayBuffer[Lazy]()
+    val out = new ArrayBuffer[Eval]()
 
     var i = 0
     if (args == 2) { // 2 args
       while (i < array.length) {
-        val inner = func.apply2(array(i).force, Val.Num(pos, i), pos.noOffset)(ev, TailstrictModeDisabled).asArr
+        val inner = func.apply2(array(i).value, Val.Num(pos, i), pos.noOffset)(ev, TailstrictModeDisabled).asArr
         var j = 0
         while (j < inner.length) {
           out.append(inner.asLazyArray(j))
@@ -648,7 +648,7 @@ final class Xtr(dataFormats: DataFormatService, header: Header) extends Library 
       }
     } else if (args == 1) { //  1 arg
       while (i < array.length) {
-        val inner = func.apply1(array(i).force, pos.noOffset)(ev, TailstrictModeDisabled).asArr
+        val inner = func.apply1(array(i).value, pos.noOffset)(ev, TailstrictModeDisabled).asArr
         var j = 0
         while (j < inner.length) {
           out.append(inner.asLazyArray(j))
@@ -663,10 +663,10 @@ final class Xtr(dataFormats: DataFormatService, header: Header) extends Library 
     Val.Arr(pos, out.toArray)
   }
 
-  private def groupBy(array: Array[Lazy], func: Val.Func, ev: EvalScope): Val = {
+  private def groupBy(array: Array[Eval], func: Val.Func, ev: EvalScope): Val = {
     val pos = func.pos
     val args = func.params.names.length
-    val m: util.LinkedHashMap[String, mutable.ArrayBuffer[Lazy]] = new util.LinkedHashMap[String, mutable.ArrayBuffer[Lazy]]()
+    val m: util.LinkedHashMap[String, mutable.ArrayBuffer[Eval]] = new util.LinkedHashMap[String, mutable.ArrayBuffer[Eval]]()
     val mScala = m.asScala // to allow getOrElseUpdate
 
     var i = 0
@@ -674,14 +674,14 @@ final class Xtr(dataFormats: DataFormatService, header: Header) extends Library 
       while (i < array.length) {
         val v = array(i)
         val k = keyFrom(func.apply2(v, Val.Num(pos, i), pos.noOffset)(ev, TailstrictModeDisabled))
-        mScala.getOrElseUpdate(k, mutable.ArrayBuffer[Lazy]()).addOne(v)
+        mScala.getOrElseUpdate(k, mutable.ArrayBuffer[Eval]()).addOne(v)
         i = i + 1
       }
     } else if (args == 1) {
       while (i < array.length) {
         val v = array(i)
         val k = keyFrom(func.apply1(v, pos.noOffset)(ev, TailstrictModeDisabled))
-        mScala.getOrElseUpdate(k, mutable.ArrayBuffer[Lazy]()).addOne(v)
+        mScala.getOrElseUpdate(k, mutable.ArrayBuffer[Eval]()).addOne(v)
         i = i + 1
       }
     }
@@ -725,7 +725,7 @@ final class Xtr(dataFormats: DataFormatService, header: Header) extends Library 
   private def mapEntries(obj: Val.Obj, func: Val.Func, ev: EvalScope): Val = {
     val pos = func.pos
     val args = func.params.names.length
-    val out = new ArrayBuffer[Lazy](obj.visibleKeyNames.length)
+    val out = new ArrayBuffer[Eval](obj.visibleKeyNames.length)
 
     var i = 0
     var k: String = null
@@ -773,7 +773,7 @@ final class Xtr(dataFormats: DataFormatService, header: Header) extends Library 
         func.apply3(v, Val.Str(pos, k), Val.Num(pos, i), pos.noOffset)(ev, TailstrictModeDisabled) match {
           case s: Val.Obj =>
             if (s.visibleKeyNames.length > 1) Error.fail("Function must return a single key-value pair, otherwise consider flatMapObject.")
-            out.put(s.visibleKeyNames.head, memberOf(s.value(s.visibleKeyNames.head, position)(ev)))
+            out.put(s.visibleKeyNames.head, memberOf(s.value(s.visibleKeyNames.head, dummyPos)(ev)))
           case x => Error.fail("function must return an Object, got: " + x.prettyName)
         }
         i = i + 1
@@ -785,7 +785,7 @@ final class Xtr(dataFormats: DataFormatService, header: Header) extends Library 
         func.apply2(v, Val.Str(pos, k), pos.noOffset)(ev, TailstrictModeDisabled) match {
           case s: Val.Obj =>
             if (s.visibleKeyNames.length > 1) Error.fail("Function must return a single key-value pair, otherwise consider flatMapObject.")
-            out.put(s.visibleKeyNames.head, memberOf(s.value(s.visibleKeyNames.head, position)(ev)))
+            out.put(s.visibleKeyNames.head, memberOf(s.value(s.visibleKeyNames.head, dummyPos)(ev)))
           case x => Error.fail("function must return an Object, got: " + x.prettyName)
         }
         i = i + 1
@@ -797,7 +797,7 @@ final class Xtr(dataFormats: DataFormatService, header: Header) extends Library 
         func.apply1(v, pos.noOffset)(ev, TailstrictModeDisabled) match {
           case s: Val.Obj =>
             if (s.visibleKeyNames.length > 1) Error.fail("Function must return a single key-value pair, otherwise consider flatMapObject.")
-            out.put(s.visibleKeyNames.head, memberOf(s.value(s.visibleKeyNames.head, position)(ev)))
+            out.put(s.visibleKeyNames.head, memberOf(s.value(s.visibleKeyNames.head, dummyPos)(ev)))
           case x => Error.fail("function must return an Object, got: " + x.prettyName)
         }
         i = i + 1
@@ -822,7 +822,7 @@ final class Xtr(dataFormats: DataFormatService, header: Header) extends Library 
         v = obj.value(k, pos)(ev)
         func.apply3(v, Val.Str(pos, k), Val.Num(pos, i), pos.noOffset)(ev, TailstrictModeDisabled) match {
           case s: Val.Obj => s.visibleKeyNames.foreach(
-            sKey => out.put(sKey, memberOf(s.value(sKey, position)(ev)))
+            sKey => out.put(sKey, memberOf(s.value(sKey, dummyPos)(ev)))
           )
           case x => Error.fail("function must return an Object, got: " + x.prettyName)
         }
@@ -834,7 +834,7 @@ final class Xtr(dataFormats: DataFormatService, header: Header) extends Library 
         v = obj.value(k, pos)(ev)
         func.apply2(v, Val.Str(pos, k), pos.noOffset)(ev, TailstrictModeDisabled) match {
           case s: Val.Obj => s.visibleKeyNames.foreach(
-            sKey => out.put(sKey, memberOf(s.value(sKey, position)(ev)))
+            sKey => out.put(sKey, memberOf(s.value(sKey, dummyPos)(ev)))
           )
           case x => Error.fail("function must return an Object, got: " + x.prettyName)
         }
@@ -846,7 +846,7 @@ final class Xtr(dataFormats: DataFormatService, header: Header) extends Library 
         v = obj.value(k, pos)(ev)
         func.apply1(v, pos.noOffset)(ev, TailstrictModeDisabled) match {
           case s: Val.Obj => s.visibleKeyNames.foreach(
-            sKey => out.put(sKey, memberOf(s.value(sKey, position)(ev)))
+            sKey => out.put(sKey, memberOf(s.value(sKey, dummyPos)(ev)))
           )
           case x => Error.fail("function must return an Object, got: " + x.prettyName)
         }
@@ -859,7 +859,7 @@ final class Xtr(dataFormats: DataFormatService, header: Header) extends Library 
   }
 
   // TODO: optimize with while-loop
-  private def sortBy(array: Array[Lazy], func: Val.Func, ev: EvalScope): Val = {
+  private def sortBy(array: Array[Eval], func: Val.Func, ev: EvalScope): Val = {
     val pos = func.pos
     val args = func.params.names.length
 
