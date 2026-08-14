@@ -181,14 +181,16 @@ object Arrays extends AbstractFunctionModule {
         Val.Arr(pos, transpose(array.asLazyArray, null, pos))
     },
 
+    // unzipAll and zipAll are the same operation under different names: transposing rows/columns
+    // while padding ragged rows with fill instead of dropping them.
     builtin("unzipAll", "array", "fill") {
       (pos, _, array: Val.Arr, fill: Val) =>
-        Val.Arr(pos, transpose(array.asLazyArray, fill, pos))
+        transposeFilled(pos, array, fill)
     },
 
     builtin("zipAll", "array", "fill") {
       (pos, _, array: Val.Arr, fill: Val) =>
-        Val.Arr(pos, transpose(array.asLazyArray, fill, pos))
+        transposeFilled(pos, array, fill)
     },
 
     builtinWithDefaults("zip",
@@ -267,6 +269,9 @@ object Arrays extends AbstractFunctionModule {
      * datasonnet-mapper: end
      */
   )
+
+  private def transposeFilled(pos: Position, array: Val.Arr, fill: Val): Val.Arr =
+    Val.Arr(pos, transpose(array.asLazyArray, fill, pos))
 
   /**
    * Transposes the given arrays: with a null fill it truncates to the shortest of them (the documented

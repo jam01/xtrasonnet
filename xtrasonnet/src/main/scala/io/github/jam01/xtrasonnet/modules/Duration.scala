@@ -67,8 +67,9 @@ object Duration extends AbstractFunctionModule {
         // ISO-8601 allows a single leading sign for the whole duration; parseParts produces
         // (and accepts) that form, and toParts puts every part on the same side of zero for a
         // negative duration, so prefer it here too rather than java.time's per-component signs
-        val negative = Seq(years, months, days, hours, minutes, nanos).forall(_ <= 0) &&
-          Seq(years, months, days, hours, minutes, nanos).exists(_ < 0)
+        val (allNonPositive, anyNegative) = Seq(years, months, days, hours, minutes, nanos)
+          .foldLeft((true, false)) { case ((allLE, anyLT), v) => (allLE && v <= 0, anyLT || v < 0) }
+        val negative = allNonPositive && anyNegative
 
         try {
           var period = Period.ZERO.plusYears(years).plusMonths(months).plusDays(days)
