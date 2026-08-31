@@ -25,7 +25,7 @@ jobs:
           # default GITHUB_TOKEN has no repository role and can't bypass that. RELEASE_PAT belongs
           # to an admin account, already covered by the ruleset's role-based bypass.
           token: ${{ secrets.RELEASE_PAT }}
-      - uses: actions/setup-java@v5
+      - uses: actions/setup-java@v6
         with:
           distribution: 'temurin'
           java-version: '25'
